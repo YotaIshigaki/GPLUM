@@ -1,8 +1,8 @@
 PS_PATH = ../FDPS-5.0d1/src/ 
 INC = -I$(PS_PATH)
 
-CC = clang++ -std=c++11
-#CC = mpic++ -std=c++11
+#CC = clang++ -std=c++11
+CC = mpic++ -std=c++11
 #CC = time CC
 
 CFLAGS = -O3
@@ -10,8 +10,8 @@ CFLAGS += -Wall
 CFLAGS += -ffast-math
 CFLAGS += -funroll-loops
 
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
-#CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
+CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 
 #CFLAGS += -mtune=skylake-avx512
 #CFLAGS += -march=skylake-avx512

@@ -15,8 +15,8 @@ output_dir      = TEST                  # output directory name
 Restart         = 0
 
 # FOR INITIAL CONDITION OF SOLID DISK
-makeInit        = 1                     # flag as to whether initial condition is created in program
-n_init          = 10000                # number of initial particle
+makeInit        = 0                     # flag as to whether initial condition is created in program
+n_init          = 100000                # number of initial particle
 m_init          = 2.e22CGS              # mass of initial particle
 p               = 1.5                   # power of column density distribution of solid disk
 f_dust          = 0.71                  # scaling factor of column density distribution
@@ -39,7 +39,6 @@ mu              = 2.34                  # mean molecular weight
 coef_ema        = 0.3                   # coefficient of exponential moving average
 #nx             = 1                     # number of domain along x-direction
 #ny             = 1                     # number of domain along y-direction
-reset_step      = 1024                  # interval of step for domain to reset
                   
 # FOR TREE         
 theta           = 0.4                   # opening angle
@@ -51,7 +50,7 @@ n_smp_ave       = 100                   # average target number of sample partic
 t_end           = 10                    # time to finish initegration
 dt_tree         = 2^-6                  # timestep of tree (soft)
 dt_snap         = 1                     # time interval to output snapshot
-dt_min          = 2^-30                 # minimum timestep (hard)
+dt_min          = 2^-25                 # minimum timestep (hard)
 eta             = 0.01                  # parameter eta to decide timestep (hard)
 eta_0           = 0.001                 # parameter eta to decide initial timestep (hard)
 alpha           = 0.1                   # parameter alpha to decide timestep (hard)
@@ -61,18 +60,17 @@ m_sun           = 1.                    # mass of central star
 dens            = 2.CGS                 # density of particles  
 eps             = 0.                    # softening parameter                   
 R_cut           = 3.0                   # parameter to determine cut-off radius
-R_search0       = 1.0                   # parameter to determine search radius
+R_search0       = 3.0                   # parameter to determine search radius
 R_search1       = 5.0                   # parameter to determine search radius
-gamma           = 0.5                   # inner / outer cut-off radius ratio
-r_cut_max       = 0.                    # maximum cut-off radius
-r_cut_min       = 3.*3.563797e-04       # minimum cut-off radius
-p_cut           = 0.                    # power of semi-major axis of cut-off radius
+gamma           = 0.5                   # outer to inner cut-off radius ratio
+rHill_max       = 0.                    # maximum Hill radius to decide cut-off radius
+rHill_min       = 3.15557400894e-04     # minimum Hill radius to decide cut-off radius
 r_max           = 20.                   # maximum distance of particle from central star 
-r_min           = 0.1                   # minimum distance of particle from central star
+r_min           = 0.1                   # minimum distance of particle from central star 
 
 # FOR COLLISION
 f               = 1.                    # enhancement factor of particle radius
-m_min           = 2.e22/10.CGS          # minimum mass of fragment particle
+m_min           = 1.e23/10.CGS          # minimum mass of fragment particle
 a_frag          = 0.0                   # ratio of total fragments mass to impactor mass
 N_frag          = 10                    # maximum number of fragments for a collision
 dens_imp        = 1.CGS                 # parameter for Chamnbers model

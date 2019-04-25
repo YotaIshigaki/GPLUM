@@ -70,7 +70,8 @@ PS::S32 readParameter(const char * param_file,
                       PS::F64 & dt_snap,
                       PS::F64 & r_max,
                       PS::F64 & r_min,
-                      PS::S32 & seed)
+                      PS::S32 & seed,
+                      PS::S32 & reset_step)
 {
     std::ifstream ifs(param_file);
     std::string line;
@@ -232,11 +233,14 @@ PS::S32 readParameter(const char * param_file,
         } else if ( name == "gamma" ){
             EPGrav::setGamma(getvalue(value, 1., 1.));
 
-        } else if ( name == "rHill_min" ){
-            FPGrav::rHill_min = getvalue(value, L_MKS, L_CGS);
+        } else if ( name == "r_cut_min" ){
+            FPGrav::r_cut_min = getvalue(value, L_MKS, L_CGS);
 
-        } else if ( name == "rHill_max" ){
-            FPGrav::rHill_max = getvalue(value, L_MKS, L_CGS);
+        } else if ( name == "r_cut_max" ){
+            FPGrav::r_cut_max = getvalue(value, L_MKS, L_CGS);
+
+        } else if ( name == "p_cut" ){
+            FPGrav::p_cut = getvalue(value, 1., 1.);
             
         } else if ( name == "r_max" ){
             r_max = getvalue(value, L_MKS, L_CGS);
@@ -253,6 +257,8 @@ PS::S32 readParameter(const char * param_file,
             
         } else if ( name == "seed" ){
             seed = std::atoi(value.c_str());
+        } else if ( name == "reset_step" ){
+            reset_step = std::atoi(value.c_str());
         }
         Collision::readParameter(name, value);
     }
@@ -275,9 +281,17 @@ PS::S32 readParameter(const char * param_file,
     } else if ( makeInit && SolidDisk::n_init == 0 && SolidDisk::m_init == 0. ){
         std::cerr << "Both n_init and m_init are unset." << std::endl;
         return 1;
-    } else if ( FPGrav::rHill_min > FPGrav::rHill_max && FPGrav::rHill_max > 0 ){
-        std::cerr << "rHill_max is smaller than rHill_min. (rHill_max = " << FPGrav::rHill_max
-                  << ", rHill_min = " << FPGrav::rHill_min << ")" << std::endl;
+    } else if ( FPGrav::r_cut_min > FPGrav::r_cut_max && FPGrav::r_cut_max > 0 ){
+        std::cerr << "r_cut_max is smaller than r_cut_min. (r_cut_max = " << FPGrav::r_cut_max
+                  << ", r_cut_min = " << FPGrav::r_cut_min << ")" << std::endl;
+        return 1;
+    } else if ( EPGrav::R_search0 < 1 ){
+        std::cerr << "R_search0 is smaller than 1. (R_search0 = " << EPGrav::R_search0
+                  << ")" << std::endl;
+        return 1;
+    } else if ( r_max < r_min ){
+        std::cerr << "r_min is greater than r_max. (r_max = " << r_max
+                  << ", r_min = " << r_min << ")" << std::endl;
         return 1;
     }
 
@@ -299,7 +313,8 @@ void showParameter(char * init_file,
                    PS::F64 dt_snap,
                    PS::F64 r_max,
                    PS::F64 r_min,
-                   PS::S32 seed)
+                   PS::S32 seed,
+                   PS::S32 reset_step)
 {
     const PS::F64 L = 14959787070000;
     const PS::F64 M = 1.9884e33;
@@ -340,6 +355,7 @@ void showParameter(char * init_file,
         std::cout << std::fixed << std::setprecision(5)
                   << "coef_ema      = " << coef_ema << std::endl
                   << "nx, ny        = " << nx << ", " << ny << std::endl
+                  << "reset_step    = " << reset_step << std::endl
                   << "theta         = " << theta << std::endl
                   << "n_leaf_limit  = " << n_leaf_limit << std::endl
                   << "n_group_limit = " << n_group_limit << std::endl
@@ -362,8 +378,9 @@ void showParameter(char * init_file,
                   << "R_search1     = " << EPGrav::R_search1 << std::endl
                   << "gamma         = " << EPGrav::gamma << std::endl
                   << std::scientific << std::setprecision(15)
-                  << "rHill_max     = " << FPGrav::rHill_max << "\t(" << FPGrav::rHill_max*L << " cm)"<< std::endl
-                  << "rHill_min     = " << FPGrav::rHill_min << "\t(" << FPGrav::rHill_min*L << " cm)"<< std::endl
+                  << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
+                  << "r_cut_min     = " << FPGrav::r_cut_min << "\t(" << FPGrav::r_cut_min*L << " cm)"<< std::endl
+                  << "p_cut         = " << FPGrav::p_cut << std::endl
                   << std::fixed << std::setprecision(5)
                   << "r_max         = " << r_max << std::endl
                   << "r_min         = " << r_min << std::endl
@@ -402,11 +419,13 @@ void showParameter(char * init_file,
 #ifdef GAS_DRAG
         fout_param << "Use Gas Drag" << std::endl;
 #endif
-#ifdef CHAMBERS
+#if defined(KOMINAMI)
+        fout_param << "Use Kominami Model" << std::endl;
+#elif defined(CHAMBERS)
         fout_param << "Use Chambers Model" << std::endl;
 #endif
 #ifdef ISOTROPIC
-        fout_param << "Use Isotropic Method to Set CutOff Radii & Search Radii" << std::endl;
+        fout_param << "Use Isotropic Method to Set Random Velocity" << std::endl;
 #endif 
         fout_param << std::endl;
 
@@ -442,6 +461,7 @@ void showParameter(char * init_file,
         fout_param << std::fixed << std::setprecision(5)
                    << "coef_ema      = " << coef_ema << std::endl
                    << "nx, ny        = " << nx << ", " << ny << std::endl
+                   << "reset_step    = " << reset_step << std::endl
                    << "theta         = " << theta << std::endl
                    << "n_leaf_limit  = " << n_leaf_limit << std::endl
                    << "n_group_limit = " << n_group_limit << std::endl
@@ -464,8 +484,9 @@ void showParameter(char * init_file,
                    << "R_search1     = " << EPGrav::R_search1 << std::endl
                    << "gamma         = " << EPGrav::gamma << std::endl
                    << std::scientific << std::setprecision(15)
-                   << "rHill_max     = " << FPGrav::rHill_max << "\t(" << FPGrav::rHill_max*L << " cm)"<< std::endl
-                   << "rHill_min     = " << FPGrav::rHill_min << "\t(" << FPGrav::rHill_min*L << " cm)"<< std::endl
+                   << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
+                   << "r_cut_min     = " << FPGrav::r_cut_min << "\t(" << FPGrav::r_cut_min*L << " cm)"<< std::endl
+                   << "p_cut         = " << FPGrav::p_cut << std::endl
                    << std::fixed << std::setprecision(5)
                    << "r_max         = " << r_max << std::endl
                    << "r_min         = " << r_min << std::endl

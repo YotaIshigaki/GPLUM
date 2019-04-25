@@ -118,8 +118,9 @@ class FPGrav : public EPGrav {
     static PS::F64 alpha2;
     
     PS::F64 r_planet;
-    static PS::F64 rHill_min;
-    static PS::F64 rHill_max;
+    static PS::F64 r_cut_min;
+    static PS::F64 r_cut_max;
+    static PS::F64 p_cut;
 
     PS::S32 id_cluster;
     PS::S32 neighbor;
@@ -135,6 +136,14 @@ class FPGrav : public EPGrav {
 
     PS::F64 getSemimajorAxis() const {
         return 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
+    }
+    PS::F64 getSemimajorAxis2() const {
+        PS::F64 ax = 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
+        if ( ax > 0. ) {
+            return ax;
+        } else {
+            return sqrt(pos*pos);
+        }
     }
     PS::F64 getEccentricity(PS::F64 & ax) const {
         PS::F64 r = sqrt(pos*pos);
@@ -159,52 +168,52 @@ class FPGrav : public EPGrav {
         return getInclination(h);
     }
     PS::F64 getRHill() const {
-        //#ifndef ISOTROPIC
-        PS::F64 ax = 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
-        if ( ax > 0. ){
-            return pow(mass/(3.*m_sun), 1./3.) * ax;
-        } else {
-            return pow(mass/(3.*m_sun), 1./3.) * sqrt(pos*pos);
-        }
-        //#else
-        //return sqrt(mass/m_sun) * sqrt(pos*pos);
-        //#endif
+        PS::F64 ax = getSemimajorAxis2();
+        return pow(mass/(3.*m_sun), 1./3.) * ax;
     }
-    //PS::F64 getRHill() const {
-    //    return pow(mass/(3.*m_sun), 1./3.);
-    //}
     PS::F64 getKeplerVelocity() const {
         PS::F64 r = sqrt(pos.x * pos.x + pos.y * pos.y);
         return sqrt(m_sun/r);
     }
 #ifdef USE_INDIVIDUAL_RADII
     PS::F64 setROutRSearch(PS::F64 vdisp_k){
-        //PS::F64 ax = 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
-        PS::F64 rHill = std::max(getRHill(), rHill_min);
+        PS::F64 rHill = getRHill();
         PS::F64 v_kep = getKeplerVelocity();
+        PS::F64 ax    = getSemimajorAxis2();
         
-        r_out     = R_cut    *rHill;
+        if ( FPGrav::r_cut_max <= 0 ) {
+            r_out = R_cut * pow(ax,-p_cut) * std::max(rHill, FPGrav::r_cut_min);
+        } else {
+            r_out = R_cut * pow(ax,-p_cut) * std::min(FPGrav::r_cut_max, std::max(rHill, FPGrav::r_cut_min) );
+        }
         r_out_inv = 1. / r_out;
+        
 #ifndef ISOTROPIC
-        r_search  = R_search0*rHill + R_search1*vdisp_k*v_kep*dt_tree;
+        r_search  = R_search0*r_out + R_search1*vdisp_k*v_kep*dt_tree;
 #else
-        r_search  = R_search0*rHill + R_search1*vdisp_k*dt_tree;
+        r_search  = R_search0*r_out + R_search1*vdisp_k*dt_tree;
 #endif
         
         return rHill;
     }
-#else
-    static void setROutRSearch(PS::F64 rHill_glb,
+#else //USE_INDIVIDUAL_RADII
+    static void setROutRSearch(PS::F64 rHill_a_glb,
 #ifndef ISOTROPIC
                                PS::F64 v_kep_glb,
 #endif
                                PS::F64 vdisp_k){
-        r_out     = R_cut    *rHill_glb;
+        
+        if ( FPGrav::r_cut_max <= 0 ) {
+            r_out = R_cut * std::max(rHill_a_glb, FPGrav::r_cut_min);
+        } else {
+            r_out = R_cut * std::min(FPGrav::r_cut_max, std::max(rHill_a_glb, FPGrav::r_cut_min) );
+        }
         r_out_inv = 1. / r_out;
+        
 #ifndef ISOTROPIC
-        r_search  = R_search0*rHill_glb + R_search1*vdisp_k*v_kep_glb*dt_tree;
+        r_search  = R_search0*r_out + R_search1*vdisp_k*v_kep_glb*dt_tree;
 #else
-        r_search  = R_search0*rHill_glb + R_search1*vdisp_k*dt_tree;
+        r_search  = R_search0*r_out + R_search1*vdisp_k*dt_tree;
 #endif
     }
 #endif
@@ -523,34 +532,29 @@ void setCutoffRadii(Tpsys & pp)
         pp[i].setRPlanet();
     }
 #else //USE_INDIVIDUAL_RADII
-    PS::F64 rHill_loc = 0.;
+    PS::F64 rHill_a_loc = 0.;
     PS::F64 v_kep_loc = 0.;
 #pragma omp parallel for
     for(PS::S32 i=0; i<n_loc; i++){
-        PS::F64 rHill = 0;
-        if ( FPGrav::rHill_max <= 0 ) {
-            rHill = std::max(pp[i].getRHill(), FPGrav::rHill_min);
-        } else {
-            rHill = std::min(FPGrav::rHill_max, std::max(pp[i].getRHill(), FPGrav::rHill_min));
-        }
+        PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-p_cut);
 #ifndef ISOTROPIC
         PS::F64 v_kep = pp[i].getKeplerVelocity();
 #endif
 #pragma omp critical
         {
-            if ( rHill > rHill_loc ) rHill_loc = rHill;
+            if ( rHill_a > rHill_a_loc ) rHill_a_loc = rHill_a;
 #ifndef ISOTROPIC
             if ( v_kep > v_kep_loc ) v_kep_loc = v_kep;
 #endif
         }
         pp[i].setRPlanet();
     }
-    PS::F64 rHill_glb = PS::Comm::getMaxValue(rHill_loc);
+    PS::F64 rHill_a_glb = PS::Comm::getMaxValue(rHill_a_loc);
 #ifndef ISOTROPIC
     PS::F64 v_kep_glb = PS::Comm::getMaxValue(v_kep_loc);
-    FPGrav::setROutRSearch(rHill_glb, v_kep_glb, v_disp_k);
+    FPGrav::setROutRSearch(rHill_a_glb, v_kep_glb, v_disp_k);
 #else
-    FPGrav::setROutRSearch(rHill_glb, v_disp);
+    FPGrav::setROutRSearch(rHill_a_glb, v_disp);
 #endif
 #endif //USE_INDIVIDUAL_RADII
 }

@@ -56,8 +56,9 @@ PS::F64 FPGrav::dt_min    = pow2(-13);
 PS::F64 FPGrav::eta       = 0.01;
 PS::F64 FPGrav::eta_0     = 0.001;
 PS::F64 FPGrav::alpha2    = 0.01;
-PS::F64 FPGrav::rHill_min = 0;
-PS::F64 FPGrav::rHill_max = 0;
+PS::F64 FPGrav::r_cut_min = 0.;
+PS::F64 FPGrav::r_cut_max = 0.;
+PS::F64 FPGrav::p_cut     = 0.;
 
 PS::F64 HardSystem::f = 1.;
 PS::F64 Collision0::f = 1.;
@@ -101,7 +102,9 @@ int main(int argc, char *argv[])
     PS::S32 seed = 1;
     PS::F64 wtime_max = 0.;
 
-    EPGrav::setGamma(EPGrav::gamma);
+    PS::S32 reset_step = 1024;
+
+    //EPGrav::setGamma(EPGrav::gamma);
     
     // Read Parameter File
     opterr = 0;
@@ -154,7 +157,7 @@ int main(int argc, char *argv[])
     if ( readParameter(param_file, init_file, bHeader, output_dir, bRestart,  makeInit,
                        coef_ema, nx, ny,
                        theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                       t_end, dt_snap, r_max, r_min, seed) ){
+                       t_end, dt_snap, r_max, r_min, seed, reset_step) ){
         std::cerr << "Parameter file has NOT successfully read" << std::endl;
         PS::Abort();
         return 0;
@@ -165,6 +168,8 @@ int main(int argc, char *argv[])
     if (opt_o) sprintf(output_dir,"%s",output_dir_opt);
     if (opt_D) FPGrav::dt_tree = dt_opt;
     if (opt_R) EPGrav::R_cut = EPGrav::R_search0 = Rcut_opt;
+
+    EPGrav::setGamma(EPGrav::gamma);
     
     char dir_name[256];
     sprintf(dir_name,"./%s",output_dir);
@@ -348,7 +353,7 @@ int main(int argc, char *argv[])
                   time_sys,
                   coef_ema, nx, ny,
                   theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                  t_end, dt_snap, r_max, r_min, seed);
+                  t_end, dt_snap, r_max, r_min, seed, reset_step);
 
     ////////////////////////////////
     /*  Preparation Before Loop   */
@@ -610,8 +615,8 @@ int main(int argc, char *argv[])
         ///////////////////////////
         /*   Re-Calculate Soft   */
         ///////////////////////////
-        if ( n_col || istep % 1024 == 0 ) {
-            if(istep % 1024 == 0) {
+        if ( n_col || istep % reset_step == 0 ) {
+            if(istep % reset_step == 0) {
                 dinfo.decomposeDomainAll(system_grav);
                 system_grav.exchangeParticle(dinfo);
                 

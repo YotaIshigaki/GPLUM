@@ -372,6 +372,9 @@ void CalcForceLongSP(const TParticleI * ep_i,
             az_i -= VEC0::reduce(A*dpz_ij + B*qr_z);
 #endif
 #else // USE_QUAD
+
+            VEC0 dg2_ij = ms_j * dr3_inv;
+            
 #ifdef PARALLEL_I4J4
             pt_i -= VEC0::reduce16to4(ms_j    * dr_inv);
             ax_i -= VEC0::reduce16to4(dpx_ij * dg2_ij);

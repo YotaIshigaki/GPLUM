@@ -359,8 +359,6 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
         n_frag_list = new PS::S32[n_proc];
         col_recv    = new PS::S32[n_proc];
         frag_recv   = new PS::S32[n_proc];
-        col_recv[0]  = 0;
-        frag_recv[0] = 0;
     }
     // Send Number of Collision & Fragments
     PS::Comm::gather(&n_col, 1, n_col_list);

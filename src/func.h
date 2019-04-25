@@ -157,12 +157,14 @@ void removeOutOfBoundaryParticle(Tpsys & pp,
                                  const PS::F64 r_min,
                                  std::ofstream & fout_rem)
 {
-    PS::F64 rmax2 = r_max*r_max;
-    PS::F64 rmin2 = r_min*r_min;
+    const PS::F64 rmax2 = r_max*r_max;
+    const PS::F64 rmin2 = r_min*r_min;
     PS::F64 edisp_loc = 0.;
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    const PS::S32 n_proc = PS::Comm::getNumberOfProc();
 
-    PS::S32 i_remove = -1;
+    std::vector<PS::S32> remove_list;
+    remove_list.clear();
     
 #pragma omp parallel for
     for ( PS::S32 i=0; i<n_loc; i++ ){
@@ -171,29 +173,105 @@ void removeOutOfBoundaryParticle(Tpsys & pp,
         if ( pos2 > rmax2 || pos2 < rmin2 ){
 #pragma omp critical
             {
-                if ( pos2 > rmax2 ) rmax2 = pos2;
-                if ( pos2 < rmin2 ) rmin2 = pos2;
-                i_remove = i;
+                remove_list.push_back(i);
             }
         }
     }
 
-    if ( i_remove > -1 ){
-        PS::F64    massi = pp[i_remove].mass;
-        PS::F64vec veli = pp[i_remove].vel;
-        edisp_loc -= 0.5*massi* veli*veli;
-        edisp_loc -= massi * pp[i_remove].phi_s;
-        edisp_loc -= massi * pp[i_remove].phi_d;
-        edisp_loc -= massi * pp[i_remove].phi;
+    PS::S32 n_remove_loc = remove_list.size();
+    PS::S32 n_remove_glb = PS::Comm::getSum(n_remove_loc);
 
-        std::cout << "Remove Particle " << i_remove << std::endl
-                  << "Position : " << std::setprecision(15) << pp[i_remove].pos << std::endl;
-        fout_rem << pp[i_remove].time << "\t" << pp[i_remove].id << "\t" << pp[i_remove].mass << "\t"
-                 << pp[i_remove].pos.x << "\t" << pp[i_remove].pos.y << "\t" << pp[i_remove].pos.z << "\t"
-                 << pp[i_remove].vel.x << "\t" << pp[i_remove].vel.y << "\t" << pp[i_remove].vel.z
-                 << std::endl;
-        pp.removeParticle(&i_remove, 1);
+    if ( n_remove_glb == 1 ){
+
+        if ( n_remove_loc ) {
+            PS::S32 i_remove = remove_list.at(0);
+            
+            PS::F64    massi = pp[i_remove].mass;
+            PS::F64vec veli = pp[i_remove].vel;
+            edisp_loc -= 0.5*massi* veli*veli;
+            edisp_loc -= massi * pp[i_remove].phi_s;
+            edisp_loc -= massi * pp[i_remove].phi_d;
+            edisp_loc -= massi * pp[i_remove].phi;
+        
+            std::cout << "Remove Particle " << pp[i_remove].id << std::endl
+                      << "Position : " << std::setprecision(15) << pp[i_remove].pos << std::endl;
+            fout_rem << pp[i_remove].time << "\t" << pp[i_remove].id << "\t" << pp[i_remove].mass << "\t"
+                     << pp[i_remove].pos.x << "\t" << pp[i_remove].pos.y << "\t" << pp[i_remove].pos.z << "\t"
+                     << pp[i_remove].vel.x << "\t" << pp[i_remove].vel.y << "\t" << pp[i_remove].vel.z
+                     << std::endl;
+        }
+        
+    } else if ( n_remove_glb > 1 ){
+        
+        PS::S32 * n_remove_list   = nullptr;
+        PS::S32 * n_remove_adr    = nullptr;
+        FPGrav *  remove_list_loc = nullptr;
+        FPGrav *  remove_list_glb = nullptr;
+        
+        if ( PS::Comm::getRank() == 0 ){
+            n_remove_list   = new PS::S32[n_proc];
+            n_remove_adr    = new PS::S32[n_proc];
+            remove_list_glb = new FPGrav[n_remove_glb];
+        }
+        remove_list_loc = new FPGrav[n_remove_loc];
+
+        PS::Comm::gather(&n_remove_loc, 1, n_remove_list);
+
+        if ( PS::Comm::getRank() == 0 ){
+            PS::S32 tmp_remove = 0;
+            for ( PS::S32 i=0; i<n_proc; i++ ){
+                n_remove_adr[i]  = tmp_remove;
+                tmp_remove += n_remove_list[i];
+            }
+            assert ( n_remove_glb == tmp_remove );
+        }
+
+        for ( PS::S32 i=0; i<n_remove_loc; i++ ) {
+            remove_list_loc[i] = pp[remove_list.at(i)];
+        }
+        
+        PS::Comm::gatherV(remove_list_loc, n_remove_loc, remove_list_glb, n_remove_list, n_remove_adr);
+
+        if ( PS::Comm::getRank() == 0 ){
+            for ( PS::S32 i=0; i<n_remove_glb; i++ ) {
+            
+                PS::F64    massi = remove_list_glb[i].mass;
+                PS::F64vec veli  = remove_list_glb[i].vel;
+                edisp_loc -= 0.5*massi* veli*veli;
+                edisp_loc -= massi * remove_list_glb[i].phi_s;
+                edisp_loc -= massi * remove_list_glb[i].phi_d;
+                edisp_loc -= massi * remove_list_glb[i].phi;
+            
+                for ( PS::S32 j=0; j<i; j++ ) {
+                    PS::F64    massj = remove_list_glb[j].mass;
+                    PS::F64vec posi  = remove_list_glb[i].pos;
+                    PS::F64vec posj  = remove_list_glb[j].pos;
+                    PS::F64    eps2   = EPGrav::eps2;
+
+                    PS::F64vec dr = posi - posj;
+                    PS::F64    rinv = 1./sqrt(dr*dr + eps2);
+
+                    edisp_loc += - massi * massj * rinv;
+                }
+        
+                std::cout << "Remove Particle " << remove_list_glb[i].id << std::endl
+                          << "Position : " << std::setprecision(15) << remove_list_glb[i].pos << std::endl;
+                fout_rem << remove_list_glb[i].time << "\t" << remove_list_glb[i].id << "\t" << remove_list_glb[i].mass << "\t"
+                         << remove_list_glb[i].pos.x << "\t" << remove_list_glb[i].pos.y << "\t" << remove_list_glb[i].pos.z << "\t"
+                         << remove_list_glb[i].vel.x << "\t" << remove_list_glb[i].vel.y << "\t" << remove_list_glb[i].vel.z
+                         << std::endl;
+            }
+            
+        delete [] n_remove_list;
+        delete [] n_remove_adr;
+        delete [] remove_list_glb;
+        
+        }
+        delete [] remove_list_loc;
     }
+    
+    if (n_remove_loc) pp.removeParticle(&remove_list[0], n_remove_loc);
+            
     edisp += PS::Comm::getSum(edisp_loc);
 }
 
