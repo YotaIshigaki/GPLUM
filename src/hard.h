@@ -340,6 +340,7 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
                                                       PS::S32 & id_next,
                                                       std::ofstream & fp)
 {
+    const PS::S32 n_proc = PS::Comm::getNumberOfProc();
     PS::S32 * n_col_list     = nullptr;
     PS::S32 * n_frag_list    = nullptr;
     Collision * col_list_tot = nullptr;
@@ -354,10 +355,10 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
         id_frag_loc[i] = ptcl_multi[adr.first][adr.second].id;
     }
     if ( PS::Comm::getRank() == 0 ){
-        n_col_list  = new PS::S32[PS::Comm::getNumberOfProc()];
-        n_frag_list = new PS::S32[PS::Comm::getNumberOfProc()];
-        col_recv    = new PS::S32[PS::Comm::getNumberOfProc()];
-        frag_recv   = new PS::S32[PS::Comm::getNumberOfProc()];
+        n_col_list  = new PS::S32[n_proc];
+        n_frag_list = new PS::S32[n_proc];
+        col_recv    = new PS::S32[n_proc];
+        frag_recv   = new PS::S32[n_proc];
         col_recv[0]  = 0;
         frag_recv[0] = 0;
     }
@@ -370,23 +371,21 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
     if ( PS::Comm::getRank() == 0 ){
         PS::S32 tmp_col = 0;
         PS::S32 tmp_frag = 0;
-        for ( PS::S32 i=1; i<PS::Comm::getNumberOfProc(); i++ ){
-            tmp_col  += n_col_list[i-1];
-            tmp_frag += n_frag_list[i-1];
+        for ( PS::S32 i=0; i<n_proc; i++ ){
             col_recv[i]  = tmp_col;
             frag_recv[i] = tmp_frag;
+            tmp_col  += n_col_list[i];
+            tmp_frag += n_frag_list[i];
         }
-        tmp_col  += n_col_list[PS::Comm::getNumberOfProc()-1];
-        tmp_frag += n_frag_list[PS::Comm::getNumberOfProc()-1];
-        col_list_tot = new Collision[tmp_col];
-        id_frag_list = new PS::S32[tmp_frag];
         n_col_tot = tmp_col;
         n_frag_tot = tmp_frag;
+        col_list_tot = new Collision[n_col_tot];
+        id_frag_list = new PS::S32[n_frag_tot];
     }
     // Send Collision Information & Fragments ID
     PS::Comm::gatherV(&collision_list[0], n_col,  col_list_tot, n_col_list,  col_recv);
     PS::Comm::gatherV(id_frag_loc,        n_frag, id_frag_list, n_frag_list, frag_recv);
-
+    
     // Rewrite Fragments ID
     if ( PS::Comm::getRank() == 0 ){
         rewriteFragmentID(id_frag_list, col_list_tot, n_col_tot, n_frag_tot, id_next);

@@ -495,7 +495,6 @@ int main(int argc, char *argv[])
         assert( n_loc == system_hard.getNumberOfParticleLocal()-system_hard.getNumberOfFragmentLocal()
                 +system_ex.getNumberOfParticleSend()-system_ex.getNumberOfParticleRecv() );
             
-        
         //PS::Comm::barrier();
         n_col  = system_hard.getNumberOfCollisionGlobal();
         if ( n_col ) n_frag = system_hard.addFragment2ParticleSystem(system_grav, system_ex,

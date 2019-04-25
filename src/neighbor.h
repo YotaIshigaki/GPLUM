@@ -367,6 +367,7 @@ public:
             }
         }
 
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Request req0[n_send],  req1[n_send];
         MPI_Status  stat0[n_send], stat1[n_send];
         for ( PS::S32 ii=0; ii<n_send; ii++ ) {
@@ -378,6 +379,9 @@ public:
         }
         MPI_Waitall(n_send, req0, stat0);
         MPI_Waitall(n_send, req1, stat1);
+#else
+        assert ( n_send == 0 );
+#endif
         
 
         bool check = false;
@@ -587,6 +591,7 @@ class ExParticleSystem {
 
     void sendRecvNumberOfExParticle(NeighborList & NList,
                                     PS::S32 TAG = 0){
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Request req0[n_send],  req1[n_send];
         MPI_Status  stat0[n_send], stat1[n_send];
         for ( PS::S32 ii=0; ii<n_send; ii++ ) {
@@ -609,6 +614,7 @@ class ExParticleSystem {
         MPI_Waitall(n_send, req1, stat1);
         MPI_Waitall(n_recv, req2, stat2);
         MPI_Waitall(n_recv, req3, stat3);
+#endif
     }
     
     void inputAdress(){
@@ -662,6 +668,7 @@ class ExParticleSystem {
 
     void sendRecvExParticle(NeighborList & NList,
                             PS::S32 TAG = 0){
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Request req0[n_send],  req1[n_send];
         MPI_Status  stat0[n_send], stat1[n_send];
         for ( PS::S32 ii=0; ii<n_send; ii++ ) {
@@ -684,6 +691,7 @@ class ExParticleSystem {
         MPI_Waitall(n_send, req1, stat1);
         MPI_Waitall(n_recv, req2, stat2);
         MPI_Waitall(n_recv, req3, stat3);
+#endif
     }
 
     void inputNeighborListOfExParticleRecv() { 
@@ -703,6 +711,7 @@ class ExParticleSystem {
 
     void returnExParticle(NeighborList & NList,
                           PS::S32 TAG = 0){
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Request req0[n_send],  req1[n_send];
         MPI_Status  stat0[n_send], stat1[n_send];
         for ( PS::S32 ii=0; ii<n_send; ii++ ) {
@@ -725,6 +734,7 @@ class ExParticleSystem {
         MPI_Waitall(n_send, req1, stat1);
         MPI_Waitall(n_recv, req2, stat2);
         MPI_Waitall(n_recv, req3, stat3);
+#endif
     }
 
     template <class Tpsys>

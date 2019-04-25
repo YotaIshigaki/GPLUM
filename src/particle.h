@@ -159,16 +159,16 @@ class FPGrav : public EPGrav {
         return getInclination(h);
     }
     PS::F64 getRHill() const {
-#ifndef ISOTROPIC
+        //#ifndef ISOTROPIC
         PS::F64 ax = 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
         if ( ax > 0. ){
             return pow(mass/(3.*m_sun), 1./3.) * ax;
         } else {
             return pow(mass/(3.*m_sun), 1./3.) * sqrt(pos*pos);
         }
-#else
-        return sqrt(mass/m_sun) * sqrt(pos*pos);
-#endif
+        //#else
+        //return sqrt(mass/m_sun) * sqrt(pos*pos);
+        //#endif
     }
     //PS::F64 getRHill() const {
     //    return pow(mass/(3.*m_sun), 1./3.);
