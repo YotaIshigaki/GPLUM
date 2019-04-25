@@ -167,7 +167,10 @@ int main(int argc, char *argv[])
     if (opt_s) seed = seed_opt;
     if (opt_o) sprintf(output_dir,"%s",output_dir_opt);
     if (opt_D) FPGrav::dt_tree = dt_opt;
-    if (opt_R) EPGrav::R_cut = EPGrav::R_search0 = Rcut_opt;
+    if (opt_R) {
+        EPGrav::R_cut = Rcut_opt;
+        EPGrav::R_search0 = 1.;
+    }
 
     EPGrav::setGamma(EPGrav::gamma);
     
