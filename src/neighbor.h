@@ -399,11 +399,11 @@ public:
                 std::pair<PS::S32,PS::S32> adr = ex_data_map.at(recv_pair.getPair());
                 assert ( adr.first == i );
                 assert ( recv_pair.getPair() == getExData(adr).getPair() );
+                bool check_1 = getExData(adr).exchange(recv_pair);
+                check = check || check_1;
+                //getExData(adr).show();
 #pragma omp critical
                 {
-                    bool check_1 = getExData(adr).exchange(recv_pair);
-                    check = check || check_1;
-                    //getExData(adr).show();
                     PS::S32 i_loc = id_map.at(getExData(adr).getId());
                     pp[i_loc].id_cluster = std::min(pp[i_loc].id_cluster, getExData(adr).getIdCluster());
                 }

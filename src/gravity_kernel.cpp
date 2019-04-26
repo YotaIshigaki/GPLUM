@@ -2,6 +2,8 @@
 #include "avx.h"
 #include "particle.h"
 
+#define CUTOFF_0
+
 #ifndef PARALLEL_I2J8
     
 template <class TParticleI, class TParticleJ, class TForce>

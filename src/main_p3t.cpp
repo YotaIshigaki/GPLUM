@@ -12,6 +12,8 @@
 #include <mpi.h>
 #endif
 
+#define USE_ALLGATHER_EXLET
+
 #include <particle_simulator.hpp>
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "

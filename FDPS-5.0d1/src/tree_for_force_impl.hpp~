@@ -1324,15 +1324,10 @@ namespace ParticleSimulator{
         else r_crit_sq = - 1.0; // negative value is used to represent theta_ = 0
         S32 my_rank = Comm::getRank();
         S32 n_proc  = Comm::getNumberOfProc();
-        //static ReallocatableArray<Tspj> top_moment;
-        //top_moment.resizeNoInitialize(n_proc);
-        //top_moment[my_rank].copyFromMoment(tc_loc_[0].mom_);
-        //Comm::allGather(&top_moment[my_rank], 1, top_moment.getPointer());
         static ReallocatableArray<Tspj> top_moment;
         top_moment.resizeNoInitialize(n_proc);
-        Tspj my_moment;
-        my_moment.copyFromMoment(tc_loc_[0].mom_);
-        Comm::allGather(&my_moment, 1, top_moment.getPointer());
+        top_moment[my_rank].copyFromMoment(tc_loc_[0].mom_);
+        Comm::allGather(&top_moment[my_rank], 1, top_moment.getPointer());
         if(!flag_reuse){
             FindScatterParticle<TSM, TreeCell<Tmomloc>, TreeParticle,
                                 Tepj, Tspj, WALK_MODE_NORMAL>
