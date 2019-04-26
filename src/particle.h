@@ -181,10 +181,10 @@ class FPGrav : public EPGrav {
         PS::F64 v_kep = getKeplerVelocity();
         PS::F64 ax    = getSemimajorAxis2();
         
-        if ( FPGrav::r_cut_max <= 0 ) {
-            r_out = R_cut * pow(ax,-p_cut) * std::max(rHill, FPGrav::r_cut_min);
+        if ( FPGrav::r_cut_max <= 0. ) {
+            r_out = std::max(R_cut * pow(ax,-p_cut) * rHill, FPGrav::r_cut_min);
         } else {
-            r_out = R_cut * pow(ax,-p_cut) * std::min(FPGrav::r_cut_max, std::max(rHill, FPGrav::r_cut_min) );
+            r_out = std::min(FPGrav::r_cut_max, std::max(R_cut * pow(ax,-p_cut) * rHill, FPGrav::r_cut_min) );
         }
         r_out_inv = 1. / r_out;
         
@@ -193,6 +193,7 @@ class FPGrav : public EPGrav {
 #else
         r_search  = R_search0*r_out + R_search1*vdisp_k*dt_tree;
 #endif
+        assert ( r_out > 0. && r_search > 0. );
         
         return rHill;
     }
@@ -204,9 +205,9 @@ class FPGrav : public EPGrav {
                                PS::F64 vdisp_k){
         
         if ( FPGrav::r_cut_max <= 0 ) {
-            r_out = R_cut * std::max(rHill_a_glb, FPGrav::r_cut_min);
+            r_out = std::max(R_cut * rHill_a_glb, FPGrav::r_cut_min);
         } else {
-            r_out = R_cut * std::min(FPGrav::r_cut_max, std::max(rHill_a_glb, FPGrav::r_cut_min) );
+            r_out = std::min(FPGrav::r_cut_max, std::max(R_cut * rHill_a_glb, FPGrav::r_cut_min) );
         }
         r_out_inv = 1. / r_out;
         
@@ -215,6 +216,7 @@ class FPGrav : public EPGrav {
 #else
         r_search  = R_search0*r_out + R_search1*vdisp_k*dt_tree;
 #endif
+        assert ( r_out > 0. && r_search > 0. );
     }
 #endif
     void setRPlanet(PS::F64 m) {
@@ -536,7 +538,8 @@ void setCutoffRadii(Tpsys & pp)
     PS::F64 v_kep_loc = 0.;
 #pragma omp parallel for
     for(PS::S32 i=0; i<n_loc; i++){
-        PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-p_cut);
+        PS::F64 ax      = pp[i].getSemimajorAxis2();
+        PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-FPGrav::p_cut);
 #ifndef ISOTROPIC
         PS::F64 v_kep = pp[i].getKeplerVelocity();
 #endif

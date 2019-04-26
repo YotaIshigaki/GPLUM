@@ -468,6 +468,7 @@ int main(int argc, char *argv[])
 #endif
 
         system_ex.resize(NList.getNumberOfRankSend(), NList.getNumberOfRankRecv());
+
             
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         /////////////////////
@@ -480,7 +481,7 @@ int main(int argc, char *argv[])
         // Send & Receive Particles
         system_ex.inputAdress();
         system_ex.inputExParticleSend(system_grav, NList);
-        system_ex.sendRecvExParticle(NList);
+        system_ex.sendRecvExParticle(NList);        
         system_ex.inputNeighborListOfExParticleRecv();
 #endif
         
@@ -541,7 +542,7 @@ int main(int argc, char *argv[])
         wtime.communication_step += wtime.lap(wtime.end_hard);
         wtime.communication += wtime.communication_step;
 #endif
-        
+
 
         ////////////////////
         ///   Soft Part
@@ -614,7 +615,7 @@ int main(int argc, char *argv[])
         if ( n_col ) {
             MergeParticle(system_grav, n_col, e_now.edisp);
         }
-        
+
         ///////////////////////////
         /*   Re-Calculate Soft   */
         ///////////////////////////
@@ -622,7 +623,7 @@ int main(int argc, char *argv[])
             if(istep % reset_step == 0) {
                 dinfo.decomposeDomainAll(system_grav);
                 system_grav.exchangeParticle(dinfo);
-                
+ 
                 // Remove Particle Out Of Boundary
                 removeOutOfBoundaryParticle(system_grav, e_now.edisp, r_max, r_min, fout_rem);
             }
