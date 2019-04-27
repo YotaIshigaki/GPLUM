@@ -1,6 +1,6 @@
-###################################################
-###   PARAMETERS FOR PPPT N-BODY SIMULATION     ###
-###################################################
+################################
+###   PARAMETERS FOR GPLUM   ###
+################################
 # LENGTH UNIT   AU
 # MASS UNIT     m_sun
 # TIME UNIT     year/2*pi
@@ -8,11 +8,12 @@
 # RANDOM SEED   
 seed            = 0                     # random seed
 
-# FOR INPUT & UTPUT
+# FOR INPUT & OUTPUT
 init_file       = INIT3000.dat          # initial condition file name
 Header          = 1                     # flag as to whether header exists in InitFile
 output_dir      = TEST                  # output directory name
 Restart         = 0
+dt_snap         = 1                     # time interval to output snapshot
 
 # FOR INITIAL CONDITION OF SOLID DISK
 makeInit        = 1                     # flag as to whether initial condition is created in program
@@ -50,7 +51,6 @@ n_smp_ave       = 100                   # average target number of sample partic
 # FOR TIMESTEP
 t_end           = 10                    # time to finish initegration
 dt_tree         = 2^-6                  # timestep of tree (soft)
-dt_snap         = 1                     # time interval to output snapshot
 dt_min          = 2^-30                 # minimum timestep (hard)
 eta             = 0.01                  # parameter eta to decide timestep (hard)
 eta_0           = 0.001                 # parameter eta to decide initial timestep (hard)
