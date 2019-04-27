@@ -60,7 +60,7 @@ void CalcForceLongEP(const TParticleI * ep_i,
 #endif
     const VEC1 v0(0.);
 
-    //#pragma omp parallel for 
+#pragma omp parallel for 
     for (PS::S32 i = 0; i < n_ip; i += n_iparallel) {
 #if !defined(__AVX512F__) || defined(PARALLEL_I4J4)
         REAL buf_px[n_iparallel] __attribute__((aligned(16)));
@@ -236,7 +236,7 @@ void CalcForceLongSP(const TParticleI * ep_i,
     VEC0 v1p5(1.5);
 #endif
     
-    //#pragma omp parallel for 
+#pragma omp parallel for 
     for(PS::S32 i = 0; i < n_ip; i += n_iparallel) {
 #if !defined(__AVX512F__) || defined(PARALLEL_I4J4)
         PS::F32 buf_px[n_iparallel] __attribute__((aligned(16)));
