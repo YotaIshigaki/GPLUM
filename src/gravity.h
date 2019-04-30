@@ -2,7 +2,7 @@
 
 #include "cutfunc.h"
 
-#define CUTOFF_0
+//#define CUTOFF_0
 
 template <class Tpsys>
 void velKick(Tpsys & pp){

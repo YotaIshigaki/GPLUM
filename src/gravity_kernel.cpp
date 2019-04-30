@@ -2,7 +2,7 @@
 #include "avx.h"
 #include "particle.h"
 
-#define CUTOFF_0
+//#define CUTOFF_0
 
 #ifndef PARALLEL_I2J8
     
