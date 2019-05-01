@@ -12,7 +12,7 @@
 #include <mpi.h>
 #endif
 
-#define USE_ALLGATHER_EXLET
+//#define USE_ALLGATHER_EXLET
 
 #include <particle_simulator.hpp>
 
