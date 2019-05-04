@@ -1,4 +1,4 @@
-PS_PATH = ../FDPS-5.0d1/src/ 
+PS_PATH = ../FDPS-5.0d2/src/ 
 INC = -I$(PS_PATH)
 
 CC = clang++ -std=c++11

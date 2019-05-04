@@ -12,7 +12,7 @@
 #include <mpi.h>
 #endif
 
-//#define USE_ALLGATHER_EXLET
+#define USE_ALLGATHER_EXLET
 
 #include <particle_simulator.hpp>
 
@@ -385,8 +385,6 @@ int main(int argc, char *argv[])
         
         PS::S32 n_col = 0;
         PS::S32 n_frag = 0;
-        std::map<PS::S32, PS::S32> id2id_loc;
-        id2id_loc.clear();
 #ifdef GAS_DRAG
         PS::F64 edisp_gd = 0.;
 #endif
@@ -621,8 +619,8 @@ int main(int argc, char *argv[])
         ///////////////////////////
         /*   Re-Calculate Soft   */
         ///////////////////////////
-        if ( n_col || istep % reset_step == 0 ) {
-            if(istep % reset_step == 0) {
+        if ( n_col || istep % reset_step == reset_step-1 ) {
+            if( istep % reset_step == reset_step-1 ) {
                 dinfo.decomposeDomainAll(system_grav);
                 system_grav.exchangeParticle(dinfo);
  

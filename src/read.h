@@ -517,7 +517,7 @@ PS::S32 makeOutputDirectory(char * dir_name)
         }
     } else {
         if(PS::Comm::getRank() == 0)
-            fprintf(stderr, "Directory \"%s\" is exist.\n", dir_name);
+            fprintf(stderr, "Directory \"%s\" exists.\n", dir_name);
     }
 
     return 0;
@@ -531,7 +531,7 @@ PS::S32 getLastSnap(char * dir_name,
     dir = opendir(dir_name);
     if ( dir == NULL ) {
         if(PS::Comm::getRank() == 0)
-            fprintf(stderr, "Directory \"%s\" is not exist.\n", dir_name);
+            fprintf(stderr, "Directory \"%s\" does not exist.\n", dir_name);
         return 1;
     }
 
@@ -555,7 +555,7 @@ PS::S32 getLastSnap(char * dir_name,
     } while (entry != NULL);
     if ( lastnumber < 0 ) {
         if(PS::Comm::getRank() == 0)
-            fprintf(stderr, "Snapshot is not exist in directory \"%s\".\n", dir_name);
+            fprintf(stderr, "Snapshot does not exist in directory \"%s\".\n", dir_name);
         return 1;
     }
     
