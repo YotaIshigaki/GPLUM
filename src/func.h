@@ -28,9 +28,10 @@ void makeSnap(Tpsys & pp,
               Energy e_init,
               Energy e_now,
               const char * dir_name,
-              const PS::S32 isnap)
+              const PS::S32 isnap,
+              const PS::S32 id_next)
 {
-    FileHeader header(pp.getNumberOfParticleGlobal(), time_sys, e_init, e_now);
+    FileHeader header(pp.getNumberOfParticleGlobal(), id_next, time_sys, e_init, e_now);
     char filename[256];
     sprintf(filename, "%s/snap%06d.dat", dir_name, isnap);
     pp.writeParticleAscii(filename, header);
@@ -46,6 +47,7 @@ void outputStep(Tpsys & pp,
                 PS::S32 n_frag_tot,
                 const char * dir_name,
                 const PS::S32 isnap,
+                const PS::S32 id_next,
                 std::ofstream & fout_eng,
                 Wtime wtime,
                 PS::S32 n_largestcluster,
@@ -55,7 +57,7 @@ void outputStep(Tpsys & pp,
 {
     const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
 
-    if ( bSnap ) makeSnap(pp, time_sys, e_init, e_now, dir_name, isnap);
+    if ( bSnap ) makeSnap(pp, time_sys, e_init, e_now, dir_name, isnap, id_next);
 
 #ifdef OUTPUT_DETAIL
     PS::F64 m_mean = 0.;
@@ -151,11 +153,11 @@ void MergeParticle(Tpsys & pp,
 }
 
 template <class Tpsys>
-void removeOutOfBoundaryParticle(Tpsys & pp,
-                                 PS::F64 & edisp,
-                                 const PS::F64 r_max,
-                                 const PS::F64 r_min,
-                                 std::ofstream & fout_rem)
+PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
+                                    PS::F64 & edisp,
+                                    const PS::F64 r_max,
+                                    const PS::F64 r_min,
+                                    std::ofstream & fout_rem)
 {
     const PS::F64 rmax2 = r_max*r_max;
     const PS::F64 rmin2 = r_min*r_min;
@@ -193,9 +195,11 @@ void removeOutOfBoundaryParticle(Tpsys & pp,
             edisp_loc -= massi * pp[i_remove].phi_d;
             edisp_loc -= massi * pp[i_remove].phi;
         
-            std::cout << "Remove Particle " << pp[i_remove].id << std::endl
+            std::cerr << "Remove Particle " << pp[i_remove].id << std::endl
                       << "Position : " << std::setprecision(15) << pp[i_remove].pos << std::endl;
-            fout_rem << pp[i_remove].time << "\t" << pp[i_remove].id << "\t" << pp[i_remove].mass << "\t"
+            fout_rem << std::fixed<<std::setprecision(8)
+                     << pp[i_remove].time << "\t" << pp[i_remove].id << "\t"
+                     << std::scientific << std::setprecision(15) << pp[i_remove].mass << "\t"
                      << pp[i_remove].pos.x << "\t" << pp[i_remove].pos.y << "\t" << pp[i_remove].pos.z << "\t"
                      << pp[i_remove].vel.x << "\t" << pp[i_remove].vel.y << "\t" << pp[i_remove].vel.z
                      << std::endl;
@@ -243,36 +247,43 @@ void removeOutOfBoundaryParticle(Tpsys & pp,
                 edisp_loc -= massi * remove_list_glb[i].phi;
             
                 for ( PS::S32 j=0; j<i; j++ ) {
-                    PS::F64    massj = remove_list_glb[j].mass;
-                    PS::F64vec posi  = remove_list_glb[i].pos;
-                    PS::F64vec posj  = remove_list_glb[j].pos;
-                    PS::F64    eps2   = EPGrav::eps2;
-
-                    PS::F64vec dr = posi - posj;
-                    PS::F64    rinv = 1./sqrt(dr*dr + eps2);
-
-                    edisp_loc += - massi * massj * rinv;
+                    if ( remove_list_glb[i].id != remove_list_glb[j].id ) {
+                        PS::F64    massj = remove_list_glb[j].mass;
+                        PS::F64vec posi  = remove_list_glb[i].pos;
+                        PS::F64vec posj  = remove_list_glb[j].pos;
+                        PS::F64    eps2   = EPGrav::eps2;
+                        
+                        PS::F64vec dr = posi - posj;
+                        PS::F64    rinv = 1./sqrt(dr*dr + eps2);
+                        
+                        edisp_loc += - massi * massj * rinv;
+                    }
                 }
         
-                std::cout << "Remove Particle " << remove_list_glb[i].id << std::endl
+                std::cerr << "Remove Particle " << remove_list_glb[i].id << std::endl
                           << "Position : " << std::setprecision(15) << remove_list_glb[i].pos << std::endl;
-                fout_rem << remove_list_glb[i].time << "\t" << remove_list_glb[i].id << "\t" << remove_list_glb[i].mass << "\t"
+                fout_rem << std::fixed<<std::setprecision(8)
+                         << remove_list_glb[i].time << "\t" << remove_list_glb[i].id << "\t"
+                         << std::scientific << std::setprecision(15) << remove_list_glb[i].mass << "\t"
                          << remove_list_glb[i].pos.x << "\t" << remove_list_glb[i].pos.y << "\t" << remove_list_glb[i].pos.z << "\t"
                          << remove_list_glb[i].vel.x << "\t" << remove_list_glb[i].vel.y << "\t" << remove_list_glb[i].vel.z
                          << std::endl;
             }
             
-        delete [] n_remove_list;
-        delete [] n_remove_adr;
-        delete [] remove_list_glb;
+            delete [] n_remove_list;
+            delete [] n_remove_adr;
+            delete [] remove_list_glb;
         
         }
+        
         delete [] remove_list_loc;
     }
     
     if (n_remove_loc) pp.removeParticle(&remove_list[0], n_remove_loc);
             
     edisp += PS::Comm::getSum(edisp_loc);
+
+    return n_remove_glb;
 }
 
 template <class Tpsys>

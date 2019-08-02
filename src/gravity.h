@@ -2,7 +2,6 @@
 
 #include "cutfunc.h"
 
-//#define CUTOFF_0
 
 template <class Tpsys>
 void velKick(Tpsys & pp){
@@ -129,7 +128,7 @@ template <class Tp, class Tpsys>
 void calcGravity(Tp & pi,
                  Tpsys & pp)
 {
-    assert( pi.neighbor != 0 );
+    //assert( pi.neighbor != 0 );
     
     PS::F64 eps2  = EPGrav::eps2;
     
@@ -164,7 +163,8 @@ void calcGravity(Tp & pi,
         
         PS::F64vec vj   = pp[pj_id].vel;
         PS::F64vec dv    = vj - vi;
-        PS::F64    massj = pp[pj_id].getCharge();
+        //PS::F64    massj = pp[pj_id].getCharge();
+        PS::F64    massj = pp[pj_id].mass;
         
         PS::F64 rij   = sqrt(dr2);
         PS::F64 drdv  = dr*dv;
@@ -173,7 +173,7 @@ void calcGravity(Tp & pi,
         PS::F64 r3inv = r2inv * rinv;
         PS::F64 r5inv = r3inv * r2inv;
         
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
         PS::F64 r_out_inv = FPGrav::r_out_inv;
@@ -187,7 +187,7 @@ void calcGravity(Tp & pi,
         jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
 
 #ifdef CHECK_NEIGHBOR
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         PS::F64 r_out = std::max(pi.r_out, pp[pj_id].r_out);
 #else
         PS::F64 r_out = FPGrav::r_out;
@@ -204,7 +204,7 @@ template <class Tp, class Tpsys>
 void calcGravity_p(Tp & pi,
                    Tpsys & pp)
 {
-    assert( pi.neighbor != 0 );
+    //assert( pi.neighbor != 0 );
 
     PS::F64 eps2  = EPGrav::eps2;
   
@@ -235,7 +235,8 @@ void calcGravity_p(Tp & pi,
 
         PS::F64vec vpj   = pp[pj_id].vp;
         PS::F64vec dv    = vpj - vpi;
-        PS::F64    massj = pp[pj_id].getCharge();
+        //PS::F64    massj = pp[pj_id].getCharge();
+        PS::F64    massj = pp[pj_id].mass;
 
         PS::F64 rij   = sqrt(dr2);
         PS::F64 drdv  = dr*dv;
@@ -244,7 +245,7 @@ void calcGravity_p(Tp & pi,
         PS::F64 r3inv = r2inv * rinv;
         PS::F64 r5inv = r3inv * r2inv;
 
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
         PS::F64 r_out_inv = FPGrav::r_out_inv;
@@ -263,7 +264,7 @@ template <class Tp, class Tpsys>
 void calcGravity_c(Tp & pi,
                    Tpsys & pp)
 {
-    assert( pi.neighbor != 0 );
+    //assert( pi.neighbor != 0 );
     
     PS::F64 eps2  = EPGrav::eps2;
     pi.acc_d = 0.0;
@@ -294,7 +295,8 @@ void calcGravity_c(Tp & pi,
         
         PS::F64vec vpj   = pp[pj_id].vp;
         PS::F64vec dv    = vpj - vi;
-        PS::F64    massj = pp[pj_id].getCharge();
+        //PS::F64    massj = pp[pj_id].getCharge();
+        PS::F64    massj = pp[pj_id].mass;
 
         PS::F64 rij   = sqrt(dr2);
         PS::F64 drdv  = dr*dv;
@@ -303,7 +305,7 @@ void calcGravity_c(Tp & pi,
         PS::F64 r3inv = r2inv * rinv;
         PS::F64 r5inv = r3inv * r2inv;
         
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
         PS::F64 r_out_inv = FPGrav::r_out_inv;
@@ -349,7 +351,8 @@ void calcJerk(Tp & pi,
         
         PS::F64vec vj   = pp[pj_id].vel;
         PS::F64vec dv    = vj - vi;
-        PS::F64    massj = pp[pj_id].getCharge();
+        //PS::F64    massj = pp[pj_id].getCharge();
+        PS::F64    massj = pp[pj_id].mass;
 
         PS::F64 rij   = sqrt(dr2);
         PS::F64 drdv  = dr*dv;
@@ -358,7 +361,7 @@ void calcJerk(Tp & pi,
         PS::F64 r3inv = r2inv * rinv;
         PS::F64 r5inv = r3inv * r2inv;
 
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
         PS::F64 r_out_inv = FPGrav::r_out_inv;
@@ -408,17 +411,16 @@ void correctForceLong(Tpsys & pp,
             j_id   = (next+j)->id;
             j_rank = (next+j)->myrank;
 
-            PS::F64 massj  = (next+j)->getCharge();
-#ifdef USE_INDIVIDUAL_RADII
+            //PS::F64 massj  = (next+j)->getCharge();
+            PS::F64 massj  = (next+j)->mass;
+#ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pp[i].r_out_inv, (next+j)->r_out_inv);
 #else
             PS::F64 r_out_inv = EPGrav::r_out_inv;
 #endif
             
             if ( pp[i].id == j_id ) {
-#ifdef CUTOFF_0
                 phii  += massj * r_out_inv;
-#endif
                 continue;
             }
             
@@ -430,29 +432,46 @@ void correctForceLong(Tpsys & pp,
             assert( j_id > -1 );
             dr2 += eps2;
 
-            NList.addNeighbor(pp, i, j_id, j_rank);
-            
-            
             PS::F64 rij   = sqrt(dr2);
             PS::F64 rinv  = 1. / rij;
-            PS::F64 r2inv = rinv * rinv;
-            PS::F64 r3inv = rinv * r2inv;
-            
-            PS::F64 W  = cutoff_W(rij, r_out_inv);
-            PS::F64 K  = cutoff_K(rij, r_out_inv);
 
-#ifdef CUTOFF_0
-            phii  -= massj * ( rinv * W  - r_out_inv );
-            acci  += massj * ( r3inv * K - r_out_inv * r_out_inv * r_out_inv ) * dr;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+            PS::F64 drdv   = dr * (((next+j)->vel) - pp[i].vel);         
+#ifdef USE_INDIVIDUAL_CUTOFF
+            PS::F64 r_search_ = EPGrav::R_search0 * std::max(pp[i].r_out, (next+j)->r_out)
+                + std::max(   - EPGrav::R_search2 * drdv * rinv,
+                                EPGrav::R_search3 * std::max(pp[i].v_disp, (next+j)->v_disp) * FPGrav::dt_tree );
 #else
-            PS::F64 K0  = std::min( std::max( EPGrav::g2_1_inv*(EPGrav::g2-dr2*r_out_inv*r_out_inv), 0.), 1.);
-
-            phii  -= massj * rinv * ( W  - K0 );
-            acci  += massj * r3inv * ( K - K0 ) * dr;
+            PS::F64 r_search_ = EPGrav::R_search0 * EPGrav::r_out
+                + std::max(   - EPGrav::R_search2 * drdv * rinv,
+                                EPGrav::R_search3 * EPGrav::v_disp * FPGrav::dt_tree );
+#endif
+#ifdef TEST_PTCL
+            if ( pp[i].r_out == 0. &&  (next+j)->r_out == 0. ) r_search_ = 0.;
+#endif
+            
+            if ( rij < r_search_ ) {
 #endif
 
+                NList.addNeighbor(pp, i, j_id, j_rank);           
+            
+                PS::F64 r2inv = rinv * rinv;
+                PS::F64 r3inv = rinv * r2inv;
+            
+                PS::F64 W  = cutoff_W(rij, r_out_inv);
+                PS::F64 K  = cutoff_K(rij, r_out_inv);
+                PS::F64 r_min = std::min(rinv, r_out_inv);
+                
+                phii  -= massj * ( rinv * W  - r_min );
+                acci  += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
+
+#ifdef USE_RE_SEARCH_NEIGHBOR
+            }
+#endif
+            
+
 #ifdef CHECK_NEIGHBOR
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out = std::max(pp[i].r_out, (next+j)->r_out);
 #else
             PS::F64 r_out = EPGrav::r_out;
@@ -469,7 +488,7 @@ void correctForceLong(Tpsys & pp,
 
 #ifdef CHECK_NEIGHBOR
         if ( pp[i].true_neighbor < true_neighbor ) {
-            std::cerr << "Unknown Neighbor is Exist on Particle " << pp[i].id
+            std::cerr << "Unknown Neighbor Exists on Particle " << pp[i].id
                       << " at Time "  << pp[i].time << std::endl;
         }
 #endif
@@ -522,17 +541,19 @@ void correctForceLongInitial(Tpsys & pp,
             j_id   = (next+j)->id;
             j_rank = (next+j)->myrank;
 
-            PS::F64 massj  = (next+j)->getCharge();
-#ifdef USE_INDIVIDUAL_RADII
+            //PS::F64 massj  = (next+j)->getCharge();
+            PS::F64 massj  = (next+j)->mass;
+#ifdef TEST_PTCL
+            if (  massj <= (PS::F64)std::numeric_limits<PS::F32>::min() ) massj = 0.;
+#endif
+#ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pp[i].r_out_inv, (next+j)->r_out_inv);
 #else
             PS::F64 r_out_inv = EPGrav::r_out_inv;
 #endif
             
             if ( pp[i].id == j_id ) {
-#ifdef CUTOFF_0
                 phii  += massj * r_out_inv;
-#endif
                 continue;
             }
             
@@ -543,38 +564,52 @@ void correctForceLongInitial(Tpsys & pp,
             assert( dr2 != 0.0 );
             assert( j_id > -1 );
             dr2 += eps2;
-            
-            NList.addNeighbor(pp, i, j_id, j_rank);
-            
+
             PS::F64vec velj   = (next+j)->vel;
             PS::F64vec dv  = velj - veli;
             PS::F64 drdv  = dr*dv;
-
+            
             PS::F64 rij   = sqrt(dr2);
             PS::F64 rinv  = 1. / rij;
-            PS::F64 r2inv = rinv * rinv;
-            PS::F64 r3inv = rinv * r2inv;
-            PS::F64 r5inv = r3inv * r2inv;
-            
-            PS::F64 W  = cutoff_W(rij, r_out_inv);
-            PS::F64 K  = cutoff_K(rij, r_out_inv);
-            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
 
-#ifdef CUTOFF_0
-            phii   -= massj * ( rinv * W - r_out_inv );
-            phi_di -= massj * rinv * (1.-W);
-            acci   += massj * ( r3inv * K - r_out_inv * r_out_inv * r_out_inv ) * dr;
-            acc_di += massj * r3inv * dr * (1.-K);
-            jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+#ifdef USE_RE_SEARCH_NEIGHBOR        
+#ifdef USE_INDIVIDUAL_CUTOFF
+            PS::F64 r_search_ = EPGrav::R_search0 * std::max(pp[i].r_out, (next+j)->r_out)
+                + std::max(   - EPGrav::R_search2 * drdv * rinv,
+                                EPGrav::R_search3 * std::max(pp[i].v_disp, (next+j)->v_disp) * FPGrav::dt_tree );
 #else
-            PS::F64 K0  = std::min( std::max( EPGrav::g2_1_inv*(EPGrav::g2-dr2*r_out_inv*r_out_inv), 0.), 1.);
-            
-            phii   -= massj * rinv * ( W  - K0 );
-            phi_di -= massj * rinv * (1.-W);
-            acci   += massj * r3inv * ( K - K0 ) * dr;
-            acc_di += massj * r3inv * dr * (1.-K);
-            jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+            PS::F64 r_search_ = EPGrav::R_search0 * EPGrav::r_out
+                + std::max(   - EPGrav::R_search2 * drdv * rinv,
+                                EPGrav::R_search3 * EPGrav::v_disp * FPGrav::dt_tree );
 #endif
+#ifdef TEST_PTCL
+            if ( pp[i].r_out == 0. && (next+j)->r_out == 0. ) r_search_ = 0.;
+#endif
+            
+            if ( rij < r_search_ ) {
+#endif
+            
+                NList.addNeighbor(pp, i, j_id, j_rank);
+            
+                PS::F64 r2inv = rinv * rinv;
+                PS::F64 r3inv = rinv * r2inv;
+                PS::F64 r5inv = r3inv * r2inv;
+            
+                PS::F64 W  = cutoff_W(rij, r_out_inv);
+                PS::F64 K  = cutoff_K(rij, r_out_inv);
+                PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+                PS::F64 r_min = std::min(rinv, r_out_inv);
+                
+                phii   -= massj * ( rinv * W - r_min );
+                phi_di -= massj * rinv * (1.-W);
+                acci   += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
+                acc_di += massj * r3inv * dr * (1.-K);
+                jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+                
+#ifdef USE_RE_SEARCH_NEIGHBOR
+            }
+#endif
+            
         }
         
         nei_tot_loc_tmp += pp[i].neighbor;

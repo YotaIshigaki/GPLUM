@@ -204,9 +204,11 @@ public:
 
             //PS::F64 rplanet = cbrt(0.75*pp[i].mass/(M_PI*FPGrav::dens));
             if (clear) pp[i].acc_gd = 0.;
-            //pp[i].acc_gd += -coef_acc_gd * rplanet * rplanet * rho_gas * sqrt(u*u) * u / pp[i].mass;
-            pp[i].acc_gd += -coef_acc_gd * pp[i].r_planet * pp[i].r_planet * rho_gas * sqrt(u*u) * u / pp[i].mass;
-            pp[i].acc += pp[i].acc_gd;
+            if ( pp[i].mass != 0. ) {
+                //pp[i].acc_gd += -coef_acc_gd * rplanet * rplanet * rho_gas * sqrt(u*u) * u / pp[i].mass;
+                pp[i].acc_gd += -coef_acc_gd * pp[i].r_planet * pp[i].r_planet * rho_gas * sqrt(u*u) * u / pp[i].mass;
+                pp[i].acc += pp[i].acc_gd;
+            }
         }
     }
 };

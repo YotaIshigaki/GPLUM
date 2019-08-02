@@ -42,7 +42,7 @@ coef_ema        = 0.3                   # coefficient of exponential moving aver
 reset_step      = 1024                  # interval of step for domain to reset
                   
 # FOR TREE         
-theta           = 0.4                   # opening angle
+theta           = 0.5                   # opening angle
 n_leaf_limit    = 8                     # maximum number of particle in leaf
 n_group_limit   = 64                    # maximun number of particle sharing interaction list
 n_smp_ave       = 100                   # average target number of sample particle per process
@@ -53,7 +53,7 @@ dt_tree         = 2^-6                  # timestep of tree (soft)
 dt_snap         = 1                     # time interval to output snapshot
 dt_min          = 2^-30                 # minimum timestep (hard)
 eta             = 0.01                  # parameter eta to decide timestep (hard)
-eta_0           = 0.001                 # parameter eta to decide initial timestep (hard)
+eta_0           = 0.0005                # parameter eta to decide initial timestep (hard)
 alpha           = 0.1                   # parameter alpha to decide timestep (hard)
 
 # FOR GRAVITATONAL INTERACTION
@@ -62,7 +62,9 @@ dens            = 2.CGS                 # density of particles
 eps             = 0.                    # softening parameter                   
 R_cut           = 3.0                   # parameter to determine cut-off radius
 R_search0       = 1.0                   # parameter to determine search radius
-R_search1       = 5.0                   # parameter to determine search radius
+R_search1       = 6.0                   # parameter to determine search radius
+R_search2       = 2.0                   # parameter to determine search radius
+R_search3       = 1.0                   # parameter to determine search radius
 gamma           = 0.5                   # inner / outer cut-off radius ratio
 r_cut_max       = 0.                    # maximum cut-off radius
 r_cut_min       = 3.*3.563797e-04       # minimum cut-off radius

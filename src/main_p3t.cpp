@@ -12,8 +12,6 @@
 #include <mpi.h>
 #endif
 
-#define USE_ALLGATHER_EXLET
-
 #include <particle_simulator.hpp>
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "
@@ -36,27 +34,31 @@
 #include "func.h"
 
 PS::F64 EPGrav::eps2   = 0.;
-#ifndef USE_INDIVIDUAL_RADII
+#ifndef USE_INDIVIDUAL_CUTOFF
 PS::F64 EPGrav::r_out;
 PS::F64 EPGrav::r_out_inv;
 PS::F64 EPGrav::r_search;
+PS::F64 EPGrav::v_disp;
 #endif
 PS::F64 EPGrav::R_cut     = 1.;
 PS::F64 EPGrav::R_search0 = 1.;
-PS::F64 EPGrav::R_search1 = 1.;
+PS::F64 EPGrav::R_search1 = 3.;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+PS::F64 EPGrav::R_search2 = 3.;
+PS::F64 EPGrav::R_search3 = 3.;
+#endif
 PS::F64 EPGrav::gamma     = 0.5;
-PS::F64 EPGrav::g2        = 0.25;   // gamma^2
-PS::F64 EPGrav::g_1_inv   = -2.;    // 1/(gamma-1)
-PS::F64 EPGrav::g2_1_inv  = -4./3.; // 1/(gamma^2-1)
-PS::F64 EPGrav::g_1_inv7  = -128.; // 1/(gamma-1)^7
-PS::F64 EPGrav::w_y;      // (g^6-9g^5+45*g^4-60g^3*log(g)-45g^2+9g-1)/3(g-1)^7
+PS::F64 EPGrav::g_1_inv   = -2.;    // 1/(g-1)
+PS::F64 EPGrav::g_1_inv7  = -128.; // 1/(g-1)^7
+PS::F64 EPGrav::w_y;      // dW/dy if  y<g
+PS::F64 EPGrav::f1;       // f(1;g)
 
 PS::F64 FPGrav::m_sun     = 1.;
 PS::F64 FPGrav::dens      = 5.049667e6;
 PS::F64 FPGrav::dt_tree   = pow2(-5);
 PS::F64 FPGrav::dt_min    = pow2(-13);
 PS::F64 FPGrav::eta       = 0.01;
-PS::F64 FPGrav::eta_0     = 0.001;
+PS::F64 FPGrav::eta_0     = 0.0005;
 PS::F64 FPGrav::alpha2    = 0.01;
 PS::F64 FPGrav::r_cut_min = 0.;
 PS::F64 FPGrav::r_cut_max = 0.;
@@ -160,8 +162,11 @@ int main(int argc, char *argv[])
                        coef_ema, nx, ny,
                        theta, n_leaf_limit, n_group_limit, n_smp_ave,
                        t_end, dt_snap, r_max, r_min, seed, reset_step) ){
-        std::cerr << "Parameter file has NOT successfully read" << std::endl;
+        //errorMessage("Parameter file has NOT been successfully read.");
+        PS::Comm::barrier();
         PS::Abort();
+        PS::Comm::barrier();
+        PS::Finalize();
         return 0;
     }
     if (opt_r) bRestart = true;
@@ -171,7 +176,7 @@ int main(int argc, char *argv[])
     if (opt_D) FPGrav::dt_tree = dt_opt;
     if (opt_R) {
         EPGrav::R_cut = Rcut_opt;
-        EPGrav::R_search0 = 1.;
+        //EPGrav::R_search0 = 1.;
     }
 
     EPGrav::setGamma(EPGrav::gamma);
@@ -179,12 +184,18 @@ int main(int argc, char *argv[])
     char dir_name[256];
     sprintf(dir_name,"./%s",output_dir);
     if ( makeOutputDirectory(dir_name) ){
+        PS::Comm::barrier();
         PS::Abort();
+        PS::Comm::barrier();
+        PS::Finalize();
         return 0;
     }
     if ( bRestart ) {
         if ( getLastSnap(dir_name, init_file) ) {
+            PS::Comm::barrier();
             PS::Abort();
+            PS::Comm::barrier();
+            PS::Finalize();
             return 0;
         }
         bHeader = true;
@@ -244,6 +255,7 @@ int main(int argc, char *argv[])
             PS::Comm::broadcast(&isnap, 1);
             PS::Comm::broadcast(&e_init, 1);
             time_sys = istep*dt_tree;
+            id_next = header.id_next-1;
         } else {
             system_grav.readParticleAscii(init_file);
             istep = 0;
@@ -293,7 +305,7 @@ int main(int argc, char *argv[])
     /////////////////////
     /*   Create Tree   */
     /////////////////////
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
     PS::TreeForForceLong<ForceGrav, EPGrav, EPGrav>::QuadrupoleWithSymmetrySearch tree_grav;
 #else
@@ -308,20 +320,20 @@ int main(int argc, char *argv[])
 #endif
     tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
 
-    tree_grav.calcForceAllAndWriteBack(CalcForceLongEP<EPGrav,EPGrav,ForceGrav>,
-#ifdef USE_INDIVIDUAL_RADII
+    tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
+#ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
-                                       CalcForceLongSP<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>,
+                                       CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                       CalcForceLongSP<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>,
+                                       CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
 #endif //USE_QUAD
 #else
 #ifdef USE_QUAD
-                                       CalcForceLongSP<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>,
+                                       CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
 #else
-                                       CalcForceLongSP<EPGrav,PS::SPJMonopoleScatter,ForceGrav>,
+                                       CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
 #endif //USE_QUAD
-#endif //USE_INDIVIDUAL_RADII
+#endif //USE_INDIVIDUAL_CUTOFF
                                        system_grav,
                                        dinfo);
     NList.initializeList(system_grav);
@@ -342,18 +354,23 @@ int main(int argc, char *argv[])
     char sout_col[256];
     char sout_rem[256];
     sprintf(sout_eng, "%s/energy.dat",    dir_name);
-    sprintf(sout_col, "%s/collision.dat", dir_name);
-    sprintf(sout_rem, "%s/remove.dat",    dir_name);
+    //sprintf(sout_col, "%s/collision.dat", dir_name);
+    //sprintf(sout_rem, "%s/remove.dat",    dir_name);
+    sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap+1);
+    sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap+1);
     if ( time_sys == 0. ) {
         fout_eng.open(sout_eng, std::ios::out);
-        fout_col.open(sout_col, std::ios::out);
-        fout_rem.open(sout_rem, std::ios::out);
+        //fout_col.open(sout_col, std::ios::out);
+        //fout_rem.open(sout_rem, std::ios::out);
     } else {
         fout_eng.open(sout_eng, std::ios::app);
-        fout_col.open(sout_col, std::ios::app);
-        fout_rem.open(sout_rem, std::ios::app);
+        //fout_col.open(sout_col, std::ios::app);
+        //fout_rem.open(sout_rem, std::ios::app);
     }
+    fout_col.open(sout_col, std::ios::out);
+    fout_rem.open(sout_rem, std::ios::out);
     PS::Comm::barrier();
+    
     showParameter(init_file, dir_name, makeInit,
                   time_sys,
                   coef_ema, nx, ny,
@@ -373,18 +390,20 @@ int main(int argc, char *argv[])
     wtime.init = wtime.now = PS::GetWtime();
 
     outputStep(system_grav, time_sys, e_init, e_now, de,
-               n_col_tot, n_frag_tot, dir_name, isnap, fout_eng, 
+               n_col_tot, n_frag_tot, dir_name, isnap, id_next, fout_eng, 
                wtime, n_largestcluster, n_cluster, n_isoparticle, 
                (time_sys==0.) );
     istep ++;
     isnap ++;
     
+    
     //////////////////////
     ///   Loop Start
-    while(time_sys < t_end){
+    while(1){
         
         PS::S32 n_col = 0;
         PS::S32 n_frag = 0;
+        PS::S32 n_remove = 0;
 #ifdef GAS_DRAG
         PS::F64 edisp_gd = 0.;
 #endif
@@ -552,20 +571,20 @@ int main(int argc, char *argv[])
         ////////////////////////
         system_grav.exchangeParticle(dinfo);
         inputIDLocalAndMyrank(system_grav);
-        tree_grav.calcForceAllAndWriteBack(CalcForceLongEP<EPGrav,EPGrav,ForceGrav>,
-#ifdef USE_INDIVIDUAL_RADII
+        tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
+#ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
-                                           CalcForceLongSP<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>,
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                           CalcForceLongSP<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>,
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
 #endif //USE_QUAD
 #else
 #ifdef USE_QUAD
-                                           CalcForceLongSP<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>,
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
 #else
-                                           CalcForceLongSP<EPGrav,PS::SPJMonopoleScatter,ForceGrav>,
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
 #endif //USE_QUAD
-#endif //USE_INDIVIDUAL_RADII
+#endif //USE_INDIVIDUAL_CUTOFF
                                            system_grav,
                                            dinfo);
 #ifdef CALC_WTIME
@@ -616,16 +635,19 @@ int main(int argc, char *argv[])
             MergeParticle(system_grav, n_col, e_now.edisp);
         }
 
+        // Remove Particle Out Of Boundary
+        n_remove = removeOutOfBoundaryParticle(system_grav, e_now.edisp, r_max, r_min, fout_rem);
+
         ///////////////////////////
         /*   Re-Calculate Soft   */
         ///////////////////////////
-        if ( n_col || istep % reset_step == reset_step-1 ) {
+        if ( n_col || n_remove || istep % reset_step == reset_step-1 ) {
             if( istep % reset_step == reset_step-1 ) {
                 dinfo.decomposeDomainAll(system_grav);
                 system_grav.exchangeParticle(dinfo);
  
                 // Remove Particle Out Of Boundary
-                removeOutOfBoundaryParticle(system_grav, e_now.edisp, r_max, r_min, fout_rem);
+                //removeOutOfBoundaryParticle(system_grav, e_now.edisp, r_max, r_min, fout_rem);
             }
                 
             // Reset Number Of Particles
@@ -638,20 +660,20 @@ int main(int argc, char *argv[])
 #endif
             inputIDLocalAndMyrank(system_grav);
             setCutoffRadii(system_grav);
-            tree_grav.calcForceAllAndWriteBack(CalcForceLongEP<EPGrav,EPGrav, ForceGrav>,
-#ifdef USE_INDIVIDUAL_RADII
+            tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav, ForceGrav>(),
+#ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
-                                               CalcForceLongSP<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>,
+                                               CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                               CalcForceLongSP<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>,
+                                               CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
 #endif //USE_QUAD
 #else
 #ifdef USE_QUAD
-                                               CalcForceLongSP<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>,
+                                               CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
 #else
-                                               CalcForceLongSP<EPGrav,PS::SPJMonopoleScatter,ForceGrav>,
+                                               CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
 #endif //USE_QUAD
-#endif //USE_INDIVIDUAL_RADII
+#endif //USE_INDIVIDUAL_CUTOFF
                                                system_grav,
                                                dinfo);
 #ifdef CALC_WTIME
@@ -717,11 +739,19 @@ int main(int argc, char *argv[])
         
         if( time_sys  == dt_snap*isnap ){
             outputStep(system_grav, time_sys, e_init, e_now, de,
-                       n_col_tot, n_frag_tot, dir_name, isnap, fout_eng,
+                       n_col_tot, n_frag_tot, dir_name, isnap, id_next, fout_eng,
                        wtime, n_largestcluster, n_cluster, n_isoparticle);
             isnap ++;
 
-            if ( wtime_max > 0. && wtime_max < difftime(time(NULL), wtime_start_program) ) break; 
+            if ( time_sys >= t_end || 
+                 (wtime_max > 0. && wtime_max < difftime(time(NULL), wtime_start_program)) ) break;
+            
+            fout_col.close();
+            fout_rem.close();
+            sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap);
+            sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap);
+            fout_col.open(sout_col, std::ios::out);
+            fout_rem.open(sout_rem, std::ios::out);
         }
 #ifdef CALC_WTIME
         PS::Comm::barrier();

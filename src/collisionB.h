@@ -6,7 +6,7 @@
 
 #if defined(KOMINAMI)
 
-// Ref J.D. Kominami et al. 2018 in preparation
+// Ref J.D.Kominami et al. 2019 in prep.
 class Collision : public Collision0 {
  public:
     static PS::F64 a_frag;

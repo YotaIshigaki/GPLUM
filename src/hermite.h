@@ -373,6 +373,225 @@ void timeIntegrate_multi(Tpsys & pp,
     //std::cerr << loop << " " << (e1-e0-edisp_d)/e0 << " " << n_col << std::endl;
 #endif
 }
+template <class Tpsys>
+void timeIntegrate_multi_omp(Tpsys & pp,
+                             PS::F64 time_start,
+                             PS::F64 time_end,
+                             const PS::F64 f,
+                             PS::S32 & n_col,
+                             PS::S32 & n_frag,
+                             PS::F64 & edisp,
+                             PS::F64 & edisp_d,
+                             std::vector<Collision> & collision_list)
+{
+    using iterator = std::multimap<PS::S32,PS::S32>::iterator;
+    std::vector<PS::S32> active_list;
+    std::pair<PS::S32,PS::S32> col_pair;
+    std::multimap<PS::S32,PS::S32> merge_list;
+    active_list.clear();
+    merge_list.clear();
+    PS::F64 time = time_start;
+    PS::F64 time_s = 0.;
+    PS::S32 loop = 0;
+    PS::S32 id_next = 0;
+    bool flag_col = false;
+    n_col = n_frag = 0;
+    edisp = edisp_d = 0.;
+    collision_list.clear();
+    col_pair = std::make_pair(-1,-1);
+
+    PS::S32 a_id = 0;
+    PS::S32 j_id = 0;
+    PS::F64 t_p = 0.;
+    PS::F64 t_c = 0.;
+
+    assert( pp.size() > 0 );
+#ifdef FORDEBUG
+    for(PS::S32 i=0; i<pp.size(); i++) calcGravity(pp[i], pp);
+    PS::F64 e0 = calcEnergyCluster(pp);
+#endif
+
+    PS::S32 psize = pp.size();
+    PS::S32 asize = 0;
+    for(PS::S32 i=0; i<psize; i++){
+        calcJerk(pp[i], pp);
+        pp[i].calcDeltatInitial();
+        pp[i].isDead = pp[i].isMerged = false;
+        assert ( pp[i].time == time );
+    }
+    
+    while ( time < time_end ) {
+        
+        time_s = makeActiveList(pp, active_list);
+
+        // Predict
+        psize = pp.size();
+#pragma omp parallel for private (t_p)
+        for ( PS::S32 i=0; i<psize; i++ ) {
+            pp[i].xp = 0.0;
+            pp[i].vp = 0.0;
+            t_p = time_s - pp[i].time;
+            pp[i].predict(t_p);
+        }
+
+#ifdef COLLISION
+        // Collison?
+        flag_col = collisionDetermination(pp, col_pair, f);
+        if ( flag_col ){
+            active_list.clear();
+            for(PS::S32 i=0; i<psize; i++){
+                pp[i].dt = time_s - pp[i].time;
+                if ( pp[i].isDead ) continue;
+                active_list.push_back(i);
+            }
+        }
+#endif
+            
+        // Correct
+        asize = active_list.size();
+#pragma omp parallel for private (a_id, j_id, t_c)
+        for(PS::S32 i=0; i<asize; i++){
+            a_id = active_list.at(i);
+            
+            std::pair<iterator, iterator> range;
+            calcGravity_p(pp[a_id], pp);    
+            if ( pp[a_id].isMerged ){
+                range = merge_list.equal_range(a_id);
+                for (iterator it = range.first; it != range.second; ++it){
+                    j_id = it->second;
+                    assert( pp[j_id].isDead );
+                    assert( pp[j_id].time == pp[a_id].time );
+                    calcGravity_p(pp[j_id], pp);
+                }
+                mergeAccJerk(pp, merge_list, a_id);
+            }
+
+            t_c = time_s - pp[a_id].time;
+            assert( t_c == pp[a_id].dt );
+            ////////////////
+            //  iteration
+            for (PS::S32 ite=0; ite<2; ite++){
+                pp[a_id].correct(t_c);
+                if ( pp[a_id].isMerged ){
+                    for (iterator it = range.first; it != range.second; ++it){
+                        j_id = it->second;
+                        pp[j_id].correct(t_c);
+                    }
+                }
+                
+                calcGravity_c(pp[a_id], pp);
+                if ( pp[a_id].isMerged ){
+                    for (iterator it = range.first; it != range.second; ++it){
+                        j_id = it->second;
+                        calcGravity_c(pp[j_id], pp);
+                    }
+                    mergeAccJerk(pp, merge_list, a_id);
+                }
+            }
+            //  iteration
+            ////////////////
+            
+            pp[a_id].time += t_c;
+            assert( pp[a_id].time == time_s );
+            if ( pp[a_id].isMerged ){
+                for (iterator it = range.first; it != range.second; ++it){
+                    j_id = it->second;
+                    pp[j_id].time += t_c;
+                    assert( pp[j_id].time == time_s );
+                    assert ( pp[a_id].time == pp[j_id].time );
+                }
+            }
+            
+            if ( !flag_col ){
+                //if ( pp[a_id].time < time_end )
+                pp[a_id].calcDeltat();
+                if ( pp[a_id].isMerged ){
+                    for (iterator it = range.first; it != range.second; ++it){
+                        j_id = it->second;
+                        pp[j_id].dt = pp[a_id].dt;
+                    }
+                }
+            }
+        }
+        
+#ifdef COLLISION
+        if ( flag_col ){
+#ifdef FORDEBUG
+            psize = pp.size();
+            for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
+            mergeAccJerk(pp, merge_list);
+            PS::F64 ekin0, ephi_d0, ephi_s0;
+            PS::F64 e2 = calcEnergyCluster(pp, ekin0, ephi_d0, ephi_s0);
+            std::cerr << pp.size() << " " << (e2-e0-edisp_d)/e0 << " " << n_col << std::endl;
+#endif
+            ///////////////////
+            //   Collision   //
+            ///////////////////
+            Collision col;
+            std::vector<FPHard> pfrag;
+
+            col.inputPair(pp, merge_list, col_pair);
+            n_frag += col.collisionOutcome(pfrag);
+            col.setParticle(pp, pfrag, merge_list, id_next);
+            edisp += col.calcEnergyDissipation(pp, merge_list);
+            edisp_d += col.getHardEnergyDissipation();
+            col.setNeighbors(pp);
+
+            if ( !col.HitAndRun ){
+                merge_list.insert(std::make_pair(col_pair.second,col_pair.first));
+                if ( pp[col_pair.first].isMerged ) {
+                    std::pair<iterator, iterator> range = merge_list.equal_range(col_pair.first);
+                    for (iterator it = range.first; it != range.second; ++it){
+                        merge_list.insert(std::make_pair(col_pair.second,it->second));
+                    }
+                    merge_list.erase(col_pair.first);
+                    pp[col_pair.first].isMerged = false;
+                }
+            }
+            //for(iterator it = merge_list.begin(); it != merge_list.end() ; ++it) {
+            //    PRC(it->first);PRC(it->second);PRC(pp[it->first].id);PRL(pp[it->second].id);
+            //}
+            
+            collision_list.push_back(col);
+            n_col ++;
+
+            psize = pp.size();
+            for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
+            mergeAccJerk(pp, merge_list);
+#ifdef FORDEBUG
+            PS::F64 ekin1, ephi_d1, ephi_s1;
+            PS::F64 e3 = calcEnergyCluster(pp, ekin1, ephi_d1, ephi_s1);
+            std::cerr << pp.size() << " " << (e3-e0-edisp_d)/e0 << " " << n_col << std::endl;
+            PRC(ekin1-ekin0);PRC(ephi_d1-ephi_d0);PRL(ephi_s1-ephi_s0);
+#endif
+
+            for(PS::S32 i=0; i<psize; i++) {
+                if ( !pp[i].isDead ) pp[i].calcDeltatInitial();
+                if ( pp[i].isMerged ){
+                    std::pair<iterator, iterator> range = merge_list.equal_range(i);
+                    for (iterator it = range.first; it != range.second; ++it){
+                        j_id = it->second;
+                        pp[j_id].dt = pp[i].dt;
+                    }
+                }
+            }
+        }
+#endif
+        time = getSystemTime(pp);
+        loop ++;
+    }
+
+    psize = pp.size();
+    for(PS::S32 i=0; i<psize; i++){
+        calcGravity(pp[i], pp);
+        assert ( pp[i].time == time_end );
+    }
+    if ( collision_list.size() > 0 ) mergeAccJerk(pp, merge_list);
+#ifdef FORDEBUG
+    //PS::F64 e1 = calcEnergyCluster(pp);
+    //std::cerr << loop << " " << (e1-e0-edisp_d)/e0 << " " << n_col << std::endl;
+#endif
+}
 
 template <class Tp>
 void timeIntegrate_isolated(Tp & pi,

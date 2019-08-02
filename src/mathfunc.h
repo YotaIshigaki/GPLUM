@@ -31,9 +31,17 @@ inline PS::F64 getGaussian(PS::F64 sigma)
         X = R / M_2_SQRTPI;
     } else {
         PS::F64 X0 = R;
+        X = X0 + ( R-calcErf(X0) )*exp(X0*X0);
         for ( PS::S32 i=0; i<10; i++ ){
-            X = X0 + ( R-calcErf(X0) )*exp(-X0*X0);
             X0 = X;
+            X = X0 + ( R-calcErf(X0) )*exp(X0*X0);
+        }
+
+        PS::S32 i=0;
+        while( abs(X - X0) > 1.e-12 && i < 100){
+            X0 = X;
+            X = X0 + ( R-calcErf(X0) )*exp(X0*X0);
+            i++ ;
         }
     }
 

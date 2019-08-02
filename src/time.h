@@ -97,6 +97,8 @@ void Wtime::showTime(char * dir_name,
                   << "\tHard: " << hard << std::endl;
 
 #ifdef CALC_WTIME
+
+#if 0
         fout_param << "\tCalc Hard Force: " << calc_hard_force
                    << "\tCreate Cluster:  " << create_cluster
                    << "\tCommunication:   " << communication << std::endl
@@ -116,13 +118,49 @@ void Wtime::showTime(char * dir_name,
                    << "\tCalc Moment Local Tree:   " << time_prof_t.calc_moment_local_tree << std::endl
                    << "\tCalc Moment Global Tree:  " << time_prof_t.calc_moment_global_tree << std::endl
                    << "\tMake LET 1st:             " << time_prof_t.make_LET_1st << std::endl
-		   << "\tMake LET 2nd:             " << time_prof_t.make_LET_2nd << std::endl
+                   << "\tMake LET 2nd:             " << time_prof_t.make_LET_2nd << std::endl
                    << "\tExchange LET 1st:         " << time_prof_t.exchange_LET_1st << std::endl
-		   << "\tExchange LET 2nd:         " << time_prof_t.exchange_LET_2nd << std::endl 
+                   << "\tExchange LET 2nd:         " << time_prof_t.exchange_LET_2nd << std::endl 
                    << std::endl
                    << "\tInteraction EPEP: " << n_EPEP << std::endl
                    << "\tInteraction EPSP: " << n_EPSP << std::endl
                    << "\tWalk:             " << n_Walk << std::endl;
+#else
+        fout_param<< "\tInteraction EPEP: " << n_EPEP << std::endl
+                  << "\tInteraction EPSP: " << n_EPSP << std::endl
+                  << "\tWalk:             " << n_Walk << std::endl;
+
+        fout_param << std::endl
+                   << PS::Comm::getNumberOfProc()
+                   << "\t" << PS::Comm::getNumberOfThread()
+                   << "\t" << FPGrav::dt_tree
+                   << "\t" << FPGrav::R_cut
+                   << std::scientific << std::setprecision(15)
+                   << "\t" << de_max
+                   << "\t" << now - init
+                   << "\t" << soft
+                   << "\t" << hard;
+        
+        fout_param << "\t" << calc_hard_force
+                   << "\t" << create_cluster
+                   << "\t" << communication
+                   << "\t" << calc_soft_force
+                   << "\t" << neighbor_search
+                   << "\t" << output
+                   << "\t" << time_prof_d.collect_sample_particle
+                   << "\t" << time_prof_d.decompose_domain
+                   << "\t" << time_prof_s.exchange_particle
+                   << "\t" << time_prof_t.make_local_tree
+                   << "\t" << time_prof_t.make_global_tree
+                   << "\t" << time_prof_t.calc_force
+                   << "\t" << time_prof_t.calc_moment_local_tree
+                   << "\t" << time_prof_t.calc_moment_global_tree
+                   << "\t" << time_prof_t.make_LET_1st
+                   << "\t" << time_prof_t.make_LET_2nd
+                   << "\t " << time_prof_t.exchange_LET_1st
+                   << "\t" << time_prof_t.exchange_LET_2nd
+                   << std::endl;
+#endif
 
         std::cout << "\tCalc Hard Force: " << calc_hard_force
                   << "\tCreate Cluster:  " << create_cluster
@@ -149,7 +187,7 @@ void Wtime::showTime(char * dir_name,
                   << std::endl
                   << "\tInteraction EPEP: " << n_EPEP << std::endl
                   << "\tInteraction EPSP: " << n_EPSP << std::endl
-                  << "\tWalk:             " << n_Walk << std::endl;
+                  << "\tWalk:             " << n_Walk << std::endl;        
 #endif
     }
 }

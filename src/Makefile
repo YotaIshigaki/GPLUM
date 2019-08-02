@@ -1,48 +1,70 @@
 PS_PATH = ../FDPS-5.0d2/src/ 
 INC = -I$(PS_PATH)
 
-CC = clang++ -std=c++11
-#CC = mpic++ -std=c++11
+####################
+###   Compiler   ###
+####################
+#CC = clang++ -std=c++11
+CC = mpic++ -std=c++11
 #CC = time CC
 
-CFLAGS = -O3
+CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -ffast-math
 CFLAGS += -funroll-loops
 
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
-#CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+########################
+###   MPI & OpenMP   ###
+########################
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
+CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 
-#CFLAGS += -mtune=skylake-avx512
-#CFLAGS += -march=skylake-avx512
-CFLAGS += -march=core-avx2 
-#CFLAGS += -mavx512f -mavx512dq  
-#CFLAGS += -mavx2
+################
+###   SIMD   ###
+################
+CFLAGS_M += -march=core-avx2
+CFLAGS_G += -march=core-avx2
+#CFLAGS_G += -mtune=skylake-avx512
+#CFLAGS_G += -march=skylake-avx512
+#CFLAGS_G += -mavx2
+#CFLAGS_G += -mavx512f -mavx512dq
 
+#########################
+###   Other Options   ###
+#########################
+CFLAGS += -DUSE_INDIVIDUAL_CUTOFF
 CFLAGS += -DUSE_QUAD
-CFLAGS += -DUSE_INDIVIDUAL_RADII  
-#CFLAGS += -DCALC_EP_64bit
+CFLAGS += -DCALC_EP_64bit
+CFLAGS += -DCALC_SP_64bit
+CFLAGS += -DUSE_ALLGATHER_EXLET
+CFLAGS += -DUSE_RE_SEARCH_NEIGHBOR
+#CFLAGS += -DISOTROPIC
+#CFLAGS += -DGAS_DRAG
+
 CFLAGS += -DCOLLISION
 #CFLAGS += -DKOMINAMI
 #CFLAGS += -DCHAMBERS
-#CFLAGS += -DGAS_DRAG
-#CFLAGS += -DOUTPUT_DETAIL
-#CFLAGS += -DISOTROPIC
+
+CFLAGS += -DOUTPUT_DETAIL
 #CFLAGS += -DCALC_WTIME
+#CFLAGS += -DTEST_PTCL
 CFLAGS += -DMONAR
+CFLAGS += -g
+
 
 SRC = main_p3t.cpp
 PROGRAM = gplum.out
 HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
 $(PROGRAM): main_p3t.o gravity_kernel.o
-	$(CC) -MMD $(INC) $(CFLAGS) -o $@ main_p3t.o gravity_kernel.o
+	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_M) -o $@ main_p3t.o gravity_kernel.o
 
 main_p3t.o: main_p3t.cpp $(HEADER)
-	$(CC) -MMD $(INC) $(CFLAGS) -c $<
+	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_M) -c $<
 
-gravity_kernel.o: gravity_kernel.cpp avx.h particle.h
-	$(CC) -MMD $(INC) $(CFLAGS) -c $<
+gravity_kernel.o: gravity_kernel.cpp phantomquad_for_p3t_x86.hpp particle.h 
+	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_G) -c $<
+
 
 all: clean $(PROGRAM)
 

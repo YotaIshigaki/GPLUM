@@ -62,6 +62,7 @@ public:
 class FileHeader{
 public:
     PS::S32 n_body;
+    PS::S32 id_next;
     PS::F64 time;
     //PS::F64 etot0;
     //PS::F64 etot1;
@@ -69,26 +70,28 @@ public:
     Energy e_init;
     Energy e_now;
     PS::S32 readAscii(FILE * fp) {
-        fscanf(fp, "%lf\t%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
-               &time, &n_body,
+        fscanf(fp, "%lf\t%d\t%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+               &time, &n_body, &id_next,
                &e_init.etot, &e_init.ekin, &e_init.ephi_sun, &e_init.ephi_planet, &e_init.edisp,
                &e_now.etot,  &e_now.ekin,  &e_now.ephi_sun,  &e_now.ephi_planet,  &e_now.edisp);
 		return n_body;
     }
     void writeAscii(FILE* fp) const {
         fprintf(fp,
-                "%g\t%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\n",
-                time, n_body,
+                "%g\t%d\t%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\n",
+                time, n_body, id_next,
                 e_init.etot, e_init.ekin, e_init.ephi_sun, e_init.ephi_planet, e_init.edisp,
                 e_now.etot,  e_now.ekin,  e_now.ephi_sun,  e_now.ephi_planet,  e_now.edisp);
     }
 
-    FileHeader(){ n_body = 0; time = 0.; }
+    FileHeader(){ n_body = 0; id_next = 0; time = 0.; }
     FileHeader(PS::S32 n_body0,
+               PS::S32 id_next0,
                PS::F64 time0,
                Energy e_init0,
                Energy e_now0){
         n_body = n_body0;
+        id_next = id_next0;
         time = time0;
         e_init = e_init0;
         e_now = e_now0;

@@ -1,7 +1,7 @@
 #pragma once
 
 PS::F64 KeplerEq(PS::F64 u,
-                 PS::F64 ecc){ return u - ecc * sin(u); }
+                 PS::F64 ecc){ return u - ecc * std::sin(u); }
 PS::F64 solveKeplerEq(PS::F64 l,
                       PS::F64 ecc)
 {

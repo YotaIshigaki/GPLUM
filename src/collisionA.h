@@ -124,9 +124,9 @@ inline void Collision0::inputPair(Tpsys & pp,
     vel_tar = pp[id_c_tar].vel;
     PS::F64vec ximp = pos_imp - pos_tar;
     PS::F64vec vimp = vel_imp - vel_tar;
-    PS::F64 cos = std::max(std::min(-(ximp*vimp)/(sqrt(ximp*ximp)*sqrt(vimp*vimp)), 1.), -1.);
-    col_angle = acos(cos);
-
+    PS::F64 costheta = std::max(std::min(-(ximp*vimp)/(sqrt(ximp*ximp)*sqrt(vimp*vimp)), 1.), -1.);
+    col_angle = std::acos(costheta);
+ 
     mass_imp = pp[id_c_imp].mass;
     mass_tar = pp[id_c_tar].mass;
     if ( pp[id_c_imp].isMerged ) {
@@ -146,7 +146,7 @@ inline void Collision0::inputPair(Tpsys & pp,
 
     pos_g = (mass_imp*pos_imp + mass_tar*pos_tar)/(mass_imp+mass_tar);
     vel_g = (mass_imp*vel_imp + mass_tar*vel_tar)/(mass_imp+mass_tar);
-    
+ 
     std::cerr << std::fixed << std::setprecision(8)
               << "Time: " << time << "\tImpactor ID: " << id_imp << "\tTarget ID: " << id_tar << std::endl
               << std::scientific << std::setprecision(15)
@@ -210,7 +210,7 @@ inline void Collision0::setParticle(Tpsys & pp,
         massvel += pfrag[i].mass * pfrag[i].vel;
         mass_tot += pfrag[i].mass;
 
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         pfrag[i].r_out     = pp[id_c_imp].r_out;
         pfrag[i].r_out_inv = pp[id_c_imp].r_out_inv;
         pfrag[i].r_search  = pp[id_c_imp].r_search;
@@ -319,7 +319,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
     dphi = mass_i * rinv;
     e_int   += pp[id_c_tar].mass * dphi;
     e_int_d += pp[id_c_tar].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
         * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
         * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -328,7 +328,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         PS::S32 id_j = it2->second;
         e_int   += pp[id_j].mass * dphi;
         e_int_d += pp[id_j].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_j].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -340,7 +340,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         dphi = pp[id_i].mass * rinv;
         e_int   += pp[id_c_tar].mass * dphi;
         e_int_d += pp[id_c_tar].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -349,7 +349,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             PS::S32 id_j = it2->second;
             e_int   += pp[id_j].mass * dphi;
             e_int_d += pp[id_j].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_j].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -364,7 +364,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         dphi = -pp[id_c_imp].mass * rinv;
         e_int   += pp[id_c_tar].mass * dphi;
         e_int_d += pp[id_c_tar].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -373,7 +373,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             PS::S32 id_j = it2->second;
             e_int   += pp[id_j].mass * dphi;
             e_int_d += pp[id_j].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_j].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -385,7 +385,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             dphi = -pp[id_i].mass * rinv;
             e_int   += pp[id_c_tar].mass * dphi;
             e_int_d += pp[id_c_tar].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -394,7 +394,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
                 PS::S32 id_j = it2->second;
                 e_int   += pp[id_j].mass * dphi;
                 e_int_d += pp[id_j].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                     * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_j].r_out_inv));
 #else
                     * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -413,7 +413,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         dphi = -pp[id_f0].mass * rinv_new;
         e_int   += pp[id_c_imp].mass * dphi;
         e_int_d += pp[id_c_imp].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_f0].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -422,7 +422,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             PS::S32 id_i = it->second;
             e_int   += pp[id_i].mass * dphi;
             e_int_d += pp[id_i].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_f0].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -435,7 +435,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         dphi = -pp[id_f0].mass * rinv_new;
         e_int   += pp[id_c_tar].mass * dphi;
         e_int_d += pp[id_c_tar].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[id_f0].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -444,7 +444,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             PS::S32 id_j = it->second;
             e_int   += pp[id_j].mass * dphi;
             e_int_d += pp[id_j].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[id_f0].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -458,7 +458,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             dphi = -pp[id_f0].mass * pp[id_f1].mass * rinv_new;
             e_int   += dphi;
             e_int_d += dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_f0].r_out_inv, pp[id_f1].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -481,7 +481,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         dphi = m_nei * ( rinv - rinv_new );
         e_int   += m_nei * ( mass_i * rinv - pp[id_c_imp].mass * rinv_new );
         e_int_d += m_nei * ( mass_i * rinv - pp[id_c_imp].mass * rinv_new )
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_nei].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -490,7 +490,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             PS::S32 id_i = it->second;
             e_int   += pp[id_i].mass * dphi;
             e_int_d += pp[id_i].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_nei].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -504,7 +504,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             dphi = -m_nei * pp[id_f].mass * rinv_new;
             e_int   += dphi;
             e_int_d += dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_f].r_out_inv, pp[id_nei].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -525,7 +525,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         dphi = m_nei * ( rinv - rinv_new );
         e_int   += pp[id_c_tar].mass * dphi;
         e_int_d += pp[id_c_tar].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[id_nei].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
@@ -534,7 +534,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             PS::S32 id_j = it->second;
             e_int   += pp[id_j].mass * dphi;
             e_int_d += pp[id_j].mass * dphi
-#ifdef USE_INDIVIDUAL_RADII
+#ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[id_nei].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
