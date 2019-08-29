@@ -183,7 +183,7 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
     PS::S32 n_remove_loc = remove_list.size();
     PS::S32 n_remove_glb = PS::Comm::getSum(n_remove_loc);
 
-    if ( n_remove_glb == 1 ){
+    /*if ( n_remove_glb == 1 ){
 
         if ( n_remove_loc ) {
             PS::S32 i_remove = remove_list.at(0);
@@ -205,7 +205,9 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
                      << std::endl;
         }
         
-    } else if ( n_remove_glb > 1 ){
+        } else if ( n_remove_glb > 1 ){*/
+    
+    if ( n_remove_glb ){
         
         PS::S32 * n_remove_list   = nullptr;
         PS::S32 * n_remove_adr    = nullptr;

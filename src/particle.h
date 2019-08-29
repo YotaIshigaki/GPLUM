@@ -405,7 +405,7 @@ public:
         neighbor = n_hard_list.size();
     }
     FPHard(){
-        jerk = 0.;
+        //jerk = 0.;
         x0 = v0 = a0 = j0 = 0.;
         xp = vp = 0.;
         a2 = a3 = 0.;
@@ -413,7 +413,7 @@ public:
         clearList();
     }
     FPHard(const FPHard & fp) : FPGrav(fp){
-        jerk = fp.jerk;
+        //jerk = fp.jerk;
         x0 = fp.x0;
         v0 = fp.v0;
         a0 = fp.a0;
@@ -427,7 +427,7 @@ public:
         copyHardList(fp.n_hard_list);
     }
     FPHard(const FPGrav & fp) : FPGrav(fp){
-        jerk = 0.;
+        //jerk = 0.;
         x0 = v0 = a0 = j0 = 0.;
         xp = vp = 0.;
         a2 = a3 = 0.;
@@ -437,7 +437,7 @@ public:
     FPHard &operator=(const FPHard & fp){
         FPGrav::operator=(fp);
         if ( this != &fp ){
-            jerk = fp.jerk;
+            //jerk = fp.jerk;
             x0 = fp.x0;
             v0 = fp.v0;
             a0 = fp.a0;
@@ -455,7 +455,7 @@ public:
     FPHard &operator=(const FPGrav & fp){
         FPGrav::operator=(fp);
         if ( this != &fp ){
-            jerk = 0.;
+            //jerk = 0.;
             x0 = v0 = a0 = j0 = 0.;
             xp = vp = 0.;
             a2 = a3 = 0.;

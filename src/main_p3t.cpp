@@ -353,23 +353,26 @@ int main(int argc, char *argv[])
     char sout_eng[256];
     char sout_col[256];
     char sout_rem[256];
-    sprintf(sout_eng, "%s/energy.dat",    dir_name);
-    //sprintf(sout_col, "%s/collision.dat", dir_name);
-    //sprintf(sout_rem, "%s/remove.dat",    dir_name);
-    sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap+1);
-    sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap+1);
-    if ( time_sys == 0. ) {
-        fout_eng.open(sout_eng, std::ios::out);
-        //fout_col.open(sout_col, std::ios::out);
-        //fout_rem.open(sout_rem, std::ios::out);
-    } else {
-        fout_eng.open(sout_eng, std::ios::app);
-        //fout_col.open(sout_col, std::ios::app);
-        //fout_rem.open(sout_rem, std::ios::app);
+
+    if ( PS::Comm::getRank() == 0 ) {
+        sprintf(sout_eng, "%s/energy.dat",    dir_name);
+        //sprintf(sout_col, "%s/collision.dat", dir_name);
+        //sprintf(sout_rem, "%s/remove.dat",    dir_name);
+        sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap+1);
+        sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap+1);
+        if ( time_sys == 0. ) {
+            fout_eng.open(sout_eng, std::ios::out);
+            //fout_col.open(sout_col, std::ios::out);
+            //fout_rem.open(sout_rem, std::ios::out);
+        } else {
+            fout_eng.open(sout_eng, std::ios::app);
+            //fout_col.open(sout_col, std::ios::app);
+            //fout_rem.open(sout_rem, std::ios::app);
+        }
+        fout_col.open(sout_col, std::ios::out);
+        fout_rem.open(sout_rem, std::ios::out);
     }
-    fout_col.open(sout_col, std::ios::out);
-    fout_rem.open(sout_rem, std::ios::out);
-    PS::Comm::barrier();
+    //PS::Comm::barrier();
     
     showParameter(init_file, dir_name, makeInit,
                   time_sys,
@@ -745,13 +748,15 @@ int main(int argc, char *argv[])
 
             if ( time_sys >= t_end || 
                  (wtime_max > 0. && wtime_max < difftime(time(NULL), wtime_start_program)) ) break;
-            
-            fout_col.close();
-            fout_rem.close();
-            sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap);
-            sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap);
-            fout_col.open(sout_col, std::ios::out);
-            fout_rem.open(sout_rem, std::ios::out);
+
+            if ( PS::Comm::getRank() == 0 ) {
+                fout_col.close();
+                fout_rem.close();
+                sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap);
+                sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap);
+                fout_col.open(sout_col, std::ios::out);
+                fout_rem.open(sout_rem, std::ios::out);
+            }
         }
 #ifdef CALC_WTIME
         PS::Comm::barrier();
@@ -761,10 +766,12 @@ int main(int argc, char *argv[])
        
     ///   Loop End
     ////////////////////
-    
-    fout_eng.close();
-    fout_col.close();
-    fout_rem.close();
+
+    if ( PS::Comm::getRank() == 0 ) {
+        fout_eng.close();
+        fout_col.close();
+        fout_rem.close();
+    }
     
     PS::Comm::barrier();
 
