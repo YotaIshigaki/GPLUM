@@ -20,7 +20,8 @@
 #include "mathfunc.h"
 #include "kepler.h"
 #include "energy.h"
-#include "particle.h"
+#include "particle_ep.h"
+#include "particle_fp.h"
 #include "neighbor.h"
 #include "disk.h"
 #include "gravity.h"
@@ -38,7 +39,6 @@ PS::F64 EPGrav::eps2   = 0.;
 PS::F64 EPGrav::r_out;
 PS::F64 EPGrav::r_out_inv;
 PS::F64 EPGrav::r_search;
-PS::F64 EPGrav::v_disp;
 #endif
 PS::F64 EPGrav::R_cut     = 1.;
 PS::F64 EPGrav::R_search0 = 1.;
@@ -53,6 +53,12 @@ PS::F64 EPGrav::g_1_inv7  = -128.; // 1/(g-1)^7
 PS::F64 EPGrav::w_y;      // dW/dy if  y<g
 PS::F64 EPGrav::f1;       // f(1;g)
 
+#ifdef INDIRECT_TERM
+PS::F64vec FPGrav::acc_indirect = 0.;
+PS::F64vec FPGrav::pos_g        = 0.;
+PS::F64vec FPGrav::vel_g        = 0.;
+PS::F64    FPGrav::mass_tot     = 0.;
+#endif
 PS::F64 FPGrav::m_sun     = 1.;
 PS::F64 FPGrav::dens      = 5.049667e6;
 PS::F64 FPGrav::dt_tree   = pow2(-5);
@@ -182,7 +188,8 @@ int main(int argc, char *argv[])
     EPGrav::setGamma(EPGrav::gamma);
     
     char dir_name[256];
-    sprintf(dir_name,"./%s",output_dir);
+    //sprintf(dir_name,"./%s",output_dir);
+    sprintf(dir_name,"%s",output_dir);
     if ( makeOutputDirectory(dir_name) ){
         PS::Comm::barrier();
         PS::Abort();
@@ -207,6 +214,7 @@ int main(int argc, char *argv[])
     PS::F64 time_sys = 0.;
     PS::S32 n_tot  = 0;
     PS::F64 de_max = 0.;
+    PS::F64 de_d_cum = 0.;
     PS::S32 istep = 0;
     PS::S32 isnap = 0;
     PS::S32 n_col_tot  = 0;
@@ -227,8 +235,7 @@ int main(int argc, char *argv[])
     PS::S32 id_next = 0;
     
     NeighborList NList;
-    NList.initialize();
-    ExPair::initialize();
+    //ExPair::initialize();
 
     if ( makeInit && !bRestart ){
         //Make Initial Condition
@@ -273,6 +280,7 @@ int main(int argc, char *argv[])
         }
         system_grav[i].time = time_sys;
         system_grav[i].neighbor = system_grav[i].n_cluster = 0;
+        system_grav[i].isMerged = false;
     }
     id_next = PS::Comm::getMaxValue(id_next);
     id_next ++;
@@ -300,8 +308,8 @@ int main(int argc, char *argv[])
     system_grav.exchangeParticle(dinfo);
     n_loc = system_grav.getNumberOfParticleLocal();
     
-    inputIDLocalAndMyrank(system_grav);
-    
+    inputIDLocalAndMyrank(system_grav, NList);
+
     /////////////////////
     /*   Create Tree   */
     /////////////////////
@@ -319,7 +327,7 @@ int main(int argc, char *argv[])
 #endif
 #endif
     tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
-
+    
     tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
@@ -336,8 +344,12 @@ int main(int argc, char *argv[])
 #endif //USE_INDIVIDUAL_CUTOFF
                                        system_grav,
                                        dinfo);
-    NList.initializeList(system_grav);
+    //NList.initializeList(system_grav);
     correctForceLongInitial(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+
+#ifdef INDIRECT_TERM
+    calcIndirectTerm(system_grav);
+#endif
 
 #ifdef GAS_DRAG
     GasDisk gas_disk;
@@ -452,7 +464,7 @@ int main(int argc, char *argv[])
         /*   Create Hard System   */
         ////////////////////////////
         NList.createConnectedRankList();
-        NList.makeIdMap(system_grav);
+        //NList.makeIdMap(system_grav);
 
         PS::S32 n_send = NList.getNumberOfRankConnected();
         PS::S32 ** ex_data_send = new PS::S32*[n_send];
@@ -573,7 +585,7 @@ int main(int argc, char *argv[])
         /*   Calculate Soft   */
         ////////////////////////
         system_grav.exchangeParticle(dinfo);
-        inputIDLocalAndMyrank(system_grav);
+        inputIDLocalAndMyrank(system_grav, NList);
         tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
@@ -594,8 +606,11 @@ int main(int argc, char *argv[])
         PS::Comm::barrier();
         wtime.calc_soft_force += wtime.calc_soft_force_step = wtime.lap(PS::GetWtime());
 #endif
-        NList.initializeList(system_grav);
+        //NList.initializeList(system_grav);
         correctForceLong(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+#ifdef INDIRECT_TERM
+        calcIndirectTerm(system_grav);
+#endif
 #ifdef CALC_WTIME
         PS::Comm::barrier();
         wtime.neighbor_search += wtime.neighbor_search_step = wtime.lap(PS::GetWtime());
@@ -629,6 +644,7 @@ int main(int argc, char *argv[])
         PS::F64 dephi_d_d = e_now.ephi_d - e_tmp.ephi_d;
         PS::F64 dephi_s_d = e_now.ephi_sun - e_tmp.ephi_sun;
         PS::F64 de_d = ( dekin_d + dephi_d_d + dephi_s_d - edisp_d ) / e_init.etot;
+        de_d_cum += de_d;
 #endif
 
         ///////////////
@@ -661,7 +677,7 @@ int main(int argc, char *argv[])
             PS::Comm::barrier();
             wtime.lap(PS::GetWtime());
 #endif
-            inputIDLocalAndMyrank(system_grav);
+            inputIDLocalAndMyrank(system_grav, NList);
             setCutoffRadii(system_grav);
             tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav, ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
@@ -685,8 +701,11 @@ int main(int argc, char *argv[])
             wtime.calc_soft_force_step += time_tmp;
             wtime.calc_soft_force += time_tmp;
 #endif
-            NList.initializeList(system_grav);
+            //NList.initializeList(system_grav);
             correctForceLongInitial(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+#ifdef INDIRECT_TERM
+    calcIndirectTerm(system_grav);
+#endif
 #ifdef CALC_WTIME
             PS::Comm::barrier();
             time_tmp = wtime.lap(PS::GetWtime());
@@ -729,7 +748,7 @@ int main(int argc, char *argv[])
                       << std::scientific << std::setprecision(15)
                       << "                  "
 #ifdef OUTPUT_DETAIL
-                      << "HardEnergyError: " << de_d
+                      << "HardEnergyError: " << de_d_cum
                       << "  "
 #endif
                       << "EnergyError: " << de

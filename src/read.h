@@ -1,21 +1,5 @@
 #pragma once
 
-void errorMessage(std::string ermg){
-    if ( PS::Comm::getRank() == 0 ){
-        std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
-                  << "  ( ;' A ')/ < ****** " << ermg << " ******" << std::endl
-                  << "              \\_______________________________________________________" << std::endl;
-    }
-}
-
-void successMessage(std::string scmg){
-    if ( PS::Comm::getRank() == 0 ){
-        std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
-                  << "  (  ' v ')/ < ****** " << scmg << " ******" << std::endl
-                  << "              \\_______________________________________________________" << std::endl;
-    }
-}
-
 std::vector<std::string> split_str(std::string str,
                                    std::vector<char> del)
 {
@@ -104,7 +88,7 @@ PS::S32 readParameter(const char * param_file,
     const PS::F64 T     = 365.25*24.*60.*60./(2.*M_PI);
     
     if ( ifs.fail() ) {
-        errorMessage("Parameter file fails to be successfully opened");
+        errorMessage("The parameter file has FAILED to be successfully opened");
         return 1;
     }
     
@@ -290,35 +274,66 @@ PS::S32 readParameter(const char * param_file,
     ifs.close();
 
     if ( !isPowerOf2(FPGrav::dt_tree) ){
-        errorMessage("dt_tree is not power of 2 (dt_tree =" + std::to_string(FPGrav::dt_tree ) + ")." );
+        errorMessage("dt_tree has NOT been set to be power of 2",
+                     "(dt_tree =" + std::to_string(FPGrav::dt_tree ) + ")." );
         return 1;
     } else if ( !isPowerOf2(FPGrav::dt_min) ){
-        errorMessage("dt_min is not power of 2 (dt_min = " + std::to_string(FPGrav::dt_min) + ").");
+        errorMessage("dt_min has NOT been set to be power of 2",
+                     "(dt_min = " + std::to_string(FPGrav::dt_min) + ").");
         return 1;
     } else if ( FPGrav::dt_min > 0.5*FPGrav::dt_tree ){
-        errorMessage("dt_min is greater than 0.5 dt_tree (dt_min = " + std::to_string(FPGrav::dt_min)
+        errorMessage("dt_min has NOT been set to be satisfy dt_min <= 0.5 dt_tree",
+                     "(dt_min = " + std::to_string(FPGrav::dt_min)
                      + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
         return 1;
     } else if ( fmod(dt_snap, FPGrav::dt_tree) != 0 ){
-        errorMessage("dt_snap is not multiples of dt_tree (dt_snap = " + std::to_string(dt_snap)
+        errorMessage("dt_snap has NOT been set to be multiples of dt_tree",
+                     "(dt_snap = " + std::to_string(dt_snap)
+                     + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
+        return 1;
+    } else if ( FPGrav::dt_tree > FPGrav::dt_min * pow2(51) ){
+        errorMessage("dt_min has NOT been set to satisfy dt_tree * 2^-51 <= dt_min",
+                     "(dt_snap = " + std::to_string(dt_snap)
                      + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
         return 1;
     } else if ( makeInit && SolidDisk::n_init == 0 && SolidDisk::m_init == 0. ){
-        errorMessage("Both n_init and m_init are unset.");
+        errorMessage("Both n_init & m_init have NOT been set.");
         return 1;
     } else if ( FPGrav::r_cut_min > FPGrav::r_cut_max && FPGrav::r_cut_max > 0 ){
-        errorMessage("r_cut_max is smaller than r_cut_min (r_cut_max = " + std::to_string(FPGrav::r_cut_max)
+        errorMessage("r_cut_max & r_cut_min have NOT been set to satisfy r_cut_max >= r_cut_min",
+                     "(r_cut_max = " + std::to_string(FPGrav::r_cut_max)
                      + ", r_cut_min = " + std::to_string(FPGrav::r_cut_min) + ").");
         return 1;
-    } else if ( EPGrav::R_search0 < 1 ){
-        errorMessage("R_search0 is smaller than 1 (R_search0 = " + std::to_string(EPGrav::R_search0) + ").");
+    } else if ( EPGrav::R_cut < 0. ){
+        errorMessage("R_cut has NOT been set to satisfy R_cut >= 0",
+                     "(R_cut = " + std::to_string(EPGrav::R_cut) + ").");
         return 1;
+    } else if ( EPGrav::R_search0 < 1. ){
+        errorMessage("R_search0 has NOT been set to satisfy R_search0 >= 1",
+                     "(R_search0 = " + std::to_string(EPGrav::R_search0) + ").");
+        return 1;
+    } else if ( EPGrav::R_search1 < 0. ){
+        errorMessage("R_search1 has NOT been set to satisfy R_search1 >= 0",
+                     "(R_search1 = " + std::to_string(EPGrav::R_search1) + ").");
+        return 1;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+    } else if ( EPGrav::R_search2 < 1. ){
+        errorMessage("R_search2 has NOT been set to satisfy R_search2 >= 1",
+                     "(R_search2 = " + std::to_string(EPGrav::R_search2) + ").");
+        return 1;
+    } else if ( EPGrav::R_search3 < 0. ){
+        errorMessage("R_search3 has NOT been set to satisfy R_search0 >= 0",
+                     "(R_search3 = " + std::to_string(EPGrav::R_search3) + ").");
+        return 1;
+#endif
     } else if ( r_max < r_min ){
-        errorMessage("r_min is greater than r_max (r_max = " + std::to_string(r_max)
+        errorMessage("r_max & r_min have NOT been set to satisfy r_max >= r_min",
+                     "(r_max = "+ std::to_string(r_max)
                      + ", r_min = " + std::to_string(r_min) + ").");
         return 1;
     } else if ( getNIMAX() < n_group_limit ){
-        errorMessage("n_group_limit is greater than NIMAX (n_group_limit = " + std::to_string(n_group_limit)
+        errorMessage("n_group_limit has NOT been set to satisfy n_group_limit < NIMAX",
+                     "(n_group_limit = " + std::to_string(n_group_limit)
                      + ", NIMAX = " + std::to_string(getNIMAX()) + ").");
         return 1;
     }
@@ -548,20 +563,17 @@ PS::S32 makeOutputDirectory(char * dir_name)
         PS::Comm::broadcast(&ret_loc, ret);
         if (ret == 0) {
             if ( PS::Comm::getRank() == 0 ) {
-                successMessage("Directory \"" + (std::string)dir_name  + "\" is successfully made.");
-                //fprintf(stderr, "Directory \"%s\" is successfully made.\n", dir_name);
+                successMessage("The directory \"" + (std::string)dir_name  + "\" is successfully made.");
             }
         } else {
             if ( PS::Comm::getRank() == 0 ) {
-                errorMessage("Directory \"" + (std::string)dir_name  + "\" fails to be successfully made.");
-                //fprintf(stderr, "Directory %s fails to be successfully made.\n", dir_name);
+                errorMessage("The directory \"" + (std::string)dir_name  + "\" has FAILED to be successfully made.");
                 return 1;
             }
         }
     } else {
         if(PS::Comm::getRank() == 0){
-            successMessage("Directory \"" + (std::string)dir_name  + "\" exists.");
-            //fprintf(stderr, "Directory \"%s\" exists.\n", dir_name);
+            successMessage("The directory \"" + (std::string)dir_name  + "\" exists.");
         }
     }
 
@@ -576,8 +588,7 @@ PS::S32 getLastSnap(char * dir_name,
     dir = opendir(dir_name);
     if ( dir == NULL ) {
         if(PS::Comm::getRank() == 0){
-            errorMessage("Directory \"" + (std::string)dir_name  + "\" does not exist.");
-            //fprintf(stderr, "Directory \"%s\" does not exist.\n", dir_name);
+            errorMessage("The directory \"" + (std::string)dir_name  + "\" does NOT exist.");
         }
         return 1;
     }
@@ -602,8 +613,7 @@ PS::S32 getLastSnap(char * dir_name,
     } while (entry != NULL);
     if ( lastnumber < 0 ) {
         if(PS::Comm::getRank() == 0) {
-            errorMessage("Snapshot file does not exist in directory \"" + (std::string)dir_name  + "\".");
-            //fprintf(stderr, "Snapshot does not exist in directory \"%s\".\n", dir_name);
+            errorMessage("NO snapshot file exists in the directory \"" + (std::string)dir_name  + "\".");
         }
         return 1;
     }

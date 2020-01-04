@@ -155,6 +155,9 @@ class NeighborList{
 public:
     std::vector<std::vector<PS::S32> > n_list;
     std::map<PS::S32, PS::S32> id_map;
+
+    std::vector<PS::S32> with_neighbor_list;
+    std::vector<std::pair<PS::S32, PS::S32> > pair_list;
     
     std::vector<std::pair<PS::S32,PS::S32> > ex_list;
     std::vector<std::pair<PS::S32,PS::S32> > ex_adr_list;
@@ -170,20 +173,32 @@ public:
 
     std::vector<PS::S32> & operator[](PS::S32 i){ return n_list[i]; }
     
-    void initialize() {
+    NeighborList() {
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         
         n_list.clear();
+        id_map.clear();
+        with_neighbor_list.clear();
+        pair_list.clear();
+        ex_list.clear();
+        ex_adr_list.clear();
+        connected_list.clear();
+        ex_data_map.clear();
+        recv_rank_list.clear();
+        send_rank_list.clear();
+        
         ex_data.resize(n_proc);
         recv_list.resize(n_proc);
         send_list.resize(n_proc);
-
+        
 #pragma omp parallel for
         for (PS::S32 i=0; i<n_proc; i++){
             ex_data[i].clear();
             recv_list[i].clear();
             send_list[i].clear();
         }
+      
+        ExPair::initialize();
     }
     
     template <class Tpsys>
@@ -192,7 +207,9 @@ public:
         const PS::S32 n_loc  = pp.getNumberOfParticleLocal();
 
         n_list.clear();
-        id_map.clear();
+        //id_map.clear();
+        with_neighbor_list.clear();
+        pair_list.clear();
         ex_list.clear();
         ex_adr_list.clear();
         connected_list.clear();
@@ -216,6 +233,9 @@ public:
         return ex_data[adr.first][adr.second];
     }
     
+    PS::S32 getNumberOfParticlesWithNeighbor() const { return with_neighbor_list.size(); }
+    PS::S32 getNumberOfNeighborPairsLocal() const { return pair_list.size(); }
+    
     PS::S32 getNumberOfRankSend() const { return send_rank_list.size(); }
     PS::S32 getNumberOfRankRecv() const { return recv_rank_list.size(); }
     PS::S32 getNumberOfRankConnected() const { return connected_list.size(); }
@@ -225,7 +245,8 @@ public:
     void addNeighbor(Tpsys & pp,
                      PS::S32 i,
                      PS::S32 j_id,
-                     PS::S32 j_rank) {
+                     PS::S32 j_rank,
+                     PS::S32 j_id_local=-1) {
         n_list[i].push_back(j_id);
         pp[i].neighbor ++;
 
@@ -243,6 +264,64 @@ public:
                 ex_data.at(j_rank).push_back(ex_pair);
             }
             pp[i].inDomain = false;
+        } else {
+            if ( j_id_local < 0 ) j_id_local = id_map.at(j_id);
+            if ( i<j_id_local ) {
+#pragma omp critical
+                {
+                    pair_list.push_back(std::make_pair(i, j_id_local));
+                }
+            }
+        }
+    }
+
+    template <class Tpsys>
+    void checkNeighbor(Tpsys & pp) {
+        const PS::S32 n_loc = n_list.size();
+        bool check = true;
+        PS::S32 nei_tot = 0;
+        
+        for ( PS::S32 i=0; i<n_loc; i++ ) {
+            if ( !pp[i].isDead )
+                assert ( id_map.at(pp[i].id) == i );
+        }
+
+        for ( PS::S32 i=0; i<n_loc; i++ ) {
+            PS::S32 n_ngb = n_list.at(i).size();
+            //if ( pp[i].neighbor )
+            //   std::cout << pp[i].id << "\t";
+            nei_tot += n_ngb;
+            
+            for ( PS::S32 jj=0; jj<n_ngb; jj++ ) {
+                PS::S32 j_id = n_list.at(i).at(jj);
+                //if ( pp[i].neighbor )
+                //    std::cout << j_id << " ";
+                auto itr = id_map.find(j_id);
+                if ( itr == id_map.end() ) continue;
+                PS::S32 j    = itr->second;
+                PS::S32 n_ngb_j = n_list.at(j).size();
+
+                PS::S32 n_p = 0;
+                for ( PS::S32 k=0; k<n_ngb_j; k++ ) {
+                    PS::S32 k_id = n_list.at(j).at(k);
+                    auto itr1 = id_map.find(k_id);
+                    if ( itr1 == id_map.end() ) continue;
+                    if ( (itr1->second) == i ) n_p ++ ;
+                }
+                if ( n_p != 1 ) {
+                    std::cout << i << "\t" << pp[i].id << "\t" << j << "\t" << j_id << std::endl;
+                    check = check && false;
+                }
+            }
+            //if ( pp[i].neighbor )
+            //    std::cout << std::endl;
+        }
+
+        PS::S32 nei_tot_glb = PS::Comm::getSum(nei_tot);
+        assert ( nei_tot_glb%2 == 0 );
+
+        if ( false ) {
+            PS::Abort();
         }
     }
 
@@ -261,14 +340,58 @@ public:
     template <class Tpsys>
     void makeIdMap(Tpsys & pp){
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-        assert( (PS::S32)(n_list.size()) == n_loc );
+        id_map.clear();
+        //assert( (PS::S32)(n_list.size()) == n_loc );
         
         for(PS::S32 i=0; i<n_loc; i++){
-            assert( pp[i].neighbor == (PS::S32)(n_list[i].size()) );
-            id_map[pp[i].id] = i;
+            //assert( pp[i].neighbor == (PS::S32)(n_list[i].size()) );
+            if ( !pp[i].isDead ) {
+                id_map[pp[i].id] = i;
+            }
         }
     }
 
+#if 1
+    template <class Tpsys>
+    void createNeighborCluster(Tpsys & pp){
+        //const PS::S32 n_loc  = pp.getNumberOfParticleLocal();
+        const PS::S32 n_wngb = with_neighbor_list.size();
+        const PS::S32 n_pair = pair_list.size();
+        
+        bool check = true;
+        while( check ){
+            check = false;
+            
+#pragma omp parallel for reduction (||:check)
+            for(PS::S32 ii=0; ii<n_pair; ii++){
+                PS::S32 i  = pair_list.at(ii).first;
+                PS::S32 j  = pair_list.at(ii).second;
+
+                if ( pp[i].id_cluster != pp[j].id_cluster ) {
+#pragma omp critical
+                    {
+                        pp[i].id_cluster = pp[j].id_cluster = std::min(pp[i].id_cluster, pp[j].id_cluster);
+                    }
+                    check = check || true;
+                }
+            }
+        }
+
+        if( ex_list.size() != 0 ){
+            PS::S32 n_out = ex_list.size();
+#pragma omp parallel for
+            for(PS::S32 ii=0; ii<n_wngb; ii++){
+                PS::S32 i = with_neighbor_list.at(ii);
+                for(PS::S32 j=0; j<n_out; j++){
+                    PS::S32 i_out = id_map.at(ex_list.at(j).first);
+                    PS::S32 id_cluster_out = pp[i_out].id_cluster;
+                    if( pp[i].id_cluster == id_cluster_out ) pp[i].inDomain = false;
+                }
+            }
+        }
+        
+    }
+#else
     template <class Tpsys>
     void createNeighborCluster(Tpsys & pp){
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
@@ -317,6 +440,7 @@ public:
         }
         
     }
+#endif
 
     template <class Tpsys>
     void inputExData(Tpsys & pp){
@@ -470,7 +594,10 @@ public:
             if ( send_list[i].size() ) send_rank_list.push_back(i);
         }
     }
-    
+
+private:
+    void operator =(const NeighborList& NL){}
+    NeighborList(const NeighborList& NL) {}
 };
 
 

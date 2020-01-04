@@ -4,8 +4,8 @@ INC = -I$(PS_PATH)
 ####################
 ###   Compiler   ###
 ####################
-#CC = clang++ -std=c++11
-CC = mpic++ -std=c++11
+CC = clang++ -std=c++11
+#CC = mpic++ -std=c++11
 #CC = time CC
 
 CFLAGS = -O2
@@ -34,27 +34,27 @@ CFLAGS_G += -march=core-avx2
 #########################
 CFLAGS += -DUSE_INDIVIDUAL_CUTOFF
 CFLAGS += -DUSE_QUAD
-CFLAGS += -DCALC_EP_64bit
-CFLAGS += -DCALC_SP_64bit
+#CFLAGS += -DCALC_EPEP_64bit
+#CFLAGS += -DCALC_EPSP_64bit
 CFLAGS += -DUSE_ALLGATHER_EXLET
 CFLAGS += -DUSE_RE_SEARCH_NEIGHBOR
 #CFLAGS += -DISOTROPIC
 #CFLAGS += -DGAS_DRAG
+#CFLAGS += -DINDIRECT_TERM
 
 CFLAGS += -DCOLLISION
 #CFLAGS += -DKOMINAMI
 #CFLAGS += -DCHAMBERS
 
 CFLAGS += -DOUTPUT_DETAIL
-#CFLAGS += -DCALC_WTIME
+CFLAGS += -DCALC_WTIME
 #CFLAGS += -DTEST_PTCL
 CFLAGS += -DMONAR
-CFLAGS += -g
-
+#CFLAGS += -pg
 
 SRC = main_p3t.cpp
 PROGRAM = gplum.out
-HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
+HEADER = mathfunc.h kepler.h energy.h particle_ep.h particle_fp.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
 $(PROGRAM): main_p3t.o gravity_kernel.o
 	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_M) -o $@ main_p3t.o gravity_kernel.o
@@ -62,7 +62,7 @@ $(PROGRAM): main_p3t.o gravity_kernel.o
 main_p3t.o: main_p3t.cpp $(HEADER)
 	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_M) -c $<
 
-gravity_kernel.o: gravity_kernel.cpp phantomquad_for_p3t_x86.hpp particle.h 
+gravity_kernel.o: gravity_kernel.cpp phantomquad_for_p3t_x86.hpp particle_ep.h 
 	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_G) -c $<
 
 

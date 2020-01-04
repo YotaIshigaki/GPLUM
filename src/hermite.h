@@ -42,25 +42,28 @@ void mergeAccJerk(Tpsys & pp,
     using iterator = std::multimap<PS::S32,PS::S32>::iterator;
     assert ( pp[i].isMerged );
     assert ( i_range.first->first == i );
-    PS::F64vec acc = pp[i].mass * pp[i].acc_d;
-    PS::F64vec jerk = pp[i].mass * pp[i].jerk;
-    PS::F64 mass = pp[i].mass;
+    PS::F64vec acc_d  = pp[i].mass * pp[i].acc_d;
+    PS::F64vec jerk_d = pp[i].mass * pp[i].jerk_d;
+    PS::F64    mass   = pp[i].mass;
     for (iterator it = i_range.first; it != i_range.second; ++it){
         PS::S32 j_id = it->second;
-        acc += pp[j_id].mass * pp[j_id].acc_d;
-        jerk += pp[j_id].mass * pp[j_id].jerk;
-        mass += pp[j_id].mass;
+        acc_d  += pp[j_id].mass * pp[j_id].acc_d;
+        jerk_d += pp[j_id].mass * pp[j_id].jerk_d;
+        mass   += pp[j_id].mass;
         assert ( pp[i].id == pp[j_id].id );
-        assert( pp[j_id].isDead );
+        assert ( pp[i].acc_s  == pp[j_id].acc_s );
+        assert ( pp[i].jerk_s == pp[j_id].jerk_s );
+        assert ( pp[j_id].isDead );
     }
-    acc /= mass;
-    jerk /= mass;
-    pp[i].acc_d = acc;
-    pp[i].jerk = jerk;
+    PS::F64 mass_inv = 1./mass;
+    acc_d  *= mass_inv;
+    jerk_d *= mass_inv;
+    pp[i].acc_d  = acc_d;
+    pp[i].jerk_d = jerk_d;
     for (iterator it = i_range.first; it != i_range.second; ++it){
         PS::S32 j_id = it->second;
-        pp[j_id].acc_d = acc;
-        pp[j_id].jerk = jerk;
+        pp[j_id].acc_d  = acc_d;
+        pp[j_id].jerk_d = jerk_d;
     }  
 }
 template <class Tpsys>
@@ -156,6 +159,7 @@ PS::F64 calcEnergyCluster(Tpsys & pp)
     PS::F64 ephi_s = 0.;
     return calcEnergyCluster(pp, ekin, ephi_d, ephi_s);
 }
+
 template <class Tpsys>
 void timeIntegrate_multi(Tpsys & pp,
                          PS::F64 time_start,
@@ -198,9 +202,10 @@ void timeIntegrate_multi(Tpsys & pp,
     PS::S32 asize = 0;
     for(PS::S32 i=0; i<psize; i++){
         calcJerk(pp[i], pp);
-        pp[i].calcDeltatInitial();
+        //pp[i].calcDeltatInitial();
         pp[i].isDead = pp[i].isMerged = false;
         assert ( pp[i].time == time );
+        assert ( pp[i].dt != 0 );
     }
     
     while ( time < time_end ) {
@@ -373,6 +378,7 @@ void timeIntegrate_multi(Tpsys & pp,
     //std::cerr << loop << " " << (e1-e0-edisp_d)/e0 << " " << n_col << std::endl;
 #endif
 }
+
 template <class Tpsys>
 void timeIntegrate_multi_omp(Tpsys & pp,
                              PS::F64 time_start,
@@ -415,9 +421,10 @@ void timeIntegrate_multi_omp(Tpsys & pp,
     PS::S32 asize = 0;
     for(PS::S32 i=0; i<psize; i++){
         calcJerk(pp[i], pp);
-        pp[i].calcDeltatInitial();
+        //pp[i].calcDeltatInitial();
         pp[i].isDead = pp[i].isMerged = false;
         assert ( pp[i].time == time );
+        assert ( pp[i].dt != 0. );
     }
     
     while ( time < time_end ) {
@@ -598,24 +605,26 @@ void timeIntegrate_isolated(Tp & pi,
                          PS::F64 time_start,
                          PS::F64 time_end)
 {
-    pi.jerk = 0.;
+    //pi.jerk_d = 0.;
     calcStarJerk(pi);
-    pi.calcDeltatInitial();
+    //pi.calcDeltatInitial();
     assert ( pi.time == time_start );
+    assert ( pi.dt != 0. );
     
     while( pi.time < time_end ){
         pi.predict(pi.dt);
-                    
-        pi.acc_d = 0.0;
-        pi.jerk = 0.0;
+
+        //pi.acc_s  = 0.;
+        pi.acc_d  = 0.;
+        //pi.jerk_s = 0.;
+        pi.jerk_d = 0.;
+        
         calcStarGravity_p(pi);
 
         ////////////////
         //  iteration
         for ( PS::S32 ite=0; ite<2; ite++ ){
             pi.correct(pi.dt);
-            pi.acc_d = 0.0;
-            pi.jerk = 0.0; 
             calcStarGravity_c(pi);
         }
         //  iteration
@@ -624,10 +633,8 @@ void timeIntegrate_isolated(Tp & pi,
         pi.time += pi.dt;
         pi.calcDeltat();
     }
-    pi.phi_d = 0.;
     pi.phi_s = 0.;
-    pi.acc_d = 0.0;
-    pi.jerk = 0.0;
+    pi.phi_d = 0.;
     calcStarGravity(pi);
     assert ( pi.time ==  time_end );
 }
@@ -649,10 +656,9 @@ void timeIntegrateKepler_isolated(Tp & pi,
     orbitalElement2PosVel(pi.pos, pi.vel, m_sun, ax, ecc, n, u, P, Q);
     pi.time += (time_end - time_start);
     
-    pi.phi_d = 0.;
-    pi.phi_s = 0.;
-    pi.acc_d = 0.;
-    pi.jerk = 0.;
+    pi.phi_d  = 0.;
+    pi.acc_d  = 0.;
+    pi.jerk_d = 0.;
     calcStarGravity(pi);
     pi.calcDeltatInitial();
     assert ( pi.time == time_end );

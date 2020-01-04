@@ -1,6 +1,6 @@
 #include <particle_simulator.hpp>
 
-#ifdef CALC_EP_64bit
+#ifdef CALC_EPEP_64bit
 #define RSQRT_NR_EPJ_X4
 #else
 #define RSQRT_NR_EPJ_X2
@@ -11,7 +11,8 @@
 #if defined(__AVX2__) || defined(__AVX512DQ__)
 #include "phantomquad_for_p3t_x86.hpp"
 #endif
-#include "particle.h"
+//#include "mathfunc.h"
+#include "particle_ep.h"
 
 PS::S32 getAVXVersion(char * avx_var){
 #ifdef __AVX512DQ__
@@ -51,17 +52,17 @@ struct CalcForceLongEPEP {
                       TForce * force){
         const PS::F64 eps2  = (*ep_i).getEps2();
         const PS::F64 gamma = (*ep_i).getGamma();
-
         //std::cout << "ni=" << n_ip << " nj=" << n_jp << std::endl;
         
         PhantomGrapeQuad pg;
         //static __thread PhantomGrapeQuad pg;
         //static thread_local PhantomGrapeQuad pg;
     
-        pg.set_eps2(eps2);
+        pg.set_eps2(eps2, gamma);
 #ifndef USE_INDIVIDUAL_CUTOFF
         const PS::F64 r_out = (*ep_i).getROut();
-        pg.set_cutoff(r_out, gamma*r_out);
+        const PS::F64 r_search = (*ep_i).getRSearch();
+        pg.set_cutoff(r_out, r_search);
 #endif
     
 #ifdef EP_OFFSET
@@ -76,10 +77,11 @@ struct CalcForceLongEPEP {
 #endif //EP_OFFSET
 #ifdef USE_INDIVIDUAL_CUTOFF
             const PS::F64 r_outi = ep_i[i].getROut();
+            const PS::F64 r_searchi = ep_i[i].getRSearch();
 #ifdef CALC_EPEP_64bit
-            pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_outi*gamma);
+            pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_searchi);
 #else
-            pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_outi*gamma);
+            pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_searchi);
 #endif
 #else //USE_INDIVIDUAL_CUTOFF
 #ifdef CALC_EPEP_64bit
@@ -100,6 +102,7 @@ struct CalcForceLongEPEP {
 
                 //const PS::F64 m_j = ep_j[i].getCharge();
                 const PS::F64 m_j = ep_j[i].mass;
+                const PS::F64 idx_j = ep_j[i].getIdReal();
 #ifdef EP_OFFSET
                 const PS::F64vec pos_j = ep_j[i].getPos()-pos_ofs;
 #else
@@ -107,16 +110,17 @@ struct CalcForceLongEPEP {
 #endif //EP_OFFSET
 #ifdef USE_INDIVIDUAL_CUTOFF
                 const PS::F64 r_outj = ep_j[i].getROut();
+                const PS::F64 r_searchj = ep_j[i].getRSearch();
 #ifdef CALC_EPEP_64bit
-                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, r_outj, r_outj*gamma);
+                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, r_outj, r_searchj, idx_j);
 #else
-                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, r_outj, r_outj*gamma);
+                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, r_outj, r_searchj, idx_j);
 #endif
 #else //USE_INDIVIDUAL_CUTOFF
 #ifdef CALC_EPEP_64bit
-                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j);
+                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, idx_j);
 #else
-                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j);
+                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, idx_j);
 #endif
 #endif //USE_INDIVIDUAL_CUTOFF
             }
@@ -129,13 +133,18 @@ struct CalcForceLongEPEP {
             for(PS::S32 i=0; i<n_ip; i++){
                 PS::F64 * p = &(force[i].phi);
                 PS::F64 * a = (PS::F64 * )(&force[i].acc[0]);
+                PS::F64 nngb = 0.;
+                PS::F64 idxngb = -1.;
 #ifdef CALC_EPEP_64bit
-                pg.accum_accp_one_d(i, a[0], a[1], a[2], *p);
+                pg.accum_accp_one_d(i, a[0], a[1], a[2], *p, nngb, idxngb);
 #else
-                pg.accum_accp_one(i, a[0], a[1], a[2], *p);
+                pg.accum_accp_one(i, a[0], a[1], a[2], *p, nngb, idxngb);
 #endif
+                force[i].neighbor += (PS::S32)(nngb+0.5);
+                if ( idxngb > -0.5 ) force[i].id_neighbor = (PS::S32)(idxngb+0.5);
             }
         }
+        for(PS::S32 i=0; i<n_ip; i++) force[i].neighbor--;
     }
 };
 
@@ -163,7 +172,7 @@ struct CalcForceLongEPSPQuad {
         const PS::F64vec pos_ofs = ep_i[0].getPos();
 #endif
     
-        pg.set_eps2(eps2);
+        pg.set_eps2(eps2, gamma);
         for(PS::S32 i=0; i<n_ip; i++){
 #ifdef EP_OFFSET
             const PS::F64vec pos_i = ep_i[i].getPos()-pos_ofs;
@@ -172,13 +181,14 @@ struct CalcForceLongEPSPQuad {
 #endif //EP_OFFSET
 #ifdef USE_INDIVIDUAL_CUTOFF
             const PS::F64 r_outi = ep_i[i].getROut();
-#ifdef CALC_EPEP_64bit
-            pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_outi*gamma);
+            const PS::F64 r_searchi = ep_i[i].getRSearch();
+#ifdef CALC_EPSP_64bit
+            pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_searchi);
 #else
-            pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_outi*gamma);
+            pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_searchi);
 #endif
 #else //USE_INDIVIDUAL_CUTOFF
-#ifdef CALC_EPEP_64bit
+#ifdef CALC_EPSP_64bit
             pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z);
 #else
             pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z);
@@ -217,12 +227,13 @@ struct CalcForceLongEPSPQuad {
             for(PS::S32 i=0; i<n_ip; i++){
                 PS::F64 * p = &(force[i].phi);
                 PS::F64 * a = (PS::F64 * )(&force[i].acc[0]);
+                PS::F64 nngb = 0.;
+                PS::F64 idxngb = -1.;
 #ifdef CALC_EPSP_64bit
-                pg.accum_accp_one_d(i, a[0], a[1], a[2], *p);
+                pg.accum_accp_one_d(i, a[0], a[1], a[2], *p, nngb, idxngb);
 #else
-                pg.accum_accp_one(i, a[0], a[1], a[2], *p);
+                pg.accum_accp_one(i, a[0], a[1], a[2], *p, nngb, idxngb);
 #endif
-                
             }
         }
     }
@@ -252,7 +263,7 @@ struct CalcForceLongEPSPMono {
         const PS::F64vec pos_ofs = ep_i[0].getPos();
 #endif
  
-        pg.set_eps2(eps2);
+        pg.set_eps2(eps2, gamma);
         for(PS::S32 i=0; i<n_ip; i++){
 #ifdef EP_OFFSET
             const PS::F64vec pos_i = ep_i[i].getPos()-pos_ofs;
@@ -261,13 +272,14 @@ struct CalcForceLongEPSPMono {
 #endif //EP_OFFSET
 #ifdef USE_INDIVIDUAL_CUTOFF
             const PS::F64 r_outi = ep_i[i].getROut();
-#ifdef CALC_EPEP_64bit
-            pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_outi*gamma);
+            const PS::F64 r_searchi = ep_i[i].getRSearch();
+#ifdef CALC_EPSP_64bit
+            pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_searchi);
 #else
-            pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_outi*gamma);
+            pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z, r_outi, r_searchi);
 #endif
 #else //USE_INDIVIDUAL_CUTOFF
-#ifdef CALC_EPEP_64bit
+#ifdef CALC_EPSP_64bit
             pg.set_xi_one_d(i, pos_i.x, pos_i.y, pos_i.z);
 #else
             pg.set_xi_one(i, pos_i.x, pos_i.y, pos_i.z);
@@ -291,15 +303,15 @@ struct CalcForceLongEPSPMono {
 #endif //EP_OFFSET
 #ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef CALC_EPSP_64bit
-                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, 0., 0.);
+                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, 0., 0., -1.);
 #else
-                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, 0., 0.);
+                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, 0., 0., -1.);
 #endif
 #else //USE_INDIVIDUAL_CUTOFF
 #ifdef CALC_EPSP_64bit
-                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j);
+                pg.set_epj_one_d(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, -1.);
 #else
-                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j);
+                pg.set_epj_one(i_tmp, pos_j.x, pos_j.y, pos_j.z, m_j, -1.);
 #endif
 #endif //USE_INDIVIDUAL_CUTOFF
             }
@@ -311,10 +323,12 @@ struct CalcForceLongEPSPMono {
             for(PS::S32 i=0; i<n_ip; i++){
                 PS::F64 * p = &(force[i].phi);
                 PS::F64 * a = (PS::F64 * )(&force[i].acc[0]);
+                PS::F64 nngb = 0.;
+                PS::F64 idxngb = -1.;
 #ifdef CALC_EPSP_64bit
-                pg.accum_accp_one_d(i, a[0], a[1], a[2], *p);
+                pg.accum_accp_one_d(i, a[0], a[1], a[2], *p, nngb, idxngb);
 #else
-                pg.accum_accp_one(i, a[0], a[1], a[2], *p);
+                pg.accum_accp_one(i, a[0], a[1], a[2], *p, nngb, idxngb);
 #endif
             }
         }
@@ -333,23 +347,30 @@ struct CalcForceLongEPEP {
         const PS::F64 eps2  = (*ep_i).getEps2();
         const PS::F64 gamma = (*ep_i).getGamma();  
 #ifndef USE_INDIVIDUAL_CUTOFF
-        const PS::F64 r_out  = (*ep_i).getROut();
-        const PS::F64 r_out2 = r_out * r_out;
+        const PS::F64 r_out     = (*ep_i).getROut();
+        const PS::F64 r_search  = (*ep_i).getRSearch();
+        const PS::F64 r_out2    = r_out    * r_out;
+        const PS::F64 r_search2 = r_search * r_search;    
 #endif
         
         for(PS::S32 i=0; i<n_ip; i++){
             const PS::F64vec pos_i = ep_i[i].getPos();
 #ifdef USE_INDIVIDUAL_CUTOFF
-            const PS::F64 r_outi = ep_i[i].getROut();
+            const PS::F64 r_outi    = ep_i[i].getROut();
+            const PS::F64 r_searchi = ep_i[i].getRSearch();
 #endif           
-            PS::F64vec acc_i = 0.0;
-            PS::F64    pot_i = 0.0;
+            PS::F64vec acc_i   = 0.0;
+            PS::F64    pot_i   = 0.0;
+            PS::S32    nngb_i  = 0;
+            PS::S32    idngb_i = 0;
             
             for(PS::S32 j=0; j<n_jp; j++){
                 const PS::F64vec rij = ep_j[j].getPos() - pos_i;
 #ifdef USE_INDIVIDUAL_CUTOFF
-                const PS::F64 r_out = std::max(r_outi, ep_j[j].getROut());
-                const PS::F64 r_out2 = r_out * r_out;
+                const PS::F64 r_out    = std::max(r_outi,    ep_j[j].getROut());
+                const PS::F64 r_search = std::max(r_searchi, ep_j[j].getRSearch());
+                const PS::F64 r_out2    = r_out    * r_out;
+                const PS::F64 r_search2 = r_search * r_search;
 #endif
                 const PS::F64 r2_real = rij * rij + eps2;
                 const PS::F64 r2      = std::max(r2_real, r_out2);
@@ -360,9 +381,15 @@ struct CalcForceLongEPEP {
                 
                 acc_i += m_r3 * rij;
                 pot_i -= m_r;
+                if ( r2_real < r_search2 ) {
+                    nngb_i++;
+                    if ( r2_real > eps2 ) idngb_i = ep_j[j].id;
+                }
             }
-            force[i].acc += acc_i;
-            force[i].phi += pot_i;
+            force[i].acc      += acc_i;
+            force[i].phi      += pot_i;
+            force[i].neighbor += nngb_i - 1;
+            force[i].id_neighbor = idngb_i;
         }
     }
 };

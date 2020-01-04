@@ -35,25 +35,29 @@ public:
         PS::F64 ephi_sun_loc = 0.0;
         PS::F64 ephi_loc = 0.0;
         PS::F64 ephi_d_loc = 0.0;
+        
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
         for(PS::S32 i = 0; i < n_loc; i++){
             ekin_loc     += pp[i].mass * pp[i].vel * pp[i].vel;
             ephi_sun_loc += pp[i].mass * pp[i].phi_s;
             ephi_loc     += pp[i].mass * pp[i].phi;
-            ephi_d_loc   += pp[i].mass * pp[i].phi_d;   
+            ephi_d_loc   += pp[i].mass * pp[i].phi_d;
         }
         ekin_loc *= 0.5;
         ephi_loc *= 0.5;
         ephi_d_loc *= 0.5;
-        
+
         ekin     += PS::Comm::getSum(ekin_loc);
+#ifdef INDIRECT_TERM
+        ekin     -= pp[0].getKineticEnergyOfSystem();
+#endif
         ephi_sun += PS::Comm::getSum(ephi_sun_loc);
         ephi     += PS::Comm::getSum(ephi_loc);
         ephi_d   += PS::Comm::getSum(ephi_d_loc);
         ephi_planet =  ephi + ephi_d;
         etot = ekin + ephi_sun + ephi_planet;
     }
-
+    
     PS::F64 calcEnergyError(const Energy e_init){
         return (etot - e_init.etot - edisp)/e_init.etot;
     }
@@ -70,18 +74,26 @@ public:
     Energy e_init;
     Energy e_now;
     PS::S32 readAscii(FILE * fp) {
-        fscanf(fp, "%lf\t%d\t%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
-               &time, &n_body, &id_next,
-               &e_init.etot, &e_init.ekin, &e_init.ephi_sun, &e_init.ephi_planet, &e_init.edisp,
-               &e_now.etot,  &e_now.ekin,  &e_now.ephi_sun,  &e_now.ephi_planet,  &e_now.edisp);
-		return n_body;
+        if ( !fscanf(fp, "%lf\t%d\t%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
+                     &time, &n_body, &id_next,
+                     &e_init.etot, &e_init.ekin, &e_init.ephi_sun, &e_init.ephi_planet, &e_init.edisp,
+                     &e_now.etot,  &e_now.ekin,  &e_now.ephi_sun,  &e_now.ephi_planet,  &e_now.edisp) ) {
+            
+            errorMessage("The header has NOT been correctly written.");
+            PS::Abort();
+        }
+        return n_body;
     }
     void writeAscii(FILE* fp) const {
-        fprintf(fp,
-                "%g\t%d\t%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\n",
-                time, n_body, id_next,
-                e_init.etot, e_init.ekin, e_init.ephi_sun, e_init.ephi_planet, e_init.edisp,
-                e_now.etot,  e_now.ekin,  e_now.ephi_sun,  e_now.ephi_planet,  e_now.edisp);
+        if ( !fprintf(fp,
+                      "%g\t%d\t%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\n",
+                      time, n_body, id_next,
+                      e_init.etot, e_init.ekin, e_init.ephi_sun, e_init.ephi_planet, e_init.edisp,
+                      e_now.etot,  e_now.ekin,  e_now.ephi_sun,  e_now.ephi_planet,  e_now.edisp) ) {
+            
+            errorMessage("The header has NOT been correctly read.");
+            PS::Abort();
+        }
     }
 
     FileHeader(){ n_body = 0; id_next = 0; time = 0.; }

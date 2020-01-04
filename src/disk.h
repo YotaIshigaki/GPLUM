@@ -186,7 +186,7 @@ public:
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
 
 #pragma omp parallel for
-        for(PS::S64 i=0; i<n_loc; i++){
+        for(PS::S32 i=0; i<n_loc; i++){
             PS::F64 r2 = pp[i].pos.x*pp[i].pos.x + pp[i].pos.y*pp[i].pos.y;
             PS::F64 r_inv = 1./sqrt(r2);
             PS::F64 r = r2 * r_inv;

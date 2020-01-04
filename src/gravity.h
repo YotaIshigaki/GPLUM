@@ -5,7 +5,7 @@
 
 template <class Tpsys>
 void velKick(Tpsys & pp){
-    PS::S32 n = pp.getNumberOfParticleLocal();
+    const PS::S32 n = pp.getNumberOfParticleLocal();
 #pragma omp parallel for
     for(PS::S32 i=0; i<n; i++){
         pp[i].velKick();
@@ -15,35 +15,29 @@ void velKick(Tpsys & pp){
 template <class Tpsys>
 void calcStarGravity(Tpsys & pp)
 {
-    PS::F64 eps2 = EPGrav::eps2;
-    PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
     
-    PS::F64vec posi = pp.getPos();
+    PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
     
     PS::F64vec dr  = - posi;
     PS::F64vec dv  = - veli;
     PS::F64    r2inv = 1.0 / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
-    //PS::F64    rinv  = rsqrt(dr * dr + eps2);
-    //PS::F64    r2inv = rinv * rinv;
     PS::F64    r3inv = rinv * r2inv;
     PS::F64    r5inv = r3inv * r2inv;
 
-    pp.phi_s  = - m_sun * rinv;
-    pp.acc_d += m_sun * r3inv * dr;
-    pp.jerk  += m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
-
-#ifdef CHECK_NEIGHBOR
-    pp.true_neighbor = 0;
-#endif
+    pp.phi_s  = -m_sun * rinv;
+    pp.acc_s  =  m_sun * r3inv * dr;
+    pp.jerk_s =  m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
 }
 
 template <class Tpsys>
 void calcStarGravity_p(Tpsys & pp)
 {
-    PS::F64 eps2 = EPGrav::eps2;
-    PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
 
     PS::F64vec posi = pp.xp;
     PS::F64vec veli = pp.vp;
@@ -52,76 +46,69 @@ void calcStarGravity_p(Tpsys & pp)
     PS::F64vec dv  = - veli;
     PS::F64    r2inv = 1.0 / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
-    //PS::F64    rinv  = rsqrt(dr * dr + eps2);
-    //PS::F64    r2inv = rinv * rinv;
     PS::F64    r3inv = rinv * r2inv;
     PS::F64    r5inv = r3inv * r2inv;
 
-    pp.acc_d += m_sun * r3inv * dr;
-    pp.jerk  += m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    pp.acc_s  = m_sun * r3inv * dr;
+    pp.jerk_s = m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
 }
 
 template <class Tpsys>
 void calcStarGravity_c(Tpsys & pp)
 {
-    PS::F64 eps2 = EPGrav::eps2;
-    PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
 
-    PS::F64vec posi = pp.getPos();
+    PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
 
     PS::F64vec dr  = - posi;
     PS::F64vec dv  = - veli;
     PS::F64    r2inv = 1.0 / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
-    //PS::F64    rinv  = rsqrt(dr * dr + eps2);
-    //PS::F64    r2inv = rinv * rinv;
     PS::F64    r3inv = rinv * r2inv;
     PS::F64    r5inv = r3inv * r2inv;
 
-    pp.acc_d += m_sun * r3inv * dr;
-    pp.jerk  += m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    pp.acc_s  = m_sun * r3inv * dr;
+    pp.jerk_s = m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
 }
 
 #if 0
 template <class Tpsys>
 void calcStarAcc(Tpsys & pp)
 {
-    PS::F64 eps2 = EPGrav::eps2;
-    PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
 
-    PS::F64vec posi = pp.getPos();
+    PS::F64vec posi = pp.pos;
 
     PS::F64vec dr  = - posi;
     PS::F64    r2inv = 1.0 / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
-    //PS::F64    rinv  = rsqrt(dr * dr + eps2);
     PS::F64    r3inv = rinv * r2inv;
 
-    pp.phi_s  = - m_sun * rinv;
-    pp.acc_d += m_sun * r3inv * dr;
+    pp.phi_s = -m_sun * rinv;
+    pp.acc_s =  m_sun * r3inv * dr;
 }
 #endif
 
 template <class Tpsys>
 void calcStarJerk(Tpsys & pp)
 {
-    PS::F64 eps2 = EPGrav::eps2;
-    PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
 
-    PS::F64vec posi = pp.getPos();
+    PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
 
     PS::F64vec dr  = - posi;
     PS::F64vec dv  = - veli;
     PS::F64    r2inv = 1.0 / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
-    //PS::F64    rinv  = rsqrt(dr * dr + eps2);
-    //PS::F64    r2inv = rinv * rinv;
     PS::F64    r3inv = rinv * r2inv;
     PS::F64    r5inv = r3inv * r2inv;
 
-    pp.jerk  += m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    pp.jerk_s = m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
 }
 
 template <class Tp, class Tpsys>
@@ -130,134 +117,132 @@ void calcGravity(Tp & pi,
 {
     //assert( pi.neighbor != 0 );
     
-    PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = EPGrav::eps2;
     
-    pi.phi_d = 0.0;
-    pi.phi_s = 0.0;
-    pi.acc_d = 0.0;
-    pi.jerk  = 0.0;
+    //pi.phi_d  = 0.;
+    //pi.acc_d  = 0.;
+    //pi.jerk_d = 0.;
     
     calcStarGravity(pi);
     
     PS::S32 pj_id = 0;
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    PS::F64vec acci = 0.0;
-    PS::F64    phii = 0.0;
-    PS::F64vec jerki= 0.0;
+    PS::F64vec acci = 0.;
+    PS::F64    phii = 0.;
+    PS::F64vec jerki= 0.;
     
 #ifndef FORDEBUG
-    for(PS::S32 j=0; j<pi.neighbor; j++){
-        pj_id = pi.n_hard_list.at(j);
+    for(PS::S32 j=0; j<pi.neighbor; j++)
 #else
-    for(PS::S32 j=0; j<pp.size(); j++){
-        pj_id = j;
-#endif        
-        if ( pi.id == pp[pj_id].id ) continue;
+    for(PS::S32 j=0; j<pp.size(); j++)
+#endif
+        {
+#ifndef FORDEBUG
+            pj_id = pi.n_hard_list.at(j);
+#else
+            pj_id = j;
+#endif  
+            
+            if ( pi.id == pp[pj_id].id ) continue;
         
-        PS::F64vec xj = pp[pj_id].pos;
-        PS::F64vec dr  = xj - xi;
-        PS::F64 dr2 = dr * dr;
-        assert( dr2 != 0.0 );
-        dr2 += eps2;
+            PS::F64vec xj = pp[pj_id].pos;
+            PS::F64vec dr  = xj - xi;
+            PS::F64 dr2 = dr * dr;
+            assert( dr2 != 0.0 );
+            dr2 += eps2;
         
-        PS::F64vec vj   = pp[pj_id].vel;
-        PS::F64vec dv    = vj - vi;
-        //PS::F64    massj = pp[pj_id].getCharge();
-        PS::F64    massj = pp[pj_id].mass;
+            PS::F64vec vj   = pp[pj_id].vel;
+            PS::F64vec dv    = vj - vi;
+            PS::F64    massj = pp[pj_id].mass;
         
-        PS::F64 rij   = sqrt(dr2);
-        PS::F64 drdv  = dr*dv;
-        PS::F64 rinv  = 1. / rij;
-        PS::F64 r2inv = rinv  * rinv;
-        PS::F64 r3inv = r2inv * rinv;
-        PS::F64 r5inv = r3inv * r2inv;
+            PS::F64 rij   = sqrt(dr2);
+            PS::F64 drdv  = dr*dv;
+            PS::F64 rinv  = 1. / rij;
+            PS::F64 r2inv = rinv  * rinv;
+            PS::F64 r3inv = r2inv * rinv;
+            PS::F64 r5inv = r3inv * r2inv;
         
 #ifdef USE_INDIVIDUAL_CUTOFF
-        PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
+            PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-        PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-        PS::F64 W  = cutoff_W(rij, r_out_inv);
-        PS::F64 K  = cutoff_K(rij, r_out_inv);
-        PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+            PS::F64 W  = cutoff_W(rij, r_out_inv);
+            PS::F64 K  = cutoff_K(rij, r_out_inv);
+            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
         
-        phii  -= massj * rinv * (1.-W);
-        acci  += massj * r3inv * dr * (1.-K);
-        jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
-
-#ifdef CHECK_NEIGHBOR
-#ifdef USE_INDIVIDUAL_CUTOFF
-        PS::F64 r_out = std::max(pi.r_out, pp[pj_id].r_out);
-#else
-        PS::F64 r_out = FPGrav::r_out;
-#endif
-        if ( rij < r_out ) pi.true_neighbor ++;
-#endif
-    }
-    pi.acc_d += acci;
-    pi.phi_d += phii;
-    pi.jerk  += jerki;
+            phii  -= massj * rinv * (1.-W);
+            acci  += massj * r3inv * dr * (1.-K);
+            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+        }
+    pi.acc_d  = acci;
+    pi.phi_d  = phii;
+    pi.jerk_d = jerki;
 }
-
+    
 template <class Tp, class Tpsys>
 void calcGravity_p(Tp & pi,
                    Tpsys & pp)
 {
     //assert( pi.neighbor != 0 );
 
-    PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = EPGrav::eps2;
   
-    pi.acc_d = 0.0;
-    pi.jerk  = 0.0;
+    //pi.acc_d  = 0.;
+    //pi.jerk_d = 0.;
+    
     calcStarGravity_p(pi);
         
     PS::S32 pj_id = 0;
     PS::F64vec xpi = pi.xp;
     PS::F64vec vpi = pi.vp;
-    PS::F64vec acci = 0.0;
-    PS::F64vec jerki= 0.0;
+    PS::F64vec acci  = 0.;
+    PS::F64vec jerki = 0.;
 
 #ifndef FORDEBUG
-    for(PS::S32 j=0; j<pi.neighbor; j++){
-        pj_id = pi.n_hard_list.at(j);
+    for(PS::S32 j=0; j<pi.neighbor; j++)
 #else
-    for(PS::S32 j=0; j<pp.size(); j++){
-        pj_id = j;
+    for(PS::S32 j=0; j<pp.size(); j++)
 #endif
-        if ( pi.id == pp[pj_id].id ) continue;
+        {
+#ifndef FORDEBUG
+            pj_id = pi.n_hard_list.at(j);
+#else
+            pj_id = j;
+#endif
+            if ( pi.id == pp[pj_id].id ) continue;
 
-        PS::F64vec xpj = pp[pj_id].xp;
-        PS::F64vec dr  = xpj - xpi;
-        PS::F64 dr2 = dr * dr;
-        assert( dr2 != 0.0 );
-        dr2 += eps2;
+            PS::F64vec xpj = pp[pj_id].xp;
+            PS::F64vec dr  = xpj - xpi;
+            PS::F64 dr2 = dr * dr;
+            assert( dr2 != 0.0 );
+            dr2 += eps2;
 
-        PS::F64vec vpj   = pp[pj_id].vp;
-        PS::F64vec dv    = vpj - vpi;
-        //PS::F64    massj = pp[pj_id].getCharge();
-        PS::F64    massj = pp[pj_id].mass;
+            PS::F64vec vpj   = pp[pj_id].vp;
+            PS::F64vec dv    = vpj - vpi;
+            PS::F64    massj = pp[pj_id].mass;
 
-        PS::F64 rij   = sqrt(dr2);
-        PS::F64 drdv  = dr*dv;
-        PS::F64 rinv  = 1. / rij;
-        PS::F64 r2inv = rinv  * rinv;
-        PS::F64 r3inv = r2inv * rinv;
-        PS::F64 r5inv = r3inv * r2inv;
+            PS::F64 rij   = sqrt(dr2);
+            PS::F64 drdv  = dr*dv;
+            PS::F64 rinv  = 1. / rij;
+            PS::F64 r2inv = rinv  * rinv;
+            PS::F64 r3inv = r2inv * rinv;
+            PS::F64 r5inv = r3inv * r2inv;
 
 #ifdef USE_INDIVIDUAL_CUTOFF
-        PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
+            PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-        PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-        PS::F64 K  = cutoff_K(rij, r_out_inv);
-        PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+            PS::F64 K  = cutoff_K(rij, r_out_inv);
+            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
         
-        acci  += massj * r3inv * dr * (1.-K);
-        jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
-    }
-    pi.acc_d += acci;
-    pi.jerk  += jerki;
+            acci  += massj * r3inv * dr * (1.-K);
+            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+        }
+    pi.acc_d  = acci;
+    pi.jerk_d = jerki;
 }
 
 template <class Tp, class Tpsys>
@@ -266,66 +251,71 @@ void calcGravity_c(Tp & pi,
 {
     //assert( pi.neighbor != 0 );
     
-    PS::F64 eps2  = EPGrav::eps2;
-    pi.acc_d = 0.0;
-    pi.jerk  = 0.0;
+    const PS::F64 eps2  = EPGrav::eps2;
+    
+    //pi.acc_d  = 0.;
+    //pi.jerk_d = 0.;
     
     calcStarGravity_c(pi);
     
     PS::S32 pj_id = 0;
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    PS::F64vec acci = 0.0;
-    PS::F64vec jerki= 0.0;
+    PS::F64vec acci = 0.;
+    PS::F64vec jerki= 0.;
 
 #ifndef FORDEBUG
-    for(PS::S32 j=0; j<pi.neighbor; j++){
-        pj_id = pi.n_hard_list.at(j);
+    for(PS::S32 j=0; j<pi.neighbor; j++)
 #else
-    for(PS::S32 j=0; j<pp.size(); j++){
-        pj_id = j;
+    for(PS::S32 j=0; j<pp.size(); j++)
 #endif
-        if ( pi.id == pp[pj_id].id ) continue;
+        {
+#ifndef FORDEBUG
+            pj_id = pi.n_hard_list.at(j);
+#else
+            pj_id = j;
+#endif
+            if ( pi.id == pp[pj_id].id ) continue;
         
-        PS::F64vec xpj = pp[pj_id].xp;
-        PS::F64vec dr  = xpj - xi;
-        PS::F64 dr2 = dr * dr;
-        assert( dr2 != 0.0 );
-        dr2 += eps2;
+            PS::F64vec xpj = pp[pj_id].xp;
+            PS::F64vec dr  = xpj - xi;
+            PS::F64 dr2 = dr * dr;
+            assert( dr2 != 0.0 );
+            dr2 += eps2;
         
-        PS::F64vec vpj   = pp[pj_id].vp;
-        PS::F64vec dv    = vpj - vi;
-        //PS::F64    massj = pp[pj_id].getCharge();
-        PS::F64    massj = pp[pj_id].mass;
+            PS::F64vec vpj   = pp[pj_id].vp;
+            PS::F64vec dv    = vpj - vi;
+            PS::F64    massj = pp[pj_id].mass;
 
-        PS::F64 rij   = sqrt(dr2);
-        PS::F64 drdv  = dr*dv;
-        PS::F64 rinv  = 1. / rij;
-        PS::F64 r2inv = rinv  * rinv;
-        PS::F64 r3inv = r2inv * rinv;
-        PS::F64 r5inv = r3inv * r2inv;
+            PS::F64 rij   = sqrt(dr2);
+            PS::F64 drdv  = dr*dv;
+            PS::F64 rinv  = 1. / rij;
+            PS::F64 r2inv = rinv  * rinv;
+            PS::F64 r3inv = r2inv * rinv;
+            PS::F64 r5inv = r3inv * r2inv;
         
 #ifdef USE_INDIVIDUAL_CUTOFF
-        PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
+            PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-        PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-        PS::F64 K  = cutoff_K(rij, r_out_inv);
-        PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+            PS::F64 K  = cutoff_K(rij, r_out_inv);
+            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
         
-        acci  += massj * r3inv * dr * (1.-K);
-        jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
-    }
-    pi.acc_d += acci;
-    pi.jerk  += jerki;
+            acci  += massj * r3inv * dr * (1.-K);
+            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+        }
+    pi.acc_d  = acci;
+    pi.jerk_d = jerki;
 }
 
 template <class Tp, class Tpsys>
 void calcJerk(Tp & pi,
               Tpsys & pp)
 {   
-    PS::F64 eps2  = EPGrav::eps2;
-    pi.jerk  = 0.0;
+    const PS::F64 eps2  = EPGrav::eps2;
+    
+    //pi.jerk  = 0.;
     
     calcStarJerk(pi);
     
@@ -335,43 +325,46 @@ void calcJerk(Tp & pi,
     PS::F64vec jerki= 0.0;
 
 #ifndef FORDEBUG
-    for(PS::S32 j=0; j<pi.neighbor; j++){
-        pj_id = pi.n_hard_list.at(j);
+    for(PS::S32 j=0; j<pi.neighbor; j++)
 #else
-    for(PS::S32 j=0; j<pp.size(); j++){
-        pj_id = j;
+    for(PS::S32 j=0; j<pp.size(); j++)
 #endif
-        if ( pi.id == pp[pj_id].id ) continue;
+        {
+#ifndef FORDEBUG
+            pj_id = pi.n_hard_list.at(j);
+#else
+            pj_id = j;
+#endif
+            if ( pi.id == pp[pj_id].id ) continue;
         
-        PS::F64vec xj = pp[pj_id].pos;
-        PS::F64vec dr  = xj - xi;
-        PS::F64 dr2 = dr * dr;
-        assert( dr2 != 0.0 );
-        dr2 += eps2;
+            PS::F64vec xj = pp[pj_id].pos;
+            PS::F64vec dr  = xj - xi;
+            PS::F64 dr2 = dr * dr;
+            assert( dr2 != 0.0 );
+            dr2 += eps2;
         
-        PS::F64vec vj   = pp[pj_id].vel;
-        PS::F64vec dv    = vj - vi;
-        //PS::F64    massj = pp[pj_id].getCharge();
-        PS::F64    massj = pp[pj_id].mass;
+            PS::F64vec vj   = pp[pj_id].vel;
+            PS::F64vec dv    = vj - vi;
+            PS::F64    massj = pp[pj_id].mass;
 
-        PS::F64 rij   = sqrt(dr2);
-        PS::F64 drdv  = dr*dv;
-        PS::F64 rinv  = 1. / rij;
-        PS::F64 r2inv = rinv  * rinv;
-        PS::F64 r3inv = r2inv * rinv;
-        PS::F64 r5inv = r3inv * r2inv;
+            PS::F64 rij   = sqrt(dr2);
+            PS::F64 drdv  = dr*dv;
+            PS::F64 rinv  = 1. / rij;
+            PS::F64 r2inv = rinv  * rinv;
+            PS::F64 r3inv = r2inv * rinv;
+            PS::F64 r5inv = r3inv * r2inv;
 
 #ifdef USE_INDIVIDUAL_CUTOFF
-        PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
+            PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-        PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-        PS::F64 K  = cutoff_K(rij, r_out_inv);
-        PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+            PS::F64 K  = cutoff_K(rij, r_out_inv);
+            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
 
-        jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
-    }
-    pi.jerk  += jerki;
+            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+        }  
+    pi.jerk_d = jerki;
 }
 
 
@@ -383,121 +376,220 @@ void correctForceLong(Tpsys & pp,
                       PS::S32 & nei_dist,
                       PS::S32 & nei_tot_loc)
 {
-    PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    PS::F64 eps2 = EPGrav::eps2;
+    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    const PS::F64 eps2 = EPGrav::eps2;
     NList.initializeList(pp);
 
-    PS::S32 nei_dist_tmp    = 0;
-    PS::S32 nei_tot_loc_tmp = 0;
-#pragma omp parallel for reduction (+:nei_tot_loc_tmp, nei_dist_tmp)
+    nei_dist    = 0;
+    nei_tot_loc = 0;
+#pragma omp parallel for reduction (+:nei_dist, nei_tot_loc)
     for(PS::S32 i=0; i<n_loc; i++){
-        PS::S32 j_id    = 0;
-        PS::S32 j_rank  = 0;
-        PS::S32 nei_loc = 0;
-        EPGrav* next = NULL;
-        nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
-        pp[i].neighbor = 0;
-        //pp[i].inDomain = true;
-        pp[i].id_cluster = pp[i].id;
-
+        PS::F64vec acci = 0.;
+        PS::F64    phii = 0.;
+        PS::F64    acc0i = 0.;
+        PS::S32    j_id = 0;
+        PS::S32    j_id_local = 0;
+        PS::S32    j_rank = 0;
+        PS::S32    neighbor = pp[i].neighbor;
         PS::F64vec posi = pp[i].getPos();
-        PS::F64vec acci= 0.0;
-        PS::F64 phii = 0.0;
-#ifdef CHECK_NEIGHBOR
-        PS::S32 true_neighbor = 0;
+        pp[i].neighbor = 0.;
+        pp[i].id_cluster = pp[i].id;
+#ifdef CHECK_NEIGHBOR     
+        PS::F64    phi_di = 0.;
 #endif
 
-        for(PS::S32 j=0; j<nei_loc; j++){
-            j_id   = (next+j)->id;
-            j_rank = (next+j)->myrank;
-
-            //PS::F64 massj  = (next+j)->getCharge();
-            PS::F64 massj  = (next+j)->mass;
+        if ( neighbor == 0 ) {
 #ifdef USE_INDIVIDUAL_CUTOFF
-            PS::F64 r_out_inv = std::min(pp[i].r_out_inv, (next+j)->r_out_inv);
+            PS::F64 r_out_inv = pp[i].r_out_inv;
 #else
             PS::F64 r_out_inv = EPGrav::r_out_inv;
 #endif
+            phii += pp[i].mass * r_out_inv;
             
-            if ( pp[i].id == j_id ) {
-                phii  += massj * r_out_inv;
-                continue;
-            }
+        } else {
+            assert ( neighbor > 0 );
+            j_id = pp[i].id_neighbor;
+            auto iter = NList.id_map.find(j_id);
+            bool isMerged = (iter == NList.id_map.end()) ? true : pp[iter->second].isMerged;
             
-            PS::F64vec posj = (next+j)->getPos();
-            PS::F64vec dr   = posj - posi;
-            PS::F64 dr2 = dr * dr;
-            
-            assert( dr2 != 0.0 );
-            assert( j_id > -1 );
-            dr2 += eps2;
+            if ( !( neighbor > 1 || isMerged ) ) {
+                j_id_local = iter->second;
+                j_rank     = pp[j_id_local].myrank;
+                assert( pp[j_id_local].id == j_id );
+                assert( j_id != pp[i].id );
+                //assert( !pp[j_id_local].isDead );
 
-            PS::F64 rij   = sqrt(dr2);
-            PS::F64 rinv  = 1. / rij;
+#ifdef USE_INDIVIDUAL_CUTOFF
+                PS::F64 r_out_inv = pp[i].r_out_inv;
+                PS::F64 r_out     = pp[i].r_out;
+#else
+                PS::F64 r_out_inv = EPGrav::r_out_inv;
+                PS::F64 r_out     = EPGrav::r_out;
+#endif
+                phii += pp[i].mass * r_out_inv;
+                
+                PS::F64 massj  = pp[j_id_local].mass;
+#ifdef USE_INDIVIDUAL_CUTOFF
+                r_out_inv = std::min(pp[i].r_out_inv, pp[j_id_local].r_out_inv);
+                r_out     = std::max(pp[i].r_out,     pp[j_id_local].r_out);
+                PS::F64 r_search = std::max(pp[i].r_search, pp[j_id_local].r_search);
+#else
+                PS::F64 r_search = EPGrav::r_search;
+#endif
+                
+                PS::F64vec posj = pp[j_id_local].getPos();
+                PS::F64vec dr   = posj - posi;
+                PS::F64 dr2 = dr * dr;
+                assert( dr2 != 0.0 );
+                assert( j_id > -1 );
+                dr2 += eps2;
+                PS::F64 rij   = sqrt(dr2);
 
 #ifdef USE_RE_SEARCH_NEIGHBOR
-            PS::F64 drdv   = dr * (((next+j)->vel) - pp[i].vel);         
+                PS::F64vec dv      = pp[j_id_local].vel   - pp[i].vel;
+                PS::F64vec da      = pp[j_id_local].acc_d - pp[i].acc_d;
+                PS::F64    drdv    = dr * dv;
+                PS::F64    dv2     = dv * dv;
+                PS::F64    da2     = da * da;
+                PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                
+                PS::F64    r_crit   = FPGrav::R_search2 * r_out;
+                PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 ) {
+                    //if ( dr2_min < r_crit * r_crit ) {
+#endif
+                    if ( rij < r_search ) {
+#ifdef TEST_PTCL
+                        if ( r_out > 0. ){
+#endif
+                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                            acc0i += massj * r_out_inv * r_out_inv;
+#ifdef TEST_PTCL
+                        }
+#endif
+                    }
+#ifdef USE_RE_SEARCH_NEIGHBOR
+                }
+#endif
+                
+                if ( rij < r_out ) {    
+                    PS::F64 rinv  = 1. / rij;
+                    PS::F64 r2inv = rinv * rinv;
+                    PS::F64 r3inv = rinv * r2inv;
+                    
+                    PS::F64 W  = cutoff_W(rij, r_out_inv);
+                    PS::F64 K  = cutoff_K(rij, r_out_inv);
+                    PS::F64 r_min = std::min(rinv, r_out_inv);
+                    
+#ifdef CHECK_NEIGHBOR
+                    phi_di -= massj * rinv * (1.-W);
+#endif
+                    phii  -= massj * ( rinv * W  - r_min );
+                    acci  += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
+                }
+                
+            } else { // neighbor > 2 || j_id is not in map
+                PS::S32 nei_loc = 0;
+                EPGrav* next = NULL;
+                nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
+                
+                for(PS::S32 j=0; j<nei_loc; j++){
+                    j_id       = (next+j)->id;
+                    j_id_local = (next+j)->id_local;
+                    j_rank     = (next+j)->myrank;
+                
+                    PS::F64 massj  = (next+j)->mass;
 #ifdef USE_INDIVIDUAL_CUTOFF
-            PS::F64 r_search_ = EPGrav::R_search0 * std::max(pp[i].r_out, (next+j)->r_out)
-                + std::max(   - EPGrav::R_search2 * drdv * rinv,
-                                EPGrav::R_search3 * std::max(pp[i].v_disp, (next+j)->v_disp) * FPGrav::dt_tree );
+                    PS::F64 r_out_inv = std::min(pp[i].r_out_inv, (next+j)->r_out_inv);
+                    PS::F64 r_out     = std::max(pp[i].r_out,     (next+j)->r_out);
 #else
-            PS::F64 r_search_ = EPGrav::R_search0 * EPGrav::r_out
-                + std::max(   - EPGrav::R_search2 * drdv * rinv,
-                                EPGrav::R_search3 * EPGrav::v_disp * FPGrav::dt_tree );
+                    PS::F64 r_out_inv = EPGrav::r_out_inv;
+                    PS::F64 r_out     = EPGrav::r_out;
+#endif
+                    
+                    if ( j_id == pp[i].id ) {
+                        phii += massj * r_out_inv;
+                        continue;
+                    }
+            
+                    PS::F64vec posj = (next+j)->getPos();
+                    PS::F64vec dr   = posj - posi;
+                    PS::F64 dr2 = dr * dr;              
+                    assert( dr2 != 0.0 );
+                    assert( j_id > -1 );
+                    dr2 += eps2;
+                    PS::F64 rij   = sqrt(dr2);
+
+#ifdef USE_RE_SEARCH_NEIGHBOR
+                    PS::F64vec dv      = (next+j)->vel   - pp[i].vel;
+                    PS::F64vec da      = (next+j)->acc_d - pp[i].acc_d;
+                    PS::F64    drdv    = dr * dv;
+                    PS::F64    dv2     = dv * dv;
+                    PS::F64    da2     = da * da;
+                    PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                    PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+
+                    PS::F64    r_crit   = FPGrav::R_search2 * r_out;
+                    PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                    if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 ){
+                        //if ( dr2_min < r_crit * r_crit ){
 #endif
 #ifdef TEST_PTCL
-            if ( pp[i].r_out == 0. &&  (next+j)->r_out == 0. ) r_search_ = 0.;
+                        if ( r_out > 0. ){
 #endif
-            
-            if ( rij < r_search_ ) {
+                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                            acc0i += massj * r_out_inv * r_out_inv;
+#ifdef TEST_PTCL
+                        }
 #endif
-
-                NList.addNeighbor(pp, i, j_id, j_rank);           
-            
-                PS::F64 r2inv = rinv * rinv;
-                PS::F64 r3inv = rinv * r2inv;
-            
-                PS::F64 W  = cutoff_W(rij, r_out_inv);
-                PS::F64 K  = cutoff_K(rij, r_out_inv);
-                PS::F64 r_min = std::min(rinv, r_out_inv);
-                
-                phii  -= massj * ( rinv * W  - r_min );
-                acci  += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
-
 #ifdef USE_RE_SEARCH_NEIGHBOR
-            }
+                    }
 #endif
-            
-
+                    
+                    if ( rij < r_out ) {
+                        PS::F64 rinv  = 1. / rij;
+                        PS::F64 r2inv = rinv * rinv;
+                        PS::F64 r3inv = rinv * r2inv;
+                        
+                        PS::F64 W  = cutoff_W(rij, r_out_inv);
+                        PS::F64 K  = cutoff_K(rij, r_out_inv);
+                        PS::F64 r_min = std::min(rinv, r_out_inv);
+                        
 #ifdef CHECK_NEIGHBOR
-#ifdef USE_INDIVIDUAL_CUTOFF
-            PS::F64 r_out = std::max(pp[i].r_out, (next+j)->r_out);
-#else
-            PS::F64 r_out = EPGrav::r_out;
+                        phi_di -= massj * rinv * (1.-W);
 #endif
-            if ( rij < r_out ) true_neighbor ++;
-#endif
+                        phii  -= massj * ( rinv * W  - r_min );
+                        acci  += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
+                    }
+                }
+            }
         }
-        
-        nei_tot_loc_tmp += pp[i].neighbor;
-        nei_dist_tmp ++;
+
+        if ( pp[i].neighbor ){
+#pragma omp critical
+            {
+                NList.with_neighbor_list.push_back(i);
+            }
+        }
+
+        nei_dist += pp[i].neighbor;
+        nei_tot_loc ++;
 
         pp[i].acc  += acci;
         pp[i].phi  += phii;
-
+        pp[i].acc0  = (pp[i].neighbor>0) ? acc0i/pp[i].neighbor : 0.;
+        
 #ifdef CHECK_NEIGHBOR
-        if ( pp[i].true_neighbor < true_neighbor ) {
-            std::cerr << "Unknown Neighbor Exists on Particle " << pp[i].id
-                      << " at Time "  << pp[i].time << std::endl;
-        }
+        PS::F64  dphi_d = pp[i].phi_d - phi_di;
+        if ( abs(pp[i].phi_d - phi_di) > 0. )
+            std::cout << pp[i].id << "\t" << pp[i].phi_d << "\t"
+                      << phi_di << "\t" << dphi_d/pp[i].phi_s << std::endl;
 #endif
     }
-
-    nei_dist    = nei_tot_loc_tmp;
-    nei_tot_loc = nei_dist_tmp;
+    //NList.checkNeighbor(pp);
 }
- 
+
 template <class Tpsys, class Tptree>
 void correctForceLongInitial(Tpsys & pp,
                              Tptree & tree_grav,
@@ -505,125 +597,276 @@ void correctForceLongInitial(Tpsys & pp,
                              PS::S32 & nei_dist,
                              PS::S32 & nei_tot_loc)
 {
-    PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    PS::F64 eps2 = EPGrav::eps2;
+    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    const PS::F64 eps2 = EPGrav::eps2;
     NList.initializeList(pp);
 
-    PS::S32 nei_dist_tmp    = 0;
-    PS::S32 nei_tot_loc_tmp = 0;
-#pragma omp parallel for reduction (+:nei_tot_loc_tmp, nei_dist_tmp)
+    PS::F64vec acc_d[n_loc];
+#pragma omp parallel for
     for(PS::S32 i=0; i<n_loc; i++){
-        pp[i].acc_d = 0.0;
-        pp[i].jerk = 0.0;
-        pp[i].phi_d = 0.0;
-        pp[i].phi_s = 0.0;
+        acc_d[i] = pp[i].acc_d;
+    }
+
+    nei_dist    = 0;
+    nei_tot_loc = 0;
+#pragma omp parallel for reduction (+:nei_dist, nei_tot_loc)
+    for(PS::S32 i=0; i<n_loc; i++){
+        //pp[i].acc_s  = 0.;
+        //pp[i].acc_d  = 0.;
+        //pp[i].jerk_s = 0.;
+        //pp[i].jerk_d = 0.;
+        //pp[i].phi_s  = 0.;
+        //pp[i].phi_d  = 0.; 
 
         calcStarGravity(pp[i]);
-        
-        PS::S32 j_id = 0;
-        PS::S32 j_rank = 0;
-        PS::S32 nei_loc = 0;
-        EPGrav* next = NULL;//Pointer Of Neighbor List
-        nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
-        pp[i].neighbor = 0;
-        //pp[i].inDomain = true;
+
+        PS::F64vec acci   = 0.;
+        PS::F64vec acc_di = 0.;
+        PS::F64vec jerki  = 0.;
+        PS::F64    acc0i  = 0.;
+        PS::F64    phii   = 0.;
+        PS::F64    phi_di = 0.;
+        PS::S32    j_id = 0;
+        PS::S32    j_id_local = 0;
+        PS::S32    j_rank = 0;
+        PS::S32    neighbor = pp[i].neighbor;
+        PS::F64vec posi = pp[i].getPos();
+        pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
 
-        PS::F64vec posi = pp[i].getPos();
-        PS::F64vec veli = pp[i].vel;
-        PS::F64vec acci = 0.0;
-        PS::F64vec acc_di = 0.0;
-        PS::F64vec jerki  = 0.0;
-        PS::F64 phii   = 0.0;
-        PS::F64 phi_di = 0.0;
-
-        for(PS::S32 j=0; j<nei_loc; j++){
-            j_id   = (next+j)->id;
-            j_rank = (next+j)->myrank;
-
-            //PS::F64 massj  = (next+j)->getCharge();
-            PS::F64 massj  = (next+j)->mass;
-#ifdef TEST_PTCL
-            if (  massj <= (PS::F64)std::numeric_limits<PS::F32>::min() ) massj = 0.;
-#endif
+        if ( neighbor == 0 ) {
 #ifdef USE_INDIVIDUAL_CUTOFF
-            PS::F64 r_out_inv = std::min(pp[i].r_out_inv, (next+j)->r_out_inv);
+            PS::F64 r_out_inv = pp[i].r_out_inv;
 #else
             PS::F64 r_out_inv = EPGrav::r_out_inv;
 #endif
+            phii += pp[i].mass * r_out_inv;
             
-            if ( pp[i].id == j_id ) {
-                phii  += massj * r_out_inv;
-                continue;
-            }
+        } else {
+            assert ( neighbor > 0 );
+            j_id = pp[i].id_neighbor;
+            auto iter = NList.id_map.find(j_id);
+            bool isMerged = (iter == NList.id_map.end()) ? true : pp[iter->second].isMerged;
             
-            PS::F64vec posj   = (next+j)->getPos();
-            PS::F64vec dr  = posj - posi;
-            PS::F64 dr2 = dr * dr;
-            
-            assert( dr2 != 0.0 );
-            assert( j_id > -1 );
-            dr2 += eps2;
+            if ( !( neighbor > 1 || isMerged ) ) {
+                j_id_local = iter->second;
+                j_rank     = pp[j_id_local].myrank;
+                assert( pp[j_id_local].id == j_id );
+                assert( j_id != pp[i].id );
+                //assert( !pp[j_id_local].isDead );
 
-            PS::F64vec velj   = (next+j)->vel;
-            PS::F64vec dv  = velj - veli;
-            PS::F64 drdv  = dr*dv;
-            
-            PS::F64 rij   = sqrt(dr2);
-            PS::F64 rinv  = 1. / rij;
-
-#ifdef USE_RE_SEARCH_NEIGHBOR        
 #ifdef USE_INDIVIDUAL_CUTOFF
-            PS::F64 r_search_ = EPGrav::R_search0 * std::max(pp[i].r_out, (next+j)->r_out)
-                + std::max(   - EPGrav::R_search2 * drdv * rinv,
-                                EPGrav::R_search3 * std::max(pp[i].v_disp, (next+j)->v_disp) * FPGrav::dt_tree );
+                PS::F64 r_out_inv = pp[i].r_out_inv;
+                PS::F64 r_out     = pp[i].r_out;
 #else
-            PS::F64 r_search_ = EPGrav::R_search0 * EPGrav::r_out
-                + std::max(   - EPGrav::R_search2 * drdv * rinv,
-                                EPGrav::R_search3 * EPGrav::v_disp * FPGrav::dt_tree );
+                PS::F64 r_out_inv = EPGrav::r_out_inv;
+                PS::F64 r_out     = EPGrav::r_out;
+#endif
+                phii += pp[i].mass * r_out_inv;
+                
+                PS::F64 massj  = pp[j_id_local].mass;
+#ifdef USE_INDIVIDUAL_CUTOFF
+                r_out_inv = std::min(pp[i].r_out_inv, pp[j_id_local].r_out_inv);
+                r_out     = std::max(pp[i].r_out,     pp[j_id_local].r_out);
+                PS::F64 r_search = std::max(pp[i].r_search, pp[j_id_local].r_search);
+#else
+                PS::F64 r_search = EPGrav::r_search;
+#endif
+                
+                PS::F64vec posj = pp[j_id_local].getPos();
+                PS::F64vec dr   = posj - posi;
+                PS::F64 dr2 = dr * dr;
+                assert( dr2 != 0.0 );
+                assert( j_id > -1 );
+                dr2 += eps2;
+                PS::F64 rij   = sqrt(dr2);
+                
+                PS::F64vec dv      = pp[j_id_local].vel   - pp[i].vel;
+                PS::F64    drdv    = dr * dv;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+                PS::F64vec da      = acc_d[j_id_local] - acc_d[i];
+                PS::F64    dv2     = dv * dv;
+                PS::F64    da2     = da * da;
+                PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                
+                PS::F64    r_crit   = FPGrav::R_search2 * r_out;
+                PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 ){
+                //if ( dr2_min < r_crit * r_crit ){
+#endif
+                    if ( rij < r_search ) {
+#ifdef TEST_PTCL
+                        if ( r_out > 0. ){
+#endif
+                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                            acc0i += massj * r_out_inv * r_out_inv;
+#ifdef TEST_PTCL
+                        }
+#endif
+                    }
+#ifdef USE_RE_SEARCH_NEIGHBOR
+                }
+#endif
+
+                if ( rij < r_out ) {
+                    PS::F64 rinv  = 1. / rij;
+                    PS::F64 r2inv = rinv * rinv;
+                    PS::F64 r3inv = rinv * r2inv;
+                    PS::F64 r5inv = r3inv * r2inv;
+                    
+                    PS::F64 W  = cutoff_W(rij, r_out_inv);
+                    PS::F64 K  = cutoff_K(rij, r_out_inv);
+                    PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+                    PS::F64 r_min = std::min(rinv, r_out_inv);
+                    
+                    phii   -= massj * ( rinv * W - r_min );
+                    phi_di -= massj * rinv * (1.-W);
+                    acci   += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
+                    acc_di += massj * r3inv * dr * (1.-K);
+                    jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+                }
+
+            } else { // neighbor > 2 || j_id is not in map
+                PS::S32 nei_loc = 0;
+                EPGrav* next = NULL;
+                nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
+                
+                for(PS::S32 j=0; j<nei_loc; j++){
+                    j_id       = (next+j)->id;
+                    j_id_local = (next+j)->id_local;
+                    j_rank     = (next+j)->myrank;
+                
+                    PS::F64 massj  = (next+j)->mass;
+#ifdef USE_INDIVIDUAL_CUTOFF
+                    PS::F64 r_out_inv = std::min(pp[i].r_out_inv, (next+j)->r_out_inv);
+                    PS::F64 r_out     = std::max(pp[i].r_out, (next+j)->r_out);
+#else
+                    PS::F64 r_out_inv = EPGrav::r_out_inv;
+                    PS::F64 r_out     = EPGrav::r_out;
+#endif
+
+                    if ( j_id == pp[i].id ) {
+                        phii += massj * r_out_inv;
+                        continue;
+                    }
+            
+                    PS::F64vec posj = (next+j)->getPos();
+                    PS::F64vec dr   = posj - posi;
+                    PS::F64 dr2 = dr * dr;              
+                    assert( dr2 != 0.0 );
+                    assert( j_id > -1 );
+                    dr2 += eps2;
+                    PS::F64 rij   = sqrt(dr2);
+                    
+                    PS::F64vec dv      = (next+j)->vel   - pp[i].vel;
+                    PS::F64    drdv    = dr * dv;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+                    PS::F64vec da      = (next+j)->acc_d - acc_d[i];
+                    PS::F64    dv2     = dv * dv;
+                    PS::F64    da2     = da * da;
+                    PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                    PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                    
+                    PS::F64    r_crit   = FPGrav::R_search2 * r_out;
+                    PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                    if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 ){
+                    //if ( dr2_min < r_crit * r_crit ){
 #endif
 #ifdef TEST_PTCL
-            if ( pp[i].r_out == 0. && (next+j)->r_out == 0. ) r_search_ = 0.;
+                        if ( r_out > 0. ){
 #endif
-            
-            if ( rij < r_search_ ) {
+                                NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                                acc0i += massj * r_out_inv * r_out_inv;
+#ifdef TEST_PTCL
+                        }
 #endif
-            
-                NList.addNeighbor(pp, i, j_id, j_rank);
-            
-                PS::F64 r2inv = rinv * rinv;
-                PS::F64 r3inv = rinv * r2inv;
-                PS::F64 r5inv = r3inv * r2inv;
-            
-                PS::F64 W  = cutoff_W(rij, r_out_inv);
-                PS::F64 K  = cutoff_K(rij, r_out_inv);
-                PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
-                PS::F64 r_min = std::min(rinv, r_out_inv);
-                
-                phii   -= massj * ( rinv * W - r_min );
-                phi_di -= massj * rinv * (1.-W);
-                acci   += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
-                acc_di += massj * r3inv * dr * (1.-K);
-                jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
-                
 #ifdef USE_RE_SEARCH_NEIGHBOR
-            }
+                    }
 #endif
-            
+                    
+                    if ( rij < r_out ) {
+                        PS::F64 rinv  = 1. / rij;
+                        PS::F64 r2inv = rinv * rinv;
+                        PS::F64 r3inv = rinv * r2inv;
+                        PS::F64 r5inv = r3inv * r2inv;
+                    
+                        PS::F64 W  = cutoff_W(rij, r_out_inv);
+                        PS::F64 K  = cutoff_K(rij, r_out_inv);
+                        PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+                        PS::F64 r_min = std::min(rinv, r_out_inv);
+                    
+                        phii   -= massj * ( rinv * W - r_min );
+                        phi_di -= massj * rinv * (1.-W);
+                        acci   += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
+                        acc_di += massj * r3inv * dr * (1.-K);
+                        jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+                    }
+                }
+            }
+        }
+
+        if ( pp[i].neighbor ){
+#pragma omp critical
+            {
+                NList.with_neighbor_list.push_back(i);
+            }
         }
         
-        nei_tot_loc_tmp += pp[i].neighbor;
-        nei_dist_tmp ++;
+        nei_dist += pp[i].neighbor;
+        nei_tot_loc ++;
         
-        pp[i].acc  += acci;
-        pp[i].phi  += phii;
-        pp[i].acc_d += acc_di;
-        pp[i].phi_d += phi_di;
-        pp[i].jerk += jerki;
+        pp[i].acc   += acci;
+        pp[i].phi   += phii;
+        pp[i].acc_d  = acc_di;
+        pp[i].phi_d  = phi_di;
+        pp[i].jerk_d = jerki;
+        pp[i].acc0   = (pp[i].neighbor>0) ? acc0i/pp[i].neighbor : 0.;
 
         pp[i].calcDeltatInitial();
     }
-
-    nei_dist    = nei_tot_loc_tmp;
-    nei_tot_loc = nei_dist_tmp;
+    //NList.checkNeighbor(pp);
 }
+
+
+#ifdef INDIRECT_TERM
+template <class Tpsys>
+void calcIndirectTerm(Tpsys & pp)
+{
+    PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    PS::F64 eps2 = EPGrav::eps2;
+    
+    PS::F64vec acc_loc = 0;
+    PS::F64vec pos_grav_loc = 0;
+    PS::F64vec vel_grav_loc = 0;
+    PS::F64    mass_tot_loc = 0;
+    PS::F64    mass_tot_glb = 0;
+#pragma omp parallel for reduction (+:acc_loc, pos_grav_loc, vel_grav_loc, mass_tot_loc)
+    for(PS::S32 i=0; i<n_loc; i++){
+        
+        PS::F64vec posi  = pp[i].getPos();
+        PS::F64vec veli  = pp[i].vel;
+        PS::F64    massi = pp[i].mass;
+        
+        PS::F64vec dr    = - posi;
+        PS::F64    r2inv = 1.0 / (dr * dr + eps2);
+        PS::F64    rinv  = sqrt(r2inv);
+        PS::F64    r3inv = rinv * r2inv;
+        
+        acc_loc += massi * r3inv * dr;
+        
+        pos_grav_loc += massi * posi;
+        vel_grav_loc += massi * veli;
+        mass_tot_loc += massi;
+    }
+    
+    FPGrav::acc_indirect = PS::Comm::getSum(acc_loc);
+    
+    FPGrav::mass_tot = mass_tot_glb = PS::Comm::getSum(mass_tot_loc) + FPGrav::m_sun;
+    FPGrav::pos_g = PS::Comm::getSum(pos_grav_loc) / mass_tot_glb;
+    FPGrav::vel_g = PS::Comm::getSum(vel_grav_loc) / mass_tot_glb;
+}
+#endif
+
+
+ 

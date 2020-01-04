@@ -85,12 +85,13 @@ void outputStep(Tpsys & pp,
                   << wtime.create_cluster_step << "\t" << wtime.communication_step << "\t"
                   << wtime.output_step 
 #endif
-                  <<std::endl;
+                  << std::endl;
     }
 }
 
 template <class Tpsys>
-void inputIDLocalAndMyrank(Tpsys & pp)
+void inputIDLocalAndMyrank(Tpsys & pp,
+                           NeighborList & NList)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
     PS::S32 myrank = PS::Comm::getRank();
@@ -101,6 +102,8 @@ void inputIDLocalAndMyrank(Tpsys & pp)
         pp[i].inDomain = true;
         pp[i].isSent = false;
     }
+
+    NList.makeIdMap(pp);
 }
 
 template <class Tpsys>

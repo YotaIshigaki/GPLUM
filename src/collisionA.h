@@ -115,8 +115,10 @@ inline void Collision0::inputPair(Tpsys & pp,
         
     id_imp = pp[id_c_imp].id;
     id_tar = pp[id_c_tar].id;
-    time = pp[id_c_imp].time;
-    assert ( time == pp[id_c_tar].time );
+    //time = pp[id_c_imp].time;
+    //assert ( time == pp[id_c_tar].time );
+    time = pp[id_c_imp].getTime();
+    assert ( time == pp[id_c_tar].getTime() );
         
     pos_imp = pp[id_c_imp].pos;
     pos_tar = pp[id_c_tar].pos;
@@ -133,14 +135,14 @@ inline void Collision0::inputPair(Tpsys & pp,
         for (iterator it = imp_range.first; it != imp_range.second; ++it){
             PS::S32 id_i = it->second;
             mass_imp += pp[id_i].mass;
-            assert( time == pp[id_i].time );
+            assert( time == pp[id_i].getTime() );
         }
     }
     if ( pp[id_c_tar].isMerged ) {
         for (iterator it = tar_range.first; it != tar_range.second; ++it){
             PS::S32 id_j = it->second;
             mass_tar += pp[id_j].mass;
-            assert( time == pp[id_j].time );
+            assert( time == pp[id_j].getTime() );
         }
     }
 
