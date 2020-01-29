@@ -208,6 +208,12 @@ PS::S32 readParameter(const char * param_file,
         } else if ( name == "eta_0" ){
             FPGrav::eta_0 = getvalue(value, 1., 1.);
             
+        } else if ( name == "eta_sun" ){
+            FPGrav::eta_sun = getvalue(value, 1., 1.);
+            
+        } else if ( name == "eta_sun0" ){
+            FPGrav::eta_sun0 = getvalue(value, 1., 1.);
+            
         } else if ( name == "alpha" ){
             PS::F64 alpha = getvalue(value, 1., 1.);
             FPGrav::alpha2 = alpha*alpha;
@@ -414,6 +420,8 @@ void showParameter(char * init_file,
                   << "dt_min        = " << FPGrav::dt_min << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_min) << ", " << FPGrav::dt_min/(2.*M_PI) << " year)" << std::endl
                   << "eta           = " << FPGrav::eta  << std::endl
                   << "eta_0         = " << FPGrav::eta_0 << std::endl
+                  << "eta_sun       = " << FPGrav::eta_sun << std::endl
+                  << "eta_sun0      = " << FPGrav::eta_sun0 << std::endl
                   << "alpha         = " << sqrt(FPGrav::alpha2) << std::endl
                   << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
                   << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
@@ -522,8 +530,10 @@ void showParameter(char * init_file,
                    << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*M_PI) << " year)" << std::endl
                    << "dt_tree       = " << FPGrav::dt_tree << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_tree) << ", " << FPGrav::dt_tree/(2.*M_PI) << " year)" << std::endl
                    << "dt_min        = " << FPGrav::dt_min << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_min) << ", " << FPGrav::dt_min/(2.*M_PI) << " year)" << std::endl
-                   << "eta           = " << FPGrav::eta  << std::endl
+                   << "eta           = " << FPGrav::eta << std::endl
                    << "eta_0         = " << FPGrav::eta_0 << std::endl
+                   << "eta_sun       = " << FPGrav::eta_sun << std::endl
+                   << "eta_sun0      = " << FPGrav::eta_sun0 << std::endl
                    << "alpha         = " << sqrt(FPGrav::alpha2) << std::endl
                    << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
                    << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl

@@ -60,10 +60,16 @@ void mergeAccJerk(Tpsys & pp,
     jerk_d *= mass_inv;
     pp[i].acc_d  = acc_d;
     pp[i].jerk_d = jerk_d;
+#ifdef INTEGRATE_6TH_SUN
+    pp[i].setAcc_();
+#endif
     for (iterator it = i_range.first; it != i_range.second; ++it){
         PS::S32 j_id = it->second;
         pp[j_id].acc_d  = acc_d;
         pp[j_id].jerk_d = jerk_d;
+#ifdef INTEGRATE_6TH_SUN
+        pp[i].setAcc_();
+#endif
     }  
 }
 template <class Tpsys>
@@ -201,7 +207,7 @@ void timeIntegrate_multi(Tpsys & pp,
     PS::S32 psize = pp.size();
     PS::S32 asize = 0;
     for(PS::S32 i=0; i<psize; i++){
-        calcJerk(pp[i], pp);
+        //calcJerk(pp[i], pp);
         //pp[i].calcDeltatInitial();
         pp[i].isDead = pp[i].isMerged = false;
         assert ( pp[i].time == time );
@@ -240,7 +246,10 @@ void timeIntegrate_multi(Tpsys & pp,
             a_id = active_list.at(i);
             
             std::pair<iterator, iterator> range;
-            calcGravity_p(pp[a_id], pp);    
+            calcGravity_p(pp[a_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+            pp[a_id].setAcc_();
+#endif
             if ( pp[a_id].isMerged ){
                 range = merge_list.equal_range(a_id);
                 for (iterator it = range.first; it != range.second; ++it){
@@ -248,6 +257,9 @@ void timeIntegrate_multi(Tpsys & pp,
                     assert( pp[j_id].isDead );
                     assert( pp[j_id].time == pp[a_id].time );
                     calcGravity_p(pp[j_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                    pp[j_id].setAcc_();
+#endif
                 }
                 mergeAccJerk(pp, merge_list, a_id);
             }
@@ -266,10 +278,16 @@ void timeIntegrate_multi(Tpsys & pp,
                 }
                 
                 calcGravity_c(pp[a_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                pp[a_id].setAcc_();
+#endif
                 if ( pp[a_id].isMerged ){
                     for (iterator it = range.first; it != range.second; ++it){
                         j_id = it->second;
                         calcGravity_c(pp[j_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                        pp[j_id].setAcc_();
+#endif
                     }
                     mergeAccJerk(pp, merge_list, a_id);
                 }
@@ -342,7 +360,15 @@ void timeIntegrate_multi(Tpsys & pp,
             n_col ++;
 
             psize = pp.size();
+#ifndef INTEGRATE_6TH_SUN
             for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
+#else
+            for(PS::S32 i=0; i<psize; i++) calcAccJerk(pp[i], pp);
+            for(PS::S32 i=0; i<psize; i++) {
+                pp[i].setAcc_();
+                calcStarSnap(pp[i]);
+            }
+#endif
             mergeAccJerk(pp, merge_list);
 #ifdef FORDEBUG
             PS::F64 ekin1, ephi_d1, ephi_s1;
@@ -370,6 +396,9 @@ void timeIntegrate_multi(Tpsys & pp,
     psize = pp.size();
     for(PS::S32 i=0; i<psize; i++){
         calcGravity(pp[i], pp);
+#ifdef INTEGRATE_6TH_SUN
+        pp[i].setAcc_();
+#endif
         assert ( pp[i].time == time_end );
     }
     if ( collision_list.size() > 0 ) mergeAccJerk(pp, merge_list);
@@ -420,7 +449,7 @@ void timeIntegrate_multi_omp(Tpsys & pp,
     PS::S32 psize = pp.size();
     PS::S32 asize = 0;
     for(PS::S32 i=0; i<psize; i++){
-        calcJerk(pp[i], pp);
+        //calcJerk(pp[i], pp);
         //pp[i].calcDeltatInitial();
         pp[i].isDead = pp[i].isMerged = false;
         assert ( pp[i].time == time );
@@ -461,7 +490,10 @@ void timeIntegrate_multi_omp(Tpsys & pp,
             a_id = active_list.at(i);
             
             std::pair<iterator, iterator> range;
-            calcGravity_p(pp[a_id], pp);    
+            calcGravity_p(pp[a_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                pp[a_id].setAcc_();
+#endif
             if ( pp[a_id].isMerged ){
                 range = merge_list.equal_range(a_id);
                 for (iterator it = range.first; it != range.second; ++it){
@@ -469,6 +501,9 @@ void timeIntegrate_multi_omp(Tpsys & pp,
                     assert( pp[j_id].isDead );
                     assert( pp[j_id].time == pp[a_id].time );
                     calcGravity_p(pp[j_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                    pp[j_id].setAcc_();
+#endif
                 }
                 mergeAccJerk(pp, merge_list, a_id);
             }
@@ -487,10 +522,16 @@ void timeIntegrate_multi_omp(Tpsys & pp,
                 }
                 
                 calcGravity_c(pp[a_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                pp[a_id].setAcc_();
+#endif
                 if ( pp[a_id].isMerged ){
                     for (iterator it = range.first; it != range.second; ++it){
                         j_id = it->second;
                         calcGravity_c(pp[j_id], pp);
+#ifdef INTEGRATE_6TH_SUN
+                        pp[j_id].setAcc_();
+#endif
                     }
                     mergeAccJerk(pp, merge_list, a_id);
                 }
@@ -563,7 +604,15 @@ void timeIntegrate_multi_omp(Tpsys & pp,
             n_col ++;
 
             psize = pp.size();
+#ifndef INTEGRATE_6TH_SUN
             for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
+#else
+            for(PS::S32 i=0; i<psize; i++) calcAccJerk(pp[i], pp);
+            for(PS::S32 i=0; i<psize; i++) {
+                pp[i].setAcc_();
+                calcStarSnap(pp[i]);
+            }
+#endif
             mergeAccJerk(pp, merge_list);
 #ifdef FORDEBUG
             PS::F64 ekin1, ephi_d1, ephi_s1;
@@ -591,6 +640,9 @@ void timeIntegrate_multi_omp(Tpsys & pp,
     psize = pp.size();
     for(PS::S32 i=0; i<psize; i++){
         calcGravity(pp[i], pp);
+#ifdef INTEGRATE_6TH_SUN
+        pp[i].setAcc_();
+#endif
         assert ( pp[i].time == time_end );
     }
     if ( collision_list.size() > 0 ) mergeAccJerk(pp, merge_list);
@@ -606,7 +658,7 @@ void timeIntegrate_isolated(Tp & pi,
                          PS::F64 time_end)
 {
     //pi.jerk_d = 0.;
-    calcStarJerk(pi);
+    //calcStarJerk(pi);
     //pi.calcDeltatInitial();
     assert ( pi.time == time_start );
     assert ( pi.dt != 0. );
@@ -620,12 +672,18 @@ void timeIntegrate_isolated(Tp & pi,
         pi.jerk_d = 0.;
         
         calcStarGravity_p(pi);
+#ifdef INTEGRATE_6TH_SUN
+        pi.setAcc_();
+#endif
 
         ////////////////
         //  iteration
         for ( PS::S32 ite=0; ite<2; ite++ ){
             pi.correct(pi.dt);
             calcStarGravity_c(pi);
+#ifdef INTEGRATE_6TH_SUN
+            pi.setAcc_();
+#endif
         }
         //  iteration
         ////////////////
@@ -635,7 +693,13 @@ void timeIntegrate_isolated(Tp & pi,
     }
     pi.phi_s = 0.;
     pi.phi_d = 0.;
+#ifndef INTEGRATE_6TH_SUN
     calcStarGravity(pi);
+#else
+    calcStarAccJerk(pi);
+    pi.setAcc_();
+    calcStarSnap(pi);
+#endif
     assert ( pi.time ==  time_end );
 }
 
@@ -659,7 +723,13 @@ void timeIntegrateKepler_isolated(Tp & pi,
     pi.phi_d  = 0.;
     pi.acc_d  = 0.;
     pi.jerk_d = 0.;
+#ifndef INTEGRATE_6TH_SUN
     calcStarGravity(pi);
+#else
+    calcStarAccJerk(pi);
+    pi.setAcc_();
+    calcStarSnap(pi);
+#endif
     pi.calcDeltatInitial();
     assert ( pi.time == time_end );
 }

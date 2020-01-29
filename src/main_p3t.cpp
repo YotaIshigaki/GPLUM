@@ -64,8 +64,10 @@ PS::F64 FPGrav::dens      = 5.049667e6;
 PS::F64 FPGrav::dt_tree   = pow2(-5);
 PS::F64 FPGrav::dt_min    = pow2(-13);
 PS::F64 FPGrav::eta       = 0.01;
-PS::F64 FPGrav::eta_0     = 0.0005;
-PS::F64 FPGrav::alpha2    = 0.01;
+PS::F64 FPGrav::eta_0     = 0.001;
+PS::F64 FPGrav::eta_sun   = 0.01;
+PS::F64 FPGrav::eta_sun0  = 0.001;
+PS::F64 FPGrav::alpha2    = 1.;
 PS::F64 FPGrav::r_cut_min = 0.;
 PS::F64 FPGrav::r_cut_max = 0.;
 PS::F64 FPGrav::p_cut     = 0.;
@@ -103,7 +105,7 @@ int main(int argc, char *argv[])
     PS::S32 n_group_limit = 256;
     PS::S32 n_smp_ave     = 100;
     
-    PS::F64 t_end   = pow2(-2);
+    PS::F64 t_end   = 1.;
     PS::F64 dt_snap = pow2(-5);
 
     PS::F64 r_max = 40.;

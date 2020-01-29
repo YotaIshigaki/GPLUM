@@ -20,17 +20,32 @@ void calcStarGravity(Tpsys & pp)
     
     PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec acci = pp.acc_;
+#endif
     
-    PS::F64vec dr  = - posi;
-    PS::F64vec dv  = - veli;
-    PS::F64    r2inv = 1.0 / (dr * dr + eps2);
+    PS::F64vec dr = - posi;
+    PS::F64vec dv = - veli;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec da = - acci;
+#endif
+    PS::F64    r2inv = 1. / (dr*dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
     PS::F64    r3inv = rinv * r2inv;
-    PS::F64    r5inv = r3inv * r2inv;
+    //PS::F64    r5inv = r3inv * r2inv;
+
+    PS::F64    mj_rij3 = m_sun * r3inv;
+    PS::F64    alpha = (dr*dv) * r2inv;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64    beta  = (dv*dv + dr*da) * r2inv - 5. * alpha*alpha;
+#endif
 
     pp.phi_s  = -m_sun * rinv;
-    pp.acc_s  =  m_sun * r3inv * dr;
-    pp.jerk_s =  m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    pp.acc_s  =  mj_rij3 * dr;
+    pp.jerk_s =  mj_rij3 * (dv - 3.*alpha * dr);
+#ifdef INTEGRATE_6TH_SUN
+    pp.snap_s =  mj_rij3 * (da - 6.*alpha * dv - 3.*beta * dr);
+#endif
 }
 
 template <class Tpsys>
@@ -41,16 +56,32 @@ void calcStarGravity_p(Tpsys & pp)
 
     PS::F64vec posi = pp.xp;
     PS::F64vec veli = pp.vp;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec acci = pp.ap;
+#endif
 
-    PS::F64vec dr  = - posi;
-    PS::F64vec dv  = - veli;
-    PS::F64    r2inv = 1.0 / (dr * dr + eps2);
+    PS::F64vec dr = - posi;
+    PS::F64vec dv = - veli;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec da = - acci;
+#endif
+    PS::F64    r2inv = 1. / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
     PS::F64    r3inv = rinv * r2inv;
-    PS::F64    r5inv = r3inv * r2inv;
+    //PS::F64    r5inv = r3inv * r2inv;
 
-    pp.acc_s  = m_sun * r3inv * dr;
-    pp.jerk_s = m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    PS::F64    mj_rij3 = m_sun * r3inv;
+    PS::F64    alpha = (dr*dv) * r2inv;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64    beta  = (dv*dv + dr*da) * r2inv - 5. * alpha*alpha;
+#endif
+    
+    //pp.phi_s  = -m_sun * rinv;
+    pp.acc_s  =  mj_rij3 * dr;
+    pp.jerk_s =  mj_rij3 * (dv - 3.*alpha * dr);
+#ifdef INTEGRATE_6TH_SUN
+    pp.snap_s =  mj_rij3 * (da - 6.*alpha * dv - 3.*beta * dr);
+#endif
 }
 
 template <class Tpsys>
@@ -61,17 +92,82 @@ void calcStarGravity_c(Tpsys & pp)
 
     PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec acci = pp.acc_;
+#endif
 
     PS::F64vec dr  = - posi;
     PS::F64vec dv  = - veli;
-    PS::F64    r2inv = 1.0 / (dr * dr + eps2);
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec da = - acci;
+#endif
+    PS::F64    r2inv = 1. / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
     PS::F64    r3inv = rinv * r2inv;
-    PS::F64    r5inv = r3inv * r2inv;
+    //PS::F64    r5inv = r3inv * r2inv;
 
-    pp.acc_s  = m_sun * r3inv * dr;
-    pp.jerk_s = m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    PS::F64    mj_rij3 = m_sun * r3inv;
+    PS::F64    alpha = (dr*dv) * r2inv;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64    beta  = (dv*dv + dr*da) * r2inv - 5. * alpha*alpha;
+#endif
+
+    //pp.phi_s  = -m_sun * rinv;
+    pp.acc_s  =  mj_rij3 * dr;
+    pp.jerk_s =  mj_rij3 * (dv - 3.*alpha * dr);
+#ifdef INTEGRATE_6TH_SUN
+    pp.snap_s =  mj_rij3 * (da - 6.*alpha * dv - 3.*beta * dr);
+#endif
 }
+
+template <class Tpsys>
+void calcStarAccJerk(Tpsys & pp)
+{
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
+    
+    PS::F64vec posi = pp.pos;
+    PS::F64vec veli = pp.vel;
+    
+    PS::F64vec dr = - posi;
+    PS::F64vec dv = - veli;
+    PS::F64    r2inv = 1. / (dr*dr + eps2);
+    PS::F64    rinv  = sqrt(r2inv);
+    PS::F64    r3inv = rinv * r2inv;
+
+    PS::F64    mj_rij3 = m_sun * r3inv;
+    PS::F64    alpha = (dr*dv) * r2inv;
+
+    pp.phi_s  = -m_sun * rinv;
+    pp.acc_s  =  mj_rij3 * dr;
+    pp.jerk_s =  mj_rij3 * (dv - 3.*alpha * dr);
+}
+
+#ifdef INTEGRATE_6TH_SUN
+template <class Tpsys>
+void calcStarSnap(Tpsys & pp)
+{
+    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 m_sun = FPGrav::m_sun;
+    
+    PS::F64vec posi = pp.pos;
+    PS::F64vec veli = pp.vel;
+    PS::F64vec acci = pp.acc_;
+    
+    PS::F64vec dr = - posi;
+    PS::F64vec dv = - veli;
+    PS::F64vec da = - acci;
+    PS::F64    r2inv = 1. / (dr*dr + eps2);
+    PS::F64    rinv  = sqrt(r2inv);
+    PS::F64    r3inv = rinv * r2inv;
+
+    PS::F64    mj_rij3 = m_sun * r3inv;
+    PS::F64    alpha = (dr*dv) * r2inv;
+    PS::F64    beta  = (dv*dv + dr*da) * r2inv - 5. * alpha*alpha;
+
+    pp.snap_s =  mj_rij3 * (da - 6.*alpha * dv - 3.*beta * dr);
+}
+#endif
 
 #if 0
 template <class Tpsys>
@@ -106,31 +202,29 @@ void calcStarJerk(Tpsys & pp)
     PS::F64    r2inv = 1.0 / (dr * dr + eps2);
     PS::F64    rinv  = sqrt(r2inv);
     PS::F64    r3inv = rinv * r2inv;
-    PS::F64    r5inv = r3inv * r2inv;
+    //PS::F64    r5inv = r3inv * r2inv;
 
-    pp.jerk_s = m_sun * (r3inv*dv -3.0*r5inv*(dr*dv)*dr);
+    PS::F64    mj_rij3 = m_sun * r3inv;
+    PS::F64    alpha = (dr*dv) * r2inv;
+    
+    pp.jerk_s =  mj_rij3 * (dv - 3.*alpha * dr);
 }
 
 template <class Tp, class Tpsys>
 void calcGravity(Tp & pi,
                  Tpsys & pp)
 {
-    //assert( pi.neighbor != 0 );
-    
     const PS::F64 eps2  = EPGrav::eps2;
     
-    //pi.phi_d  = 0.;
-    //pi.acc_d  = 0.;
-    //pi.jerk_d = 0.;
-    
     calcStarGravity(pi);
+
+    pi.phi_d  = 0.;
+    pi.acc_d  = 0.;
+    pi.jerk_d = 0.;
     
     PS::S32 pj_id = 0;
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    PS::F64vec acci = 0.;
-    PS::F64    phii = 0.;
-    PS::F64vec jerki= 0.;
     
 #ifndef FORDEBUG
     for(PS::S32 j=0; j<pi.neighbor; j++)
@@ -153,52 +247,50 @@ void calcGravity(Tp & pi,
             dr2 += eps2;
         
             PS::F64vec vj   = pp[pj_id].vel;
-            PS::F64vec dv    = vj - vi;
+            PS::F64vec dv   = vj - vi;
             PS::F64    massj = pp[pj_id].mass;
         
             PS::F64 rij   = sqrt(dr2);
-            PS::F64 drdv  = dr*dv;
             PS::F64 rinv  = 1. / rij;
             PS::F64 r2inv = rinv  * rinv;
             PS::F64 r3inv = r2inv * rinv;
-            PS::F64 r5inv = r3inv * r2inv;
-        
+            //PS::F64 r5inv = r3inv * r2inv;
+
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
             PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-            PS::F64 W  = cutoff_W(rij, r_out_inv);
-            PS::F64 K  = cutoff_K(rij, r_out_inv);
-            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
-        
-            phii  -= massj * rinv * (1.-W);
-            acci  += massj * r3inv * dr * (1.-K);
-            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+
+            PS::F64 mj_rij3 = massj * r3inv;
+            PS::F64 alpha = (dr*dv) * r2inv;
+
+            PS::F64 _W    = 1.-cutoff_W(rij, r_out_inv);
+            PS::F64 _K    = 1.-cutoff_K(rij, r_out_inv);
+            PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+            PS::F64 alpha_c = alpha*_K;
+
+            pi.phi_d  -= massj * rinv * _W;
+            pi.acc_d  += mj_rij3 *   _K * dr;
+            pi.jerk_d += mj_rij3 * ( _K * dv - (3.*alpha_c + dKdt) * dr );
         }
-    pi.acc_d  = acci;
-    pi.phi_d  = phii;
-    pi.jerk_d = jerki;
 }
     
 template <class Tp, class Tpsys>
 void calcGravity_p(Tp & pi,
                    Tpsys & pp)
 {
-    //assert( pi.neighbor != 0 );
-
     const PS::F64 eps2  = EPGrav::eps2;
-  
-    //pi.acc_d  = 0.;
-    //pi.jerk_d = 0.;
     
     calcStarGravity_p(pi);
-        
+
+    //pi.phi_d  = 0.;
+    pi.acc_d  = 0.;
+    pi.jerk_d = 0.;
+    
     PS::S32 pj_id = 0;
     PS::F64vec xpi = pi.xp;
     PS::F64vec vpi = pi.vp;
-    PS::F64vec acci  = 0.;
-    PS::F64vec jerki = 0.;
 
 #ifndef FORDEBUG
     for(PS::S32 j=0; j<pi.neighbor; j++)
@@ -224,25 +316,29 @@ void calcGravity_p(Tp & pi,
             PS::F64    massj = pp[pj_id].mass;
 
             PS::F64 rij   = sqrt(dr2);
-            PS::F64 drdv  = dr*dv;
             PS::F64 rinv  = 1. / rij;
             PS::F64 r2inv = rinv  * rinv;
             PS::F64 r3inv = r2inv * rinv;
-            PS::F64 r5inv = r3inv * r2inv;
+            //PS::F64 r5inv = r3inv * r2inv;
 
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
             PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-            PS::F64 K  = cutoff_K(rij, r_out_inv);
-            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
-        
-            acci  += massj * r3inv * dr * (1.-K);
-            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+            
+            PS::F64 mj_rij3 = massj * r3inv;
+            PS::F64 alpha = (dr*dv) * r2inv;
+            
+            //PS::F64 _W    = 1.-cutoff_W(rij, r_out_inv);
+            PS::F64 _K    = 1.-cutoff_K(rij, r_out_inv);
+            PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+            PS::F64 alpha_c = alpha*_K;
+
+            //pi.phi_d  -= massj * rinv * _W;
+            pi.acc_d  += mj_rij3 *   _K * dr;
+            pi.jerk_d += mj_rij3 * ( _K * dv - (3.*alpha_c + dKdt) * dr );
         }
-    pi.acc_d  = acci;
-    pi.jerk_d = jerki;
 }
 
 template <class Tp, class Tpsys>
@@ -253,16 +349,14 @@ void calcGravity_c(Tp & pi,
     
     const PS::F64 eps2  = EPGrav::eps2;
     
-    //pi.acc_d  = 0.;
-    //pi.jerk_d = 0.;
-    
     calcStarGravity_c(pi);
+    
+    pi.acc_d  = 0.;
+    pi.jerk_d = 0.;
     
     PS::S32 pj_id = 0;
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    PS::F64vec acci = 0.;
-    PS::F64vec jerki= 0.;
 
 #ifndef FORDEBUG
     for(PS::S32 j=0; j<pi.neighbor; j++)
@@ -288,25 +382,29 @@ void calcGravity_c(Tp & pi,
             PS::F64    massj = pp[pj_id].mass;
 
             PS::F64 rij   = sqrt(dr2);
-            PS::F64 drdv  = dr*dv;
             PS::F64 rinv  = 1. / rij;
             PS::F64 r2inv = rinv  * rinv;
             PS::F64 r3inv = r2inv * rinv;
-            PS::F64 r5inv = r3inv * r2inv;
+            //PS::F64 r5inv = r3inv * r2inv;
         
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
             PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-            PS::F64 K  = cutoff_K(rij, r_out_inv);
-            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
-        
-            acci  += massj * r3inv * dr * (1.-K);
-            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+
+            PS::F64 mj_rij3 = massj * r3inv;
+            PS::F64 alpha = (dr*dv) * r2inv;
+            
+            //PS::F64 _W   = 1.-cutoff_W(rij, r_out_inv);
+            PS::F64 _K   = 1.-cutoff_K(rij, r_out_inv);
+            PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+            PS::F64 alpha_c = alpha*_K;
+
+            //pi.phi_d  -= massj * rinv * _W;
+            pi.acc_d  += mj_rij3 *   _K * dr;
+            pi.jerk_d += mj_rij3 * ( _K * dv - (3.*alpha_c + dKdt) * dr );
         }
-    pi.acc_d  = acci;
-    pi.jerk_d = jerki;
 }
 
 template <class Tp, class Tpsys>
@@ -315,14 +413,13 @@ void calcJerk(Tp & pi,
 {   
     const PS::F64 eps2  = EPGrav::eps2;
     
-    //pi.jerk  = 0.;
-    
     calcStarJerk(pi);
+
+    pi.jerk  = 0.;
     
     PS::S32 pj_id = 0;
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    PS::F64vec jerki= 0.0;
 
 #ifndef FORDEBUG
     for(PS::S32 j=0; j<pi.neighbor; j++)
@@ -348,25 +445,96 @@ void calcJerk(Tp & pi,
             PS::F64    massj = pp[pj_id].mass;
 
             PS::F64 rij   = sqrt(dr2);
-            PS::F64 drdv  = dr*dv;
             PS::F64 rinv  = 1. / rij;
             PS::F64 r2inv = rinv  * rinv;
             PS::F64 r3inv = r2inv * rinv;
-            PS::F64 r5inv = r3inv * r2inv;
+            //PS::F64 r5inv = r3inv * r2inv;
 
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
             PS::F64 r_out_inv = FPGrav::r_out_inv;
 #endif
-            PS::F64 K  = cutoff_K(rij, r_out_inv);
-            PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
 
-            jerki += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
-        }  
-    pi.jerk_d = jerki;
+            PS::F64 mj_rij3 = massj * r3inv;
+            PS::F64 alpha = (dr*dv) * r2inv;
+            
+            //PS::F64 _W    = 1.-cutoff_W(rij, r_out_inv);
+            PS::F64 _K    = 1.-cutoff_K(rij, r_out_inv);
+            PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+            PS::F64 alpha_c = alpha*_K;
+
+            pi.jerk_d += mj_rij3 * ( _K * dv - (3.*alpha_c + dKdt) * dr );
+        }
 }
 
+template <class Tp, class Tpsys>
+void calcAccJerk(Tp & pi,
+                 Tpsys & pp)
+{
+    //assert( pi.neighbor != 0 );
+    
+    const PS::F64 eps2  = EPGrav::eps2;
+    
+    calcStarAccJerk(pi);
+
+    pi.acc_d  = 0.;
+    pi.jerk_d = 0.;
+    pi.phi_d  = 0.;
+    
+    PS::S32 pj_id = 0;
+    PS::F64vec xi = pi.pos;
+    PS::F64vec vi = pi.vel;
+    
+#ifndef FORDEBUG
+    for(PS::S32 j=0; j<pi.neighbor; j++)
+#else
+    for(PS::S32 j=0; j<pp.size(); j++)
+#endif
+        {
+#ifndef FORDEBUG
+            pj_id = pi.n_hard_list.at(j);
+#else
+            pj_id = j;
+#endif  
+            
+            if ( pi.id == pp[pj_id].id ) continue;
+            
+            PS::F64vec xj = pp[pj_id].pos;
+            PS::F64vec dr  = xj - xi;
+            PS::F64 dr2 = dr * dr;
+            assert( dr2 != 0.0 );
+            dr2 += eps2;
+        
+            PS::F64vec vj   = pp[pj_id].vel;
+            PS::F64vec dv    = vj - vi;
+            PS::F64    massj = pp[pj_id].mass;
+        
+            PS::F64 rij   = sqrt(dr2);
+            PS::F64 rinv  = 1. / rij;
+            PS::F64 r2inv = rinv  * rinv;
+            PS::F64 r3inv = r2inv * rinv;
+            //PS::F64 r5inv = r3inv * r2inv;
+        
+#ifdef USE_INDIVIDUAL_CUTOFF
+            PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
+#else
+            PS::F64 r_out_inv = FPGrav::r_out_inv;
+#endif
+
+            PS::F64 mj_rij3 = massj * r3inv;
+            PS::F64 alpha = (dr*dv) * r2inv;
+            
+            PS::F64 _W    = 1.-cutoff_W(rij, r_out_inv);
+            PS::F64 _K    = 1.-cutoff_K(rij, r_out_inv);
+            PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+            PS::F64 alpha_c = alpha*_K;
+
+            pi.phi_d  -= massj * rinv * _W;
+            pi.acc_d  += mj_rij3 *   _K * dr;
+            pi.jerk_d += mj_rij3 * ( _K * dv - (3.*alpha_c + dKdt) * dr );
+        }
+}
 
 
 template <class Tpsys, class Tptree>
@@ -618,7 +786,11 @@ void correctForceLongInitial(Tpsys & pp,
         //pp[i].phi_s  = 0.;
         //pp[i].phi_d  = 0.; 
 
+#ifndef INTEGRATE_6TH_SUN
         calcStarGravity(pp[i]);
+#else
+        calcStarAccJerk(pp[i]);
+#endif
 
         PS::F64vec acci   = 0.;
         PS::F64vec acc_di = 0.;
@@ -713,18 +885,21 @@ void correctForceLongInitial(Tpsys & pp,
                     PS::F64 rinv  = 1. / rij;
                     PS::F64 r2inv = rinv * rinv;
                     PS::F64 r3inv = rinv * r2inv;
-                    PS::F64 r5inv = r3inv * r2inv;
+                    //PS::F64 r5inv = r3inv * r2inv;
+
+                    PS::F64 alpha = (dr*dv) * r2inv;
                     
-                    PS::F64 W  = cutoff_W(rij, r_out_inv);
-                    PS::F64 K  = cutoff_K(rij, r_out_inv);
-                    PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+                    PS::F64 W    = cutoff_W(rij, r_out_inv);
+                    PS::F64 K    = cutoff_K(rij, r_out_inv);
+                    PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+                    PS::F64 alpha_c = alpha*(1.-K);
                     PS::F64 r_min = std::min(rinv, r_out_inv);
                     
                     phii   -= massj * ( rinv * W - r_min );
                     phi_di -= massj * rinv * (1.-W);
                     acci   += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
-                    acc_di += massj * r3inv * dr * (1.-K);
-                    jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+                    acc_di += massj * r3inv * (1.-K) * dr;
+                    jerki  += massj * r3inv * ( (1.-K) * dv - (3.*alpha_c + dKdt) * dr );
                 }
 
             } else { // neighbor > 2 || j_id is not in map
@@ -789,18 +964,21 @@ void correctForceLongInitial(Tpsys & pp,
                         PS::F64 rinv  = 1. / rij;
                         PS::F64 r2inv = rinv * rinv;
                         PS::F64 r3inv = rinv * r2inv;
-                        PS::F64 r5inv = r3inv * r2inv;
+                        //PS::F64 r5inv = r3inv * r2inv;
+
+                        PS::F64 alpha = (dr*dv) * r2inv;
                     
-                        PS::F64 W  = cutoff_W(rij, r_out_inv);
-                        PS::F64 K  = cutoff_K(rij, r_out_inv);
-                        PS::F64 dK = cutoff_dK(rij, rinv, drdv, r_out_inv);
+                        PS::F64 W    = cutoff_W(rij, r_out_inv);
+                        PS::F64 K    = cutoff_K(rij, r_out_inv);
+                        PS::F64 dKdt = cutoff_dKdt(rij, r_out_inv, alpha);
+                        PS::F64 alpha_c = alpha*(1.-K);
                         PS::F64 r_min = std::min(rinv, r_out_inv);
                     
                         phii   -= massj * ( rinv * W - r_min );
                         phi_di -= massj * rinv * (1.-W);
                         acci   += massj * ( r3inv * K - r_min * r_min * r_min ) * dr;
-                        acc_di += massj * r3inv * dr * (1.-K);
-                        jerki  += massj * ( (r3inv*dv -3.*r5inv*(drdv)*dr)*(1.-K) - r3inv*dr*dK );
+                        acc_di += massj * r3inv * (1.-K) * dr;
+                        jerki  += massj * r3inv * ( (1.-K) * dv - (3.*alpha_c + dKdt) * dr );
                     }
                 }
             }
@@ -823,8 +1001,18 @@ void correctForceLongInitial(Tpsys & pp,
         pp[i].jerk_d = jerki;
         pp[i].acc0   = (pp[i].neighbor>0) ? acc0i/pp[i].neighbor : 0.;
 
+#ifndef INTEGRATE_6TH_SUN
+        pp[i].calcDeltatInitial();
+#endif
+    }
+#ifdef INTEGRATE_6TH_SUN
+#pragma omp parallel for
+    for(PS::S32 i=0; i<n_loc; i++){
+        pp[i].setAcc_();
+        calcStarSnap(pp[i]);
         pp[i].calcDeltatInitial();
     }
+#endif
     //NList.checkNeighbor(pp);
 }
 

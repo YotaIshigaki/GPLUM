@@ -16,7 +16,7 @@ Restart         = 0
 
 # FOR INITIAL CONDITION OF SOLID DISK
 makeInit        = 1                     # flag as to whether initial condition is created in program
-n_init          = 10000                # number of initial particle
+n_init          = 10000                 # number of initial particle
 m_init          = 2.e22CGS              # mass of initial particle
 p               = 1.5                   # power of column density distribution of solid disk
 f_dust          = 0.71                  # scaling factor of column density distribution
@@ -52,22 +52,24 @@ t_end           = 10                    # time to finish initegration
 dt_tree         = 2^-6                  # timestep of tree (soft)
 dt_snap         = 1                     # time interval to output snapshot
 dt_min          = 2^-30                 # minimum timestep (hard)
-eta             = 0.01                  # parameter eta to decide timestep (hard)
-eta_0           = 0.0005                # parameter eta to decide initial timestep (hard)
-alpha           = 0.1                   # parameter alpha to decide timestep (hard)
+eta             = 0.02                  # parameter eta to determine timestep (hard)
+eta_sun         = 0.02                  # parameter eta to determine timestep (hard)
+eta_0           = 0.002                 # parameter eta to determine initial timestep (hard)
+eta_sun0        = 0.002                 # parameter eta to determine initial timestep (hard)
+alpha           = 1.                    # parameter alpha to determinetimestep (hard)
 
 # FOR GRAVITATONAL INTERACTION
 m_sun           = 1.                    # mass of central star
 dens            = 2.CGS                 # density of particles  
 eps             = 0.                    # softening parameter                   
 R_cut           = 3.0                   # parameter to determine cut-off radius
-R_search0       = 1.0                   # parameter to determine search radius
+R_search0       = 1.1                   # parameter to determine search radius
 R_search1       = 6.0                   # parameter to determine search radius
-R_search2       = 2.0                   # parameter to determine search radius
-R_search3       = 1.0                   # parameter to determine search radius
+R_search2       = 1.1                   # parameter to determine search radius
+R_search3       = 2.0                   # parameter to determine search radius
 gamma           = 0.5                   # inner / outer cut-off radius ratio
 r_cut_max       = 0.                    # maximum cut-off radius
-r_cut_min       = 3.*3.563797e-04       # minimum cut-off radius
+r_cut_min       = 0.                    # minimum cut-off radius
 p_cut           = 0.                    # power of semi-major axis of cut-off radius
 r_max           = 20.                   # maximum distance of particle from central star 
 r_min           = 0.1                   # minimum distance of particle from central star

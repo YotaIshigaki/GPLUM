@@ -1,10 +1,15 @@
 #pragma once
 
-#define SECONDORDER 5e-1
-#define THIRDORDER  1.666666666666667e-1
-#define FOURTHORDER 4.166666666666667e-2
-#define FIFTHORDER  8.333333333333333e-3
-#define ALPHA       1.166666666666667e-3
+#define SECONDORDER  5.e-1
+#define THIRDORDER   1.6666666666666667e-1
+#define FOURTHORDER  4.1666666666666667e-2
+#define FIFTHORDER   8.3333333333333333e-3
+#define SIXTHORDER   1.3888888888888889e-3
+#define SEVENTHORDER 1.9841269841269841e-4
+#define ALPHA        1.1666666666666667e-3
+#define ONE_TWELFTH  8.3333333333333333e-2
+#define ONE_SIXTIETH 1.6666666666666667e-2
+#define ONE_420TH    2.3809523809523810e-2
 
     
 inline PS::F64 calcDt2nd(PS::F64 eta,
@@ -14,8 +19,19 @@ inline PS::F64 calcDt2nd(PS::F64 eta,
                          PS::F64vec jerk){
     PS::F64 Acc2  = acc*acc + alpha2*acc0*acc0;
     PS::F64 Jerk2 = jerk*jerk;
-    PS::F64 dt2 = (Jerk2>0.) ? Acc2/Jerk2 : std::numeric_limits<double>::max();
-    return eta * sqrt(dt2);
+    //PS::F64 dt2 = (Jerk2>0.) ? Acc2/Jerk2 : std::numeric_limits<double>::max();
+    //return eta * sqrt(dt2);
+    return (Jerk2>0.) ? eta*sqrt(Acc2/Jerk2) : std::numeric_limits<double>::max();
+}
+
+inline PS::F64 calcDt3rd(PS::F64 eta,
+                         PS::F64 alpha2,
+                         PS::F64 acc0,
+                         PS::F64vec acc,
+                         PS::F64vec snap){
+    PS::F64 Acc2  = acc*acc + alpha2*acc0*acc0;
+    PS::F64 Snap2 = snap*snap;
+    return (Snap2>0.) ? eta*pow(Acc2/Snap2, 0.25) : std::numeric_limits<double>::max();
 }
 
 inline PS::F64 calcDt4th(PS::F64 eta,
@@ -31,12 +47,36 @@ inline PS::F64 calcDt4th(PS::F64 eta,
     PS::F64 Snap2 = snap*snap;
     PS::F64 Snap  = sqrt(Snap2);
     PS::F64 Crac  = sqrt(crac*crac);
-    PS::F64 dt2 = (Jerk>0.) ? (Acc*Snap + Jerk2)/(Jerk*Crac + Snap2) : std::numeric_limits<double>::max();
-    return eta * sqrt(dt2);
+    //PS::F64 dt2 = (Jerk>0.) ? (Acc*Snap + Jerk2)/(Jerk*Crac + Snap2) : std::numeric_limits<double>::max();
+    //return eta * sqrt(dt2);
+    return (Jerk>0.) ? eta*sqrt((Acc*Snap + Jerk2)/(Jerk*Crac + Snap2)) : std::numeric_limits<double>::max();
+}
+
+inline PS::F64 calcDt6th(PS::F64 eta,
+                         PS::F64 alpha2,
+                         PS::F64 acc0,
+                         PS::F64vec acc,
+                         PS::F64vec jerk,
+                         PS::F64vec snap,
+                         PS::F64vec crac,
+                         PS::F64vec pop,
+                         PS::F64vec a5){
+    PS::F64 Acc   = sqrt(acc*acc + alpha2*acc0*acc0);
+    PS::F64 Jerk2 = jerk*jerk;
+    PS::F64 Snap  = sqrt(snap*snap);
+    PS::F64 Crac  = sqrt(crac*crac);
+    PS::F64 Pop2  = pop*pop;
+    PS::F64 A5    = sqrt(a5*a5);
+    return (Jerk2>0.) ? eta*pow((Acc*Snap + Jerk2)/(Crac*A5 + Pop2),THIRDORDER) : std::numeric_limits<double>::max();
 }
 
 class FPGrav : public EPGrav {
 public:
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec acc_;
+    PS::F64vec snap_s;
+#endif
+    
     PS::F64vec acc_gd;
     PS::F64vec jerk_s;
     PS::F64vec jerk_d;
@@ -61,6 +101,8 @@ public:
     static PS::F64 dt_min;
     static PS::F64 eta;
     static PS::F64 eta_0;
+    static PS::F64 eta_sun;
+    static PS::F64 eta_sun0;
     static PS::F64 alpha2;
     
     PS::F64 r_planet;
@@ -125,6 +167,10 @@ public:
         return sqrt(m_sun/r);
     }
 
+#ifdef INTEGRATE_6TH_SUN
+    void setAcc_() { acc_ = acc_s + acc_d; }
+#endif
+    
 #ifdef INDIRECT_TERM
     static PS::F64 getKineticEnergyOfSystem(){
         return 0.5 * mass_tot * vel_g * vel_g;
@@ -143,7 +189,7 @@ public:
         } else {
             r_out = std::min(FPGrav::r_cut_max, std::max(R_cut * pow(ax,-p_cut) * rHill, FPGrav::r_cut_min) );
         }
-
+        
 #ifdef TEST_PTCL
         if ( r_out != 0. ) {
             r_out_inv = 1. / r_out;
@@ -263,9 +309,14 @@ public:
     void calcDeltatInitial(){
         PS::F64 dt_next = 0.5*dt_tree;
         
-        PS::F64 dt_1 = std::min(calcDt2nd(eta_0, alpha2, acc0, acc_d, jerk_d),
-                                calcDt2nd(eta_0, alpha2,   0., acc_s, jerk_s));
+#ifndef INTEGRATE_6TH_SUN
+        PS::F64 dt_1 = std::min(calcDt2nd(eta_0,    alpha2, acc0, acc_d, jerk_d),
+                                calcDt2nd(eta_sun0, alpha2,   0., acc_s, jerk_s));
         //PS::F64 dt_1 = calcDt2nd(eta_0, alpha2, acc0, acc_d, jerk_d);
+#else
+        PS::F64 dt_1 = std::min(calcDt2nd(eta_0,    alpha2, acc0, acc_d, jerk_d),
+                                calcDt3rd(eta_sun0, alpha2,   0., acc_s, snap_s));
+#endif
         PS::F64 rem = fmod(time, dt_next);
 
         while( rem != 0.0 ){
@@ -293,8 +344,19 @@ public:
     PS::F64vec j0_d;
     PS::F64vec xp;
     PS::F64vec vp;
+#ifdef INTEGRATE_6TH_SUN
+    PS::F64vec s0_s;
+    PS::F64vec ap;
+#endif
+    
+#ifndef INTEGRATE_6TH_SUN
     PS::F64vec a2_s;
     PS::F64vec a3_s;
+#else
+    PS::F64vec a3_s;
+    PS::F64vec a4_s;
+    PS::F64vec a5_s;
+#endif
     PS::F64vec a2_d;
     PS::F64vec a3_d;
     
@@ -345,9 +407,19 @@ public:
     }
     FPHard(){
         x0   = v0   = 0.;
-        a0_s = j0_s = a0_d = j0_d = 0.;
+        a0_s = j0_s = 0.;
+        a0_d = j0_d = 0.;
         xp   = vp   = 0.;
-        a2_s = a3_s = a2_d = a3_d = 0.;
+#ifdef INTEGRATE_6TH_SUN
+        s0_s   = 0.;
+        ap     = 0.;
+#endif
+#ifndef INTEGRATE_6TH_SUN
+        a2_s = a3_s = 0.;
+#else
+        a3_s = a4_s = a5_s = 0.;
+#endif
+        a2_d = a3_d = 0.;
         time_c = 0.;
         
         clearList();
@@ -361,8 +433,18 @@ public:
         j0_d = fp.j0_d;
         xp   = fp.xp;
         vp   = fp.vp;
+#ifdef INTEGRATE_6TH_SUN
+        s0_s   = fp.s0_s;
+        ap     = fp.ap;
+#endif
+#ifndef INTEGRATE_6TH_SUN
         a2_s = fp.a2_s;
         a3_s = fp.a3_s;
+#else
+        a3_s = fp.a3_s;
+        a4_s = fp.a4_s;
+        a5_s = fp.a5_s;
+#endif
         a2_d = fp.a2_d;
         a3_d = fp.a3_d;
         
@@ -373,10 +455,20 @@ public:
     }
     FPHard(const FPGrav & fp) : FPGrav(fp){
         x0   = v0   = 0.;
-        a0_s = j0_s = a0_d = j0_d = 0.;
+        a0_s = j0_s = 0.;
+        a0_d = j0_d = 0.;
         xp   = vp   = 0.;
-        a2_s = a3_s = a2_d = a3_d = 0.;
-
+#ifdef INTEGRATE_6TH_SUN
+        s0_s   = 0;
+        ap     = 0;
+#endif
+#ifndef INTEGRATE_6TH_SUN
+        a2_s = a3_s = 0.;
+#else
+        a3_s = a4_s = a5_s = 0.;
+#endif
+        a2_d = a3_d = 0.;
+        
         time_c = fp.time;
         time = 0;
         
@@ -393,8 +485,18 @@ public:
             j0_d = fp.j0_d;
             xp   = fp.xp;
             vp   = fp.vp;
+#ifdef INTEGRATE_6TH_SUN
+            s0_s   = fp.s0_s;
+            ap     = fp.ap;
+#endif
+#ifndef INTEGRATE_6TH_SUN
             a2_s = fp.a2_s;
             a3_s = fp.a3_s;
+#else
+            a3_s = fp.a3_s;
+            a4_s = fp.a4_s;
+            a5_s = fp.a5_s;
+#endif
             a2_d = fp.a2_d;
             a3_d = fp.a3_d;
             
@@ -409,9 +511,19 @@ public:
         FPGrav::operator=(fp);
         if ( this != &fp ){
             x0   = v0   = 0.;
-            a0_s = j0_s = a0_d = j0_d = 0.;
+            a0_s = j0_s = 0.;
+            a0_d = j0_d = 0.;
             xp   = vp   = 0.;
-            a2_s = a3_s = a2_d = a3_d = 0.;
+#ifdef INTEGRATE_6TH_SUN
+            s0_s   = 0;
+            ap     = 0;
+#endif
+#ifndef INTEGRATE_6TH_SUN
+            a2_s = a3_s = 0.;
+#else
+            a3_s = a4_s = a5_s = 0.;
+#endif
+            a2_d = a3_d = 0.;
             
             time_c = fp.time;
             time = 0;
@@ -431,37 +543,93 @@ public:
         x0   = pos;
         v0   = vel;
         a0_s = acc_s;
-        a0_d = acc_d;
         j0_s = jerk_s;
+#ifdef INTEGRATE_6TH_SUN
+        s0_s = snap_s;
+#endif
         j0_d = jerk_d;
-        
+        a0_d = acc_d;
+
+#ifndef INTEGRATE_6TH_SUN
         PS::F64vec acc_sd  = acc_s  + acc_d;
         PS::F64vec jerk_sd = jerk_s + jerk_d;
         xp = pos + Dt*(vel    + Dt*(SECONDORDER*acc_sd + THIRDORDER*Dt*jerk_sd));
         vp = vel + Dt*(acc_sd + Dt* SECONDORDER*jerk_sd);
+#else
+        assert ( acc_ == acc_s + acc_d );
+        PS::F64vec jerk_sd = jerk_s + jerk_d;
+        PS::F64vec snap_sd = snap_s;
+        xp = pos  + Dt*(vel     + Dt*(SECONDORDER*acc_    + Dt*(THIRDORDER*jerk_sd + Dt*FOURTHORDER*snap_sd)));
+        vp = vel  + Dt*(acc_    + Dt*(SECONDORDER*jerk_sd + Dt* THIRDORDER*snap_sd));
+        ap = acc_ + Dt*(jerk_sd + Dt* SECONDORDER*snap_sd);
+#endif
     }
     void correct(PS::F64 Dt){
         PS::F64 Dt2 = Dt*Dt;
-        PS::F64 Dt3 = Dt*Dt*Dt;
-        PS::F64 Dt2inv = 1.0/Dt2;
-        PS::F64 Dt3inv = 1.0/Dt3;
-        a2_s = -Dt2inv * (6. *(a0_s-acc_s) +    Dt*(4.*j0_s+2.*jerk_s));
-        a3_s =  Dt3inv * (12.*(a0_s-acc_s) + 6.*Dt*(   j0_s+   jerk_s));
-        a2_d = -Dt2inv * (6. *(a0_d-acc_d) +    Dt*(4.*j0_d+2.*jerk_d));
-        a3_d =  Dt3inv * (12.*(a0_d-acc_d) + 6.*Dt*(   j0_d+   jerk_d));
+        PS::F64 Dt_inv  = 1./Dt;
+        PS::F64 Dt_inv2 = Dt_inv *Dt_inv;
+        PS::F64 Dt_inv3 = Dt_inv2*Dt_inv;
         
-        PS::F64vec a2_sd = a2_s + a2_d;
-        PS::F64vec a3_sd = a3_s + a3_d;
-        pos = xp + Dt2*Dt2*(FOURTHORDER*a2_sd + ALPHA*FIFTHORDER *Dt*a3_sd);
-        vel = vp +     Dt3*(THIRDORDER *a2_sd +       FOURTHORDER*Dt*a3_sd);
+        PS::F64vec Am_s = acc_s - a0_s;
+        PS::F64vec J0_s = Dt*j0_s;
+        PS::F64vec J1_s = Dt*jerk_s;
+#ifndef INTEGRATE_6TH_SUN 
+        PS::F64vec A2_s =  3.*Am_s - (J1_s + 2.*J0_s);
+        PS::F64vec A3_s = -2.*Am_s + (J1_s +    J0_s);
+
+        a2_s = 2.*Dt_inv2*(A2_s + 3.*A3_s);
+        a3_s = 6.*Dt_inv3* A3_s;
+#else
+        PS::F64vec S0_s = SECONDORDER*Dt2*s0_s;
+        PS::F64vec S1_s = SECONDORDER*Dt2*snap_s;
+        PS::F64vec A3_s =  10.*Am_s - (4.*J1_s + 6.*J0_s) + (   S1_s - 3.*S0_s);
+        PS::F64vec A4_s = -15.*Am_s + (7.*J1_s + 8.*J0_s) - (2.*S1_s - 3.*S0_s);
+        PS::F64vec A5_s =   6.*Am_s - 3.*(J1_s +    J0_s) + (   S1_s -    S0_s);
+
+        PS::F64 Dt_inv4 = Dt_inv2*Dt_inv2;
+        PS::F64 Dt_inv5 = Dt_inv3*Dt_inv2;
+
+        a3_s =   3.*Dt_inv3*(A3_s + 4.*A4_s + 10.*A5_s);
+        a4_s =  24.*Dt_inv4*(A4_s + 5.*A5_s);
+        a5_s = 120.*Dt_inv5*A5_s;
+#endif
+        
+        PS::F64vec Am_d = acc_d - a0_d;
+        PS::F64vec J0_d = j0_d   * Dt;
+        PS::F64vec J1_d = jerk_d * Dt;
+        PS::F64vec A2_d =  3.*Am_d - (J1_d + 2.*J0_d);
+        PS::F64vec A3_d = -2.*Am_d + (J1_d +    J0_d);
+
+        a2_d = 2. * (A2_d + 3.*A3_d) * Dt_inv2;
+        a3_d = 6. *  A3_d * Dt_inv3;
+
+#ifndef INTEGRATE_6TH_SUN
+        PS::F64vec A2_sd = A2_s+A2_d;
+        PS::F64vec A3_sd = A3_s+A3_d;
+        pos = xp + ONE_SIXTIETH*Dt2*(5.*A2_sd + 3.*ALPHA*A3_sd);
+        vel = vp + ONE_TWELFTH *Dt *(4.*A2_sd + 3.      *A3_sd);
+#else
+        PS::F64vec A2_sd = A2_d;
+        PS::F64vec A3_sd = A3_s+A3_d;
+        PS::F64vec A4_sd = A4_s;
+        PS::F64vec A5_sd = A5_s;
+        pos  = xp + ONE_420TH   *Dt2*(35.*A2_sd + 21.*A3_sd + 14.*A4_sd + 10.*A5_sd);
+        vel  = vp + ONE_SIXTIETH*Dt *(20.*A2_sd + 15.*A3_sd + 12.*A4_sd + 10.*A5_sd);
+        assert( acc_ == acc_s + acc_d );
+#endif
     }
 
     void calcDeltat(){
         PS::F64 dt_next = std::min(2.*dt, 0.5*dt_tree);
 
-        PS::F64 dt_1 = std::min(calcDt4th(eta, alpha2, acc0, acc_d, jerk_d, a2_d+a3_d*dt, a3_d),
-                                calcDt4th(eta, alpha2,   0., acc_s, jerk_s, a2_s+a3_s*dt, a3_s));
+#ifndef INTEGRATE_6TH_SUN
+        PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d, a3_d),
+                                calcDt4th(eta_sun, alpha2,   0., acc_s, jerk_s, a2_s, a3_s));
         //PS::F64 dt_1 = calcDt4th(eta, alpha2, acc0, acc_d, jerk_d, a2_d+a3_d*dt, a3_d);
+#else
+        PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d),
+                                calcDt6th(eta_sun, alpha2,   0., acc_s, jerk_s, snap_s, a3_s, a4_s, a5_s));
+#endif
         PS::F64 rem = fmod(time, dt_next);
  
         while(rem != 0.0){
