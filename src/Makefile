@@ -16,8 +16,8 @@ CFLAGS += -funroll-loops
 ########################
 ###   MPI & OpenMP   ###
 ########################
-CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
-CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
+#CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 
 ################
 ###   SIMD   ###

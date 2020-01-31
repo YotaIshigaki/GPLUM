@@ -14,6 +14,8 @@
 
 #include <particle_simulator.hpp>
 
+#define GPLUMVERSION "2.0 (2019/01)"
+
 #define PRC(x) std::cerr << #x << " = " << x << ", "
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
 
@@ -79,7 +81,9 @@ PS::F64 Collision0::m_min = 9.426627927538057e-12;
 
 int main(int argc, char *argv[])
 {
-   PS::Initialize(argc, argv);
+    PS::Initialize(argc, argv); 
+    showGplumVersion(GPLUMVERSION);
+    PS::Comm::barrier();
     time_t wtime_start_program = time(NULL);
     
     ////////////////////////

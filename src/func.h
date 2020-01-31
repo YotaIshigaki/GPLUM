@@ -1,5 +1,33 @@
 #pragma once
 
+void showGplumVersion(std::string version)
+{
+    if ( PS::Comm::getRank() == 0 ) {
+        version.resize(16,' ');
+        
+        std::cout << "                                           \n "
+                  << "     __________________________________   \n"
+                  << "     /                                  \\  \n"
+                  << "    |    ____ ____  _    _   _ __  __    | \n"
+                  << "    |   / ___|  _ \\| |  | | | |  \\/  |   | \n"
+                  << "    |  | |  _| |_) | |  | | | | |\\/| |   | \n"
+                  << "    |  | |_| |  __/| |__| |_| | |  | |   | \n"
+                  << "    |   \\____|_|   |_____\\___/|_|  |_|   | \n"
+                  << "    |                                    | \n"
+                  << "    |  Global Planetary Simulation Code  | \n"
+                  << "    |    with Mass-dependent Cut-off     | \n"
+                  << "    |       Version " << version << "     | \n"
+                  << "     \\__________________________________/  \n"
+                  << "                                           \n"
+                  << "     Licence: MIT (see, https://github.com/YotaIshigaki/GPLUM/blob/master/LICENSE) \n"
+                  << "                                           \n"
+                  << "     Copyright (C) 2020                    \n"
+                  << "       Yota Ishigaki, Junko Kominmi, Junichiro Makino, \n"
+                  << "       Masaki Fujimoto and Masaki Iwasawa              \n"
+                  << "                                                       \n";
+    }
+}
+
 template <class Tpsys>
 void calcMeanMass(Tpsys & pp,
                   PS::F64 & m_mean,
