@@ -14,7 +14,7 @@
 
 #include <particle_simulator.hpp>
 
-#define GPLUMVERSION "2.0 (2019/01)"
+#define GPLUMVERSION "2.0 (2020/01)"
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
