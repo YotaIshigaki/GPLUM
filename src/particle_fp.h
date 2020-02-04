@@ -9,7 +9,7 @@
 #define ALPHA        1.1666666666666667e-3
 #define ONE_TWELFTH  8.3333333333333333e-2
 #define ONE_SIXTIETH 1.6666666666666667e-2
-#define ONE_420TH    2.3809523809523810e-2
+#define ONE_420TH    2.3809523809523810e-3
 
     
 inline PS::F64 calcDt2nd(PS::F64 eta,
@@ -314,6 +314,8 @@ public:
                                 calcDt2nd(eta_sun0, alpha2,   0., acc_s, jerk_s));
         //PS::F64 dt_1 = calcDt2nd(eta_0, alpha2, acc0, acc_d, jerk_d);
 #else
+        //PS::F64 dt_1 = std::min(calcDt2nd(eta_0,    alpha2, acc0, acc_d, jerk_d),
+        //                        calcDt2nd(eta_sun0, alpha2,   0., acc_s, jerk_s));
         PS::F64 dt_1 = std::min(calcDt2nd(eta_0,    alpha2, acc0, acc_d, jerk_d),
                                 calcDt3rd(eta_sun0, alpha2,   0., acc_s, snap_s));
 #endif
@@ -627,6 +629,8 @@ public:
                                 calcDt4th(eta_sun, alpha2,   0., acc_s, jerk_s, a2_s, a3_s));
         //PS::F64 dt_1 = calcDt4th(eta, alpha2, acc0, acc_d, jerk_d, a2_d+a3_d*dt, a3_d);
 #else
+        //PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d),
+        //                        calcDt4th(eta_sun, alpha2,   0., acc_s, jerk_s, snap_s, a3_s));
         PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d),
                                 calcDt6th(eta_sun, alpha2,   0., acc_s, jerk_s, snap_s, a3_s, a4_s, a5_s));
 #endif

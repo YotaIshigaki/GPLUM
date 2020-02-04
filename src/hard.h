@@ -568,7 +568,8 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
             } else {
                 FPHard pi = FPHard(pp[list_iso[i]]);
-                timeIntegrate_isolated(pi, (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+                timeIntegrate_isolated(pi, 0., FPGrav::dt_tree);
+                //timeIntegrate_isolated(pi, (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
                 pi.resetTime();
                 pp[list_iso[i]] = FPGrav(pi);
             }

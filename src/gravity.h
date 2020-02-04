@@ -216,7 +216,13 @@ void calcGravity(Tp & pi,
 {
     const PS::F64 eps2  = EPGrav::eps2;
     
+    //#ifndef INTEGRATE_6TH_SUN
     calcStarGravity(pi);
+    //#else
+    //calcStarAccJerk(pi);
+    //pi.setAcc_();
+    //calcStarSnap(pi);
+    //#endif
 
     pi.phi_d  = 0.;
     pi.acc_d  = 0.;
