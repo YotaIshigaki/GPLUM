@@ -631,8 +631,8 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
     if ( PS::Comm::getRank() == 0 ){
         n_col_list  = new PS::S32[n_proc];
         n_frag_list = new PS::S32[n_proc];
-        col_recv    = new PS::S32[n_proc];
-        frag_recv   = new PS::S32[n_proc];
+        col_recv    = new PS::S32[n_proc+1];
+        frag_recv   = new PS::S32[n_proc+1];
     }
     // Send Number of Collision & Fragments
     PS::Comm::gather(&n_col, 1, n_col_list);
@@ -649,6 +649,8 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
             tmp_col  += n_col_list[i];
             tmp_frag += n_frag_list[i];
         }
+        col_recv[n_proc]  = tmp_col;
+        frag_recv[n_proc] = tmp_frag;
         n_col_tot = tmp_col;
         n_frag_tot = tmp_frag;
         col_list_tot = new Collision[n_col_tot];
