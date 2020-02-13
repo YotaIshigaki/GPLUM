@@ -356,6 +356,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             //for ( PS::S32 i=0; i<list_iso.size(); i++ ){
             if ( pp[list_iso[i]].getEccentricity() < 0.8 && FPGrav::eps2 == 0. ){
                 timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+                //timeIntegrateKepler_isolated(pp[list_iso[i]], 0., FPGrav::dt_tree);
             } else {
                 FPHard pi = FPHard(pp[list_iso[i]]);
                 //timeIntegrate_isolated(pi, (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
@@ -692,6 +693,7 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
         
         ptcl_multi[adr.first][adr.second].id = id_frag_loc[i];
         pp.addOneParticle(ptcl_multi[adr.first][adr.second]);
+        assert( ptcl_multi[adr.first][adr.second].time_c == 0. );
     }
     PS::Comm::broadcast(&id_next, 1);
 

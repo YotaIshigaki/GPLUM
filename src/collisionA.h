@@ -217,11 +217,12 @@ inline void Collision0::setParticle(Tpsys & pp,
         pfrag[i].r_out_inv = pp[id_c_imp].r_out_inv;
         pfrag[i].r_search  = pp[id_c_imp].r_search;
 #endif
-        pfrag[i].time  = time;
-        pfrag[i].dt    = pp[id_c_imp].dt;
-        pfrag[i].phi   = pp[id_c_imp].phi;
-        pfrag[i].phi_d = pp[id_c_imp].phi_d;
-        pfrag[i].phi_s = pp[id_c_imp].phi_s;
+        pfrag[i].time   = pp[id_c_imp].time;
+        pfrag[i].time_c = pp[id_c_imp].time_c;
+        pfrag[i].dt     = pp[id_c_imp].dt;
+        pfrag[i].phi    = pp[id_c_imp].phi;
+        pfrag[i].phi_d  = pp[id_c_imp].phi_d;
+        pfrag[i].phi_s  = pp[id_c_imp].phi_s;
 
         pfrag[i].id         = id_frag - i;
         pfrag[i].id_cluster = pp[id_c_imp].id_cluster;

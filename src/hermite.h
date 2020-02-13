@@ -68,7 +68,7 @@ void mergeAccJerk(Tpsys & pp,
         pp[j_id].acc_d  = acc_d;
         pp[j_id].jerk_d = jerk_d;
 #ifdef INTEGRATE_6TH_SUN
-        pp[i].setAcc_();
+        pp[j_id].setAcc_();
 #endif
     }  
 }
@@ -217,7 +217,7 @@ void timeIntegrate_multi(Tpsys & pp,
     while ( time < time_end ) {
         
         time_s = makeActiveList(pp, active_list);
-
+        
         // Predict
         psize = pp.size();
         for ( PS::S32 i=0; i<psize; i++ ) {
@@ -322,12 +322,17 @@ void timeIntegrate_multi(Tpsys & pp,
         if ( flag_col ){
 #ifdef FORDEBUG
             psize = pp.size();
-            for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
+            for(PS::S32 i=0; i<psize; i++) {
+                calcGravity(pp[i], pp);
+#ifdef INTEGRATE_6TH_SUN
+                pp[i].setAcc_();
+#endif
+            }
             mergeAccJerk(pp, merge_list);
             PS::F64 ekin0, ephi_d0, ephi_s0;
             PS::F64 e2 = calcEnergyCluster(pp, ekin0, ephi_d0, ephi_s0);
             std::cerr << pp.size() << " " << (e2-e0-edisp_d)/e0 << " " << n_col << std::endl;
-#endif
+#endif //FORDEBUG
             ///////////////////
             //   Collision   //
             ///////////////////
@@ -388,7 +393,8 @@ void timeIntegrate_multi(Tpsys & pp,
                 }
             }
         }
-#endif
+#endif //COLLISION
+        
         time = getSystemTime(pp);
         loop ++;
     }
@@ -693,13 +699,13 @@ void timeIntegrate_isolated(Tp & pi,
     }
     pi.phi_s = 0.;
     pi.phi_d = 0.;
-#ifndef INTEGRATE_6TH_SUN
+    //#ifndef INTEGRATE_6TH_SUN
     calcStarGravity(pi);
-#else
-    calcStarAccJerk(pi);
-    pi.setAcc_();
-    calcStarSnap(pi);
-#endif
+    //#else
+    //calcStarAccJerk(pi);
+    //pi.setAcc_();
+    //calcStarSnap(pi);
+    //#endif
     assert ( pi.time ==  time_end );
 }
 

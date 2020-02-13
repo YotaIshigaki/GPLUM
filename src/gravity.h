@@ -638,7 +638,7 @@ void correctForceLong(Tpsys & pp,
                         if ( r_out > 0. ){
 #endif
                             NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                            acc0i += massj * r_out_inv * r_out_inv;
+                            acc0i += r_out * r_out / massj;
 #ifdef TEST_PTCL
                         }
 #endif
@@ -713,7 +713,7 @@ void correctForceLong(Tpsys & pp,
                         if ( r_out > 0. ){
 #endif
                             NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                            acc0i += massj * r_out_inv * r_out_inv;
+                            acc0i += r_out * r_out / massj;
 #ifdef TEST_PTCL
                         }
 #endif
@@ -752,7 +752,7 @@ void correctForceLong(Tpsys & pp,
 
         pp[i].acc  += acci;
         pp[i].phi  += phii;
-        pp[i].acc0  = (pp[i].neighbor>0) ? acc0i/pp[i].neighbor : 0.;
+        pp[i].acc0  = ( acc0i > 0. ) ? 1./acc0i : 0.;
         
 #ifdef CHECK_NEIGHBOR
         PS::F64  dphi_d = pp[i].phi_d - phi_di;
@@ -878,7 +878,7 @@ void correctForceLongInitial(Tpsys & pp,
                         if ( r_out > 0. ){
 #endif
                             NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                            acc0i += massj * r_out_inv * r_out_inv;
+                            acc0i += r_out * r_out / massj;
 #ifdef TEST_PTCL
                         }
 #endif
@@ -958,7 +958,7 @@ void correctForceLongInitial(Tpsys & pp,
                         if ( r_out > 0. ){
 #endif
                                 NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                                acc0i += massj * r_out_inv * r_out_inv;
+                                acc0i += r_out * r_out / massj;
 #ifdef TEST_PTCL
                         }
 #endif
@@ -1005,7 +1005,7 @@ void correctForceLongInitial(Tpsys & pp,
         pp[i].acc_d  = acc_di;
         pp[i].phi_d  = phi_di;
         pp[i].jerk_d = jerki;
-        pp[i].acc0   = (pp[i].neighbor>0) ? acc0i/pp[i].neighbor : 0.;
+        pp[i].acc0   = ( acc0i > 0. ) ? 1./acc0i : 0.;
 
 #ifndef INTEGRATE_6TH_SUN
         pp[i].calcDeltatInitial();
