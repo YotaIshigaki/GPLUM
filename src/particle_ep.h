@@ -38,9 +38,6 @@ public:
     PS::F64 r_out;
     PS::F64 r_out_inv;
     PS::F64 r_search;
-    //#ifdef USE_RE_SEARCH_NEIGHBOR
-    //PS::F64 v_disp;
-    //#endif
 #else //USE_INDIVIDUAL_CUTOFF
     static PS::F64 r_out;
     static PS::F64 r_out_inv;
@@ -48,7 +45,8 @@ public:
 #endif //USE_INDIVIDUAL_CUTOFF
 
     static PS::F64 eps2;
-    static PS::F64 R_cut;
+    static PS::F64 R_cut0;
+    static PS::F64 R_cut1;
     static PS::F64 R_search0;
     static PS::F64 R_search1;
 #ifdef USE_RE_SEARCH_NEIGHBOR

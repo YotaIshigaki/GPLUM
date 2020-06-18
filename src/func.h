@@ -198,6 +198,11 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
 
     std::vector<PS::S32> remove_list;
     remove_list.clear();
+
+#ifdef INDIRECT_TERM
+    PS::F64 e_ind_before = 0.;
+    PS::F64 e_ind_after  = 0.;
+#endif
     
 #pragma omp parallel for
     for ( PS::S32 i=0; i<n_loc; i++ ){
@@ -251,9 +256,15 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
             remove_list_glb = new FPGrav[n_remove_glb];
         }
         remove_list_loc = new FPGrav[n_remove_loc];
-
-        PS::Comm::gather(&n_remove_loc, 1, n_remove_list);
-
+        
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+        MPI_Gather(&n_remove_loc, 1, PS::GetDataType(n_remove_loc),
+                   n_remove_list, 1, PS::GetDataType(*n_remove_list),  0, MPI_COMM_WORLD);
+#else
+        n_remove_list[0]  = n_remove_loc;
+#endif
+        //PS::Comm::gather(&n_remove_loc, 1, n_remove_list);
+        
         if ( PS::Comm::getRank() == 0 ){
             PS::S32 tmp_remove = 0;
             for ( PS::S32 i=0; i<n_proc; i++ ){
@@ -266,9 +277,15 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
         for ( PS::S32 i=0; i<n_remove_loc; i++ ) {
             remove_list_loc[i] = pp[remove_list.at(i)];
         }
-        
-        PS::Comm::gatherV(remove_list_loc, n_remove_loc, remove_list_glb, n_remove_list, n_remove_adr);
 
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+        MPI_Gatherv(remove_list_loc, n_remove_loc,                PS::GetDataType(*remove_list_loc),
+                    remove_list_glb, n_remove_list, n_remove_adr, PS::GetDataType(*remove_list_glb), 0, MPI_COMM_WORLD);
+#else
+        for(PS::S32 i=0; i<n_remove_loc; i++) remove_list_glb[i] = remove_list_loc[i];
+#endif
+        //PS::Comm::gatherV(remove_list_loc, n_remove_loc, remove_list_glb, n_remove_list, n_remove_adr);
+        
         if ( PS::Comm::getRank() == 0 ){
             for ( PS::S32 i=0; i<n_remove_glb; i++ ) {
             
@@ -310,11 +327,22 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
         }
         
         delete [] remove_list_loc;
+
+#ifdef INDIRECT_TERM
+        e_ind_before = calcIndirectEnergy(pp);
+#endif
     }
     
     if (n_remove_loc) pp.removeParticle(&remove_list[0], n_remove_loc);
             
     edisp += PS::Comm::getSum(edisp_loc);
+
+#ifdef INDIRECT_TERM
+    if (n_remove_glb) {
+        e_ind_after = calcIndirectEnergy(pp);
+        edisp += e_ind_after - e_ind_before;
+    }
+#endif
 
     return n_remove_glb;
 }

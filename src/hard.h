@@ -65,7 +65,7 @@ public:
     PS::F64 edisp;
     PS::F64 edisp_d;
 
-    static PS::F64 f;
+    //static PS::F64 f;
 
     PS::S32 getNumberOfClusterLocal() const { return ptcl_multi.size(); }
     PS::S32 getNumberOfClusterGlobal() const {
@@ -309,10 +309,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             PS::S32 n_frag_tmp = 0;
             PS::F64 edisp_tmp   = 0.;
             PS::F64 edisp_d_tmp = 0.;
-            std::vector<Collision> collision_list_tmp;
-            //timeIntegrate_multi(ptcl_multi[i], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree, f,
-            //                    n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
-            timeIntegrate_multi(ptcl_multi[i], 0., FPGrav::dt_tree, f,
+            timeIntegrate_multi(ptcl_multi[i], 0., FPGrav::dt_tree,
                                 n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
             if ( n_col_tmp > 0 ){
 #pragma omp critical
@@ -356,10 +353,8 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             //for ( PS::S32 i=0; i<list_iso.size(); i++ ){
             if ( pp[list_iso[i]].getEccentricity() < 0.8 && FPGrav::eps2 == 0. ){
                 timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
-                //timeIntegrateKepler_isolated(pp[list_iso[i]], 0., FPGrav::dt_tree);
             } else {
                 FPHard pi = FPHard(pp[list_iso[i]]);
-                //timeIntegrate_isolated(pi, (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
                 timeIntegrate_isolated(pi, 0., FPGrav::dt_tree);
                 pi.resetTime();
                 pp[list_iso[i]] = FPGrav(pi);
@@ -441,9 +436,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
         PS::F64 edisp_tmp   = 0.;
         PS::F64 edisp_d_tmp = 0.;
         std::vector<Collision> collision_list_tmp;
-        //timeIntegrate_multi_omp(ptcl_multi[i], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree, f,
-        //                        n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
-        timeIntegrate_multi_omp(ptcl_multi[i], 0., FPGrav::dt_tree, f,
+        timeIntegrate_multi_omp(ptcl_multi[i], 0., FPGrav::dt_tree,
                                 n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
         if ( n_col_tmp > 0 ){
             n_col  += n_col_tmp;
@@ -525,7 +518,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             std::vector<Collision> collision_list_tmp;
             //timeIntegrate_multi(ptcl_multi[i], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree, f,
             //                    n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
-            timeIntegrate_multi(ptcl_multi[i], 0., FPGrav::dt_tree, f,
+            timeIntegrate_multi(ptcl_multi[i], 0., FPGrav::dt_tree,
                                 n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
             if ( n_col_tmp > 0 ){
 #pragma omp critical
@@ -632,12 +625,21 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
     if ( PS::Comm::getRank() == 0 ){
         n_col_list  = new PS::S32[n_proc];
         n_frag_list = new PS::S32[n_proc];
-        col_recv    = new PS::S32[n_proc+1];
-        frag_recv   = new PS::S32[n_proc+1];
+        col_recv    = new PS::S32[n_proc];
+        frag_recv   = new PS::S32[n_proc];
     }
     // Send Number of Collision & Fragments
-    PS::Comm::gather(&n_col, 1, n_col_list);
-    PS::Comm::gather(&n_frag, 1, n_frag_list);
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+    MPI_Gather(&n_col,      1, PS::GetDataType(n_col),
+               n_col_list,  1, PS::GetDataType(*n_col_list),  0, MPI_COMM_WORLD);
+    MPI_Gather(&n_frag,     1, PS::GetDataType(n_frag),
+               n_frag_list, 1, PS::GetDataType(*n_frag_list), 0, MPI_COMM_WORLD);
+#else
+    n_col_list[0]  = n_col;
+    n_frag_list[0] = n_frag;
+#endif
+    //PS::Comm::gather(&n_col, 1, n_col_list);
+    //PS::Comm::gather(&n_frag, 1, n_frag_list);
 
     PS::S32 n_col_tot = 0;
     PS::S32 n_frag_tot = 0;
@@ -650,24 +652,39 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
             tmp_col  += n_col_list[i];
             tmp_frag += n_frag_list[i];
         }
-        col_recv[n_proc]  = tmp_col;
-        frag_recv[n_proc] = tmp_frag;
+        //col_recv[n_proc]  = tmp_col;
+        //frag_recv[n_proc] = tmp_frag;
         n_col_tot = tmp_col;
         n_frag_tot = tmp_frag;
         col_list_tot = new Collision[n_col_tot];
         id_frag_list = new PS::S32[n_frag_tot];
     }
     // Send Collision Information & Fragments ID
-    PS::Comm::gatherV(&collision_list[0], n_col,  col_list_tot, n_col_list,  col_recv);
-    PS::Comm::gatherV(id_frag_loc,        n_frag, id_frag_list, n_frag_list, frag_recv);
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+    MPI_Gatherv(&collision_list[0], n_col,                  PS::GetDataType(collision_list[0]),
+                col_list_tot,       n_col_list,  col_recv,  PS::GetDataType(*col_list_tot),     0, MPI_COMM_WORLD);
+    MPI_Gatherv(id_frag_loc,        n_frag,                 PS::GetDataType(*id_frag_loc),
+                id_frag_list,       n_frag_list, frag_recv, PS::GetDataType(*id_frag_list),     0, MPI_COMM_WORLD);
+#else
+    for(PS::S32 i=0; i<n_col; i++)  col_list_tot[i] = collision_list[i];
+    for(PS::S32 i=0; i<n_frag; i++) id_frag_list[i] = id_frag_loc[i];
+#endif
+    //PS::Comm::gatherV(&collision_list[0], n_col,  col_list_tot, n_col_list,  col_recv);
+    //PS::Comm::gatherV(id_frag_loc,        n_frag, id_frag_list, n_frag_list, frag_recv);
     
     // Rewrite Fragments ID
     if ( PS::Comm::getRank() == 0 ){
         rewriteFragmentID(id_frag_list, col_list_tot, n_col_tot, n_frag_tot, id_next);
     }
-
+    
     // Return Fragments ID
-    PS::Comm::scatterV(id_frag_list, n_frag_list, frag_recv, id_frag_loc, n_frag);
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+    MPI_Scatterv(id_frag_list, n_frag_list, frag_recv, PS::GetDataType(*id_frag_list),
+                 id_frag_loc,  n_frag,                 PS::GetDataType(*id_frag_loc),  0, MPI_COMM_WORLD);
+#else
+    for(int i=0; i<n_frag_list; i++) id_frag_loc[i] = id_frag_list[i];
+#endif
+    //PS::Comm::scatterV(id_frag_list, n_frag_list, frag_recv, id_frag_loc, n_frag);
     assert( (PS::S32)(frag_list.size()) == n_frag );
     for ( PS::S32 i=0; i<n_frag; i++ ){
         std::pair<PS::S32, PS::S32> adr = frag_list.at(i);

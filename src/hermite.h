@@ -96,13 +96,15 @@ void mergeAccJerk(Tpsys & pp,
     }
 }
 template <class Tpsys>
-bool collisionDetermination(Tpsys & pp,
-                            std::pair<PS::S32,PS::S32> & col_pair,
-                            const PS::F64 f)
+PS::S32 collisionDetermination(Tpsys & pp,
+                               std::pair<PS::S32,PS::S32> & col_pair)
 {
     PS::F64 R_min = 1.;
-    bool flag_col = false;
-
+#ifdef MERGE_BINARY
+    PS::F64 S_min = 1.;
+#endif
+    PS::S32 flag_col = 0;
+    
     //if ( col_pair.first > -1 && col_pair.second > -1 ){
     //    PS::F64vec dr = pp[col_pair.first].xp - pp[col_pair.second].xp;
     //    PS::F64 r1 = sqrt(dr*dr);
@@ -110,7 +112,7 @@ bool collisionDetermination(Tpsys & pp,
     //    PS::F64 R = r1 / ( f * r2 );
     //    if ( R > 1. ) col_pair = std::make_pair(-1,-1);
     //}
-
+    
     PS::S32 psize = pp.size();
     for(PS::S32 i=0; i<psize; i++){
         if ( pp[i].isDead ) continue;
@@ -120,8 +122,8 @@ bool collisionDetermination(Tpsys & pp,
             PS::F64vec dr = pp[i].xp - pp[pj_id].xp;
             //PS::F64vec dv = pp[i].vp - pp[pj_id].vp;
             PS::F64 r1 = sqrt(dr*dr);
-            PS::F64 r2 = pp[i].r_planet + pp[pj_id].r_planet;
-            PS::F64 R = r1 / ( f * r2 );
+            PS::F64 r2 = pp[i].f*pp[i].r_planet + pp[pj_id].f*pp[pj_id].r_planet;
+            PS::F64 R = r1 / r2;
             if ( R < R_min ){
                 //if ( ( col_pair == std::make_pair(i, pj_id) || col_pair == std::make_pair(pj_id, i) )
                 //     || dr*dv > 0. ) continue;
@@ -133,8 +135,46 @@ bool collisionDetermination(Tpsys & pp,
                     col_pair.first = pj_id;
                     col_pair.second = i;
                 }
-                flag_col = true;
+                flag_col = 1;
             }
+
+#ifdef MERGE_BINARY
+            //Determination of Binary Partcles
+            if ( !flag_col ){
+                PS::F64 axi = pp[i].getSemimajorAxis();
+                PS::F64 axj = pp[pj_id].getSemimajorAxis();
+                PS::F64 mi  = pp[i].mass;
+                PS::F64 mj  = pp[pj_id].mass;
+                PS::F64 ax_mut = ( axi > 0. && axj > 0.) ? 0.5*(axi + axj) : 0.;
+                PS::F64 r_Hill_mut = pow((mi+mj)/(3.*FPGrav::m_sun), 1./3.) * ax_mut;
+                PS::F64 R_merge = std::min(pp[i].R_merge, pp[pj_id].R_merge);  
+                R = r1 / ( R_merge * r_Hill_mut );
+                if ( R < 1. ){
+                    PS::F64vec pos_rel = pp[i].pos - pp[pj_id].pos;
+                    PS::F64vec vel_rel = pp[i].vel - mj*pp[pj_id].vel;
+                    PS::F64 r_rel  = sqrt(pos_rel*pos_rel);
+                    PS::F64 rv_rel = pos_rel * vel_rel;
+                    PS::F64 ax_rel  = 1.0 / (2.0/r_rel - vel_rel*vel_rel/(mi+mj));
+                    if ( ax_rel > 0. ){
+                        PS::F64 ecccosu = 1. - r_rel/ax_rel;
+                        PS::F64 eccsinu2 = rv_rel*rv_rel/((mi+mj)*ax_rel);
+                        PS::F64 ecc_rel = sqrt(ecccosu*ecccosu + eccsinu2);
+                        R = (1.+ecc_rel)*ax_rel / ( R_merge * r_Hill_mut );
+                        if ( R < S_min ){
+                            S_min = R;
+                            if ( pp[i].mass < pp[pj_id].mass ){
+                                col_pair.first = i;
+                                col_pair.second = pj_id;
+                            } else {
+                                col_pair.first = pj_id;
+                                col_pair.second = i;
+                            }
+                            flag_col = 2;
+                        }
+                    }
+                }
+            }
+#endif
         }
     }
     return flag_col;
@@ -170,7 +210,6 @@ template <class Tpsys>
 void timeIntegrate_multi(Tpsys & pp,
                          PS::F64 time_start,
                          PS::F64 time_end,
-                         const PS::F64 f,
                          PS::S32 & n_col,
                          PS::S32 & n_frag,
                          PS::F64 & edisp,
@@ -187,7 +226,7 @@ void timeIntegrate_multi(Tpsys & pp,
     PS::F64 time_s = 0.;
     PS::S32 loop = 0;
     PS::S32 id_next = 0;
-    bool flag_col = false;
+    PS::S32 flag_col = 0;
     n_col = n_frag = 0;
     edisp = edisp_d = 0.;
     collision_list.clear();
@@ -199,13 +238,14 @@ void timeIntegrate_multi(Tpsys & pp,
     PS::F64 t_c = 0.;
 
     assert( pp.size() > 0 );
+    PS::S32 psize = pp.size();
+    PS::S32 asize = 0;
+    
+    for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
 #ifdef FORDEBUG
-    for(PS::S32 i=0; i<pp.size(); i++) calcGravity(pp[i], pp);
     PS::F64 e0 = calcEnergyCluster(pp);
 #endif
 
-    PS::S32 psize = pp.size();
-    PS::S32 asize = 0;
     for(PS::S32 i=0; i<psize; i++){
         //calcJerk(pp[i], pp);
         //pp[i].calcDeltatInitial();
@@ -229,7 +269,8 @@ void timeIntegrate_multi(Tpsys & pp,
 
 #ifdef COLLISION
         // Collison?
-        flag_col = collisionDetermination(pp, col_pair, f);
+        flag_col = collisionDetermination(pp, col_pair);
+        
         if ( flag_col ){
             active_list.clear();
             for(PS::S32 i=0; i<psize; i++){
@@ -238,7 +279,7 @@ void timeIntegrate_multi(Tpsys & pp,
                 active_list.push_back(i);
             }
         }
-#endif
+#endif //COLLISION
             
         // Correct
         asize = active_list.size();
@@ -340,13 +381,21 @@ void timeIntegrate_multi(Tpsys & pp,
             std::vector<FPHard> pfrag;
 
             col.inputPair(pp, merge_list, col_pair);
+#ifdef MERGE_BINARY
+            if ( flag_col == 2 ) {
+                n_frag += col.mergeOutcome(pfrag);
+            } else {
+                n_frag += col.collisionOutcome(pfrag);
+            }
+#else
             n_frag += col.collisionOutcome(pfrag);
+#endif
             col.setParticle(pp, pfrag, merge_list, id_next);
             edisp += col.calcEnergyDissipation(pp, merge_list);
             edisp_d += col.getHardEnergyDissipation();
             col.setNeighbors(pp);
 
-            if ( !col.HitAndRun ){
+            if ( col.flag_merge ){
                 merge_list.insert(std::make_pair(col_pair.second,col_pair.first));
                 if ( pp[col_pair.first].isMerged ) {
                     std::pair<iterator, iterator> range = merge_list.equal_range(col_pair.first);
@@ -418,7 +467,6 @@ template <class Tpsys>
 void timeIntegrate_multi_omp(Tpsys & pp,
                              PS::F64 time_start,
                              PS::F64 time_end,
-                             const PS::F64 f,
                              PS::S32 & n_col,
                              PS::S32 & n_frag,
                              PS::F64 & edisp,
@@ -435,7 +483,7 @@ void timeIntegrate_multi_omp(Tpsys & pp,
     PS::F64 time_s = 0.;
     PS::S32 loop = 0;
     PS::S32 id_next = 0;
-    bool flag_col = false;
+    PS::S32 flag_col = 0;
     n_col = n_frag = 0;
     edisp = edisp_d = 0.;
     collision_list.clear();
@@ -447,13 +495,14 @@ void timeIntegrate_multi_omp(Tpsys & pp,
     PS::F64 t_c = 0.;
 
     assert( pp.size() > 0 );
+    PS::S32 psize = pp.size();
+    PS::S32 asize = 0;
+    
+    for(PS::S32 i=0; i<psize; i++) calcGravity(pp[i], pp);
 #ifdef FORDEBUG
-    for(PS::S32 i=0; i<pp.size(); i++) calcGravity(pp[i], pp);
     PS::F64 e0 = calcEnergyCluster(pp);
 #endif
 
-    PS::S32 psize = pp.size();
-    PS::S32 asize = 0;
     for(PS::S32 i=0; i<psize; i++){
         //calcJerk(pp[i], pp);
         //pp[i].calcDeltatInitial();
@@ -478,7 +527,8 @@ void timeIntegrate_multi_omp(Tpsys & pp,
 
 #ifdef COLLISION
         // Collison?
-        flag_col = collisionDetermination(pp, col_pair, f);
+        flag_col = collisionDetermination(pp, col_pair);
+        
         if ( flag_col ){
             active_list.clear();
             for(PS::S32 i=0; i<psize; i++){
@@ -585,13 +635,21 @@ void timeIntegrate_multi_omp(Tpsys & pp,
             std::vector<FPHard> pfrag;
 
             col.inputPair(pp, merge_list, col_pair);
+#ifdef MERGE_BINARY
+            if ( flag_col == 2 ) {
+                n_frag += col.mergeOutcome(pfrag);
+            } else {
+                n_frag += col.collisionOutcome(pfrag);
+            }
+#else
             n_frag += col.collisionOutcome(pfrag);
+#endif
             col.setParticle(pp, pfrag, merge_list, id_next);
             edisp += col.calcEnergyDissipation(pp, merge_list);
             edisp_d += col.getHardEnergyDissipation();
             col.setNeighbors(pp);
 
-            if ( !col.HitAndRun ){
+            if ( col.flag_merge ){
                 merge_list.insert(std::make_pair(col_pair.second,col_pair.first));
                 if ( pp[col_pair.first].isMerged ) {
                     std::pair<iterator, iterator> range = merge_list.equal_range(col_pair.first);
@@ -668,6 +726,8 @@ void timeIntegrate_isolated(Tp & pi,
     //pi.calcDeltatInitial();
     assert ( pi.time == time_start );
     assert ( pi.dt != 0. );
+
+    calcStarGravity(pi);
     
     while( pi.time < time_end ){
         pi.predict(pi.dt);

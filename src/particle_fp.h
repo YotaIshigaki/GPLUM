@@ -26,7 +26,7 @@ inline PS::F64 calcDt2nd(PS::F64 eta,
 
 inline PS::F64 calcDt3rd(PS::F64 eta,
                          PS::F64 alpha2,
-                         PS::F64 acc0,
+                        PS::F64 acc0,
                          PS::F64vec acc,
                          PS::F64vec snap){
     PS::F64 Acc2  = acc*acc + alpha2*acc0*acc0;
@@ -70,6 +70,7 @@ inline PS::F64 calcDt6th(PS::F64 eta,
     return (Jerk2>0.) ? eta*pow((Acc*Snap + Jerk2)/(Crac*A5 + Pop2),THIRDORDER) : std::numeric_limits<double>::max();
 }
 
+
 class FPGrav : public EPGrav {
 public:
 #ifdef INTEGRATE_6TH_SUN
@@ -93,6 +94,15 @@ public:
     PS::F64 phi;
     static PS::F64 m_sun;
     static PS::F64 dens;
+
+#ifdef CORRECT_NEIGHBOR
+    PS::F64    phi_correct;
+    PS::F64vec acc_correct;
+#endif
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+    PS::F64 v_disp;
+#endif
     
     PS::F64 time;
     PS::F64 dt;
@@ -106,9 +116,11 @@ public:
     static PS::F64 alpha2;
     
     PS::F64 r_planet;
+    PS::F64 f;
     static PS::F64 r_cut_min;
     static PS::F64 r_cut_max;
     static PS::F64 p_cut;
+    static PS::F64 increase_factor;
 
     PS::S32 id_cluster;
     PS::S32 n_cluster;
@@ -122,15 +134,23 @@ public:
     bool isSent;
     bool isDead;
     bool isMerged;
+#ifdef MERGE_BINARY
+    bool isBinary;
+    static PS::F64 R_merge;
+#endif
 
     static PS::F64 getSolarMass() { return m_sun; }
     
     PS::F64 getSemimajorAxis() const {
+#ifndef INDIRECT_TERM
         return 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
+#else
+        return 1.0 / (2.0/sqrt(pos*pos) - vel*vel/(m_sun+mass));
+#endif
     }
     PS::F64 getSemimajorAxis2() const {
         PS::F64 ax;
-        if ( getEccentricity(ax) < 0.5 ) {
+        if ( getEccentricity(ax) < 0.6 ) {
             return ax;
         } else {
             return sqrt(pos*pos);
@@ -139,9 +159,15 @@ public:
     PS::F64 getEccentricity(PS::F64 & ax) const {
         PS::F64 r = sqrt(pos*pos);
         PS::F64 rv = pos*vel;
+#ifndef INDIRECT_TERM
         ax = 1.0 / (2.0/r - vel*vel/m_sun);
         PS::F64 ecccosu = 1. - r/ax;
         PS::F64 eccsinu2 = rv*rv/(m_sun*ax);
+#else
+        ax = 1.0 / (2.0/r - vel*vel/(m_sun+mass));
+        PS::F64 ecccosu = 1. - r/ax;
+        PS::F64 eccsinu2 = rv*rv/((m_sun+mass)*ax);
+#endif
         return sqrt(ecccosu*ecccosu + eccsinu2);
     }
     PS::F64 getEccentricity() const {
@@ -171,23 +197,27 @@ public:
     void setAcc_() { acc_ = acc_s + acc_d; }
 #endif
     
-#ifdef INDIRECT_TERM
-    static PS::F64 getKineticEnergyOfSystem(){
-        return 0.5 * mass_tot * vel_g * vel_g;
-    }
-#endif
+    //#ifdef INDIRECT_TERM
+    //static PS::F64 getKineticEnergyOfSystem(){
+    //    return 0.5 * mass_tot * vel_g * vel_g;
+    //}
+    //static PS::F64 getKineticEnergyOfStar(){
+    //    return 0.5 * m_sun * vel_g * vel_g;
+    //}
+    //#endif
     
 #ifdef USE_INDIVIDUAL_CUTOFF
     
-    PS::F64 setROutRSearch(PS::F64 vdisp_k){
+    PS::F64 setROutRSearch(){
         PS::F64 rHill = getRHill();
-        PS::F64 v_kep = getKeplerVelocity();
         PS::F64 ax    = getSemimajorAxis2();
+
+        PS::F64 r_out_i = std::max(R_cut0*pow(ax,-p_cut)*rHill, R_cut1*v_disp*dt_tree);
         
-        if ( FPGrav::r_cut_max <= 0. ) {
-            r_out = std::max(R_cut * pow(ax,-p_cut) * rHill, FPGrav::r_cut_min);
+        if ( r_cut_max <= 0. ) {
+            r_out = std::max(r_out_i, r_cut_min);
         } else {
-            r_out = std::min(FPGrav::r_cut_max, std::max(R_cut * pow(ax,-p_cut) * rHill, FPGrav::r_cut_min) );
+            r_out = std::min(r_cut_max, std::max(r_out_i, r_cut_min) );
         }
         
 #ifdef TEST_PTCL
@@ -200,18 +230,15 @@ public:
         r_out_inv = 1. / r_out;
 #endif
             
-#ifndef ISOTROPIC
-        r_search  = R_search0*r_out + R_search1*vdisp_k*v_kep*dt_tree;
-#else
-        r_search  = R_search0*r_out + R_search1*vdisp_k*dt_tree;
-#endif
+        r_search  = R_search0*r_out + R_search1*v_disp*dt_tree;
+
 #ifdef TEST_PTCL
         if ( r_out == 0. ) r_search = 0.;
 
-        assert ( ( r_out > 0. && r_search > 0. ) ||
+        assert ( ( r_out > 0. && r_search > 0. && r_search > r_out ) ||
                  ( r_out == 0. && r_search == 0. && mass == 0. ) );
 #else    
-        assert ( r_out > 0. && r_search > 0. );
+        assert ( r_out > 0. && r_search > 0. && r_search > r_out );
 #endif
         
         return rHill;
@@ -220,17 +247,16 @@ public:
 #else //USE_INDIVIDUAL_CUTOFF
     
     static void setROutRSearch(PS::F64 rHill_a_glb,
-#ifndef ISOTROPIC
-                               PS::F64 v_kep_glb,
-#endif
-                               PS::F64 vdisp_k){
-        
-        if ( FPGrav::r_cut_max <= 0 ) {
-            r_out = std::max(R_cut * rHill_a_glb, FPGrav::r_cut_min);
-        } else {
-            r_out = std::min(FPGrav::r_cut_max, std::max(R_cut * rHill_a_glb, FPGrav::r_cut_min) );
-        }
+                               PS::F64 v_disp_glb){
 
+        PS::F64 r_out_i = std::max(R_cut0*rHill_a_glb, R_cut1*v_disp_glb*dt_tree);
+        
+        if ( r_cut_max <= 0 ) {
+            r_out = std::max(r_out_i, r_cut_min);
+        } else {
+            r_out = std::min(r_cut_max, std::max(r_out_i, r_cut_min) );
+        }
+        
 #ifdef TEST_PTCL
         if ( r_out != 0. ) {
             r_out_inv = 1. / r_out;
@@ -241,11 +267,8 @@ public:
         r_out_inv = 1. / r_out;
 #endif
         
-#ifndef ISOTROPIC
-        r_search  = R_search0*r_out + R_search1*vdisp_k*v_kep_glb*dt_tree;
-#else
-        r_search  = R_search0*r_out + R_search1*vdisp_k*dt_tree;
-#endif
+        r_search  = R_search0*r_out + R_search1*v_disp_glb*dt_tree;
+
 #ifdef TEST_PTCL
         if ( r_out == 0. ) r_search = 0.;
         
@@ -259,7 +282,9 @@ public:
 #endif //USE_INDIVIDUAL_CUTOFF
     
     void setRPlanet(PS::F64 m) {
-        r_planet = pow(0.75*m/(M_PI*dens), 1./3.);
+        //r_planet = pow(0.75*m/(M_PI*dens), 1./3.);
+        PS::F64 pi_dens = 0.75*mass/(r_planet*r_planet*r_planet);
+        r_planet = pow(0.75*m/pi_dens, 1./3.);
     }
     void setRPlanet() {
         r_planet = pow(0.75*mass/(M_PI*dens), 1./3.);
@@ -274,28 +299,34 @@ public:
     }
 
     void writeAscii(FILE* fp) const {
-        if ( !fprintf(fp, "%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%d\n",
-                      //!fprintf(fp, "%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\n", 
-                      this->id, this->mass,
+        PS::S32 Flag = 0;
+#ifdef MERGE_BINARY
+        Flag |= ((PS::S32)isBinary)<<0;
+#endif
+        if ( !fprintf(fp, "%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%d\t%d\n",
+                      this->id, this->mass, this->r_planet, this->f, 
                       this->pos.x, this->pos.y, this->pos.z,
                       this->vel.x, this->vel.y, this->vel.z,
-                      this->neighbor) ) {
+                      this->neighbor, Flag) ) {
             //this->r_out, this->r_search) ){
             errorMessage("The particle data has NOT been correctly written.");
             PS::Abort();
         }   
     }
     void readAscii(FILE* fp) {
-        if ( !fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\n",
-                     //fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
-                     &this->id, &this->mass,
+        PS::S32 Flag;
+        if ( !fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\n",
+                     &this->id, &this->mass, &this->r_planet, &this->f, 
                      &this->pos.x, &this->pos.y, &this->pos.z,
                      &this->vel.x, &this->vel.y, &this->vel.z,
-                     &this->neighbor) ) {
+                     &this->neighbor,  &Flag) ) {
             //&this->r_out, &this->r_search) ) {
             errorMessage("The particle data has NOT been correctly read.");
             PS::Abort();
         }
+#ifdef MERGE_BINARY
+        isBinary = (bool)(Flag & (1<<0));
+#endif
     }
 
     void velKick(){
@@ -305,6 +336,15 @@ public:
         vel += 0.5*dt_tree*acc;
 #endif
     }
+#ifdef CORRECT_NEIGHBOR
+    void velKick2nd(){
+#ifdef INDIRECT_TERM
+        vel += 0.5*dt_tree*(acc + acc_correct + acc_indirect);
+#else
+        vel += 0.5*dt_tree*(acc + acc_correct);
+#endif
+    }
+#endif
     
     void calcDeltatInitial(){
         PS::F64 dt_next = 0.5*dt_tree;
@@ -426,6 +466,8 @@ public:
 #endif
         a2_d = a3_d = 0.;
         time_c = 0.;
+
+        r_planet = f = 0.;
         
         clearList();
     }
@@ -656,140 +698,233 @@ public:
 
 
 template <class Tpsys>
-PS::F64 calcVelDisp(Tpsys & pp,
-                    const PS::S32 n_tot,
-                    const PS::S32 n_loc)
+void calcRandomVel(Tpsys & pp,
+                   const PS::S32 n_tot,
+                   const PS::S32 n_loc)
 {
-    PS::F64 ecc_rms_loc = 0.0;
-    PS::F64 inc_rms_loc = 0.0;
-
-#pragma omp parallel for reduction (+:ecc_rms_loc, inc_rms_loc)
+    PS::F64 r_max=0., r_min=-std::numeric_limits<PS::F64>::max();
+#pragma omp parallel for reduction (max: r_max, r_min)
     for(PS::S32 i=0; i<n_loc; i++){
+        PS::F64vec pos = pp[i].pos;
+        PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
+        r_max = std::max(r_max, r2);
+        r_min = std::max(r_min, -r2);
+    }
+    r_max = sqrt(r_max);
+    r_min = sqrt(-r_min);
+    r_max = PS::Comm::getMaxValue(r_max);
+    r_min = PS::Comm::getMinValue(r_min);
+
+    const PS::S32 N = 32;
+    const PS::F64 dr    = (r_max - r_min) /N;
+    const PS::F64 drinv = 1./dr;
+#ifdef ISOTROPIC
+    PS::F64vec v_ave_loc[N];
+    PS::F64vec v_ave_glb[N];
+    PS::F64    v_sq_loc[N];
+    PS::F64    v_sq_glb[N];
+#else
+    PS::F64 v_disp_loc[N];
+#endif
+    PS::F64 v_disp_glb[N];
+    PS::S32 n_ptcl_loc[N];
+    PS::S32 n_ptcl_glb[N];
+
+#ifdef ISOTROPIC
+    for(PS::S32 i=0; i<N; i++) {
+        v_ave_loc[i] = 0.;
+        v_sq_loc[i] = 0.;
+        n_ptcl_loc[i] = 0;
+    }
+#pragma omp parallel for reduction (+:v_ave_loc[:N], v_sq_loc[:N], n_ptcl_loc[:N])
+    for(PS::S32 i=0; i<n_loc; i++){
+        PS::F64vec pos = pp[i].pos;
+        PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
+        PS::S32 j = (PS::S32)((sqrt(r2) - r_min) * drinv);
+        if ( j == N ) j = N - 1;
+        assert ( 0<= j && j < N );
+        PS::F64vec vec = pp[i].vel;
+        v_ave_loc[j] += vec;
+        v_sq_loc[j]  += vec*vec;
+        n_ptcl_loc[j] ++;
+    }
+
+    MPI_Allreduce(v_ave_loc,  v_ave_glb,  N, PS::GetDataType(*v_ave_loc),  MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(v_sq_loc,   v_sq_glb,   N, PS::GetDataType(*v_sq_loc),   MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(n_ptcl_loc, n_ptcl_glb, N, PS::GetDataType(*n_ptcl_loc), MPI_SUM, MPI_COMM_WORLD);
+
+    PS::S32 n_tot0 = 0;
+    for(PS::S32 i=0; i<N; i++) {
+        v_disp_glb[i] = (n_ptcl_glb[i] > 0) ? sqrt(v_sq_glb[i] / n_ptcl_glb[i] - v_ave_glb*v_ave_glb) : 0.;
+        n_tot0 += n_ptcl_glb[i];
+    }
+    assert ( n_tot == n_tot0 ); 
+    
+#else //ISOTROPIC
+    for(PS::S32 i=0; i<N; i++) {
+        v_disp_loc[i] = 0.;
+        n_ptcl_loc[i] = 0;
+    }
+#pragma omp parallel for reduction (+:v_disp_loc[:N], n_ptcl_loc[:N])
+    for(PS::S32 i=0; i<n_loc; i++){
+        PS::F64vec pos = pp[i].pos;
+        PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
+        PS::F64    ri  = sqrt(r2);
+        PS::S32 j = (PS::S32)((ri - r_min) * drinv);
+        if ( j == N ) j = N - 1;
+        assert ( 0<= j && j < N );
+#if 1
+        PS::F64vec v_kep;
+        v_kep.x=-pos.y/ri ; v_kep.y=pos.x/ri; v_kep.z=0.;
+        v_kep *= pp[i].getKeplerVelocity();
+        PS::F64vec v_ran = pp[i].vel - v_kep;
+#else
         PS::F64 ax;
         PS::F64 ecc = pp[i].getEccentricity(ax);
         PS::F64vec h;
         PS::F64 inc = pp[i].getInclination(h);
-
-        ecc_rms_loc += ecc*ecc;
-        inc_rms_loc += inc*inc;
+        PS::F64vec v_kep = pp[i].getKeplerVelocity();
+        PS::F64    v_ran = (ecc*ecc + inc*inc) * v_kep*v_kep;
+#endif
+        v_disp_loc[j] += v_ran * v_ran;
+        n_ptcl_loc[j] ++;
     }
     
-    PS::F64 ecc_rms2 = PS::Comm::getSum(ecc_rms_loc)/n_tot;
-    PS::F64 inc_rms2 = PS::Comm::getSum(inc_rms_loc)/n_tot;
-    
-    return sqrt(ecc_rms2 + inc_rms2);
-}
+    MPI_Allreduce(v_disp_loc, v_disp_glb, N, PS::GetDataType(*v_disp_loc), MPI_SUM, MPI_COMM_WORLD);
+    MPI_Allreduce(n_ptcl_loc, n_ptcl_glb, N, PS::GetDataType(*n_ptcl_loc), MPI_SUM, MPI_COMM_WORLD);
 
-template <class Tpsys>
-PS::F64 calcRandomVel(Tpsys & pp,
-                      const PS::S32 n_tot,
-                      const PS::S32 n_loc)
-{
-    PS::F64    vel2_sum_loc = 0.;
-    PS::F64vec vel_sum_loc  = 0.;
-
-#pragma omp parallel for reduction (+:vel2_sum_loc, vel_sum_loc)
-    for(PS::S32 i=0; i<n_loc; i++){
-        PS::F64vec vel  = pp[i].vel;
-        PS::F64    vel2 = vel*vel;
-
-        vel2_sum_loc += vel2;
-        vel_sum_loc  += vel;
+    PS::S32 n_tot0 = 0;
+    for(PS::S32 i=0; i<N; i++) {
+        v_disp_glb[i] = (n_ptcl_glb[i] > 0) ? sqrt(v_disp_glb[i] / n_ptcl_glb[i]) : 0.;
+        n_tot0 += n_ptcl_glb[i];
     }
-
-    PS::F64    vel2_ave = PS::Comm::getSum(vel2_sum_loc)/n_tot;
-    PS::F64vec vel_ave  = PS::Comm::getSum(vel_sum_loc)/n_tot;
+    assert ( n_tot == n_tot0 ); 
     
-    return sqrt(vel2_ave - vel_ave*vel_ave);
-}
-
-#ifndef ISOTROPIC
-#ifdef USE_INDIVIDUAL_CUTOFF
-
-template <class Tpsys>
-void setCutoffRadii(Tpsys & pp)
-{
-    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
-    PS::F64 v_disp_k = calcVelDisp(pp, n_tot, n_loc);
-    
-#pragma omp parallel for
-    for(PS::S32 i=0; i<n_loc; i++){
-        pp[i].setROutRSearch(v_disp_k);
-        pp[i].setRPlanet();
-    }
-}
-
-#else //USE_INDIVIDUAL_CUTOFF
-
-template <class Tpsys>
-void setCutoffRadii(Tpsys & pp)
-{
-    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
-    PS::F64 v_disp_k = calcVelDisp(pp, n_tot, n_loc);
-    
-    PS::F64 rHill_a_loc = 0.;
-    PS::F64 v_kep_loc = 0.;
-#pragma omp parallel for
-    for(PS::S32 i=0; i<n_loc; i++){
-        PS::F64 ax      = pp[i].getSemimajorAxis2();
-        PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-FPGrav::p_cut);
-        PS::F64 v_kep = pp[i].getKeplerVelocity();
-        
-#pragma omp critical
-        {
-            if ( rHill_a > rHill_a_loc ) rHill_a_loc = rHill_a;
-            if ( v_kep > v_kep_loc ) v_kep_loc = v_kep;
-        }
-        pp[i].setRPlanet();
-    }
-    PS::F64 rHill_a_glb = PS::Comm::getMaxValue(rHill_a_loc);
-    PS::F64 v_kep_glb = PS::Comm::getMaxValue(v_kep_loc);
-    FPGrav::setROutRSearch(rHill_a_glb, v_kep_glb, v_disp_k);
-}
-
-#endif //USE_INDIVIDUAL_CUTOFF
-#else //ISOTROPIC
-#ifdef USE_INDIVIDUAL_CUTOFF
-
-template <class Tpsys>
-void setCutoffRadii(Tpsys & pp)
-{
-    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
-    PS::F64 v_disp   = calcRandomVel(pp, n_tot, n_loc);
-    
-#pragma omp parallel for
-    for(PS::S32 i=0; i<n_loc; i++){
-        pp[i].setROutRSearch(v_disp);
-        pp[i].setRPlanet();
-    }
-}
-
-#else //USE_INDIVIDUAL_CUTOFF
-
-void setCutoffRadii(Tpsys & pp)
-{
-    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
-    PS::F64 v_disp   = calcRandomVel(pp, n_tot, n_loc);
-    
-    PS::F64 rHill_a_loc = 0.;
-    PS::F64 v_kep_loc = 0.;
-#pragma omp parallel for
-    for(PS::S32 i=0; i<n_loc; i++){
-        PS::F64 ax      = pp[i].getSemimajorAxis2();
-        PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-FPGrav::p_cut);
-#pragma omp critical
-        {
-            if ( rHill_a > rHill_a_loc ) rHill_a_loc = rHill_a;
-        }
-        pp[i].setRPlanet();
-    }
-    PS::F64 rHill_a_glb = PS::Comm::getMaxValue(rHill_a_loc);
-    FPGrav::setROutRSearch(rHill_a_glb, v_disp);
-}
-
-#endif //USE_INDIVIDUAL_CUTOFF
 #endif //ISOTROPIC
+
+#pragma omp parallel for
+    for(PS::S32 i=0; i<n_loc; i++){
+        PS::F64vec pos = pp[i].pos;
+        PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
+        PS::F64    v_dispi = 0.;
+        PS::F64    ni      = 0.;
+        for(PS::S32 j=0; j<N; j++){
+            PS::F64 ddr  = r_min + (j+0.5)*dr - sqrt(r2);
+            PS::F64 expr = exp(-ddr*ddr * drinv*drinv);
+            v_dispi += v_disp_glb[j] * expr;
+            ni      += (v_disp_glb[j] > 0) ? expr : 0.;
+        }
+        pp[i].v_disp = v_dispi / ni;
+        assert ( pp[i].v_disp > 0. ); 
+    } 
+}
+
+template <class Tpsys>
+PS::F64 calcRandomVelAll(Tpsys & pp,
+                         const PS::S32 n_tot,
+                         const PS::S32 n_loc)
+{
+#ifdef ISOTROPIC
+    PS::F64vec v_ave_loc = 0.;
+    PS::F64vec v_ave_glb = 0.;
+    PS::F64    v_sq_loc = 0.;
+    PS::F64    v_sq_glb = 0.;
+#else
+    PS::F64 v_disp_loc = 0.;
+#endif
+    PS::F64 v_disp_glb = 0.;
+    PS::S32 n_ptcl_loc = 0;
+    PS::S32 n_ptcl_glb = 0;
+
+#ifdef ISOTROPIC
+#pragma omp parallel for reduction (+:v_ave_loc, v_aq_loc, n_ptcl_loc)
+    for(PS::S32 i=0; i<n_loc; i++){
+        PS::F64vec vec = pp[i].vel;
+        v_ave_loc += vec;
+        v_sq_loc  += vec*vec;
+        n_ptcl_loc ++;
+    }
+
+    v_ave_glb  = PS::Comm::getSum(v_ave_loc);
+    v_sq_glb   = PS::Comm::getSum(v_sq_loc);
+    n_ptcl_glb = PS::Comm::getSum(n_ptcl_loc);
+    assert ( n_ptcl_glb == n_tot );
+    
+    v_disp_glb =  sqrt(v_sq_glb / n_ptcl_glb - v_ave_glb*v_ave_glb);
+    
+#else //ISOTROPIC  
+#pragma omp parallel for reduction (+:v_disp_loc, n_ptcl_loc)
+    for(PS::S32 i=0; i<n_loc; i++){
+#if 1
+        PS::F64vec pos = pp[i].pos;
+        PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
+        PS::F64    ri  = sqrt(r2);
+        PS::F64vec v_kep;
+        v_kep.x=-pos.y/ri ; v_kep.y=pos.x/ri; v_kep.z=0.;
+        v_kep *= pp[i].getKeplerVelocity();
+        PS::F64vec v_ran = pp[i].vel - v_kep;
+#else
+        PS::F64 ax;
+        PS::F64 ecc = pp[i].getEccentricity(ax);
+        PS::F64vec h;
+        PS::F64 inc = pp[i].getInclination(h);
+        PS::F64vec v_kep = pp[i].getKeplerVelocity();
+        PS::F64    v_ran = (ecc*ecc + inc*inc) * v_kep*v_kep;
+#endif
+        v_disp_loc += v_ran * v_ran;
+        n_ptcl_loc ++;
+    }
+
+    v_disp_glb = PS::Comm::getSum(v_disp_loc);
+    n_ptcl_glb = PS::Comm::getSum(n_ptcl_loc);
+    assert ( n_ptcl_glb == n_tot );
+    
+    v_disp_glb = sqrt(v_disp_glb / n_ptcl_glb);
+    
+#endif //ISOTROPIC
+    
+    return v_disp_glb;
+}
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+
+template <class Tpsys>
+void setCutoffRadii(Tpsys & pp)
+{
+    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
+
+    calcRandomVel(pp, n_tot, n_loc);
+    
+#pragma omp parallel for
+    for(PS::S32 i=0; i<n_loc; i++){
+        pp[i].setROutRSearch();
+        pp[i].setRPlanet();
+    }
+}
+
+#else //USE_INDIVIDUAL_CUTOFF
+
+template <class Tpsys>
+void setCutoffRadii(Tpsys & pp)
+{
+    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
+
+    PS::F64 v_disp_glb = calcRandomVelAll(pp, n_tot, n_loc);
+    
+    PS::F64 rHill_a_loc = 0.;
+#pragma omp parallel for reduction (max: rHill_a_loc)
+    for(PS::S32 i=0; i<n_loc; i++){
+        PS::F64 ax      = pp[i].getSemimajorAxis2();
+        PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-FPGrav::p_cut);
+        
+        rHill_a_loc = std::max(rHill_a, rHill_a_loc);
+        
+        //pp[i].setRPlanet();
+    }
+    PS::F64 rHill_a_glb = PS::Comm::getMaxValue(rHill_a_loc);
+    FPGrav::setROutRSearch(rHill_a_glb, v_disp_glb);
+}
+
+#endif //USE_INDIVIDUAL_CUTOFF

@@ -62,7 +62,11 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
     if ( n_frag ) {
         PS::F64vec ximp = pos_imp - pos_tar;
         PS::F64vec vimp = vel_imp - vel_tar;
-        PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(M_PI*dens), 1./3.);
+        PS::F64    f_frag        = f_imp;
+        PS::F64    r_planet_frag = pow(0.75*mass_frag/n_frag/(M_PI*dens), 1./3.);
+        PS::F64    r_planet_rem  = pow(mass_rem/mass_tar, 1./3.) * r_planet_tar;
+        //PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(M_PI*dens), 1./3.);
+        PS::F64 r_frag = 2. * std::max(f_tar, f_frag) * (r_planet_frag + r_planet_rem);
         PS::F64 r2_frag = r_frag*r_frag + eps2;
         PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
         PS::F64 v_frag = 1.05 * sqrt( 2. * mass_rem * r_frag_inv );
@@ -72,12 +76,18 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         setFragmentCircle(pfrag, masspos, massvel,
                           mass_f, pos_g, vel_g, r_frag, v_frag,
                           ximp, vimp);
+        
+        //for (PS::S32 i=0; i<n_frag; i++ ) {
+        //    pfrag[i].f = f_frag;
+        //    pfrag[i].setRPlanet();
+        //}
     }
         
     pos_imp_new = pos_tar_new = (mass_imp*pos_imp+mass_tar*pos_tar-masspos)/mass_rem;
     vel_imp_new = vel_tar_new = (mass_imp*vel_imp+mass_tar*vel_tar-massvel)/mass_rem;
     
-    HitAndRun = false;
+    //HitAndRun = false;
+    flag_merge = 1;
     
     return n_frag;
 }
@@ -181,6 +191,7 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
     
     // Correction for enhancement factor
 #if 1
+    PS::F64 f = (f_imp * r_planet_imp + f_tar * r_planet_tar) / (r_planet_imp + r_planet_tar);
     if ( f > 1. ) {
         PS::F64 vel_impactf = vel_impact;
         PS::F64 theta2 = vel_escf*vel_escf / (vel_impactf*vel_impactf-vel_escf*vel_escf);
@@ -245,7 +256,8 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 
         pos_imp_new = pos_tar_new = (mass_imp*pos_imp+mass_tar*pos_tar-masspos)/mass_rem;
         vel_imp_new = vel_tar_new = (mass_imp*vel_imp+mass_tar*vel_tar-massvel)/mass_rem;
-        HitAndRun = false;
+        //HitAndRun = false;
+        flag_merge = 1;
         
     } else if ( sqrt(vimp*vimp)/vel_escf < (c1*Gamma+c3)*pow(1.-b0, 5./2.) + c2*Gamma+c4 ){ // Merge
         mass_frag = 0.;
@@ -256,7 +268,8 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         //Position & Velocity
         pos_imp_new = pos_tar_new = (mass_imp*pos_imp + mass_tar*pos_tar)/(mass_imp+mass_tar);
         vel_imp_new = vel_tar_new = (mass_imp*vel_imp + mass_tar*vel_tar)/(mass_imp+mass_tar);
-        HitAndRun = false;
+        //HitAndRun = false;
+        flag_merge = 1;
         
     } else {
 #endif
@@ -280,7 +293,8 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         if ( mass_rem < m_min ) mass_rem = m_min;
         if ( mass_rem > mass_imp ) mass_rem = mass_imp;
         mass_frag = mass_imp - mass_rem;
-        HitAndRun = true;
+        //HitAndRun = true;
+        flag_merge = 0;
 
         //Number of Fragments
         assert ( mass_frag >= 0. );
@@ -323,6 +337,8 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         vel_tar_new_n /= (mass_imp+mass_tar);
         vel_imp_new_t /= (mass_imp+mass_tar);
         vel_tar_new_t /= (mass_imp+mass_tar);
+        assert( vel_imp_new_n > 0. );
+        assert( vel_imp_tar_n < 0. );
 
         pos_tar_new = pos_tar;
         pos_imp_new = (mass_imp*pos_imp - masspos)/mass_rem;
@@ -330,8 +346,10 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         PS::F64vec pos_g_new = (mass_rem*pos_imp_new + mass_tar*pos_tar_new) / (mass_rem+mass_tar);
         PS::F64vec ximp_new  = pos_imp_new - pos_tar_new;
         PS::F64    rimp_new  = sqrt(ximp_new*ximp_new);
-        pos_imp_new = pos_g_new + f*(R_tar+R_imp)/rimp_new * mass_tar/(mass_rem+mass_tar) * ximp_new;
-        pos_tar_new = pos_g_new - f*(R_tar+R_imp)/rimp_new * mass_rem/(mass_rem+mass_tar) * ximp_new;
+        pos_imp_new = pos_g_new
+            + std::max(1., f*(R_tar+R_imp)/rimp_new) * mass_tar/(mass_rem+mass_tar) * ximp_new;
+        pos_tar_new = pos_g_new
+            - std::max(1., f*(R_tar+R_imp)/rimp_new) * mass_rem/(mass_rem+mass_tar) * ximp_new;
 #endif
         
         //vel_imp_new = vel_g + mass_imp/(mass_imp - n_frag*mass_frag)*(vel_imp_new_n*e_n + vel_imp_new_t*e_t);

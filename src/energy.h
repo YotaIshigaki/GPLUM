@@ -40,7 +40,11 @@ public:
         for(PS::S32 i = 0; i < n_loc; i++){
             ekin_loc     += pp[i].mass * pp[i].vel * pp[i].vel;
             ephi_sun_loc += pp[i].mass * pp[i].phi_s;
+#ifndef CORRECT_NEIGHBOR
             ephi_loc     += pp[i].mass * pp[i].phi;
+#else
+            ephi_loc     += pp[i].mass * (pp[i].phi + pp[i].phi_correct);
+#endif
             ephi_d_loc   += pp[i].mass * pp[i].phi_d;
         }
         ekin_loc *= 0.5;
@@ -49,7 +53,7 @@ public:
 
         ekin     += PS::Comm::getSum(ekin_loc);
 #ifdef INDIRECT_TERM
-        ekin     -= pp[0].getKineticEnergyOfSystem();
+        ekin     += getIndirectEnergy(pp);
 #endif
         ephi_sun += PS::Comm::getSum(ephi_sun_loc);
         ephi     += PS::Comm::getSum(ephi_loc);

@@ -310,6 +310,13 @@ public:
                 }
                 if ( n_p != 1 ) {
                     std::cout << i << "\t" << pp[i].id << "\t" << j << "\t" << j_id << std::endl;
+                    std::cout << "Neighbor of " << pp[i].id << ": ";
+                    for (PS::S32 k=0; k<n_list.at(i).size(); k++) std::cout << n_list.at(i).at(k) << "\t";
+                    std::cout << std::endl;
+                    std::cout << "Neighbor of " << j_id << ": ";
+                    for (PS::S32 k=0; k<n_list.at(j).size(); k++) std::cout << n_list.at(j).at(k) << "\t";
+                    std::cout << std::endl;
+                    check = check && false;
                     check = check && false;
                 }
             }

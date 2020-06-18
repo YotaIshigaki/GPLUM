@@ -134,7 +134,8 @@ void Wtime::showTime(char * dir_name,
                    << PS::Comm::getNumberOfProc()
                    << "\t" << PS::Comm::getNumberOfThread()
                    << "\t" << FPGrav::dt_tree
-                   << "\t" << FPGrav::R_cut
+                   << "\t" << FPGrav::R_cut0
+            //<< "\t" << FPGrav::R_cut1
                    << std::scientific << std::setprecision(15)
                    << "\t" << de_max
                    << "\t" << now - init

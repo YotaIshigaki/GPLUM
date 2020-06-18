@@ -12,7 +12,7 @@
 //#include <zmmintrin.h>
 #endif
 
-#define SAFETY_FACTOR 1.01
+#define SAFETY_FACTOR 1.02
 
 
 class PhantomGrapeQuad{

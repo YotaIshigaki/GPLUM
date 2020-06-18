@@ -27,6 +27,21 @@ class Collision0{
     PS::F64 mass_imp;
     PS::F64 mass_tar;
     PS::F64 mass_frag;
+
+    PS::F64 r_planet_imp;
+    PS::F64 r_planet_tar;
+    PS::F64 f_imp;
+    PS::F64 f_tar;
+    PS::F64 r_planet_imp_new;
+    PS::F64 r_planet_tar_new;
+    PS::F64 f_imp_new;
+    PS::F64 f_tar_new;
+#ifdef MERGE_BINARY
+    bool imp_is_binary;
+    bool tar_is_binary;
+    bool imp_will_be_binary;
+    bool tar_will_be_binary;
+#endif
     
     PS::F64 edisp;
     PS::F64 edisp_d;
@@ -35,9 +50,10 @@ class Collision0{
     PS::S32 id_frag;
     PS::S32 id_c_frag;
 
-    bool HitAndRun;
+    //PS::S32 HitAndRun;
+    PS::S32 flag_merge;
 
-    static PS::F64 f;
+    //static PS::F64 f;
     static PS::F64 m_min;
 
     PS::S32 getNumberOfFragment() const { return n_frag; }
@@ -46,6 +62,15 @@ class Collision0{
     PS::F64 getEnergyDissipation() const { return edisp; }
     PS::F64 getHardEnergyDissipation() const { return edisp_d; }
 
+#ifdef MERGE_BINARY
+    template <class Tp>
+    PS::S32 mergeOutcome(std::vector<Tp> & pfrag) {
+        PS::S32 n = collisionOutcome(pfrag);
+        flag_merge = 2;
+        return n;
+    }
+#endif
+    
     template <class Tpsys>
     void inputPair(Tpsys & pp,
                    std::multimap<PS::S32,PS::S32> & merge_list,
@@ -59,7 +84,8 @@ class Collision0{
         vel_imp_new = vel_tar_new = (mass_imp*vel_imp + mass_tar*vel_tar)/(mass_imp+mass_tar);
         
         n_frag = id_frag = id_c_frag = 0;
-        HitAndRun = false;
+        //HitAndRun = 0;
+        flag_merge = 1;
         return n_frag;
     }
     template <class Tpsys, class Tp>
@@ -85,13 +111,20 @@ class Collision0{
         PS::F64vec vimp = vel_imp - vel_tar;
         PS::F64vec dpos_g = pos_g_new - pos_g;
         PS::F64vec dvel_g = vel_g_new - vel_g;
+        PS::S32 Flag = 0;
+        Flag |= ((PS::S32)flag_merge)<<0;
+#ifdef MERGE_BINARY
+        Flag |= ((PS::S32)imp_is_binary)<<2;
+        Flag |= ((PS::S32)tar_is_binary)<<3;
+#endif
+        
         fp << std::fixed<<std::setprecision(8)<< this->time << "\t"
            << this->id_imp << "\t" << this->id_tar  << "\t"
            << this->n_frag << "\t" << this->id_frag << "\t"
            << std::scientific<<std::setprecision(15)
            << this->mass_imp  << "\t" << this->mass_tar  << "\t" << this->mass_frag << "\t"
            << sqrt(ximp*ximp) << "\t" << sqrt(vimp*vimp) << "\t"
-           << this->col_angle << "\t" << ((this->HitAndRun) ? 1:0) << "\t"
+           << this->col_angle << "\t" << Flag << "\t"
            << sqrt((dpos_g*dpos_g)/(pos_g*pos_g)) << "\t" << sqrt((dvel_g*dvel_g)/(vel_g*vel_g)) 
            << std::endl;
     }
@@ -145,6 +178,16 @@ inline void Collision0::inputPair(Tpsys & pp,
             assert( time == pp[id_j].getTime() );
         }
     }
+    r_planet_imp = pp[id_c_imp].r_planet;
+    r_planet_tar = pp[id_c_tar].r_planet;
+    r_planet_imp_new = -1.;
+    r_planet_tar_new = -1.;
+    f_imp = f_imp_new = pp[id_c_imp].f;
+    f_tar = f_tar_new = pp[id_c_tar].f;
+#ifdef MERGE_BINARY
+    imp_is_binary = imp_will_be_binary = pp[id_c_imp].isBinary;
+    tar_is_binary = tar_will_be_binary = pp[id_c_tar].isBinary;
+#endif
 
     pos_g = (mass_imp*pos_imp + mass_tar*pos_tar)/(mass_imp+mass_tar);
     vel_g = (mass_imp*vel_imp + mass_tar*vel_tar)/(mass_imp+mass_tar);
@@ -178,15 +221,32 @@ inline void Collision0::setParticle(Tpsys & pp,
     ///////////////////
     //Mass & Radius
     pp[id_c_imp].mass -= mass_frag;
-    if ( HitAndRun ) {
-        pp[id_c_imp].setRPlanet(mass_imp - mass_frag);
+    //if ( HitAndRun ) {
+    if ( !flag_merge ) {
+        assert ( pp[id_c_tar].r_planet == r_planet_tar );
+        if ( r_planet_imp_new < 0. ) {
+            pp[id_c_imp].setRPlanet(mass_imp - mass_frag);
+        } else {
+            pp[id_c_imp].r_planet = r_planet_imp_new;
+        }
     } else {
         pp[id_c_imp].r_planet = 0.;
-        pp[id_c_tar].setRPlanet(mass_rem);
+        if ( r_planet_tar_new < 0. ) {
+            pp[id_c_tar].setRPlanet(mass_rem);
+        } else {
+            pp[id_c_tar].r_planet = r_planet_tar_new;
+        }
     }
-
+    pp[id_c_imp].f = f_imp_new;
+    pp[id_c_tar].f = f_tar_new;
+#ifdef MERGE_BINARY
+    pp[id_c_imp].isBinary = imp_will_be_binary;
+    pp[id_c_tar].isBinary = tar_will_be_binary;
+#endif
+    
     // ID
-    if ( !HitAndRun ) {
+    //if ( !HitAndRun ) {
+    if ( flag_merge ) {
         pp[id_c_imp].id = pp[id_c_tar].id;
         pp[id_c_imp].isDead = true;
         for (iterator it = imp_range.first; it != imp_range.second; ++it){
@@ -201,7 +261,6 @@ inline void Collision0::setParticle(Tpsys & pp,
     id_c_frag = n_frag ? pp.size() : 0;
     id_frag   = n_frag ? ( - (100*pp[id_c_imp].id_cluster+id_next+1) ) : 0;
     for ( PS::S32 i=0; i<n_frag; i++ ){
-        pfrag[i].setRPlanet();
 
         std::cerr << std::scientific << std::setprecision(15)
                   << "frag_mass: " << pfrag[i].mass << " frag_pos_vel: "
@@ -212,10 +271,14 @@ inline void Collision0::setParticle(Tpsys & pp,
         massvel += pfrag[i].mass * pfrag[i].vel;
         mass_tot += pfrag[i].mass;
 
+        if ( pfrag[i].r_planet <= 0 ) pfrag[i].setRPlanet();
+        if ( pfrag[i].f == 0 ) pfrag[i].f = pp[id_c_imp].f;
+
 #ifdef USE_INDIVIDUAL_CUTOFF
         pfrag[i].r_out     = pp[id_c_imp].r_out;
         pfrag[i].r_out_inv = pp[id_c_imp].r_out_inv;
         pfrag[i].r_search  = pp[id_c_imp].r_search;
+        pfrag[i].v_disp    = pp[id_c_imp].v_disp;
 #endif
         pfrag[i].time   = pp[id_c_imp].time;
         pfrag[i].time_c = pp[id_c_imp].time_c;
@@ -229,6 +292,9 @@ inline void Collision0::setParticle(Tpsys & pp,
         pfrag[i].inDomain = true;
         pfrag[i].isDead   = false;
         pfrag[i].isMerged = false;
+#ifdef MERGE_BINARY
+        pfrag[i].isBinary = false;
+#endif
         id_next ++;
         
         pp.push_back(pfrag[i]);
@@ -250,7 +316,8 @@ inline void Collision0::setParticle(Tpsys & pp,
         pp[id_j].pos = pos_tar_new;
         pp[id_j].vel = vel_tar_new;
     }
-    if ( !HitAndRun ) {
+    //if ( !HitAndRun ) {
+    if ( flag_merge ) {
             assert( pos_imp_new == pos_tar_new );
             assert( vel_imp_new == vel_tar_new );
     }
@@ -360,7 +427,8 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
         }
     }
 
-    if ( HitAndRun ){
+    //if ( HitAndRun ){
+    if ( !flag_merge ) {
         dr = pos_imp_new - pos_tar_new;
         dr2 = dr*dr + eps2;
         rinv = sqrt(1./dr2);

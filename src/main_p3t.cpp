@@ -14,7 +14,7 @@
 
 #include <particle_simulator.hpp>
 
-#define GPLUMVERSION "2.0 (2020/01)"
+#define GPLUMVERSION "2.1 (2020/02)"
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
@@ -42,12 +42,13 @@ PS::F64 EPGrav::r_out;
 PS::F64 EPGrav::r_out_inv;
 PS::F64 EPGrav::r_search;
 #endif
-PS::F64 EPGrav::R_cut     = 1.;
+PS::F64 EPGrav::R_cut0    = 2.;
+PS::F64 EPGrav::R_cut1    = 4.;
 PS::F64 EPGrav::R_search0 = 1.;
-PS::F64 EPGrav::R_search1 = 3.;
+PS::F64 EPGrav::R_search1 = 4.;
 #ifdef USE_RE_SEARCH_NEIGHBOR
-PS::F64 EPGrav::R_search2 = 3.;
-PS::F64 EPGrav::R_search3 = 3.;
+PS::F64 EPGrav::R_search2 = 1.;
+PS::F64 EPGrav::R_search3 = 4.;
 #endif
 PS::F64 EPGrav::gamma     = 0.5;
 PS::F64 EPGrav::g_1_inv   = -2.;    // 1/(g-1)
@@ -73,9 +74,13 @@ PS::F64 FPGrav::alpha2    = 1.;
 PS::F64 FPGrav::r_cut_min = 0.;
 PS::F64 FPGrav::r_cut_max = 0.;
 PS::F64 FPGrav::p_cut     = 0.;
+PS::F64 FPGrav::increase_factor = 1.;
+#ifdef MERGE_BINARY
+PS::F64 FPGrav::R_merge   = 0.2;
+#endif
 
-PS::F64 HardSystem::f = 1.;
-PS::F64 Collision0::f = 1.;
+//PS::F64 HardSystem::f = 1.;
+//PS::F64 Collision0::f = 1.;
 PS::F64 Collision0::m_min = 9.426627927538057e-12;
 
 
@@ -129,9 +134,9 @@ int main(int argc, char *argv[])
     char output_dir_opt[256];
     PS::S32 seed_opt;
     PS::F64 dt_opt;
-    PS::F64 Rcut_opt;
-    bool opt_r=false, opt_i=false, opt_s=false, opt_o=false, opt_D=false, opt_R=false;
-    while ((opt = getopt(argc, argv, "p:ri:s:e:o:D:R:")) != -1) {
+    PS::F64 Rcut0_opt, Rcut1_opt;
+    bool opt_r=false, opt_i=false, opt_s=false, opt_o=false, opt_D=false, opt_R=false, opt_S=false;
+    while ((opt = getopt(argc, argv, "p:ri:s:e:o:D:R:S:")) != -1) {
         switch (opt) {
         case 'p':
             sprintf(param_file,"%s",optarg);
@@ -159,8 +164,12 @@ int main(int argc, char *argv[])
             opt_D = true;
             break;
         case 'R':
-            Rcut_opt = std::atof(optarg);
+            Rcut0_opt = std::atof(optarg);
             opt_R = true;
+            break;
+        case 'S':
+            Rcut1_opt = std::atof(optarg);
+            opt_S = true;
             break;
         default:
             std::cout << "Usage: "
@@ -186,10 +195,8 @@ int main(int argc, char *argv[])
     if (opt_s) seed = seed_opt;
     if (opt_o) sprintf(output_dir,"%s",output_dir_opt);
     if (opt_D) FPGrav::dt_tree = dt_opt;
-    if (opt_R) {
-        EPGrav::R_cut = Rcut_opt;
-        //EPGrav::R_search0 = 1.;
-    }
+    if (opt_R) EPGrav::R_cut0 = Rcut0_opt;
+    if (opt_S) EPGrav::R_cut1 = Rcut1_opt;
 
     EPGrav::setGamma(EPGrav::gamma);
     
@@ -278,15 +285,17 @@ int main(int argc, char *argv[])
     }
     n_loc = system_grav.getNumberOfParticleLocal();
     n_tot = system_grav.getNumberOfParticleGlobal();
-#pragma omp parallel for
+#pragma omp parallel for reduction (max: id_next)
     for ( PS::S32 i=0; i<n_loc; i++ ){
-#pragma omp critical
-        {
-            if ( system_grav[i].id > id_next ) id_next = system_grav[i].id;
-        }
+        //#pragma omp critical
+        //{
+        if ( system_grav[i].id > id_next ) id_next = system_grav[i].id;
+        //}
         system_grav[i].time = time_sys;
         system_grav[i].neighbor = system_grav[i].n_cluster = 0;
         system_grav[i].isMerged = false;
+        if ( system_grav[i].r_planet <= 0. ) system_grav[i].setRPlanet();
+        if ( system_grav[i].f == 0. ) system_grav[i].f = FPGrav::increase_factor;
     }
     id_next = PS::Comm::getMaxValue(id_next);
     id_next ++;
@@ -333,25 +342,31 @@ int main(int argc, char *argv[])
 #endif
 #endif
     tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
-    
-    tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
+
+#ifdef USE_RE_SEARCH_NEIGHBOR
+    for (PS::S32 i=0; i<2; i++) {
+#endif
+        tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
 #ifdef USE_QUAD
-                                       CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                       CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
 #endif //USE_QUAD
 #else
 #ifdef USE_QUAD
-                                       CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
 #else
-                                       CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
 #endif //USE_QUAD
 #endif //USE_INDIVIDUAL_CUTOFF
-                                       system_grav,
-                                       dinfo);
-    //NList.initializeList(system_grav);
-    correctForceLongInitial(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+                                           system_grav,
+                                           dinfo);
+        //NList.initializeList(system_grav);
+        correctForceLongInitial(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+#ifdef USE_RE_SEARCH_NEIGHBOR
+    }
+#endif
 
 #ifdef INDIRECT_TERM
     calcIndirectTerm(system_grav);
@@ -632,7 +647,11 @@ int main(int argc, char *argv[])
 #ifdef OUTPUT_DETAIL
         calcKineticEnergy(system_grav, ekin_after);
 #endif
+#ifndef CORRECT_NEIGHBOR
         velKick(system_grav);
+#else
+        velKick2nd(system_grav);
+#endif
 #ifdef GAS_DRAG
         correctEnergyForGas(system_grav, edisp_gd, true);
         e_now.edisp += edisp_gd;

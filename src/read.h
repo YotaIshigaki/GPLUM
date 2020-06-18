@@ -228,8 +228,11 @@ PS::S32 readParameter(const char * param_file,
             PS::F64 eps = getvalue(value, L_MKS, L_CGS);
             EPGrav::eps2 = eps*eps;
             
-        } else if ( name == "R_cut" ){
-            EPGrav::R_cut = getvalue(value, 1., 1.);
+        } else if ( name == "R_cut0" ){
+            EPGrav::R_cut0 = getvalue(value, 1., 1.);
+
+        } else if ( name == "R_cut1" ){
+            EPGrav::R_cut1 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search0" ){
             EPGrav::R_search0 = getvalue(value, 1., 1.);
@@ -244,7 +247,10 @@ PS::S32 readParameter(const char * param_file,
         } else if ( name == "R_search3" ){
             EPGrav::R_search3 = getvalue(value, 1., 1.);
 #endif
-            
+#ifdef MERGE_BINARY
+        } else if ( name == "R_merge" ){
+            FPGrav::R_merge = getvalue(value, 1., 1.);
+#endif      
         } else if ( name == "gamma" ){
             EPGrav::setGamma(getvalue(value, 1., 1.));
 
@@ -264,8 +270,9 @@ PS::S32 readParameter(const char * param_file,
             r_min = getvalue(value, L_MKS, L_CGS);
             
         } else if ( name == "f" ){
-            HardSystem::f = getvalue(value, 1., 1.);
-            Collision0::f = getvalue(value, 1., 1.);
+            //HardSystem::f = getvalue(value, 1., 1.);
+            //Collision0::f = getvalue(value, 1., 1.);
+            FPGrav::increase_factor = getvalue(value, 1., 1.);
 
         } else if ( name == "m_min" ){
            Collision0::m_min = getvalue(value, M_MKS, M_CGS);
@@ -310,9 +317,13 @@ PS::S32 readParameter(const char * param_file,
                      "(r_cut_max = " + std::to_string(FPGrav::r_cut_max)
                      + ", r_cut_min = " + std::to_string(FPGrav::r_cut_min) + ").");
         return 1;
-    } else if ( EPGrav::R_cut < 0. ){
-        errorMessage("R_cut has NOT been set to satisfy R_cut >= 0",
-                     "(R_cut = " + std::to_string(EPGrav::R_cut) + ").");
+    } else if ( EPGrav::R_cut0 < 0. ){
+        errorMessage("R_cut0 has NOT been set to satisfy R_cut0 >= 0",
+                     "(R_cut0 = " + std::to_string(EPGrav::R_cut0) + ").");
+        return 1;
+    } else if ( EPGrav::R_cut1 < 0. ){
+        errorMessage("R_cut1 has NOT been set to satisfy R_cut1 >= 0",
+                     "(R_cut1 = " + std::to_string(EPGrav::R_cut1) + ").");
         return 1;
     } else if ( EPGrav::R_search0 < 1. ){
         errorMessage("R_search0 has NOT been set to satisfy R_search0 >= 1",
@@ -427,12 +438,16 @@ void showParameter(char * init_file,
                   << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
                   << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
                   << std::fixed << std::setprecision(5)
-                  << "R_cut         = " << EPGrav::R_cut << std::endl
+                  << "R_cut0        = " << EPGrav::R_cut0 << std::endl
+                  << "R_cut1        = " << EPGrav::R_cut1 << std::endl
                   << "R_search0     = " << EPGrav::R_search0 << std::endl
                   << "R_search1     = " << EPGrav::R_search1 << std::endl
 #ifdef USE_RE_SEARCH_NEIGHBOR
                   << "R_search2     = " << EPGrav::R_search2 << std::endl
                   << "R_search3     = " << EPGrav::R_search3 << std::endl
+#endif
+#ifdef MERGE_BINARY
+                  << "R_merge       = " << FPGrav::R_merge << std::endl
 #endif
                   << "gamma         = " << EPGrav::gamma << std::endl
                   << std::scientific << std::setprecision(15)
@@ -442,7 +457,7 @@ void showParameter(char * init_file,
                   << std::fixed << std::setprecision(5)
                   << "r_max         = " << r_max << std::endl
                   << "r_min         = " << r_min << std::endl
-                  << "f             = " << HardSystem::f << std::endl
+                  << "f             = " << FPGrav::increase_factor << std::endl
                   << std::scientific << std::setprecision(15)
                   << "m_min         = " << Collision0::m_min << "\t(" << Collision0::m_min*M << " g)" << std::endl;
 
@@ -539,12 +554,16 @@ void showParameter(char * init_file,
                    << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
                    << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
                    << std::fixed << std::setprecision(5)
-                   << "R_cut         = " << EPGrav::R_cut << std::endl
+                   << "R_cut0        = " << EPGrav::R_cut0 << std::endl
+                   << "R_cut1        = " << EPGrav::R_cut1 << std::endl
                    << "R_search0     = " << EPGrav::R_search0 << std::endl
                    << "R_search1     = " << EPGrav::R_search1 << std::endl
 #ifdef USE_RE_SEARCH_NEIGHBOR
                    << "R_search2     = " << EPGrav::R_search2 << std::endl
                    << "R_search3     = " << EPGrav::R_search3 << std::endl
+#endif
+#ifdef MERGE_BINARY
+                   << "R_merge       = " << FPGrav::R_merge << std::endl
 #endif
                    << "gamma         = " << EPGrav::gamma << std::endl
                    << std::scientific << std::setprecision(15)
@@ -554,7 +573,7 @@ void showParameter(char * init_file,
                    << std::fixed << std::setprecision(5)
                    << "r_max         = " << r_max << std::endl
                    << "r_min         = " << r_min << std::endl
-                   << "f             = " << HardSystem::f << std::endl
+                   << "f             = " << FPGrav::increase_factor << std::endl
                    << std::scientific << std::setprecision(15)
                    << "m_min         = " << Collision0::m_min << "\t(" << Collision0::m_min*M << " g)" << std::endl;
 
@@ -583,7 +602,7 @@ PS::S32 makeOutputDirectory(char * dir_name)
         }
     } else {
         if(PS::Comm::getRank() == 0){
-            successMessage("The directory \"" + (std::string)dir_name  + "\" exists.");
+            successMessage("The directory \"" + (std::string)dir_name  + "\" have already existed.");
         }
     }
 
