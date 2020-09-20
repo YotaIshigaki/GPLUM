@@ -749,9 +749,17 @@ void calcRandomVel(Tpsys & pp,
         n_ptcl_loc[j] ++;
     }
 
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
     MPI_Allreduce(v_ave_loc,  v_ave_glb,  N, PS::GetDataType(*v_ave_loc),  MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(v_sq_loc,   v_sq_glb,   N, PS::GetDataType(*v_sq_loc),   MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(n_ptcl_loc, n_ptcl_glb, N, PS::GetDataType(*n_ptcl_loc), MPI_SUM, MPI_COMM_WORLD);
+#else
+    for(PS::S32 i=0; i<N; i++) {
+        v_ave_glb[i]  = v_ave_loc[i];
+        v_sq_glb[i]   = v_sq_loc[i];
+        n_ptcl_glb[i] = n_ptcl_loc[i];
+    }
+#endif
 
     PS::S32 n_tot0 = 0;
     for(PS::S32 i=0; i<N; i++) {
@@ -789,9 +797,16 @@ void calcRandomVel(Tpsys & pp,
         v_disp_loc[j] += v_ran * v_ran;
         n_ptcl_loc[j] ++;
     }
-    
+
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
     MPI_Allreduce(v_disp_loc, v_disp_glb, N, PS::GetDataType(*v_disp_loc), MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(n_ptcl_loc, n_ptcl_glb, N, PS::GetDataType(*n_ptcl_loc), MPI_SUM, MPI_COMM_WORLD);
+#else
+    for(PS::S32 i=0; i<N; i++) {
+        v_disp_glb[i] = v_disp_loc[i];
+        n_ptcl_glb[i] = n_ptcl_loc[i];
+    }
+#endif
 
     PS::S32 n_tot0 = 0;
     for(PS::S32 i=0; i<N; i++) {

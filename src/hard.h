@@ -682,7 +682,7 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
     MPI_Scatterv(id_frag_list, n_frag_list, frag_recv, PS::GetDataType(*id_frag_list),
                  id_frag_loc,  n_frag,                 PS::GetDataType(*id_frag_loc),  0, MPI_COMM_WORLD);
 #else
-    for(int i=0; i<n_frag_list; i++) id_frag_loc[i] = id_frag_list[i];
+    for(int i=0; i<n_frag_list[0]; i++) id_frag_loc[i] = id_frag_list[i];
 #endif
     //PS::Comm::scatterV(id_frag_list, n_frag_list, frag_recv, id_frag_loc, n_frag);
     assert( (PS::S32)(frag_list.size()) == n_frag );
