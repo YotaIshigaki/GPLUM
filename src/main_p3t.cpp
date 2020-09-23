@@ -294,6 +294,7 @@ int main(int argc, char *argv[])
         system_grav[i].time = time_sys;
         system_grav[i].neighbor = system_grav[i].n_cluster = 0;
         system_grav[i].isMerged = false;
+        system_grav[i].isDead = false;
         if ( system_grav[i].r_planet <= 0. ) system_grav[i].setRPlanet();
         if ( system_grav[i].f == 0. ) system_grav[i].f = FPGrav::increase_factor;
     }

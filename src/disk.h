@@ -65,7 +65,7 @@ public:
                 m_out = calcDustMass(a_in, a_out, false);
             } else {
                 m_in  = calcDustMass(a_in,  a_ice, true);
-            m_out = calcDustMass(a_ice, a_out, false);
+                m_out = calcDustMass(a_ice, a_out, false);
             }
             
             assert( n_init >= 0 );
