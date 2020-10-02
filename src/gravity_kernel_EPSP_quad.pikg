@@ -1,0 +1,52 @@
+EPI F64vec xi:pos
+EPI F32    eps2:eps2
+
+EPJ F64vec xj:pos
+EPJ F32    qj_xx:quad__DOT__xx
+EPJ F32    qj_yy:quad__DOT__yy
+EPJ F32    qj_zz:quad__DOT__zz
+EPJ F32    qj_xy:quad__DOT__xy
+EPJ F32    qj_yz:quad__DOT__yz
+EPJ F32    qj_zx:quad__DOT__xz
+EPJ F32    mj:mass
+
+FORCE F32vec af:acc
+FORCE F32    pf:phi
+
+EPI local F32vec xiloc
+EPJ local F32vec xjloc
+
+xiloc = xi - xi[0]
+xjloc = xj - xi[0]
+
+rij = xjloc - xiloc
+r2  = rij * rij + eps2
+r_inv  = rsqrt(r2)
+tmp    = 3.0f - r2*(r_inv*r_inv)
+r_inv *= (tmp * 0.5f)
+
+r2_inv  = r_inv  * r_inv
+r3_inv  = r2_inv * r_inv
+r4_inv  = r2_inv * r2_inv
+r5_inv  = r2_inv * r3_inv
+
+tr  = qj_xx + qj_yy + qj_zz
+qxx = 3.0f * qj_xx - tr
+qyy = 3.0f * qj_yy - tr
+qzz = 3.0f * qj_zz - tr
+qxy = 3.0f * qj_xy
+qyz = 3.0f * qj_yz
+qzx = 3.0f * qj_zx
+mtr = -(eps2 * tr)
+
+qr.x = qxx*rij.x + qxy*rij.y + qzx*rij.z
+qr.y = qyy*rij.y + qyz*rij.z + qxy*rij.x
+qr.z = qzz*rij.z + qzx*rij.x + qyz*rij.y
+rqr  = mtr + qr * rij
+rqr_r4_inv = rqr * r4_inv
+
+meff  =  mj + 0.5f * rqr_r4_inv
+meff3 = (mj + 2.5f * rqr_r4_inv) * r3_inv
+
+pf -= meff * r_inv
+af = af - r5_inv * qr + meff3 * rij

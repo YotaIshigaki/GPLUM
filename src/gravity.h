@@ -585,7 +585,7 @@ void correctForceLong(Tpsys & pp,
         PS::S32    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
-        PS::S32    neighbor = pp[i].neighbor;
+        PS::S32    neighbor = pp[i].neighbor - 1;
         PS::F64vec posi = pp[i].getPos();
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
@@ -858,10 +858,11 @@ void correctForceLongInitial(Tpsys & pp,
         PS::S32    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
-        PS::S32    neighbor = pp[i].neighbor;
+        PS::S32    neighbor = pp[i].neighbor - 1;
         PS::F64vec posi = pp[i].getPos();
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
+        
 
         if ( neighbor == 0 ) {      
 #ifdef CHECK_NEIGHBOR

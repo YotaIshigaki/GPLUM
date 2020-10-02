@@ -1,5 +1,6 @@
-PS_PATH = ../FDPS-5.0d2/src/ 
-INC = -I$(PS_PATH)
+PS_PATH_FDPS = ../FDPS-5.0g/src/
+PS_PATH_PIKG = ../PIKG/inc/
+INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 
 ####################
 ###   Compiler   ###
@@ -8,71 +9,153 @@ CC = clang++ -std=c++11
 #CC = mpic++ -std=c++11
 #CC = time CC
 
+########################
+###   MPI & OpenMP   ###
+########################
+#use_OpenMP = yes
+#use_MPI = yes
+
+################
+###   SIMD   ###
+################
+use_AVX2 = yes
+#use_AVX512 = yes
+
+#########################
+###   Other Options   ###
+#########################
+individual_cutoff = yes
+quad = yes
+#isotropic = yes
+#gas_drag = yes
+#integrate_6th = yes
+#absorb_particle = yes
+#test_particle = yes
+
+collision = yes
+Kominami = yes
+Chembers = yes
+merge_binary = yes
+
+output_detail = yes
+#calc_time = yes
+
+
+
 CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -ffast-math
 CFLAGS += -funroll-loops
 
-########################
-###   MPI & OpenMP   ###
-########################
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
-#CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 
-################
-###   SIMD   ###
-################
-#CFLAGS_M += -march=core-avx2
-#CFLAGS_G += -march=core-avx2
-#CFLAGS_G += -mtune=skylake-avx512
-#CFLAGS_G += -march=skylake-avx512
-#CFLAGS_G += -mavx2
-#CFLAGS_G += -mavx512f -mavx512dq
+ifeq ($(use_OpenMP),yes)
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
+endif
+ifeq ($(use_MPI),yes)
+CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+endif
 
-#########################
-###   Other Options   ###
-#########################
+CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPGrav --epj-name EPGrav --force-name ForceGrav
+CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPGrav --epj-name SPGrav --force-name ForceGrav
+
+ifeq ($(use_AVX2),yes)
+CFLAGS += -march=core-avx2
+CFLAGS_KERNEL_EPEP += --conversion-type AVX2
+CFLAGS_KERNEL_EPSP += --conversion-type AVX2
+else
+ifeq ($(use_AVX512),yes)
+CFLAGS += -march=skylake-avx512
+CFLAGS_KERNEL_EPEP += --conversion-type AVX-512
+CFLAGS_KERNEL_EPSP += --conversion-type AVX-512
+endif
+endif
+
+
+ifeq ($(individual_cutoff),yes)
+
 CFLAGS += -DUSE_INDIVIDUAL_CUTOFF
+KERNEL_EPEP = gravity_kernel_EPEP_individual.pikg
+ifeq ($(quad),yes)
 CFLAGS += -DUSE_QUAD
-CFLAGS += -DCALC_EPEP_64bit
-CFLAGS += -DCALC_EPSP_64bit
-CFLAGS += -DUSE_ALLGATHER_EXLET
-CFLAGS += -DUSE_RE_SEARCH_NEIGHBOR
-#CFLAGS += -DISOTROPIC
-#CFLAGS += -DGAS_DRAG
-#CFLAGS += -DINDIRECT_TERM
-#CFLAGS += -DINTEGRATE_6TH_SUN
-#CFLAGS += -DAARSETH
-#CFLAGS += -DCORRECT_NEIGHBOR
-#CFLAGS += -DABSORB_PTCL
+KERNEL_EPSP = gravity_kernel_EPSP_quad.pikg
+#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleInAndOut
+else
+KERNEL_EPSP = gravity_kernel_EPSP_mono.pikg
+#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJMonopoleInAndOut
+endif
 
+else
+
+KERNEL_EPEP = gravity_kernel_EPEP_shared.pikg
+ifeq ($(quad),yes)
+CFLAGS += -DUSE_QUAD
+KERNEL_EPSP = gravity_kernel_EPSP_quad.pikg
+#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleScatter
+else
+KERNEL_EPSP = gravity_kernel_EPSP_mono.pikg
+#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJMonopoleScatter
+endif
+
+endif
+
+ifeq ($(isotropic),yes)
+CFLAGS += -DISOTROPIC
+endif
+ifeq ($(gas_drag),yes)
+CFLAGS += -DGAS_DRAG
+endif
+ifeq ($(integrate_6th),yes)
+CFLAGS += -DINTEGRATE_6TH_SUN
+endif
+ifeq ($(absorb_particle),yes)
+CFLAGS += -DABSORB_PTCL
+endif
+ifeq ($(test_particle),yes)
+CFLAGS += -DTEST_PTCL
+endif
+
+ifeq ($(collision),yes)
 CFLAGS += -DCOLLISION
+endif
+ifeq ($(Kominami),yes)
 CFLAGS += -DKOMINAMI
-#CFLAGS += -DCHAMBERS
-#CFLAGS += -DMERGE_BINARY
+else
+ifeq ($(Chambers),yes)
+CFLAGS += -DCHAMBERS
+endif
+endif
+ifeq ($(merge_binary),yes)
+CFLAGS += -DMERGE_BINARY
+endif
 
+ifeq ($(output_detail),yes)
 CFLAGS += -DOUTPUT_DETAIL
+endif
+ifeq ($(calc_time),yes)
 CFLAGS += -DCALC_WTIME
-#CFLAGS += -DTEST_PTCL
+endif
+
 CFLAGS += -DMONAR
 #CFLAGS += -pg
 
 SRC = main_p3t.cpp
 PROGRAM = gplum.out
-HEADER = mathfunc.h kepler.h energy.h particle_ep.h particle_fp.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
+HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
-$(PROGRAM): main_p3t.o gravity_kernel.o
-	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_M) -o $@ main_p3t.o gravity_kernel.o
 
-main_p3t.o: main_p3t.cpp $(HEADER)
-	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_M) -c $<
+$(PROGRAM): $(SRC) gravity_kernel_EPEP.hpp gravity_kernel_EPSP.hpp
+	$(CC) -MMD $(INC) $(CFLAGS) -o $@ $(SRC)
 
-gravity_kernel.o: gravity_kernel.cpp phantomquad_for_p3t_x86.hpp particle_ep.h 
-	$(CC) -MMD $(INC) $(CFLAGS) $(CFLAGS_G) -c $<
+gravity_kernel_EPEP.hpp: $(KERNEL_EPEP)
+	../PIKG/bin/pikg -i $(KERNEL_EPEP) -o gravity_kernel_EPEP.hpp $(CFLAGS_KERNEL_EPEP)
 
+gravity_kernel_EPSP.hpp: $(KERNEL_EPSP)
+	../PIKG/bin/pikg -i $(KERNEL_EPSP) -o gravity_kernel_EPSP.hpp $(CFLAGS_KERNEL_EPSP)
+	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_EPSP.hpp
 
 all: clean $(PROGRAM)
 
 clean:
 	rm -f *.out *.o *.d *~
+	rm -f gravity_kernel*.hpp*
 

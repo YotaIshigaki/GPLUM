@@ -348,11 +348,6 @@ PS::S32 readParameter(const char * param_file,
                      "(r_max = "+ std::to_string(r_max)
                      + ", r_min = " + std::to_string(r_min) + ").");
         return 1;
-    } else if ( getNIMAX() < n_group_limit ){
-        errorMessage("n_group_limit has NOT been set to satisfy n_group_limit < NIMAX",
-                     "(n_group_limit = " + std::to_string(n_group_limit)
-                     + ", NIMAX = " + std::to_string(getNIMAX()) + ").");
-        return 1;
     }
 #ifdef TEST_PTCL
     EPGrav::eps2 = std::max(EPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
@@ -481,8 +476,12 @@ void showParameter(char * init_file,
 #else
         fout_param << "Use Monopole For Tree" << std::endl;
 #endif
-        char avx_var[128];
-        if ( getAVXVersion(avx_var) ) fout_param << "Use " << avx_var << std::endl;
+
+#ifdef __AVX512DQ__
+        fout_param << "Use AVX512DQ" << std::endl;
+#elif defined(__AVX2__)
+        fout_param << "Use AVX2" << std::endl;
+#endif
         
 #ifdef USE_INDIVIDUAL_CUTOFF
         fout_param << "Use Individual CutOff" << std::endl;
