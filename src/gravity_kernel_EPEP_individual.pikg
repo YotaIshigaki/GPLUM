@@ -1,13 +1,31 @@
 EPI F64vec xi:pos
-EPI F32    routi:r_out
-EPI F32    rsearchi:r_search
-EPI F32    eps2:eps2
+EPI F64vec vi:vel
+EPI F64vec ai:acc
+EPI F64vec ai_s:acc_s
+EPI F64vec ai_d:acc_d
+EPI F64    mi:mass
+EPI S32    idi:id
+EPI S32    idi_loc:id_local
+EPI S32    myranki:myrank
+EPI S32    ngbi:neighbor
+EPI F64    routi:r_out
+EPI F64    routinvi:r_out_inv
+EPI F64    rsearchi:r_search
+F32 eps2
 
-EPJ S32    idj:id
 EPJ F64vec xj:pos
-EPJ F32    mj:mass
-EPJ F32    routj:r_out
-EPJ F32    rsearchj:r_search
+EPJ F64vec vj:vel
+EPJ F64vec aj:acc
+EPJ F64vec aj_s:acc_s
+EPJ F64vec aj_d:acc_d
+EPJ F64    mj:mass
+EPJ S32    idj:id
+EPJ S32    idj_loc:id_local
+EPJ S32    myrankj:myrank
+EPJ S32    ngbj:neighbor
+EPJ F64    routj:r_out
+EPJ F64    routinvj:r_out_inv
+EPJ F64    rsearchj:r_search
 
 FORCE F32vec af:acc
 FORCE F32    pf:phi
@@ -15,13 +33,25 @@ FORCE S32    nngb:neighbor
 FORCE S32    idngb:id_neighbor
 
 EPI local F32vec xiloc
+EPI local F32    rsearchiloc
+EPI local F32    routiloc
+
 EPJ local F32vec xjloc
+EPJ local F32    mjloc
+EPJ local F32    rsearchjloc
+EPJ local F32    routjloc
 
 xiloc = xi - xi[0]
-xjloc = xj - xi[0]
+rsearchiloc = rsearchi
+routiloc = routi
 
-rout     = max(routj, routi)
-rsearch  = max(rsearchj, rsearchi)
+xjloc = xj - xi[0]
+rsearchjloc = rsearchj
+routjloc = routj
+mjloc = mj
+
+rout     = max(routjloc, routiloc)
+rsearch  = max(rsearchjloc, rsearchiloc)
 rout2    = rout * rout
 rsearch2 = rsearch * rsearch
 
@@ -39,7 +69,7 @@ endif
 
 r_inv   = rsqrt(r2)
 r2_inv  = r_inv * r_inv
-mr_inv  = mj * r_inv
+mr_inv  = mjloc * r_inv
 mr3_inv = r2_inv * mr_inv
 
 af    += mr3_inv * rij
