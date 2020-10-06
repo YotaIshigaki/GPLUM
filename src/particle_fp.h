@@ -186,7 +186,11 @@ public:
     }
     PS::F64 getRHill() const {
         PS::F64 ax = getSemimajorAxis2();
+#ifndef WITHOUT_SUN
         return pow(mass/(3.*m_sun), 1./3.) * ax;
+#else
+        return pow(mass, 1./3.) * ax;
+#endif
     }
     PS::F64 getKeplerVelocity() const {
         PS::F64 r = sqrt(pos.x * pos.x + pos.y * pos.y);

@@ -4,8 +4,8 @@ INC = -I$(PS_PATH)
 ####################
 ###   Compiler   ###
 ####################
-CC = clang++ -std=c++11
-#CC = mpic++ -std=c++11
+#CC = clang++ -std=c++11
+CC = mpic++ -std=c++11
 #CC = time CC
 
 CFLAGS = -O2
@@ -43,13 +43,13 @@ CFLAGS += -DUSE_RE_SEARCH_NEIGHBOR
 #CFLAGS += -DINDIRECT_TERM
 #CFLAGS += -DINTEGRATE_6TH_SUN
 #CFLAGS += -DAARSETH
-#CFLAGS += -DCORRECT_NEIGHBOR
+CFLAGS += -DCORRECT_NEIGHBOR
 #CFLAGS += -DABSORB_PTCL
 
 CFLAGS += -DCOLLISION
 CFLAGS += -DKOMINAMI
 #CFLAGS += -DCHAMBERS
-#CFLAGS += -DMERGE_BINARY
+CFLAGS += -DMERGE_BINARY
 
 CFLAGS += -DOUTPUT_DETAIL
 CFLAGS += -DCALC_WTIME
