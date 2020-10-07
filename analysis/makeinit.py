@@ -4,10 +4,7 @@ import sys
 
 
 def main() :
-    if len(sys.argv) == 4:
-        makeinit(sys.argv[1], sys.argv[2], 1., sys.argv[3])
-    elif len(sys.argv) == 3:
-        makeinit(sys.argv[1], sys.argv[2], 1.)
+    makeinit(sys.argv[1], sys.argv[2], 1.)
 
     
 def KeplerEq(u, ecc):
@@ -110,7 +107,7 @@ def makedist(Mass, n, f, dens, p, a0, a1, ecc_hill, inc_hill, mu=1.):
     return system
 
 
-def makeinit(filename0, filename1, mu=1., random=None) :
+def makeinit(filename0, filename1, mu=1.) :
 
     n0 = 0
     n1 = 0
@@ -127,10 +124,7 @@ def makeinit(filename0, filename1, mu=1., random=None) :
             if i == 0 :
                 n0 = int(part[0])
                 n1 = int(part[1])
-                if random == None :
-                    np.random.seed(int(part[2]))
-                else :
-                    np.random.seed(int(random))
+                np.random.seed(int(part[2]))
 
             elif i <= n0 :
                 mass, r_p, f, ax, ecc, inc = float(part[0]), float(part[1]), float(part[2]), float(part[3]), float(part[4]), float(part[5])
