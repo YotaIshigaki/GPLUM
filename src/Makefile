@@ -20,6 +20,7 @@ CC = clang++ -std=c++11
 ################
 #use_AVX2 = yes
 #use_AVX512 = yes
+#use_SVE = yes
 
 #########################
 ###   Other Options   ###
@@ -41,11 +42,10 @@ output_detail = yes
 #calc_time = yes
 
 
-
 CFLAGS = -O2
 CFLAGS += -Wall
-CFLAGS += -ffast-math
 CFLAGS += -funroll-loops
+#CFLAGS += -Kparallel
 
 
 ifeq ($(use_OpenMP),yes)
@@ -59,14 +59,22 @@ CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPGrav --epj-nam
 CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPGrav --epj-name SPGrav --force-name ForceGrav
 
 ifeq ($(use_AVX2),yes)
-CFLAGS += -march=core-avx2
+#CFLAGS += -march=core-avx2
+CFLAGS += -mavx2 -mfma -ffast-math
 CFLAGS_KERNEL_EPEP += --conversion-type AVX2
 CFLAGS_KERNEL_EPSP += --conversion-type AVX2
 else
 ifeq ($(use_AVX512),yes)
-CFLAGS += -march=skylake-avx512
+#CFLAGS += -march=skylake-avx512
+CFLAGS += -mavx512f -mavx512dq -ffast-math
 CFLAGS_KERNEL_EPEP += --conversion-type AVX-512
 CFLAGS_KERNEL_EPSP += --conversion-type AVX-512
+else
+ifeq ($(use_SVE),yes)
+CFLAGS += -Kfast
+CFLAGS_KERNEL_EPEP += --conversion-type A64FX
+CFLAGS_KERNEL_EPSP += --conversion-type A64FX
+endif
 endif
 endif
 
