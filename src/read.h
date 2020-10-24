@@ -632,9 +632,10 @@ PS::S32 getLastSnap(char * dir_name,
             if ( strcmp(head,"snap") == 0 ){
                 char  number[16];
                 strncpy(number, filename+4, 6);
-                if ( lastnumber < std::atof(number) ) {
-                    lastnumber = std::atof(number);
-                    sprintf(lastsnap_name, "%s/%s", dir_name, entry->d_name);
+		lastnumber = std::max(lastnumber, std::atoi(number));
+                if ( lastnumber == std::atoi(number) ) {
+		  //lastnumber = std::atoi(number);
+                    sprintf(lastsnap_name, "%s/%s", dir_name, filename);
                 }
             }
         }
