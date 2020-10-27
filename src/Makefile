@@ -7,7 +7,8 @@ INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 ####################
 CC = clang++ -std=c++11
 #CC = mpic++ -std=c++11
-#CC = time CC
+#CC = time FCCpx -Nclang
+#CC = time mpiFCCpx -Nclang
 
 ########################
 ###   MPI & OpenMP   ###
@@ -38,15 +39,13 @@ collision = yes
 #Chembers = yes
 #merge_binary = yes
 
-output_detail = yes
+#output_detail = yes
 #calc_time = yes
 
 
 CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
-#CFLAGS += -Kparallel
-
 
 ifeq ($(use_OpenMP),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
@@ -71,7 +70,7 @@ CFLAGS_KERNEL_EPEP += --conversion-type AVX-512
 CFLAGS_KERNEL_EPSP += --conversion-type AVX-512
 else
 ifeq ($(use_SVE),yes)
-CFLAGS += -Kfast
+CFLAGS += -Ofast
 CFLAGS_KERNEL_EPEP += --conversion-type A64FX
 CFLAGS_KERNEL_EPSP += --conversion-type A64FX
 endif
