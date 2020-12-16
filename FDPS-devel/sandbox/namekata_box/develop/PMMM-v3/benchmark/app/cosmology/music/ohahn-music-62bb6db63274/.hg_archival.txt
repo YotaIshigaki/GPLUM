@@ -1,0 +1,6 @@
+repo: a33a4379f66675344bd315bd17a3094cca400305
+node: 62bb6db63274efd30f03b6ab4b71cf75e41bfcfc
+branch: default
+latesttag: UCSC_comparison_project
+latesttagdistance: 221
+changessincelatesttag: 278

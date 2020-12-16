@@ -1,0 +1,87 @@
+\documentclass[10pt,twocolumn,a4paper,fleqn]{article}
+
+%%%%% AUTHORS - PLACE YOUR OWN PACKAGES HERE %%%%%
+\usepackage[x11names,table]{xcolor}
+\usepackage{moresize}
+\usepackage{minted}
+\usepackage{mdframed}
+\usepackage{caption}
+
+%%% minted setting %%%
+%\setminted{fontsize=\tiny,baselinestretch=1}
+\setminted{fontsize=\fontsize{5.21}{6}\selectfont,baselinestretch=1}
+
+%%% Page size setting %%%
+\topmargin=0mm
+\oddsidemargin=-5mm
+\evensidemargin=-5mm
+\textheight=222mm
+\textwidth=165mm
+
+
+% Beginning of document
+\begin{document}
+\pagenumbering{gobble}
+
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\begin{mdframed}[
+    backgroundcolor=bg,
+    topline=false,
+    bottomline=false,
+    leftline=false,
+    rightline=false]
+\begin{minted}[fontfamily=courier,linenos=true, breaklines]{fortran}
+subroutine calc_gravity_pp(ep_i,n_ip,ep_j,n_jp,f) bind(c)        
+   integer(c_int), intent(in), value :: n_ip,n_jp                
+   type(full_particle), dimension(n_ip), intent(in) :: ep_i      
+   type(full_particle), dimension(n_jp), intent(in) :: ep_j      
+   type(full_particle), dimension(n_ip), intent(inout) :: f                   
+   integer(c_int) :: i,j                                         
+   real(c_double) :: eps2,poti,r3_inv,r_inv                      
+   real(c_double), dimension(3) :: xi,ai,rij                     
+   real(c_double), dimension(n_jp) :: mj                         
+   real(c_double), dimension(3,n_jp) :: xj                  
+   do j=1,n_jp                                
+      mj(j)   = ep_j(j)%mass                  
+      xj(1,j) = ep_j(j)%pos%x                 
+      xj(2,j) = ep_j(j)%pos%y                 
+      xj(3,j) = ep_j(j)%pos%z                 
+   end do                                     
+   do i=1,n_ip                                
+      eps2 = ep_i(i)%eps * ep_i(i)%eps        
+      xi(1) = ep_i(i)%pos%x                   
+      xi(2) = ep_i(i)%pos%y                   
+      xi(3) = ep_i(i)%pos%z                   
+      ai = 0.0d0                              
+      poti = 0.0d0                            
+      do j=1,n_jp                             
+         rij(1) = xi(1) - xj(1,j)             
+         rij(2) = xi(2) - xj(2,j)             
+         rij(3) = xi(3) - xj(3,j)             
+         r3_inv = rij(1)*rij(1) &             
+                + rij(2)*rij(2) &             
+                + rij(3)*rij(3) &             
+                + eps2                        
+         r_inv  = 1.0d0/sqrt(r3_inv)          
+         r3_inv = r_inv * r_inv               
+         r_inv  = r_inv * mj(j)               
+         r3_inv = r3_inv * r_inv              
+         ai(1)  = ai(1) - r3_inv * rij(1)     
+         ai(2)  = ai(2) - r3_inv * rij(2)     
+         ai(3)  = ai(3) - r3_inv * rij(3)     
+         poti   = poti - r_inv                
+      end do                                  
+      f(i)%pot = f(i)%pot + poti              
+      f(i)%acc%x = f(i)%acc%x + ai(1)         
+      f(i)%acc%y = f(i)%acc%y + ai(2)         
+      f(i)%acc%z = f(i)%acc%z + ai(3)         
+   end do                                     
+                                                
+end subroutine calc_gravity_pp                     
+\end{minted}
+\end{mdframed}
+
+
+
+% End of Document
+\end{document}

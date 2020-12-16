@@ -1,0 +1,525 @@
+%% 本節では、Particle Meshクラスについて記述する。このクラスはParticle
+%% Mesh法を用いて粒子の相互作用を計算するモジュールである。メッシュからの
+%% 力はS-2型の関数によってカットオフされており、カットオフ半径はメッシュ
+%% 間隔の3倍で固定されている。カットオフ関数径を変更する事は出来ない。ま
+%% た、Particle Meshクラスに送る粒子の座標は0以上1未満の値に規格化して置
+%% かなければならない。以下に、オブジェクトの生成方法、API、使用済マクロ、
+%% 使いかたについて記述する。
+
+This section describes {\tt ParticleMesh} class which is for the
+evaluation of interactions between particles using the Particle Mesh
+method. The cutoff of the S-2 type function is applied to the mesh
+force, and the cutoff radius is fixed to three times the mesh
+size. The coordinates of particles sent to {\tt ParticleMesh} class
+should be in the range of [0,1).
+The following subsections describe how to create the object
+for Particle Mesh method, APIs, predefined macros and how to use the
+class.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsection{オブジェクトの生成}
+\subsubsubsection{Creation of Object}
+
+%Particle Meshクラスは以下のように宣言されている。
+
+{\tt ParticleMesh} class is declared bellow.
+
+\begin{lstlisting}[caption=ParticleMesh0]
+namespace ParticleSimulator {
+    namespace ParticleMesh {
+        class ParticleMesh;
+    }
+}
+\end{lstlisting}
+
+%Particle Meshクラスのオブジェクトの生成は以下のように行う。ここではpm
+%というオブジェクトを生成している。
+
+Next example shows how to create an object of {\tt ParticleMesh} class.
+Here, the object is named {\tt pm}.
+
+\begin{screen}
+\begin{verbatim}
+PS::PM::ParticleMesh pm;
+\end{verbatim}
+\end{screen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{API}
+
+{\tt ParticleMesh} class has APIs for initialization and force
+evaluation. The following subsections describe them.
+
+%Particle Meshクラスには初期設定関連のAPI、低レベルAPI、高レベルAPIがあ
+%る。以下、各節に分けて記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsubsection{初期設定}
+\subsubsubsubsection{Initial Setup}
+
+%初期設定関連のAPIの宣言は以下のようになっている。このあと各APIについて
+%記述する。
+
+\begin{lstlisting}[caption=ParticleMesh1]
+namespace ParticleSimulator {
+    namespace ParticleMesh {
+        class ParticleMesh{
+            ParticleMesh();
+        };
+    }
+}
+\end{lstlisting}
+
+%\subsubsubsubsubsection{コンストラクタ}
+\subsubsubsubsubsection{Constructor}
+
+\begin{screen}
+\begin{verbatim}
+void PS::PM::ParticleMesh::ParticleMesh();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Create an object of {\tt ParticleMesh} class.
+
+%Particle Meshクラスのオブジェクトを生成する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsubsection{低レベルAPI}
+\subsubsubsubsection{Low Level API}
+
+%低レベルAPIの宣言は以下のようになっている。このあと各APIについて記述す
+%る。
+
+The low Level APIs are declared below.
+
+\begin{lstlisting}[caption=ParticleMesh1]
+namespace ParticleSimulator {
+    namespace ParticleMesh {
+        class ParticleMesh{
+            template<class Tdinfo>
+            void setDomainInfoParticleMesh
+                        (const Tdinfo & dinfo);
+            template<class Tpsys>
+            void setParticleParticleMesh
+                        (const Tpsys & psys,
+                         const bool clear=true);
+            void calcMeshForceOnly();
+            F32vec getForce(F32vec pos);
+            F32 getPotential(F32vec pos);
+        };
+    }
+}
+\end{lstlisting}
+
+\subsubsubsubsubsection{PS::PM::ParticleMesh::setDomainInfoParticleMesh}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::PM::ParticleMesh::setDomainInfoParticleMesh
+            (const Tdinfo & dinfo);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt dinfo}: input. Type {\tt const DomainInfo \&}. An object of {\tt
+DomainInfo} class.
+
+%dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Read the data from {\tt dinfo}.
+%領域情報を読み込む。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::PM::ParticleMesh::setParticleParticleMesh}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::PM::ParticleMesh::setParticleParticleMesh
+            (const Tpsys & psys,
+             const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt psys}: input. Type {\tt const ParticleSystem \&}. An object of
+{\tt ParticleSystem} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to determine if
+previous information of particles loaded is cleared.
+
+%  psys: 入力。Tpsys \& 型。粒子群クラスのオブジェクト。
+
+%  clear: 入力。const bool型。これまで読込んだ粒子情報をクリアするかど
+%  うか決定するフラグ。trueならばクリアする。デフォルトはtrue。
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Read data of particles from {\tt psys}.
+%  粒子情報を粒子群クラスのオブジェクトから読み込む。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::PM::ParticleMesh::calcMeshForceOnly}
+
+\begin{screen}
+\begin{verbatim}
+void PS::PM::ParticleMesh::calcMeshForceOnly();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces on grid points.
+%メッシュ上の力を計算する。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::PM::ParticleMesh::getForce}
+
+\begin{screen}
+\begin{verbatim}
+PS::F32vec PS::PM::ParticleMesh::getForce(PS::F32vec pos);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pos}: input. Type {\tt PS::F32vec}. %%
+
+%  pos: 入力。PS::F32vec型。メッシュに課された粒子からの力を計算したい
+%  位置。
+
+\item {\bf returned value}
+
+Type {\tt PS::F32vec}. PM force at the position {\tt pos}.
+%  PS::F32vec型。メッシュに課された粒子からの力。
+
+\item {\bf function}
+
+Return a PM force exerted at the position ``pos".
+This function is thread-safe.
+%  位置posでのメッシュに課された粒子からの力を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::PM::ParticleMesh::getPotential}
+
+\begin{screen}
+\begin{verbatim}
+PS::F32 PS::PM::ParticleMesh::getPotential(PS::F32vec pos);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pos}: input. Type {\tt PS::F32vec}. %%
+
+%  pos: 入力。PS::F32vec型。メッシュに課された粒子からの力を計算したい
+%  位置。
+
+\item {\bf returned value}
+
+Type {\tt PS::F32vec}. PM potential at the position {\tt pos}.
+%  PS::F32vec型。メッシュに課された粒子からの力。
+
+\item {\bf function}
+
+Return a PM potential exerted at the position ``pos".
+This function is thread-safe.
+%  位置posでのメッシュに課された粒子からの力を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsubsection{高レベルAPI}
+\subsubsubsubsection{High Level API}
+
+%高レベルAPIの宣言は以下のようになっている。このあと各APIについて記述す
+%る。
+
+High level APIs are declared below.
+
+\begin{lstlisting}[caption=ParticleMesh1]
+namespace ParticleSimulator {
+    namespace ParticleMesh {
+        class ParticleMesh{
+            template<class Tpsys,
+                     class Tdinfo>
+            void calcForceAllAndWriteBack
+                        (Tpsys & psys,
+                         const Tdinfo & dinfo);
+        };
+    }
+}
+\end{lstlisting}
+
+\subsubsubsubsubsection{PS::PM::ParticleMesh::calcForceAllAndWriteBack}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys,
+         class Tdinfo>
+void PS::PM::ParticleMesh::calcForceAllAndWriteBack
+            (Tpsys & psys,
+             const Tdinfo & dinfo);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt psys}: input and output. Type {\tt ParticleSystem \&}. An object
+of the {\tt ParticleSystem} class.
+
+{\tt dinfo}: input. Type {\tt const DomainInfo \&}. An object of the
+{\tt DomainInfo} class.
+
+%  psys: 入力であり出力。Tpsys \& 型。粒子群クラスのオブジェクト。
+
+%  dinfo: 入力。const Tdinfo \&型。領域クラスのオブジェクト。
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces between particles of {\tt psys} and write back the
+forces to {\tt psys}.
+
+%  粒子群クラスのオブジェクトpsysに含まれる粒子間のメッシュ力を計算し、
+%  その結果をpsysに返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsection{使用済マクロ}
+\subsubsubsection{Predefined Macros}
+
+%%BINARY_BOUNDARY, BOUNDARY_COMM_NONBLOCKING, BOUNDARY_SMOOTHING,
+%%BUFFER_FOR_TREE, CALCPOT, CLEAN_BOUNDARY_PARTICLE,
+%%CONSTANT_TIMESTEP, EXCHANGE_COMM_NONBLOCKING, FFT3D, FFTW3_PARALLEL,
+%%FFTW_DOUBLE, FIX_FFTNODE, GADGET_IO, GRAPE_OFF, KCOMPUTER, LONG_ID,
+%%MAKE_LIST_PROF, MERGE_SNAPSHOT, MULTI_TIMESTEP, MY_MPI_BARRIER,
+%%N128_2H, N256_2H, N256_H, N32_2H, N512_2H, NEW_DECOMPOSITION, NOACC,
+%%NPART_DIFFERENT_DUMP, OMP_SCHDULE_DISABLE, PRINT_TANIKAWA,
+%%REVERSE_ENDIAN_INPUT, REVERSE_ENDIAN_OUTPUT, RMM_PM,
+%%SHIFT_INITIAL_BOUNDARY, STATIC_ARRAY, TREE2,
+%%TREECONSTRUCTION_PARALLEL, TREE_PARTICLE_CACHE, UNIFORM, UNSTABLE,
+%%USING_MPI_PARTICLE, VERBOSE_MODE, VERBOSE_MODE2
+
+%このモジュールでは多くのマクロを使っている。これらを別のマクロとして使
+%用した場合にプログラムが正しく動作する保証はない。ここでは使用されてい
+%るマクロをアルファベティカルに列挙する。
+
+There are many macros predefined in this module and users must not
+define the same name macros. The predefined macros are listed bellow
+in alphabetical order.
+
+
+\begin{itemize}
+\item BINARY\_BOUNDARY
+\item BOUNDARY\_COMM\_NONBLOCKING
+\item BOUNDARY\_SMOOTHING
+\item BUFFER\_FOR\_TREE
+\item CALCPOT
+\item CLEAN\_BOUNDARY\_PARTICLE
+\item CONSTANT\_TIMESTEP
+\item EXCHANGE\_COMM\_NONBLOCKING
+\item FFT3D
+\item FFTW3\_PARALLEL
+\item FFTW\_DOUBLE
+\item FIX\_FFTNODE
+\item GADGET\_IO
+\item GRAPE\_OFF
+\item KCOMPUTER
+\item LONG\_ID
+\item MAKE\_LIST\_PROF
+\item MERGE\_SNAPSHOT
+\item MULTI\_TIMESTEP
+\item MY\_MPI\_BARRIER
+\item N128\_2H
+\item N256\_2H
+\item N256\_H
+\item N32\_2H
+\item N512\_2H
+\item NEW\_DECOMPOSITION
+\item NOACC
+\item NPART\_DIFFERENT\_DUMP
+\item OMP\_SCHDULE\_DISABLE
+\item PRINT\_TANIKAWA
+\item REVERSE\_ENDIAN\_INPUT
+\item REVERSE\_ENDIAN\_OUTPUT
+\item RMM\_PM
+\item SHIFT\_INITIAL\_BOUNDARY
+\item STATIC\_ARRAY
+\item TREE2
+\item TREECONSTRUCTION\_PARALLEL
+\item TREE\_PARTICLE\_CACHE
+\item UNIFORM
+\item UNSTABLE
+\item USING\_MPI\_PARTICLE
+\item VERBOSE\_MODE
+\item VERBOSE\_MODE2。
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsection{Particle Meshクラスの使いかた}
+\subsubsubsection{How To Use Particle Mesh Class}
+
+%Particle Meshクラスを使うには以下の４つのことを行う必要がある。
+%There are three steps listed below to use the Particle Mesh class.
+
+Through the following steps, one can use this {\tt ParticleMesh} class.
+
+\begin{enumerate}
+\item Compile ParticleMesh class.
+\item Write a program including FDPS.
+\item Compile the program.
+\end{enumerate}
+
+The following subsections describe these steps.
+
+%\begin{enumerate}
+%\item Particle Meshクラスのコンパイル
+%\item Particle Meshクラスを使ったFDPSコードの記述
+%\item FDPSコードのコンパイル
+%\end{enumerate}
+%以下、詳細に記述する。
+
+%\subsubsubsubsection{Particle Meshクラスのコンパイル}
+\subsubsubsubsection{Compile of Particle Mesh Class}
+
+%以下のように行う。ディレクトリsrcの下のディレクトリparticle\_meshの
+%Makefileを適切に編集してmakeする。編集すべきことは以下の２点である。
+%\begin{itemize}
+%\item INCLUDE\_FFTWにFFTWのヘッダファイルがあるディレクトリを記述
+%  する
+%\item param\_fdps.hの中のSIZE\_OF\_MESH (１次元方向のメッシュの数)を設定。
+%推奨値は $N^{1/3}/2$($N$は粒子数)。
+%\end{itemize}
+%うまく行けば、同じディレクトリにライブラリlibpm.aとヘッダファイル
+%particle\_mesh.hppができる。
+
+Users need to edit the {\tt Makefile} in
+{\tt \$(FDPS)/src/particle\_mesh} appropriately as follows.
+
+\begin{itemize}
+\item Set the macro {\tt INCLUDE\_FFTW} (the directory in which the header file of FFTW is) in Makefile.
+\item Set the macro {\tt SIZE\_OF\_MESH} (the number of meshes along one direction) in {\tt param\_fdps.h}.
+Recommended value is $N^{1/3}/2$ ($N$ is the number of the particle).
+\end{itemize}
+
+After editing, users run make command.
+
+If successful, the library {\tt libpm.a} and the header file {\tt
+particle\_mesh.hpp} are created.
+
+%\subsubsubsubsection{FDPSコードを記述}
+\subsubsubsubsection{Writing Source Code}
+
+Next, users write programs as follows.
+
+\begin{itemize}
+\item Include the header files created above.
+\item Add member functions described below to {\tt FullParticle} class (here, this particle class called FP).
+  \begin{itemize}
+  \item void {\tt FP::copyFromForceParticleMesh(const PS::F32vec \& force)}.
+     In this function, copy {\tt force} to arbitrary member variables in FP.
+  \item {\tt PS::F64 FP::getChargeParticleMesh()}. This function returns mass.
+  \end{itemize}
+\item 
+
+%以下のように行う。
+%\begin{itemize}
+%\item 上でできたヘッダファイルをincludeする
+%\item PMを計算したい粒子クラスに以下のメンバ関数を加える(この粒子クラスのクラス名をFPとする)
+%  \begin{itemize}
+%  \item void FP::copyFromForceParticleMesh(const PS::F32vec \& force)。こ
+%     の中でforceを好きなメンバ変数にセットする。
+%  \item PS::F64 FP::getChargeParticleMesh()。この中で質量を返す。
+%  \end{itemize}
+%\item このクラスのオブジェクトを生成するときに、PS::PM::ParticleMeshと
+%する
+\end{itemize}
+
+%\subsubsubsubsection{FDPSコードのコンパイル}
+\subsubsubsubsection{Compile of Source Code}
+
+To compile the programs written above, users need to follow the
+following steps.
+
+\begin{itemize}
+\item Specify the path to the header file {\tt particle\_mesh.hpp}.
+\item Link the library {\tt libpm.a}.
+\item Specify the path to the directory in which the header files of FFTW are.
+\item Link the FFTW libraries.
+\end{itemize}
+
+%上で記述したFDPSコードをコンパイルするには以下のことを行う必要がある。
+%\begin{itemize}
+%\item ヘッダファイルparticle\_mesh.hppのあるディレクトリへのパスを指定する
+%\item ライブラリlibpm.aとリンクする
+%\item FFTWのヘッダファイルがあるディレクトリへのパスを指定する
+%\item FFTWのライブラリとリンクする
+%\end{itemize}
+
+%\subsubsubsubsection{注意事項}
+
+\subsubsubsubsection{Note}
+
+{\tt ParticleMesh} class does not work if the total number of
+processes is one.
+
+%Particle Meshクラスはプロセス数が2以上でないと、動かないことに注意。

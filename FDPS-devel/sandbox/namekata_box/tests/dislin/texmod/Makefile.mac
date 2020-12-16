@@ -1,0 +1,16 @@
+CC = gcc
+CFLAGS = -std=c11 -I/usr/local/dislin/real64 
+C_LDFLAGS = -L/usr/local/dislin -ldislin_d -L/opt/local/lib -lXm 
+
+CXX = g++
+CXXFLAGS = -std=c++11 -I/usr/local/dislin
+CXX_LDFLAGS = -L/usr/local/dislin -ldiscpp -L/opt/local/lib -lXm 
+
+.PHONY: all clean
+all:
+	$(CC) $(CFLAGS) -o mkfig_c.out main.c $(C_LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o mkfig_cpp.out main.cpp $(CXX_LDFLAGS)
+	$(CXX) $(CXXFLAGS) -o mkfig_cpp_ver2.out main_ver2.cpp $(CXX_LDFLAGS)
+
+clean:
+	rm *.out *.ps

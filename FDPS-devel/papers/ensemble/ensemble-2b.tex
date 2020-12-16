@@ -1,0 +1,336 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% 分子シミュレーション研究会会誌「アンサンブル」用テンプレートファイル
+%
+% Ver. 3.0  2016/07/08
+%
+%% 1) イントロダクション+説明
+%%     概要 考え方
+%%     こんなコードはこう動く的サンプル紹介
+%%     LJ のコード？
+%%     内部構造、ツリーとかの話をちょっとする？
+%%     手法を開発する人に使って欲しいみたいな話を。
+%% 2)  使い方の詳しい話
+%%     C++ の紹介+
+%%     F2003 もある!
+%%     ユーザーコードの書き方
+%%     内部構造、ツリーとかの話を詳しく？
+%% 3)  MD スペシフィックな
+%%     ボンド
+%%     周期境界
+%% 4)  チューニング
+%%     大規模実行
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[twocolumn,10pt]{jarticle}
+\usepackage[reviewb]{ensemble}
+\usepackage{enumitem}
+\usepackage{url}
+%
+% === 使用方法 ===
+%
+% \usepackage[option]{ensemble}
+%
+% option のところを，記事の種類に合わせて変更してください．
+% 
+% review : 論文・研究紹介（著者一人）
+% reviewb : 論文・研究紹介（著者二人）
+% intro : 特集の前書き，研究室紹介，海外紹介（著者一人）
+% introb : 特集の前書き，研究室紹介（著者二人）
+% report : 夏の学校報告等（著者有り、著者紹介無し）
+% noauther : 報告（著者無し）
+%
+% amsmath, amssymb, cite, color, graphicx, here, 
+% は，ensemble.sty の中で読み込まれています．
+%
+\setcounter{page}{101}  % 開始ページ (編集委員用)
+
+\title{% タイトル
+[]連載 FDPS入門 (2) 
+}
+
+\author{% 著者名
+岩澤全規
+}
+
+\email{% e-mail address
+masaki.iwasawa@riken.jp
+}
+
+\affiliation{% 所属
+理化学研究所\quad 計算科学研究機構
+}
+
+\career{% 著者紹介
+岩澤全規(学術博)：〔経歴〕1989年東京大学大学院総合文化研究科博士課程修了，同年東京大学大学教養学部助手．2016年から現所属．〔専門〕天体物理、計算科学．\\
+}
+
+% 第2著者
+\authorb{行方大輔}
+\emailb{daisuke.namekata@riken.jp}
+\affiliationb{% 所属
+理化学研究所\quad 計算科学研究機構
+}
+\careerb{% 著者紹介
+行方大輔(博士(理学))：〔経歴〕2010年北海道大学大学院理学院博士課程修了．2016年から現所属．〔専門〕天体物理、計算科学．\\
+}
+
+\abst{% 概要
+本連載では、私達が開発・公開している多体シミュレーション
+プログラム開発フレームワーク「FDPS (Framework for Developing Particle
+  Simulators)」を紹介します。連載第二回の今回は、具体的なサンプルコードを例にとり、FDPS を使ってどのように粒子系シミュレーションプログラムを開発するのか、を詳しく説明していきます。開発に必要となるC++言語の文法、FDPSの内部実装についても合わせて解説します。本稿の後半では、Fortranからの使い方を紹介します。\\
+\mbox{}
+}
+
+\keyword{% キーワード
+粒子シミュレーション、分子動力学、HPC、並列化、MPI\\
+}
+
+% 顔写真のファイル名．デフォルトはphoto.eps, photob.eps
+% 第1著者
+\photofile{makino.eps} 
+% 第2著者
+\photofileb{namekata.eps} 
+
+%------------------------------------------------------------------------
+% ユーザー定義のマクロはここに書く．
+%------------------------------------------------------------------------
+%\renewcommand{\v}[1]{{\bf #1}}
+%\newcommand{\ave}[1]{\left< #1 \right>}
+%------------------------------------------------------------------------
+\begin{document}
+\maketitle
+%------------------------------------------------------------------------
+% 原稿ここから
+%------------------------------------------------------------------------
+
+\section{はじめに}
+テスト\\
+
+\section{FDPSの詳しい使い方と内部実装について}
+テスト\\
+
+\section{FDPSのFortranからの使い方}\label{sec:usage_of_fdps_from_ftn}
+本節では、どのようにしてFortranからFDPSを使うのか、について解説します。FortranからFDPSを利用する場合、プログラムの開発は大まかには次の手順に沿って行うことになります。
+\begin{enumerate}
+\item 粒子構造体の定義 \label{enum:def_ptcl_obj}
+\item FDPSのFortran用インターフェースプログラムの生成 \label{enum:gen_if_step}
+\item 相互作用関数の定義 \label{enum:def_interact_func}
+\item プログラム本体の開発
+\end{enumerate}
+C++から利用する場合の手順との最も大きな違いは、ステップ\ref{enum:gen_if_step}の存在です。FortranにはC++言語のテンプレートに相当する機能がありませんので、FDPSが各種ライブラリ関数を提供するためには、事前に粒子のデータ構造を知っている必要があります。そのため、最初に開発者に粒子構造体を定義してもらい(ステップ\ref{enum:def_ptcl_obj})、その後、その粒子構造体用のライブラリ関数を生成する(ステップ\ref{enum:gen_if_step})、という手順を踏む必要があります。このステップ\ref{enum:gen_if_step}は、実際には、単に我々が提供するPythonスクリプトを実行するだけの作業で、特に難しいことはありません。
+
+開発者はステップ\ref{enum:gen_if_step}で生成されたFortranインターフェース(FDPSを操作するためのFortranサブルーチン/関数の集まり)を使って、プログラム本体を開発することとなります。Fortranインターフェースが提供する関数群は、C++のものとほぼ同じになっており、コード開発は、C++からFDPSを利用する場合とほぼ同じ要領で行えます。ただし、Fortranインターフェースは、Fortran 2003から導入されたC言語との相互運用を可能にする文法を使用していますので、粒子構造体や相互作用関数の定義等は、いくつかの要請に従って実装する必要があります。
+
+以下では、各手順について、より詳しく説明していきます。
+
+\subsection{粒子構造体の記述方法}\label{subsec:how_to_implement_ptcl}
+粒子は、Fortranの構造体(別名、派生データ型)と特別なコメント文を用いて定義します。といっても、わかりにくいと思いますので、まずは例を見て頂きましょう。以下は、第x節で紹介したC++の粒子クラスをFortranで記述したものです。
+{\scriptsize
+\begin{verbatim}
+type, public, bind(c) :: fplj !$fdps FP,EPI,EPJ,Force
+    !$fdps copyFromForce fplj (pot,pot) (acc,acc)
+    !$fdps copyFromFP fplj (id,id) (mass,mass) (pos,pos) \
+       (search_radius,search_radius)
+    !$fdps clear id=keep, mass=keep, pos=keep, vel=keep, \
+       search_radius=keep
+    integer(kind=c_long_long) :: id
+    real(kind=c_double) :: mass !$fdps charge
+    type(fdps_f64vec) :: pos !$fdps position
+    type(fdps_f64vec) :: vel !$fdps velocity
+    type(fdps_f64vec) :: acc
+    real(kind=c_double) :: pot
+    real(kind=c_double) :: search_radius !$fdps rsearch
+end type fplj  
+\end{verbatim}
+}\noindent
+同じものがディレクトリ \texttt{sample/fortran/vdw-test} の \texttt{user\_defined.F90} に記述されています(これより後で示すプログラムのソースファイルも、すべてこのディレクトリにあります)。
+
+この例で、\texttt{type} 〜 \texttt{end type}が1つの構造体を表しており、この間に定義されている変数(id, mass 等)がメンバ変数となります。構造体の名称は、\texttt{type}文の右側で指定でき、今の場合、\texttt{fplj} となっています。この構造体で表されるデータを、FortranプログラムからC++で記述されたFDPS本体に渡したり、或いは逆に、FDPS本体から受け取ったりするため、Fortran インターフェースプログラムでは、Fortran 2003から言語仕様として導入されたC言語との相互運用を可能にする機能を利用しています。この機能を利用するためには、構造体がC言語と相互運用可能である必要があります。C言語と相互運用可能であるための条件の詳細は省きますが、主な条件は、
+\begin{itemize}
+\item 構造体が \texttt{bind(c)} 属性を持つこと
+\item すべてのメンバ変数がC言語と相互運用可能なデータ型であること
+\end{itemize}
+です。最初の条件は、\texttt{type}文に\texttt{bind(c)}キーワードをつけるだけでクリアできます。2番目の条件についてですが、Fortran 2003 以降には C言語の基本データ型に対応するデータ型がFortran側に用意されており、それらを用いてメンバ変数を定義すれば満たすことができます。今回の例の\texttt{integer(kind=c\_int)}などは、そのようなデータ型の1例です。C言語と相互運用可能なデータ型の一覧は、例えば、GNU gfortran のオンラインドキュメント
+\footnote{\url{https://gcc.gnu.org/onlinedocs/gfortran/ISO_005fC_005fBINDING.html#ISO_005fC_005fBINDING}}
+等で紹介されています。なお、これらのデータ型は組込モジュール \texttt{iso\_c\_binding} 内に定義されていますので、\texttt{use}文で、このモジュールを参照可能にしておく必要があります。構造体には、C言語と相互運用可能な構造体をメンバ変数として含めることも可能です。\texttt{fdps\_f64vec}はFDPSから提供されるそのようなデータ型の1つです。
+
+
+プログラムを見ると、\texttt{!\$fdps}で始まるコメント文が多数あることに気づかれるかと思います。これらが本節冒頭で「特別なコメント文」と述べたものです。第x節で述べたように、FDPSは、粒子構造体のどのメンバ変数が何を表すのか、といったことを知っている必要があります。\texttt{!\$fdps}から始まるコメント文は、このような情報をFDPSに教えるための指示文です。以降、単にFDPS指示文と呼ぶことにします。FDPS指示文には大きく分けて以下の3種類があります。
+\begin{enumerate}[label=(\alph*)]
+\item 構造体の種別を表す指示文\label{enum:dir_for_str}
+\item メンバ変数が何の物理量を表すかを指定する指示文\label{enum:dir_for_mbr}
+\item FDPS 内部で行われるデータ操作の仕方を指示する指示文\label{enum:dir_for_meth}
+\end{enumerate}
+以下、これらについて簡単に説明します。
+
+指示文\ref{enum:dir_for_str}は、構造体が4つのユーザ定義型(FullParticle型、EssentialParticleI型、EssentialParticleJ型、Force型)のどれに対応するかをFDPSに指示するためのもので、今回の例では、
+{\footnotesize
+\begin{verbatim}
+!$fdps FP,EPI,EPJ,Force
+\end{verbatim}
+}\noindent
+となっています。この例では、この粒子構造体がすべてのユーザ定義型を兼ねることをFDPSに指示しています。
+
+指示文\ref{enum:dir_for_mbr}は、粒子の質量(電荷)や位置等、FDPSが知っておかなければならない物理量が、どのメンバ変数に対応するかを指定します。今回の例では、
+{\footnotesize
+\begin{verbatim}
+real(kind=c_double) :: mass !$fdps charge
+type(fdps_f64vec) :: pos !$fdps position
+type(fdps_f64vec) :: vel !$fdps velocity
+real(kind=c_double) :: search_radius !$fdps rsearch  
+\end{verbatim}
+}\noindent
+となっています。これによって、FDPSは、massが粒子の質量(電荷)、posが粒子の位置、velが粒子の速度、search\_radiusが探索半径であると解釈します。
+
+指示文\ref{enum:dir_for_meth}は、今回の例では、\texttt{type}文のすぐ下の
+{\footnotesize
+\begin{verbatim}
+!$fdps copyFromForce fplj (pot,pot) (acc,acc)
+!$fdps copyFromFP fplj (id,id) (mass,mass) (pos,pos) \
+   (search_radius,search_radius)
+!$fdps clear id=keep, mass=keep, pos=keep, vel=keep, \
+   search_radius=keep
+\end{verbatim}
+}\noindent
+の部分に対応します。ここで、$\backslash$ は行が下の行に継続していることを示す記号で、実際には指示文は1行で記述しなければなりません。キーワード\texttt{copyFromForce}を含む指示文はForce型からFullParticle型へのデータコピーを、\texttt{copyFromFP}を含む指示文はFullParticle型からEssentialParticleI型およびEssentialParticleJ型へのデータコピーの仕方を指定しています。キーワード\texttt{clear}を含む指示文は相互作用計算時にForce型を初期化する方法を指定しています。
+
+以上、Fortranにおける粒子構造体の定義方法を簡単に説明しました。紙面の都合上、指示文の文法に関する詳細な説明は省きましたが、詳しい情報は仕様書\footnote{\url{https://github.com/FDPS/FDPS/blob/master/doc/doc_specs_ftn_ja.pdf}}でご覧頂けます。
+
+\subsection{Fortran インターフェースの生成方法}\label{subsec:how_to_gen_if}
+Fortran インターフェースは、以下のコマンドを実行するだけで自動的に生成されます。
+{\footnotesize
+\begin{verbatim}
+./$(FDPS_LOC)/scripts/gen_ftn_if.py user_defined.F90
+\end{verbatim}
+}\noindent
+ここで、\texttt{\$(FDPS\_LOC)}はFDPSのトップディレクトリのパスを表します。また、粒子構造体は、ファイル \texttt{user\_defined.F90}に定義されているとしています。インターフェースの生成が成功した場合、カレントディレクトリに、\texttt{FDPS\_Manipulators.cpp}、\texttt{FDPS\_ftn\_if.cpp}、\texttt{FDPS\_module.F90}、\texttt{main.cpp}という4つのファイルが作成されているはずです。Fortran インターフェースは、ファイル\texttt{FDPS\_module.F90}内に定義されるモジュール\texttt{fdps\_module}内に実装されています。
+
+\subsection{相互作用関数の記述方法}\label{subsec:how_to_def_interact_func}
+相互作用関数はFortranのサブルーチンとして定義します。以下に、第x節で紹介したC++の相互作用関数をFortranで記述したもの(インターフェース部分のみ)を示します。
+{\scriptsize
+\begin{verbatim}
+subroutine calc_force_fpfp(ep_i,n_ip,ep_j,n_jp,f) bind(c)
+   integer(c_int), intent(in), value :: n_ip,n_jp
+   type(fplj), dimension(n_ip), intent(in) :: ep_i
+   type(fplj), dimension(n_jp), intent(in) :: ep_j
+   type(fplj), dimension(n_ip), intent(inout) :: f
+   
+   ! 中身は省略
+   
+end subroutine calc_force_fpfp
+\end{verbatim}
+}\noindent
+相互作用関数もまたC言語と相互運用可能でなければなりません。そのためには、次の条件
+\begin{itemize}
+\item サブルーチンが\texttt{bind(c)}属性を持つこと
+\item 関数内で使用される変数のデータ型がC言語と相互運用可能なデータ型であること
+\end{itemize}
+を満たす必要があります。最初の条件は、サブルーチン名の右側に\texttt{bind(c)}キーワードを付けることでクリアできます。これらの条件に加え、FDPS側からの要請として、EssentialParticleI型 配列とEssentialParticleJ型 配列の個数を示す\texttt{n\_ip}と\texttt{n\_jp}は値渡しでなければなりません。このため、\texttt{value}属性を指定しています。
+
+\subsection{プログラム本体の記述方法}\label{subsec:how_to_implement_main}
+最後にプログラム本体がFortranでどのように記述されるのかを解説します。以下に、第x節で紹介したC++のサンプルコードをFortranで書いたものを示します。
+{\scriptsize
+\begin{verbatim}
+subroutine f_main()
+   use fdps_module
+   use user_defined_types
+   implicit none
+   !* 局所変数宣言(重要な変数のみ示す)
+   type(fdps_controller) :: fdps_ctrl
+   type(c_funptr) :: pfunc_ep_ep
+
+   !* FDPSを初期化
+   call fdps_ctrl%PS_Initialize()
+   !* 粒子群オブジェクトを生成
+   call fdps_ctrl%create_psys(psys_num,'fplj')
+   call fdps_ctrl%init_psys(psys_num)
+   !* 初期粒子分布を設定
+   call setup_IC(fdps_ctrl,psys_num,ntot,boxdh)
+   !* 領域情報オブジェクトを生成
+   call fdps_ctrl%create_dinfo(dinfo_num)
+   call fdps_ctrl%init_dinfo(dinfo_num,coef_ema)
+   call fdps_ctrl%set_boundary_condition(dinfo_num, &
+                                         fdps_bc_periodic_xyz)
+   call fdps_ctrl%set_pos_root_domain(dinfo_num,pos_ll,pos_ul)
+   !* 領域分割と粒子交換
+   call fdps_ctrl%decompose_domain_all(dinfo_num,psys_num)
+   call fdps_ctrl%exchange_particle(psys_num,dinfo_num)
+   !* ツリーオブジェクトを生成
+   call fdps_ctrl%create_tree(tree_num, &
+                              "Short,fplj,fplj,fplj,Scatter")
+   call fdps_ctrl%init_tree(tree_num,3*ntot,theta, &
+                            n_leaf_limit,n_group_limit)
+   !* 相互作用計算
+   pfunc_ep_ep = c_funloc(calc_force_fpfp)
+   call fdps_ctrl%calc_force_all_and_write_back(tree_num,    &
+                                                pfunc_ep_ep, &
+                                                psys_num,    &
+                                                dinfo_num)
+                                                
+   !(時間積分ループはここに記述)
+
+   !* FDPSの終了処理を実行
+   call fdps_ctrl%PS_Finalize()
+
+end subroutine f_main                          
+\end{verbatim}
+}\noindent
+プログラム中のコメント文は、各場所で何をしているかを説明しています。コメント文を追うと、プログラム全体の構造がわかります。すなわち、FDPSの初期化から始まって、各種のオブジェクトを作成し、それらを使って相互作用計算を行う、というものになっています。このように、FDPSの使い方はC++の場合とほぼ同じことがわかります。しかし、いくつかFortranに特有な部分がありますので、以下にそれらをまとめます。
+\begin{itemize}
+\item プログラム本体はサブルーチン\texttt{f\_main()}の中に記述しなければなりません。これは、プログラムのメイン関数はC++側にあって、そこから\texttt{f\_main()}が呼び出されているためです。
+\item FDPSのFortran インターフェースは、モジュール\texttt{fdps\_module}内で定義されるクラス\texttt{fdps\_controller}のメンバ関数として提供されます。FortranのクラスはC++のクラスと同じようにメンバ変数とメンバ関数を持つデータ構造です。サブルーチン\texttt{f\_main()}内で、このクラスのメンバ関数を呼び出すため、\texttt{use}文でモジュール\texttt{fdps\_module}にアクセス可能にし(プログラム 2行目)、局所変数として、\texttt{fdps\_controller}クラスのオブジェクト\texttt{fdps\_ctrl}を宣言しています(6行目)。メンバ関数の呼出は、
+\begin{verbatim}
+call fdps_ctrl%member_func()  
+\end{verbatim}
+のように行います。
+\item 粒子群オブジェクト等のFDPS固有のオブジェクトはすべて整数変数で管理します。
+\item 相互作用関数をFDPSに渡すためには関数のC言語アドレスが必要となりますが、それはFortran 2003 で追加された組込関数\texttt{c\_funloc}で取得できます。関数の返り値は、\texttt{c\_funptr}型です。
+\end{itemize}
+
+各APIの機能に関しては、APIの名称がC++のものと類似していることから予想がつくと思いますが、詳しくは仕様書をご参照して頂ければと思います。
+
+最後に、Fortranで記述されたサンプルコードの実行例をお見せしたいと思います。サンプルコードはディレクトリ \texttt{sample/fortran/vdw-test} にありますので、そこに移動して、\texttt{make; ./vdwtest.out} を実行すれば、以下のような出力が得られるはずです。
+{\scriptsize
+\begin{verbatim}
+******** FDPS has successfully begun. ********
+====================================
+ Paralleization infomation:
+   # of processes is 1
+   # of thread is    1
+====================================
+ nptcl_1d =            8
+np_ave=1536
+time:    7.8125000000E-003, energy error:    1.5220343903E-010
+time:    6.2500000000E-002, energy error:    2.5923769738E-009
+(途中省略)
+time:    9.9375000000E+000, energy error:    4.0086395482E-005
+time:    1.0000000000E+001, energy error:    6.2026013003E-005
+******** FDPS has successfully finished. ********
+\end{verbatim}
+}\noindent
+以上、簡単ではありますが、FortranでFDPSを利用する方法について解説を行いました。
+
+次回は、より現実的な分子動力学のシミュレーションプログラムの実装例について解説します。原子結合等の取扱もそこで扱う予定です。
+
+% 謝辞
+%\acknowledgement{○○氏に感謝します．}
+
+% 参考文献
+\begin{thebibliography}{9}
+\bibitem{FDPS}
+M. {Iwasawa},  A.  {Tanikawa}, N.  {Hosono}, K. {Nitadori},
+T. {Muranushi}, and J. {Makino},
+\textit{Publ. Astron. Soc. J.}, {\bf 68}, 54 (2016).
+\end{thebibliography}
+
+%------------------------------------------------------------------------
+% 原稿ここまで
+%------------------------------------------------------------------------
+
+% 著者紹介出力
+\profile
+
+
+\end{document}
+

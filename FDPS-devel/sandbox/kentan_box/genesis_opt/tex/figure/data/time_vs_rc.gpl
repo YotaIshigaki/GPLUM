@@ -1,0 +1,9 @@
+set term post enh color eps 24
+
+set yrange [0:]
+
+set xlabel "r_c"
+set ylabel "Elapsed time / msec
+
+set output "time_vs_rc.eps"
+p "time_vs_rc.dat" u 1:($2*1000) w lp not

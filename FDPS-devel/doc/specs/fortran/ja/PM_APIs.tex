@@ -1,0 +1,415 @@
+本節では、FDPS 拡張機能 Particle Mesh を使用するためのAPIを記述する。FDPS 本体において、Particle Mesh 計算に必要なデータはParticleMeshオブジェクト(以後、単に\textbf{PM}オブジェクト)で管理される。他のオブジェクトと同様、Fortran/C言語 インターフェースでは、PMオブジェクトを識別番号で管理する。
+
+PMオブジェクトを操作する全APIの名称の一覧を以下に示す:
+\begin{screen}
+\begin{spverbatim}
+(fdps_)create_pm
+(fdps_)delete_pm
+(fdps_)get_pm_mesh_num
+(fdps_)get_pm_cutoff_radius
+(fdps_)set_dinfo_of_pm
+(fdps_)set_psys_of_pm
+(fdps_)get_pm_force
+(fdps_)get_pm_potential
+(fdps_)calc_pm_force_only
+(fdps_)calc_pm_force_all_and_write_back
+\end{spverbatim}  
+\end{screen}
+
+以下、順に、各APIの仕様を記述していく。
+\clearpage
+
+
+%=============================================================
+% API名::create_pm()
+\subsection{create\_pm}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%create_pm(pm_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_create_pm(int *pm_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入出力 & PMオブジェクトの識別番号を受け取るための変数。{\setnoko\uc{C言語では変数のアドレスを引数に指定する必要があることに注意}}。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+メモリ上に、Particle Mesh 計算で使用されるPMオブジェクトを生成し、そのオブジェクトの識別番号を返す。
+\clearpage
+
+%=============================================================
+% API名::delete_pm()
+\subsection{delete\_pm}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%delete_pm(pm_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_delete_pm(const int pm_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+メモリ上から、識別番号\texttt{pm\_num}のPMオブジェクトを削除する。
+\clearpage
+
+%=============================================================
+% API名::get_pm_mesh_num()
+\subsection{get\_pm\_mesh\_num}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+integer(kind=c_int) fdps_ctrl%get_pm_mesh_num()
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+int fdps_get_pm_mesh_num();
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+なし。
+
+\subsubsection*{返り値}
+Particle Mesh 計算で使用されるメッシュの1次元方向当たりのメッシュ数。integer(kind=c\_int)型。
+
+\subsubsection*{機能}
+Particle Mesh 計算に使用されるメッシュの1次元方向あたりのメッシュ数を返す。
+\clearpage
+
+%=============================================================
+% API名::get_pm_cutoff_radius()
+\subsection{get\_pm\_cutoff\_radius}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+real(kind=c_double) fdps_ctrl%get_pm_cutoff_radius()
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+double fdps_get_pm_cutoff_radius();
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+なし。
+
+\subsubsection*{返り値}
+Particle Mesh 計算に使用されるカットオフ半径。カットオフ半径はメッシュの格子間隔で規格化されている。real(kind=c\_double)型。
+
+\subsubsection*{機能}
+Particle Mesh 計算で使われるカットオッフ半径を、メッシュ間隔で規格化された値として返す。
+\clearpage
+
+%=============================================================
+% API名::set_dinfo_of_pm()
+\subsection{set\_dinfo\_of\_pm}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_dinfo_of_pm(pm_num,dinfo_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_dinfo_of_pm(const int pm_num,
+                          const int dinfo_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\texttt{dinfo\_num} & integer(kind=c\_int) & 入力 & Particle Mesh 計算の対象となる粒子群オブジェクトに関連した領域情報オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+識別番号 \texttt{pm\_num} を持つPMオブジェクトに、領域情報オブジェクトの識別番号をセットする。ここでセットされる領域情報オブジェクトは、FDPSが領域情報を取得するのに使用される。そのため、Particle Mesh 計算の対象となる粒子群オブジェクトと関連付けられたものである必要がある。
+\clearpage
+
+%=============================================================
+% API名::set_psys_of_pm()
+\subsection{set\_psys\_of\_pm}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_psys_of_pm(pm_num,psys_num,clear)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_psys_of_pm(const int pm_num,
+                         const int psys_num,
+                         const _Bool clear);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & Particle Mesh 計算の対象となる粒子群オブジェクトの識別番号。\\
+\texttt{clear} & logical(kind=c\_bool) & 入力 & これまで読込んだ粒子情報をクリアするかどうか決定するフラグ。\texttt{.true.}ならばクリアする。Fortranの場合、引数は省略可能で、省略された場合、デフォルト値 \texttt{.true.}が使用される。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+識別番号 \texttt{pm\_num} を持つPMオブジェクトに、粒子群オブジェクトの識別番号をセットする。ここでセットされる粒子群オブジェクトの粒子情報を使って、FDPSは Particle Mesh 計算を行うことになる。
+\clearpage
+
+%=============================================================
+% API名::get_pm_force()
+\subsection{get\_pm\_force}
+
+% プライベート関数リスト
+%   get_pm_force_a32
+%   get_pm_force_a64
+%   get_pm_force_v32
+%   get_pm_force_v64
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_pm_force(pm_num,pos,f)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_get_pm_force(const int pm_num,
+                       const fdps_f32vec *pos,
+                       fdps_f32vec *force);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cp{7cm}cX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\texttt{pos} & Fortranの場合、以下のいずれか: & 入力 & \multirow{6}{\hsize}{メッシュからの力の計算に使用する位置座標。{\setnoko\uc{C言語の場合、引数に変数のアドレスを指定する必要がある}}。}\\
+& real(kind=c\_float), dimension(space\_dim) &&\\
+& real(kind=c\_double), dimension(space\_dim) &&\\
+& type(fdps\_f32vec) &&\\
+& type(fdps\_f64vec) &&\\
+& C言語では \textbf{\texttt{fdps\_f32vec *}型のみ} &&\\
+\texttt{f} & \texttt{pos}と同じデータ型 & 入出力 & 位置 \texttt{pos} におけるメッシュからの力。\\
+\texttt{force} & fdps\_f32vec * & 入出力 & 位置 \texttt{pos} におけるメッシュからの力。{\setnoko\uc{引数に変数のアドレスを指定する必要がある}}。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+コンパイル時にマクロ\texttt{PARTICLE\_SIMULATOR\_TWO\_DIMENSION}が定義されている場合は\texttt{space\_dim}は2。それ以外は3である。
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+位置 \texttt{pos} でのメッシュからの力を返す。この関数はスレッドセーフである。本 API 実行前に、識別番号 \texttt{pm\_num}のPMオブジェクトを使い、後述するAPI \texttt{(fdps\_)calc\_pm\_force\_only} か \texttt{(fdps\_)calc\_pm\_force\_all\_and\_write\_back}が少なくとも1回は実行されている必要がある。
+\clearpage
+
+%=============================================================
+% API名::get_pm_potential()
+\subsection{get\_pm\_potential}
+
+% プライベート関数リスト
+%   get_pm_potential_a32
+%   get_pm_potential_a64
+%   get_pm_potential_v32
+%   get_pm_potential_v64
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_pm_potential(pm_num,pos,pot)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_get_pm_potential(const int pm_num,
+                           const fdps_f32vec *pos,
+                           fdps_f32 *pot);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cp{8cm}cX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\texttt{pos} & Fortranの場合、以下のいずれか: & 入力 & \multirow{6}{\hsize}{メッシュからのポテンシャルの計算に使用する位置座標。}\\
+& real(kind=c\_float), dimension(space\_dim) &&\\
+& real(kind=c\_double), dimension(space\_dim) &&\\
+& type(fdps\_f32vec) &&\\
+& type(fdps\_f64vec) &&\\
+& C言語では \textbf{\texttt{fdps\_f32vec *}型のみ} &&\\
+\texttt{pot} & Fortranでは real(kind=c\_float) & 入出力 & \multirow{3}{\hsize}{位置 \texttt{pos} におけるメッシュポテンシャル値。}\\
+& C言語では fdps\_f32 &&\\
+&&&\\
+\bottomrule
+\end{tabularx}
+\end{table}
+コンパイル時にマクロ\texttt{PARTICLE\_SIMULATOR\_TWO\_DIMENSION}が定義されている場合は\texttt{space\_dim}は2。それ以外は3である。
+{\setnoko\uc{C言語では引数{\texttt{pos}}と{\texttt{pot}}は、変数のアドレスである}}。
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+位置 \texttt{pos} でのメッシュポテンシャルの値を返す。この関数はスレッドセーフ である。本 API でポテンシャルの値を取得するためには、事前に、識別番号 \texttt{pm\_num}のPMオブジェクトを使い、後述するAPI \texttt{(fdps\_)calc\_pm\_force\_only} か \texttt{(fdps\_)calc\_pm\_force\_all\_and\_write\_back}が少なくとも1回は実行されている必要がある。
+\clearpage
+
+%=============================================================
+% API名::calc_pm_force_only()
+\subsection{calc\_pm\_force\_only}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%calc_pm_force_only(pm_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_calc_pm_force_only(const int pm_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+識別番号 \texttt{pm\_num}のPMオブジェクトを使い、メッシュ上の力を計算する。正しく機能するには、事前に粒子情報や領域情報がPMオブジェクトにセットされている必要がある。
+\clearpage
+
+%=============================================================
+% API名::calc_pm_force_all_and_write_back()
+\subsection{calc\_pm\_force\_all\_and\_write\_back}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%calc_pm_force_all_and_write_back(pm_num,   &
+                                                      psys_num, &
+                                                      dinfo_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_calc_pm_force_all_and_write_back(const int pm_num,
+                                           const int psys_num,
+                                           const int dinfo_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{pm\_num} & integer(kind=c\_int) & 入力 & PMオブジェクトの識別番号。\\
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & Particle Mesh 計算に使用する粒子群オブジェクトの識別番号。\\
+\texttt{dinfo\_num} & integer(kind=c\_int) & 入力 & Particle Mesh 計算に使用する領域情報オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+指定された識別番号を持つ粒子群オブジェクト, 領域情報オブジェクト, PMオブジェクトを使って、メッシュ上のポテンシャルおよび力を計算した上で、\uline{力のみ}を粒子群オブジェクトに書き戻す。
+\clearpage
+

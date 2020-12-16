@@ -1,0 +1,84 @@
+
+In this paper, we present the basic idea, implementation, measured
+performance and performance model of FDPS, a framework for developing
+efficient parallel particle-based simulation codes.  FDPS provides all
+of these necessary functions for the parallel execution of
+particle-based simulations. By using FDPS, researchers can easily
+develop their programs which run on large-scale parallel
+supercomputers. For example, a simple gravitational $N$-body program
+can be written in around 120 lines.
+
+We implemented three astrophysical applications using FDPS and
+measured their performances. All applications showed good performance
+and scalability. In the case of the disk galaxy simulation, the
+achieved efficiency is around 50\% of the theoretical peak, for the
+cosmological simulation 7\%, and for the giant impact simulation 40\%.
+
+We constructed the performance model of FDPS and analyzed the
+performance of applications using FDPS. We found that the performance
+for small number of particles would be limited by the time for the
+calculation necessary for the domain decomposition and communication
+necessary for the interaction calculation. 
+
+
+
+%%% original PASJ submission version
+%We have developed a framework for large-scale parallel particle-based
+%simulations, FDPS.  Users of FDPS need not care about complex
+%implementations of domain decomposition, exchange of particles,
+%communication of data for the interaction calculation, or optimization
+%for multi-core processors.  Using FDPS, particle simulation codes
+%which achieve high performance and high scalability on massively
+%parallel distributed-memory machines can be easily developed for a
+%variety of problems.  As we have shown in
+%section~\ref{sec:samplecode}, a parallel $N$-body simulation code can
+%be written in less than 120 lines.  Example implementations of
+%gravitational $N$-body simulation and SPH simulation showed excellent
+%scalability and performance. We hope FDPS will help researchers to
+%concentrate on their research, by removing the burden of complex code
+%development for parallization and architecture-dependent tuning.
+%%%%%%%%%%%%%%
+
+
+%In this paper, we report the performance of applications developed
+%using our framework for particle-based simulations, FDPS. We have
+%demonstrated that, by using FDPS, multiple applications achieve very
+%good scalability without the need for spending years of time in code
+%development. We believe our approach will be quite useful for those
+%who want to develop high-performance application code for
+%particle-based simulations in many different fields.
+
+%Not only good scalability, but also the high absolute performance can
+%be achieved for applications developed with FDPS, because the design
+%concept of FDPS to provide highly efficient implementation for the
+%parallelization part, such as domain decomposition, particle exchange
+%and exchange of information necessary to calculate interaction. It is
+%still necessary for application developers to provide highly optimized
+%functions for interaction calculation. However, compared to all the
+%works necessary to develop,  debug and tune large-scale parallel
+%applications, this part is much 
+%easier, in particular because development and test can be done on
+%single-processor machines.
+
+%We demonstrated that applications with very high performance can be
+%developed by using FDPS. In the case of gravitational $N$-body
+%problem, the achieved efficiency is around 50\% of the theoretical
+%peak, and for SPH 10\%. These numbers are comparable or better than the
+%best numbers in the literature.
+
+%Thus, we believe that it is not unfair to say that FDPS offers the
+%researchers and/or programmers  a new and easy way to
+%develop large-scale particle-based simulation programs. We believe
+%similar approach can be applied to other types of large-scale
+%simulations, such as those based on regular or irregular grids.
+
+
+%In this paper, we report the concept, implementation, and performance
+%of FDPS. We found that useres can develop the particle-based
+%simulation code easily.
+
+
+
+
+
+

@@ -1,0 +1,135 @@
+# (i) FDPS setting
+FDPS_ROOT = ../../../../../../../
+INC = -I$(FDPS_ROOT)/src
+LIBS =
+
+# (ii) Simulation code setting
+CODE_ROOT = ../../
+INC += -I$(CODE_ROOT)
+
+# (ii) ASRCH setting
+ASRCH_ROOT=../../asrch/src
+INC += -I$(ASRCH_ROOT)
+LIBS += -L$(ASRCH_ROOT) -lASRCH
+
+# (iii) CELib setting
+CELIB_ROOT=../../celib/src
+INC += -I$(CELIB_ROOT)
+LIBS += -L$(CELIB_ROOT) -lCELib
+
+# (iv) DISLIN setting
+DISLIN_ROOT = /home/namekata/dislin
+INC += -I$(DISLIN_ROOT)
+LIBS += $(DISLIN_ROOT)/libdiscpp.so -lm
+
+# (v) Compiler, compile options, etc.
+CXX=time -p icpc
+#CXX=time -p mpiicpc
+#CXXFLAGS = -std=c++11 -O0 -ftrapuv -debug all -g
+CXXFLAGS = -std=c++11 -O3 -ipo -xCORE-AVX512 -no-prec-div
+#### [Important] ####
+#  The following options may be needed to keep
+#  the reproducibility of the run.
+#  Adding the options may cause a drop in performance,
+#  but is useful when debugging the code.
+#  (for details, see ./doc/Under_What_Conditions*.pdf)
+CXXFLASG += -qno-opt-dynamic-align
+CXXFLAGS += -fimf-use-svml 
+CXXFLAGS += -fp-model consistent
+#####################
+#CXXFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -qopenmp
+#CXXFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+
+# Simulation control macros 
+#---------------------------------
+# (a) Macros for SPH
+#---------------------------------
+CXXFLAGS += -DUSE_ENTROPY
+CXXFLAGS += -DUSE_BALSARA_SWITCH
+#CXXFLAGS += -DUSE_PRESCR_OF_THOMAS_COUCHMAN_1992
+#CXXFLAGS += -DISOTHERMAL_EOS
+
+# Macros for density calculation
+#CXXFLAGS += -DSET_LIMIT_TO_ITERATION_IN_CALC_DENSITY
+#CXXFLAGS += -DUSE_NEWTON_METHOD_FROM_THE_BEGINNING
+#CXXFLAGS += -DPRINT_DEBUG_INFO_IN_CALC_DENSITY
+
+#---------------------------------
+# (b) Macros for I/O
+#---------------------------------
+#CXXFLAGS += -DREAD_DATA_WITH_BYTESWAP
+
+#---------------------------------
+# (c) Macros for cooling/heating
+#---------------------------------
+CXXFLAGS += -DENABLE_COOLING_HEATING
+CXXFLAGS += -DENABLE_FUV_HEATING
+CXXFLAGS += -DASRCH_OLD_API
+
+#---------------------------------
+# (d) Macros for star formation 
+#---------------------------------
+CXXFLAGS += -DENABLE_STAR_FORMATION
+CXXFLAGS += -DENABLE_SF_CHECK
+
+#---------------------------------
+# (e) Macros for stellar feedback
+#---------------------------------
+CXXFLAGS += -DENABLE_STELLAR_FEEDBACK
+CXXFLAGS += -DENABLE_FB_CHECK
+
+# (vi) Job submission variables
+QSUB = pjsub
+JOB_FILE_NAME = job.hokusai-bw.sh
+WORKDIR = ./work-hokusai-bw
+
+# (vii) Executable
+SRC_SCODE = $(CODE_ROOT)/mathematical_constants.cpp \
+	    $(CODE_ROOT)/physical_constants.cpp \
+	    $(CODE_ROOT)/debug_utilities.cpp \
+	    $(CODE_ROOT)/SPH_kernel.cpp \
+	    $(CODE_ROOT)/user_defined.cpp \
+	    $(CODE_ROOT)/run_parameters.cpp \
+	    $(CODE_ROOT)/io.cpp \
+            $(CODE_ROOT)/hydrodynamics.cpp \
+	    $(CODE_ROOT)/leapfrog.cpp  \
+	    $(CODE_ROOT)/timestep.cpp \
+            $(CODE_ROOT)/cooling_heating.cpp \
+	    $(CODE_ROOT)/star_formation.cpp \
+	    $(CODE_ROOT)/stellar_feedback.cpp
+HDR_SCODE = $(CODE_ROOT)/macro_defs.h \
+	    $(SRC_SCODE:cpp=h) 
+OBJ_SCODE = $(notdir $(SRC_SCODE:cpp=o))
+
+SRC_ACODE = main.cpp 
+HDR_ACODE =
+OBJ_ACODE = $(SRC_ACODE:cpp=o)
+
+SRC = $(SRC_SCODE) $(SRC_ACODE)
+HDR = $(HDR_SCODE) $(HDR_ACODE)
+OBJ = $(OBJ_SCODE) $(OBJ_ACODE)
+
+PROGRAM = a.out
+
+.PHONY:	clean all
+
+all: $(OBJ) $(HDR)
+	$(CXX) $(CXXFLAGS) $(OBJ) -o $(PROGRAM) $(INC) $(LIBS) 
+	#mkdir -p $(WORKDIR)
+	#mv $(PROGRAM) $(WORKDIR)
+	#cp $(JOB_FILE_NAME) $(WORKDIR)
+	#cd $(WORKDIR); $(QSUB) $(JOB_FILE_NAME) 
+
+%.o: $(CODE_ROOT)/%.cpp $(HDR)
+	$(CXX) -c $< $(CXXFLAGS) $(INC)
+
+main.o: main.cpp $(HDR)
+	$(CXX) -c $< $(CXXFLAGS) $(INC)
+
+clean:
+	rm -f $(OBJ)
+
+distclean: clean
+	rm -f $(PROGRAM)
+	rm -f *.ps *.met
+

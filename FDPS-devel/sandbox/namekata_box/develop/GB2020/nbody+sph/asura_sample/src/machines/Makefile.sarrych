@@ -1,0 +1,25 @@
+#
+# Makefile for amanogawa smp machines.
+#
+
+CC = ccache mpicc
+#CC = mpicc
+
+OPTIMIZE = -std=c99
+OPTIMIZE += -O3 -finline-functions -ffast-math -funroll-loops -frerun-cse-after-loop -fexpensive-optimizations -fomit-frame-pointer -mfpmath=sse -fprefetch-loop-arrays
+OPTIMIZE += -Winline -Wundef -Wmissing-noreturn -Wstrict-prototypes 
+#OPTIMIZE += -pg 
+OPTIMIZE += -g 
+
+GRAPE="PHANTOM_GRAPE_SPAURH"
+INCLUDEPATH += -I/usr/include/gsl/include
+#INCLUDEPATH += -I/home/takayuki/lib/yoshikawa_phantom
+INCLUDEPATH += -I/home/takayuki/lib/saitoh_phantom
+INCLUDEPATH += -I/home/takayuki/lib/CloudyCooling
+INCLUDEPATH += -I/home/takayuki/lib/CELib
+OPTIONS += -DHAVE_PHANTOM_GRAPE
+LDFLAGS += -L/usr/lib64 -lgsl -lgslcblas
+#LDFLAGS += -L/home/takayuki/lib/yoshikawa_phantom -lpg5pot
+LDFLAGS += -L/home/takayuki/lib/saitoh_phantom -lpg5pot
+LDFLAGS += -L/home/takayuki/lib/CloudyCooling -lCloudyCooling
+LDFLAGS += -L/home/takayuki/lib/CELib -lCELib

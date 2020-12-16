@@ -1,0 +1,44 @@
+set term post eps color enhanced 20
+
+set style line  1 linetype 1 linewidth 4 pointtype  6 pointsize 3 linecolor 7
+set style line  2 linetype 2 linewidth 4 pointtype  4 pointsize 3 linecolor 1
+set style line  3 linetype 3 linewidth 4 pointtype  8 pointsize 3 linecolor 2
+set style line  4 linetype 4 linewidth 4 pointtype 10 pointsize 3 linecolor 3
+set style line  5 linetype 5 linewidth 4 pointtype 12 pointsize 3 linecolor 4
+#set style line  6 linetype 6 linewidth 4 pointtype 14 pointsize 3 linecolor 5
+
+#set style line  7 linetype 7 linewidth 4 pointtype  7 pointsize 3 linecolor 6
+set style line  7 linetype 7 linewidth 4 pointtype  7 pointsize 3 linecolor 5
+set style line  8 linetype 8 linewidth 4 pointtype  5 pointsize 3 linecolor 8
+set style line  9 linetype 9 linewidth 4 pointtype  9 pointsize 3 linecolor 9
+
+set output "wtime_ngrp_th0.5.eps"
+
+set log x
+set log y
+set grid
+set key right top
+set xlabel "<n_{i}>"
+set ylabel "wall clock time[s]"
+set format x "10^{%L}"
+set format y "10^{%L}"
+set xrange [10:3e4]
+set yrange [0.07:3]
+pl "../data/reduction/data_cpu_th0.5.dat" u 2:3 ti "C1" w lp ls 7, \
+"../data/reduction/data_gpu_mw_th0.5.dat" u 2:3 ti "G1" w lp ls 8, \
+"../data/reduction/data_gpu_mw_id_reuse_th0.5_nr1.dat" u 2:3 ti "G2" w lp ls 9, \
+"../data/reduction/data_gpu_mw_id_reuse_th0.5_nr2.dat" u 2:3 ti "G3, n_{reuse}=2" w lp ls 1, \
+"../data/reduction/data_gpu_mw_id_reuse_th0.5_nr4.dat"  u 2:3 ti "G3, n_{reuse}=4"  w lp ls 2, \
+"../data/reduction/data_gpu_mw_id_reuse_th0.5_nr16.dat" u 2:3 ti "G3, n_{reuse}=16"  w lp ls 3, \
+"../data/reduction/data_gpu_mw_id_reuse_th0.5_reuse.dat" u 2:3 ti "G3, reusing step only"  w lp ls 5
+
+
+
+#pl "../data/reduction/data_gpu_mw_id_reuse_th0.5_nr2.dat" u 2:3 ti "G3, n_{reuse}=2" w lp ls 1, \
+#"../data/reduction/data_gpu_mw_id_reuse_th0.5_nr4.dat"  u 2:3 ti "G3, n_{reuse}=4"  w lp ls 2, \
+#"../data/reduction/data_gpu_mw_id_reuse_th0.5_nr16.dat" u 2:3 ti "G3, n_{reuse}=16"  w lp ls 3, \
+#"../data/reduction/data_gpu_mw_id_reuse_th0.5_reuse.dat" u 2:3 ti "G3, reusing step only"  w lp ls 4, \
+#"../data/reduction/data_cpu_th0.5.dat" u 2:3 ti "C1" w lp ls 7, \
+#"../data/reduction/data_gpu_mw_th0.5.dat" u 2:3 ti "G1" w lp ls 8
+
+

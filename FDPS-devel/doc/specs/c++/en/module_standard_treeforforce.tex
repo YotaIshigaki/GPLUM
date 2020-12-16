@@ -1,0 +1,1846 @@
+This section describes {\tt TreeForForce} class. This class is a
+module to calculate interactions between particles.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Creation of Object}
+
+This class is declared below.
+
+\begin{lstlisting}[caption=TreeForForce0]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce;
+}
+\end{lstlisting}
+
+The types of template arguments are {\tt PS::SEARCH\_MODE class} (user selected), {\tt Force} class (user defined), {\tt EssentialParticleI} class (user defined), {\tt EssentialParticleJ} class (user defined), {\tt Moment} class for local tree (user defined), {\tt Moment} class for global tree (user defined) and {\tt SuperParticleJ} class (user defined).
+
+Depending on {\tt PS::SEARCH\_MODE}, the wrapper classes to reduce the template arguments are available. Using these wrapper classes is highly recommended.
+
+The following sections describe how to create objects by using the wrappers.
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_LONG}
+\label{sec:module_treeforce_standard_search_mode_long}
+
+This section describes the wrapper class for {\tt PS::SEARCH\_MODE\_LONG}.
+
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_LONG} class.  Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj, TMom, TSpj>::Normal system;
+\end{verbatim}
+\end{screen}
+
+The template arguments are {\tt Force} class, {\tt EssentailParticleI} class, {\tt EssentailParticleJ} class, {\tt Moment} class for both local and global trees and {\tt SuperParticleJ} class. FDPS prepare some useful classes of the Moment and the SPJ (see section \ref{sec:moment}, \ref{sec:superparticlej}). Users can use them.
+
+More specialized wrappers are also prepared for some cases.
+
+The next wrapper is for the case that the multipole expansion is up to the monopole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::Monopole system;
+\end{verbatim}
+\end{screen}
+
+The next wrapper is for the case that the multipole expansion is up to the quadrupole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::Quadrupole system;
+\end{verbatim}
+\end{screen}
+
+The next wrapper is for the case that the multipole expansion is up to the monopole and the expansion center is the geometric center of particles (not charge-weighted).
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::MonopoleGeometricCenter system;
+\end{verbatim}
+\end{screen}
+
+The next wrapper is for the case that the multipole expansion is up to the dipole and the expansion center is the geometric center of particles (not charge-weighted).
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::DipoleGeometricCenter system;
+\end{verbatim}
+\end{screen}
+
+The next wrapper is for the case that the multipole expansion is up to the quadrupole and the expansion center is the geometric center of particles (not charge-weighted).
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::QuadrupoleGeometricCenter system;
+\end{verbatim}
+\end{screen}
+
+Moment and SuperParticleJ classes used in each wrapper are as follows (Listed in the same order as that of the wrappers above).
+\begin{itemize}[itemsep=-1ex]
+\item \texttt{PS::MomentMonopole} and \texttt{PS::SPJMonopole} (see \S~\ref{sec:MomentMonopole}, and \S~\ref{sec:SPJMonopole})
+\item \texttt{PS::MomentQuadrupole} and \texttt{PS::SPJQuadrupole} (see \S~\ref{sec:MomentQuadrupole} and \S~\ref{sec:SPJQuadrupole})
+\item \texttt{PS::MomentMonopoleGeometricCenter} and \texttt{PS::SPJMonopoleGeometricCenter} (see \S~\ref{sec:MomentMonopoleGeometricCenter} and \S~\ref{sec:SPJMonopoleGeometricCenter})
+\item \texttt{PS::MomentDipoleGeometricCenter} and \texttt{PS::SPJDipoleGeometricCenter} (see \S~\ref{sec:MomentDipoleGeometricCenter} and \S~\ref{sec:SPJDipoleGeometricCenter})
+\item \texttt{PS::MomentQuadrupoleGeometricCenter} and \texttt{PS::SPJQuadrupoleGeometricCenter} (see \S~\ref{sec:MomentQuadrupoleGeometricCenter} and \S~\ref{sec:SPJQuadrupoleGeometricCenter})
+\end{itemize}
+
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_LONG\_SCATTER}
+
+This section describes the wrapper class for PS::SEARCH\_MODE\_LONG\_SCATTER.
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_LONG\_SCATTER} class.  Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj, TMom, TSpj>::WithScatterSearch system;
+\end{verbatim}
+\end{screen}
+
+The template arguments are {\tt Force} class, {\tt EssentialParticleI} class, {\tt EssentialParticleJ} class, {\tt Moment} class for both local and global trees and {\tt SuperParticleJ} class. FDPS prepare some useful classes of {\tt Moment} and {\tt SuperParticleJ} (see section \ref{sec:moment}, \ref{sec:superparticlej}). Users can use them.
+
+More specialized wrappers are also prepared for some cases.
+
+The next wrapper is for the case that the multipole expansion is up to the monopole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::MonopoleWithScatterSearch system;
+\end{verbatim}
+\end{screen}
+
+In this wrapper, \texttt{PS::MomentMonopoleScatter} and \texttt{PS::SPJMonopoleScatter} (see \S~\ref{sec:MomentMonopoleScatter} and \S~\ref{sec:SPJMonopoleScatter}) are used for Moment and SuperParticleJ classes, respectively.
+
+
+The next wrapper is for the case that the multipole expansion is up to the quadrupole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::QuadrupoleWithScatterSearch system;
+\end{verbatim}
+\end{screen}
+
+In this wrapper, \texttt{PS::MomentQuadrupoleScatter} and \texttt{PS::SPJQuadrupoleScatter} (see \S~\ref{sec:MomentQuadrupoleScatter} and \S~\ref{sec:SPJQuadrupoleScatter}) are used for Moment and SuperParticleJ classes, respectively.
+
+The template arguments are the same as those for \texttt{PS::SEARCH\_MODE\_LONG}. 
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_LONG\_SYMMETRY}
+
+This section describes the wrapper class for PS::SEARCH\_MODE\_LONG\_SYMMETRY.
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_LONG\_SYMMETRY} class.  Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj, TMom, TSpj>::WithSymmetrySearch system;
+\end{verbatim}
+\end{screen}
+
+The template arguments are {\tt Force} class, {\tt EssentialParticleI} class, {\tt EssentialParticleJ} class, {\tt Moment} class for both local and global trees and {\tt SuperParticleJ} class. FDPS prepare some useful classes of {\tt Moment} and {\tt SuperParticleJ} (see section \ref{sec:moment}, \ref{sec:superparticlej}). Users can use them.
+
+More specialized wrappers are also prepared for some cases.
+
+The next wrapper is for the case that the multipole expansion is up to the monopole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::MonopoleWithSymmetrySearch system;
+\end{verbatim}
+\end{screen}
+
+In this wrapper, \texttt{PS::MomentMonopoleSymmetry} and \texttt{PS::SPJMonopoleSymmetry} (see \S~\ref{sec:MomentMonopoleSymmetry} and \S~\ref{sec:SPJMonopoleSymmetry}) are used for Moment and SuperParticleJ classes, respectively.
+
+
+The next wrapper is for the case that the multipole expansion is up to the quadrupole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::QuadrupoleWithSymmetrySearch system;
+\end{verbatim}
+\end{screen}
+
+In this wrapper, \texttt{PS::MomentQuadrupoleSymmetry} and \texttt{PS::SPJQuadrupoleSymmetry} (see \S~\ref{sec:MomentQuadrupoleSymmetry} and \S~\ref{sec:SPJQuadrupoleSymmetry}) are used for Moment and SuperParticleJ classes, respectively.
+
+
+The template arguments are the same as those for \texttt{PS::SEARCH\_MODE\_LONG}. 
+
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+
+This section describes the wrapper class for PS::SEARCH\_MODE\_LONG\_CUTOFF.
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_LONG\_CUTOFF} class. Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj, TMom, TSpj>::WithCutoff system;
+\end{verbatim}
+\end{screen}
+
+The template arguments are {\tt Force} class, {\tt EssentialParticleI} class, {\tt EssentialParticleJ} class, {\tt Moment} class for both local and global trees and {\tt SuperParticleJ} class. FDPS prepare some useful classes of {\tt Moment} and {\tt SuperParticleJ} (see section \ref{sec:moment}, \ref{sec:superparticlej}). Users can use them.
+
+There is the more specialized wrapper for the case that the multipole expansion is up to the monopole and the expansion center is the barycenter of particles.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong
+    <TResult, TEpi, TEpj>::MonopoleWithCutoff system;
+\end{verbatim}
+\end{screen}
+
+In this wrapper, \texttt{PS::MomentMonopoleCutoff} and \texttt{PS::SPJMonopoleCutoff} (see \S~\ref{sec:MomentMonopoleCutoff} and \S~\ref{sec:SPJMonopoleCutoff}) are used for Moment and SuperParticleJ classes, respectively.
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_GATHER}
+
+This wrapper is for the gather mode search. The template arguments are {\tt Force} class, {\tt EssentialParticleI} class and {\tt EssentialParticleJ} class.
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_GATHER} class.  Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceShort<TResult, TEpi, TEpj>::Gather system;
+\end{verbatim}
+\end{screen}
+
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_SCATTER}
+
+This wrapper is for the scatter mode search. The template arguments are {\tt Force} class, {\tt EssentialParticleI} class and {\tt EssentialParticleJ} class.
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_SCATTER} class.  Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceShort<TResult, TEpi, TEpj>::Scatter system;
+\end{verbatim}
+\end{screen}
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_SYMMETRY}
+
+This wrapper is for the symmetry mode search.  The template arguments are {\tt Force} class, {\tt EssentialParticleI} class and {\tt EssentialParticleJ} class.
+
+Next example shows how to create an object of {\tt PS::SEARCH\_MODE\_SYMMETRY} class.  Here, the object is named {\tt system}.
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceShort<TResult, TEpi, TEpj>::Symmetry system;
+\end{verbatim}
+\end{screen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{API}
+
+This module has APIs for initial setup, calculation of interaction and searching neighbors. The following subsections describe them.
+
+Next examples are declarations of member functions of the TreeForForce class.
+
+\begin{screen}
+\begin{verbatim}
+template <class TSearchMode,
+          class TResult,
+          class TEpi,
+          class TEpj,
+          class TMomLocal,
+          class TMomGlobal,
+          class TSpj>
+void PS::TreeForForce<TSearchMode,
+                      TEpi,
+                      TEpj,
+                      TMomLocal,
+                      TMomGlobal,
+                      TSpj>::MemberFunction1();
+
+template <class TSearchMode,
+          class TResult,
+          class TEpi,
+          class TEpj,
+          class TMomLocal,
+          class TMomGlobal,
+          class TSpj>
+template <class TTT>
+void PS::TreeForForce<TSearchMode,
+                      TEpi,
+                      TEpj,
+                      TMomLocal,
+                      TMomGlobal,
+                      TSpj>::MemberFunction2(TTT arg1);
+\end{verbatim}
+\end{screen}
+
+In this section, to simplify notation, the template arguments of the
+TreeForForce class are omitted as follows.
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::MemberFunction1();
+
+template <class TTT>
+void PS::TreeForForce::MemberFunction2(TTT arg1);
+\end{verbatim}
+\end{screen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{Initial Setup}
+
+The APIs of initial setup of {\tt TreeForForce} class are declared
+below.
+
+\begin{lstlisting}[caption=TreeForForce1]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+    void TreeForForce();
+    void initialize(const U64 n_glb_tot,
+                    const F32 theta=0.7,
+                    const U32 n_leaf_limit=8,
+                    const U32 n_group_limit=64);
+    };
+}
+\end{lstlisting}
+
+\subsubsubsubsubsection{Constructor}
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::TreeForForce();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Create an object of {\tt TreeForForce} class.
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::initialize}
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::initialize
+            (const PS::U64 n_glb_tot,
+             const PS::F32 theta=0.7,
+             const PS::U32 n_leaf_limit=8,
+             const PS::U32 n_group_limit=64);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt n\_glb\_tot}: input. Type {\tt const PS::U64}. Total number of particles for all processes.
+
+{\tt theta}: input. Type {\tt const PS::F32}. Opening criterion of tree.
+
+{\tt n\_leaf\_limit}: input. Type {\tt const PS::U32}. The maximum number of particles in leaf cell.
+
+{\tt n\_group\_limit}: input. Type {\tt const PS::U32}. The maximum number of particles which share the same interactions list.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Initialize an object of {\tt PS::TreeForForce} class.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{Low Level APIs}
+
+The low-level APIs for calculating forces are declared below.
+
+\begin{lstlisting}[caption=TreeForForce1]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        template<class Tpsys>
+        void setParticleLocalTree(const Tpsys & psys,
+                                  const bool clear=true);
+        template<class Tdinfo>
+        void makeLocalTree(const Tdinfo & dinfo);
+        void makeLocalTree(const F32 l,
+                           const F32vec & c = F32vec(0.0));
+        template<class Tdinfo>
+        void makeGlobalTree(const Tdinfo & dinfo);        
+        void calcMomentGlobalTree();
+        template<class Tfunc_ep_ep>
+        void calcForce(Tfunc_ep_ep pfunc_ep_ep,
+                       const bool clear=true);  
+        template<class Tfunc_ep_ep, class Tfunc_sp_ep>
+        void calcForce(Tfunc_ep_ep pfunc_ep_ep,
+                       Tfunc_sp_ep pfunc_sp_ep,
+                       const bool clear=true);
+        Tforce getForce(const S32 i);
+    };
+}
+\end{lstlisting}
+
+\subsubsubsubsubsection{PS::TreeForForce::setParticleLocalTree}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::TreeForForce::setParticleLocalTree
+            (const Tpsys & psys,
+             const bool clear = true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt psys}: input. Type {\tt const ParticleSystem}. Object of {\tt
+ParticleSystem} class
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of
+particles, if set to {\tt true}.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Read the data of particles from {\tt psys} and write them to the
+calling object.  If {\tt clear} is {\tt true}, the data recorded are
+cleared.
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::makeLocalTree}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::TreeForForce::makeLocalTree
+            (const Tdinfo & dinfo);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt dinfo}: input. Type {\tt const DomainInfo \&}. Object of {\tt
+DomainInfo} class.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Make local tree. The root cell of the local tree is calculated by
+using {\tt dinfo}.
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::TreeForForce::makeLocalTree
+            (const PS::F32 l,
+             const PS::F32vec & c = PS::F32vec(0.0));
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt l}: input. Type {\tt const PS::F32}. Length of a side of root
+cell of local tree.
+
+{\tt c}: input. Type {\tt PS::F32vec}. Center coordinate of root cell of local tree.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Make local tree. The two arguments must be the same for all processes. Otherwise, the results can be wrong.
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::makeGlobalTree}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::TreeForForce::makeGlobalTree
+            (const Tdinfo & dinfo);        
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt dinfo}: input. Type {\tt const DomainInfo \&}. An object of {\tt DomainInfo} class.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Make global tree.
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcMomentGlobalTree}
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::calcMomentGlobalTree();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate moments of cells of global tree.
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcForce}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep>
+void PS::TreeForForce::calcForce
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are const {\tt EssentialParticleI *} type, {\tt const PS::S32} type, {\tt const EssentailParticleJ *} type, {\tt const PS::S32} type and {\tt Result *} type.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of particles, if set to {\tt true}.
+
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of all particles of the calling object. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_GATHER}, {\tt PS::SEARCH\_MODE\_SCATTER} and {\tt PS::SEARCH\_MODE\_SYMMETRY}.
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep, class Tfunc_sp_ep>
+void PS::TreeForForce::calcForce
+             (Tfunc_ep_ep pfunc_ep_ep,
+              Tfunc_ep_ep pfunc_sp_ep,
+              const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type and {\tt Result} * type.
+
+{\tt pfunc\_sp\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentailParticleI *} type,
+{\tt const PS::S32} type, {\tt const SuperParticleJ *} type, {\tt
+const PS::S32} type and {\tt Result *} type.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of all particles loaded in the calling object.  This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_GATHER}, {\tt PS::SEARCH\_MODE\_SCATTER} or {\tt PS::SEARCH\_MODE\_SYMMETRY}.
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::getForce}
+
+\begin{screen}
+\begin{verbatim}
+TResult PS::TreeForForce::getForce(const PS::S32 i);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt i}: input. Type {\tt const PS::S32}. Index of array of particles.
+
+\item {\bf returned value}
+
+Type {\tt Force}. Force on the $i$-th particle.
+
+\item {\bf function}
+
+Return the force on the $i$-th particle.
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{High Level APIs}
+
+The high level APIs for interactions are declared below.
+
+\begin{lstlisting}[caption=TreeForForce1]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        template<class Tfunc_ep_ep,
+                 class Tpsys>
+        void calcForceAllAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tpsys & psys,
+                     DomainInfo & dinfo,
+                     const bool clear_force = true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys>
+        void calcForceAllAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,  
+                     Tpsys & psys,
+                     DomainInfo & dinfo,
+                     const bool clear_force=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+
+                     
+        template<class Tfunc_dispatch,
+                 class Tfunc_retrieve,
+                 class Tpsys>
+        void calcForceAllandWriteBackMultiWalk
+                    (Tfunc_dispatch pfunc_dispatch,
+                     Tfunc_retrieve pfunc_retrieve,
+                     const S32 tag_max,
+                     Tpsys & psys,
+                     DomainInfo & dinfo,
+                     const S32 n_walk_limit, 
+                     const bool clear=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false); 
+     
+        template<class Tfunc_dispatch,
+                 class Tfunc_retrieve,
+                 class Tpsys>
+        void calcForceAllandWriteBackMultiWalkIndex
+                    (Tfunc_dispatch pfunc_dispatch,
+                     Tfunc_retrieve pfunc_retrieve,
+                     const S32 tag_max,
+                     Tpsys & psys,
+                     DomainInfo & dinfo,
+                     const S32 n_walk_limit,
+                     const bool clear=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+
+        template<class Tfunc_ep_ep>
+        void calcForceAll
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tpsys & psys,
+                     DomainInfo & dinfo,
+                     const bool clear_force=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+                          
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys>
+        void calcForceAll
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,
+                     Tpsys & psys,
+                     DomainInfo & dinfo,
+                     const bool clear_force=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+
+        template<class Tfunc_ep_ep>
+        void calcForceMakeingTree
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     DomainInfo & dinfo,
+                     const bool clear_force=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep>
+        void calcForceMakingTree
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,
+                     DomainInfo & dinfo,
+                     const bool clear_force=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+
+        template<class Tfunc_ep_ep,
+                 class Tpsys>
+        void calcForceAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tpsys & psys,
+                     const bool clear=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const flag_serialize=false);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys>
+        void calcForceAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,
+                     Tpsys & psys,
+                     const bool clear=true,
+                     const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+                     const bool flag_serialize=false);
+    };
+}
+namespace PS = ParticleSimulator;
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::calcForceAllAndWriteBack}
+\label{sec:module_standard_treeforforce_calcforceallandwriteback}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAllandWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              DomainInfo & dinfo
+              const bool clear=true,
+              const PS::INTERACTION_LIST_MODE list_mode = PS::MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type and {\tt Result *} type.
+
+{\tt psys}: input and output. Type {\tt ParticleSystem \&}. Object of {\tt ParticleSystem} class.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. Object of {\tt DomainInfo} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces if set to {\tt true}.
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes particle data when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of all particles in {\tt psys} and write back these forces to {\tt psys}. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_GATHER}, \newline {\tt PS::SEARCH\_MODE\_SCATTER} and {\tt PS::SEARCH\_MODE\_SYMMETRY}.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT call \newline PS::ParticleSystem::exchangeParticle(), change order of particles or delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ (see \S~\ref{sec:EPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAllAndWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              DomainInfo & dinfo
+              const bool clear=true,
+              const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type and {\tt Result *} type.
+
+{\tt pfunc\_sp\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const SuperParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt psys}: input and output. Type {\tt ParticleSystem \&}. An object of {\tt ParticleSystem} class.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. An object of {\tt DomainInfo} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes LET data  (particles + superparticles) when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of particles in {\tt psys} and write back these forces to {\tt psys}. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_LONG} or \newline {\tt PS::SEARCH\_MODE\_LONG\_CUTOFF}.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT call \newline  PS::ParticleSystem::exchangeParticle(), change order of particles or delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ and SPJ (see \S~\ref{sec:EPJ:serialize}, \ref{sec:SPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{\footnotesize{PS::TreeForForce::calcForceAllAndWriteBackMultiWalk}}
+\label{sec:module_standard_treeforforce_calcforceallandwritebackmultiwalk}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_dispatch,
+         class Tfunc_retrieve,
+         class Tpsys>
+void PS::TreeForForce::calcForceAllAndWriteBackMultiWalk
+             (Tfunc_dispatch pfunc_dispatch,
+              Tfunc_retrieve pfunc_retrieve,
+              const PS::S32 tag_max,
+              Tpsys & psys,
+              Tdinfo & dinfo,
+              const PS::S32 n_walk_limit,
+              const bool clear=true,
+              const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+\texttt{pfunc\_dispatch:} Input. Returns void. A functor which receives the arrays of \newline \texttt{EssentialParticleI}, \texttt{EssentialParticleJ} (and \texttt{SuperParticleJ}) and dispatch the interaction calculation. When \texttt{PS::SEARCH\_MODE} is \texttt{PS::SEARCH\_MODE\_LONG} or \newline \texttt{PS::SEARCH\_MODE\_LONG\_CUTOFF}, this function should has the following form:
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32  tag,
+                       const PS::S32  nwalk,
+                       const TEpi**   iptcl,
+                       const PS::S32* ni,
+                       const TEpj**   jptcl_ep,
+                       const PS::S32  nj_ep,
+                       const TSpj**   jptcl_sp,
+                       const PS::S32* nj_sp);
+\end{verbatim}
+
+This function returns zero upon normal completion.
+
+When \texttt{PS::SEARCH\_MODE} is \texttt{PS::SEARCH\_MODE\_GATHER} or \texttt{PS::SEARCH\_MODE\_SCATTER}, or \texttt{PS::SEARCH\_MODE\_SYMMETRY},  this function should has the following form:
+
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32  tag,
+                       const PS::S32  nwalk,
+                       const TEpi**   iptcl,
+                       const PS::S32* ni,
+                       const TEpj**   jptcl_ep,
+                       const PS::S32* nj_ep);
+\end{verbatim}
+
+This function returns zero upon normal completion.
+
+
+\texttt{pfunc\_retrieve}: Input. A functor of type void. Returns the result calculated by the call to \texttt{pfunc\_dispatch}. This function should have the following form:
+
+\begin{verbatim}
+void pfunc_retrieve(const PS::S32  tag,
+                    const PS::S32  nwalk,
+                    const PS::S32* ni,
+                    TResult**      force);
+\end{verbatim}
+
+Here, \texttt{tag} connects the call to \texttt{pfunc\_dispatch()} and that to \texttt{pfunc\_retrieve()}. The result of calculation by a call to \texttt{pfunc\_dispatch} is retrieved by the call to \texttt{pfunc\_retrieve()} with the same value of \texttt{tag}.
+
+\texttt{tag\_max}: Input. Type \texttt{const PS::S32}. The maximum number of tags. Tag values between zero and \texttt{tag\_max -1} are allowed. Non-positive  value causes error. The current version ignores the value greater than unity and uses tag value of zero only.
+
+\texttt{psys}: input. Type \texttt{Tpsys \&} An object of {\tt ParticleSystem} class.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. An object of {\tt DomainInfo} class.
+
+{\tt n\_walk\_limit} :input. Type {\tt const PS::S32}  The maximum number of interaction list to be sent by a single call to dispatch/retrieve.
+
+{\tt clear}: input. Type {\tt const bool}. If true, the interaction result array is cleared before starting the calculation. Default is true.
+
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes LET data  (particles [+ superparticles]) when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+
+\item {\bf Return value}
+
+None.
+
+\item {\bf Function}
+
+Calculate all interactions between all particles in {\tt psys} and
+store the result to {\tt psys}. The multiwalk method is used for the interaction calculation. The maximum number of the interaction list is {\tt n\_walk\_limit}.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT call \newline  PS::ParticleSystem::exchangeParticle(), change order of particles or delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ and SPJ (see \S~\ref{sec:EPJ:serialize}, \ref{sec:SPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{\footnotesize{PS::TreeForForce::calcForceAllAndWriteBackMultiWalkIndex}}
+\label{sec:module_standard_treeforforce_calcforceallandwritebackmultiwalkindex}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_dispatch,
+         class Tfunc_retrieve,
+         class Tpsys>
+void PS::TreeForForce::calcForceAllAndWriteBackMultiWalkIndex
+             (Tfunc_dispatch pfunc_dispatch,
+              Tfunc_retrieve pfunc_retrieve,
+              const PS::S32 tag_max,
+              Tpsys & psys,
+              Tdinfo & dinfo,
+              const PS::S32 n_walk_limit,
+              const bool clear=true,
+              const PS::INTERACTION_LIST_MODE list_mode = PS::MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+\texttt{pfunc\_dispatch}: Input. Returns void. A functor which receives the arrays of \newline \texttt{EssentialParticleI}, \texttt{EssentialParticleJ} (and \texttt{SuperParticleJ}) and dispatch the interaction calculation. When \texttt{PS::SEARCH\_MODE} is \texttt{PS::SEARCH\_MODE\_LONG} or \newline \texttt{PS::SEARCH\_MODE\_LONG\_CUTOFF}, this function should have the following form:
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32   tag,
+                       const PS::S32   nwalk,
+                       const TEpi**    iptcl,
+                       const PS::S32*  ni,
+                       const PS::S32** id_jptcl_ep,
+                       const PS::S32*  nj_ep,
+                       const PS::S32** id_jptcl_sp,
+                       const PS::S32*  nj_sp,
+                       const TEpj*     jptcl_ep,
+                       const PS::S32   n_send_ep,
+                       const TSpj*     jptcl_sp,
+                       const PS::S32   n_send_sp,
+                       const bool send_ptcl);
+\end{verbatim}
+
+This function returns 0 upon normal completion.
+
+When \texttt{PS::SEARCH\_MODE} is \texttt{PS::SEARCH\_MODE\_GATHER},
+ \texttt{PS::SEARCH\_MODE\_SCATTER}, or \texttt{PS::SEARCH\_MODE\_SYMMETRY}, this function should have the following form:
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32   tag,
+                       const PS::S32   nwalk,
+                       const TEpi**    iptcl,
+                       const PS::S32*  ni,
+                       const PS::S32** id_jptcl_ep,
+                       const PS::S32*  nj_ep,
+                       const TEpj*     jptcl_ep,
+                       const PS::S32   n_send_ep,
+                       const bool send_ptcl);
+\end{verbatim}
+
+This function returns 0 upon normal completion.
+
+\texttt{pfunc\_retrieve}: Input. A functor of type void. This function retrieves the result calculated by the call to \texttt{pfunc\_dispatch} and should have the following form:
+
+\begin{verbatim}
+void pfunc_retrieve(const PS::S32  tag,
+                    const PS::S32  nwalk,
+                    const PS::S32* ni,
+                    TResult**      force);
+\end{verbatim}
+
+Here, \texttt{tag} connects the call to \texttt{pfunc\_dispatch()} and that to \texttt{pfunc\_retrieve()}. The result of calculation by a call to \texttt{pfunc\_dispatch} is retrieved by the call to  \texttt{pfunc\_retrieve()} with the same value of \texttt{tag},
+
+\texttt{tag\_max}: Input. Type \texttt{const PS::S32}. The maximum number of tags. Tag values between 0 and \texttt{tag\_max -1} are allowed. Non-positive value causes error. The current version ignores the value greater than unity and uses tag value of zero only.
+
+\texttt{psys}: Input. Type \texttt{Tpsys \&}. An object of \texttt{ParticleSystem} class.
+
+\texttt{dinfo}: Input. Type \texttt{Tdinfo \&}. An object of \texttt{DomainInfo} class.
+
+\texttt{n\_walk\_limit}: Input. Type \texttt{const PS::S32}. The maximum number of interaction list to be sent by a single call to dispatch/retrieve.
+
+\texttt{clear}: Input. Type \texttt{const bool}. If \texttt{true}, the interaction result array is cleared before starting the calculation. Default is \texttt{true}.
+
+\texttt{list\_mode}: Input. Type \texttt{const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of \texttt{PS::MAKE\_LIST}, \texttt{PS::MAKE\_LIST\_FOR\_REUSE}, or \texttt{PS::REUSE\_ LIST}. The action of the API is not determined for other values. If \texttt{PS::MAKE\_LIST} is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If \texttt{PS::MAKE\_LIST\_FOR\_REUSE} is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When \texttt{PS::REUSE\_LIST} is given, FDPS performs interaction calculation using the interaction lists created previously with \texttt{PS::MAKE\_ LIST\_FOR\_REUSE}. If list mode is omitted, FDPS acts as if \texttt{PS::MAKE\_LIST} is given. 
+
+\texttt{flag\_serialize}: Input. Type \texttt{const bool}. This argument determines whether the function serializes LET data (particles [+superparticles]) when LET exchange. Serialize LET if \texttt{true} is given. Default is \texttt{false}.
+
+\item {\bf returned value}
+
+None.
+
+\item {\bf function}
+
+Calculate all interactions between all particles in \texttt{psys} and store the result to \texttt{psys}. Before the calculation of interaction, FDPS sends first all EPJ and SPJ to device memory. Then FDPS makes interaction lists using the particle index on the device. Using the multiwalk method, FDPS multiple interaction lists at once. The maximum number of interaction lists that can be made at a time is \texttt{n\_walk\_limit}.
+
+By \texttt{PS::INTERACTION\_LIST\_MODE}, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT neither call \newline PS::ParticleSystem::exchangeParticle(), nor change order of particles, nor delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ (and SPJ if the interaction is long-range force)(see \S~\ref{sec:EPJ:serialize},\ref{sec:SPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::calcForceAll}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAll
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              DomainInfo & dinfo
+              const bool clear=true,
+              const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt psys}: input and output. Type {\tt ParticleSystem \&}. An object of {\tt ParticleSystem} class.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. An object of {\tt DomainInfo} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes particle data when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of particles in {\tt psys}. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_SCATTER} or {\tt PS::SEARCH\_MODE\_SYMMETRY}. This API works similar as that of {\tt PS::TreeForForce::calcForceAllAndWriteBack} without writing back forces to {\tt psys}.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT call \newline PS::ParticleSystem::exchangeParticle(), change order of particles or delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ (see \S~\ref{sec:EPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAll
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              DomainInfo & dinfo
+              const bool clear=true,
+              const INTERACTION_LIST_MODE list_mode = MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32 type}, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt pfunc\_sp\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline const {\tt SuperParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt psys}: input. Type {\tt ParticleSystem \&}. An object of {\tt ParticleSystem} class.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. An object of {\tt DomainInfo} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes LET data  (particles + superparticles) when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of particles in {\tt psys}. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_LONG} or {\tt PS::SEARCH\_MODE\_LONG\_CUTOFF}. This API works similar as that of {\tt PS::TreeForForce::calcForceAllAndWriteBack} without writing back forces to {\tt psys}.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT call \newline PS::ParticleSystem::exchangeParticle(), change order of particles or delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ and SPJ (see \S~\ref{sec:EPJ:serialize}, \ref{sec:SPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::calcForceMakingTree}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep>
+void PS::TreeForForce::calcForceMakingTree
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              DomainInfo & dinfo
+              const bool clear=true,
+              const PS::INTERACTION_LIST_MODE list_mode = PS::MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type and {\tt Result *} type.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. Object of {\tt DomainInfo} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces if set to {\tt true}.
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes particle data when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf Returned value}
+
+None.
+
+\item {\bf Function}
+
+Calculate forces of all particles that have been read into an object of TreeForForce class so far. This function can be used only if \texttt{PS::SEARCH\_MODE} is \texttt{PS::SEARCH\_MODE\_GATHER}, \newline  \texttt{PS::SEARCH\_MODE\_SCATTER}, \texttt{PS::SEARCH\_MODE\_SYMMETRY}. This function is equivalent to a function obtained by omitting both reading of particle data and writing back the result from PS::TreeForForce::calcForceAllAndWriteBack.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT neither call \newline PS::ParticleSystem::exchangeParticle(), nor change order of particles, nor delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ (see \S~\ref{sec:EPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep>
+void PS::TreeForForce::calcForceMakingTree
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              DomainInfo & dinfo
+              const bool clear=true,
+              const PS::INTERACTION_LIST_MODE list_mode = PS::MAKE_LIST,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type and {\tt Result *} type.
+
+{\tt pfunc\_sp\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const SuperParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt dinfo}: input. Type {\tt DomainInfo \&}. An object of {\tt DomainInfo} class.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+{\tt list\_mode}: input. Type {\tt const PS::INTERACTION\_LIST\_MODE}. This argument controls the behavior of the API with respect to the reuse of interaction lists. The value must be either of PS::MAKE\_LIST, PS::MAKE\_LIST\_FOR\_REUSE or PS::REUSE\_LIST. The action of the API is not determined for other values. If PS::MAKE\_LIST is given, FDPS makes interaction lists newly and performs interaction calculations using them. FDPS does not store these interaction lists. Hence, we cannot reuse these lists in the next interaction calculation (in the next call of the API). If PS::MAEK\_LIST\_FOR\_REUSE is given, FDPS makes interaction lists newly and stores them internally for future reuse. Then, FDPS performs interaction list calculation. Therefore, we can reuse the interaction lists in the next interaction calculation. When PS::REUSE\_LIST is given, FDPS performs interaction calculation using the interaction lists created previously with PS::MAEK\_LIST\_FOR\_REUSE. If list\_mode is omitted, FDPS acts as if PS::MAKE\_LIST is given.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes LET data  (particles + superparticles) when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf Returned value}
+
+None.
+
+\item {\bf Function}
+
+Calculate forces of all particles that have been read into an object of TreeForForce class. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_LONG} or \newline {\tt PS::SEARCH\_MODE\_LONG\_CUTOFF}. This function is equivalent to a function obtained by omitting both reading of particle data and writing back the result from PS::TreeForForce::calcForceAllAndWriteBack.
+
+By PS::INTERACTION\_LIST\_MODE, user program can reuse the same interaction list constructed before. During reusing the list, user program MUST NOT neither call \newline  PS::ParticleSystem::exchangeParticle(), nor change order of particles, nor delete particles.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ and SPJ (see \S~\ref{sec:EPJ:serialize}, \ref{sec:SPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::calcForceAndWriteBack}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAndWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              const bool clear=true,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are const {\tt EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt psys}: input. Type {\tt ParticleSystem \&}.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes particle data when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of particles in {\tt psys} by using the global tree created before. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_GATHER}, \newline {\tt PS::SEARCH\_MODE\_SCATTER}, or {\tt PS::SEARCH\_MODE\_SYMMETRY}. This API works similar as that of {\tt PS::TreeForForce::calcForceAllAndWriteBack} without reading particle from {\tt psys}, making the local tree, making global tree and calculate momentum.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ (see \S~\ref{sec:EPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAllAndWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              const bool clear=true,
+              const bool flag_serialize=false);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt pfunc\_ep\_ep}: input. A Functor of which a returned value is
+void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const EssentialParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt pfunc\_sp\_ep}: input. A Functor of which a returned value is void and of which arguments are {\tt const EssentialParticleI *} type, {\tt const PS::S32} type, \newline {\tt const SuperParticleJ *} type, {\tt const PS::S32} type, and {\tt Result *} type.
+
+{\tt psys}: output. Type {\tt ParticleSystem \&}.
+
+{\tt clear}: input. Type {\tt const bool}. A flag to clear the data of forces, if set to {\tt true}.
+
+\texttt{flag\_serialize}: input. Type \texttt{const bool}. This argument determines whether the function serializes LET data  (particles + superparticles) when LET exchange. Serialize LET if \texttt{true} is given. \texttt{false} in the default.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Calculate forces of particles in {\tt psys} by using the global tree created previously. This function can be used only if {\tt PS::SEARCH\_MODE} is {\tt PS::SEARCH\_MODE\_LONG} or \newline {\tt PS::SEARCH\_MODE\_LONG\_CUTOFF}. This API works similar as that of \newline {\tt PS::TreeForForce::calcForceAllAndWriteBack} without reading particle from {\tt psys}, making the local tree, making global tree and calculate momentum.
+
+When serializing LET, users must define member functions \texttt{pack} and \texttt{unPack} in EPJ and SPJ (see \S~\ref{sec:EPJ:serialize}, \ref{sec:SPJ:serialize}), set \texttt{flag\_serialize} to \texttt{true} (\textcolor{red}{This feature is not yet implemented}).
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{Neighbor List}
+\label{sec:neighborlist}
+
+%今後、追加する。
+%Not implemented yet.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{getNeighborListOneParticle}
+\begin{screen}
+\begin{verbatim}
+template<class Tptcl>
+PS::S32 PS::TreeForForce::getNeighborListOneParticle(const Tptcl & ptcl, 
+                                                     EPJ * & epj);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+{\tt ptcl}: input. Type {\tt Tptcl \&}. A particle to obtain its neighbor particles.
+
+
+{\tt epj}: output. Type {\tt EssentailParticleJ * \&}. The
+pointer to the beginning of the array of neighbor particles of
+{\tt ptcl}.
+
+\item {\bf returned value}
+
+Type {\tt PS::S32 \&}. The number of neighbor particles of {\tt ptcl}.
+
+\item {\bf function}
+
+By using the global tree of the calling object, search the neighbors of {\tt ptcl} and set the pointer to the beginning of the array of neighbors to {\tt epj} and return the number of neighbors. Note that \texttt{epj} is the pointer to the first element of the array of the particle data of type \texttt{EPJ} (not the array of pointers to particles), and points  to the internal buffer maintained by FDPS. Therefore,  users must not call {\tt free()} or {\tt delete()} to {\tt epj}. This function is thread safe. In other words, each thread has its own buffer. Since each thread has only one buffer, the content of the buffer is overwritten at each call to this function. 
+
+
+This function is available only if \texttt{PS::SEARCH\_MODE} is any one of
+\begin{itemize}[itemsep=-1ex]
+\item PS::SEARCH\_MODE\_GATHER,
+\item PS::SEARCH\_MODE\_SCATTER,
+\item PS::SEARCH\_MODE\_SYMMETRY,
+\item PS::SEARCH\_MODE\_LONG\_SCATTER,
+\item PS::SEARCH\_MODE\_LONG\_SYMMETRY,
+\item PS::SEARCH\_MODE\_LONG\_GATHER (\redtext{not implemented yet})
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF\_GATHER (\redtext{not implemented yet}),
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER (\redtext{not implemented yet}),
+\item and PS::SEARCH\_MODE\_LONG\_CUTOFF\_SYMMETRY (\redtext{not implemented yet}).
+\end{itemize}
+\texttt{ptcl} needs a member function {\tt PS::F64vec getPos()} like \texttt{FullParticle} class.
+If \texttt{PS::SEARCH\_MODE} is any one of
+\begin{itemize}[itemsep=-1ex]
+\item PS::SEARCH\_MODE\_GATHER,
+\item PS::SEARCH\_MODE\_SYMMETRY,
+\item PS::SEARCH\_MODE\_LONG\_SYMMETRY,
+\item PS::SEARCH\_MODE\_LONG\_GATHER (\redtext{not implemented yet}),
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF\_GATHER (\redtext{not implemented yet}),
+\item and PS::SEARCH\_MODE\_LONG\_CUTOFF\_SYMMETRY (\redtext{not implemented yet}),
+\end{itemize}
+\texttt{ptcl} also needs a member function \texttt{PS::F64 getRSearch()}.
+
+
+\end{itemize}
+
+%%\subsubsubsubsubsection{getNeighborListOneParticle}
+
+%%\subsubsubsubsubsection{getNeighborListOneIPGroup}
+
+%%\subsubsubsubsubsection{getNeighborListOneIPGroupEachParticle}
+
+%%\subsubsubsubsubsection{getNumberOfIPG}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{Time Measurment}
+
+The APIs for time measurment are declared below. When a member
+function is called, its execution time is set to the private member
+{\tt time\_profile\_}. Until the method \\ {\tt
+PS::TreeForForce::clearTimeProfile()} is called, execution times are
+accumulated.
+
+\begin{lstlisting}[caption=TreeForForce2]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        TimeProfile getTimeProfile();
+        void clearTimeProfile();
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getTimeProfile}
+\begin{screen}
+\begin{verbatim}
+PS::TimeProfile PS::TreeForForce::getTimeProfile();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::TimeProfile}.
+
+\item {\bf function}
+
+The execution time for creation of local tree, creation of global
+tree, evaluation of force, evaluation of momenta of local tree,
+evaluation of momenta of global tree, creation of LET and exchange LET
+are recorded appropriate members of the private member variable {\tt
+time\_profile\_}, {\tt make\_local\_tree}, {\tt make\_global\_tree\_},
+{\tt calc\_force\_}, {\tt calc\_moment\_local\_tree\_}, {\tt
+calc\_moment\_global\_tree\_}, {\tt make\_LET\_1st\_}, {\tt
+make\_LET\_2nd\_}, {\tt exchange\_LET\_1st\_} and {\tt
+exchange\_LET\_2nd\_}.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::clearTimeProfile}
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::clearTimeProfile();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+Set all member variables of {\tt time\_profile\_} to 0.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{Obtain Information}
+
+The member functions of obtaining information are declared
+below. 
+%クラス内の情報取得関連のAPIの宣言は以下のようになっている。自クラスの
+%主要なメソッドを呼び出すとそれにかかった時間をプライベートメンバの
+%time\_profile\_の該当メンバに書き込む。メソッドclearTimeProfile()を呼
+%ばない限り時間は足しあわされていく。
+
+\begin{lstlisting}[caption=TreeForForce2]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        Count_t getNumberOfInteractionEPEPLocal();
+        Count_t getNumberOfInteractionEPSPLocal();
+        Count_t getNumberOfInteractionEPEPGlobal();
+        Count_t getNumberOfInteractionEPSPGlobal();
+        void clearNumberOfInteraction();
+        S64 getMemSizeTotalUsed();
+    };
+}
+\end{lstlisting}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPEPLocal}
+\begin{screen}
+\begin{verbatim}
+PS::CountT PS::TreeForForce::getNumberOfInteractionEPEPLocal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::CountT}.
+
+\item {\bf function}
+
+Return the number of interactions between {\tt EssentialParticleI} and
+{\tt EssentialParticleJ} in the calling process.
+
+%自プロセス内で計算したEPIとEPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPEPGlobal}
+\begin{screen}
+\begin{verbatim}
+PS::CountT PS::TreeForForce::getNumberOfInteractionEPEPGlobal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::CountT}.
+
+\item {\bf function}
+
+Return the total number of interactions between {\tt
+EssentialParticleI} and {\tt EssentialParticleJ}, evaluated in all
+processes.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPSPLocal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfInteractionEPSPLocal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::CountT}.
+
+\item {\bf function}
+
+Return the number of interactions between {\tt EssentialParticleI} and
+{\tt SuperParticleJ} in the calling process.
+
+%自プロセス内で計算したEPIとSPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPSPGlobal}
+\begin{screen}
+\begin{verbatim}
+PS::S64 PS::TreeForForce::getNumberOfInteractionEPSPGlobal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::CountT}.
+
+\item {\bf function}
+
+Return the total number of interactions between {\tt
+EssentialParticleI} and SPJ, evaluated in all processes.
+
+%全プロセスで計算したEPIとSPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::clearNumberOfInteraction}
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::clearNumberOfInteraction();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+The counter for recording the number of interactions is set to 0.
+%EP-EP,EP-SPのlocal,globalの相互作用数を0クリアする。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfWalkLocal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfWalkLocal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::CountT}.
+
+\item {\bf function}
+
+Return the number of tree traverse for the calling process.
+%自プロセスでの相互作用計算時のtree walk数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfWalkGlobal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfWalkGlobal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::S64}.
+
+\item {\bf function}
+
+Return the total number of tree traverse for all processes.
+%全プロセスでの相互作用計算時のtree walk数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getMemSizeUsed}
+\begin{screen}
+\begin{verbatim}
+PS::S64 PS::TreeForForce::getMemSizeUsed();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+void.
+
+\item {\bf returned value}
+
+Type {\tt PS::S64}.
+
+\item {\bf function}
+
+Return the size of used memory of an object in the unit of byte.
+
+%対象のオブジェクトが使用しているメモリー量をByte単位で返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{Obtain EPJ from particle id}
+\label{sec:getEpjFromId}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{getEpjFromId}
+\begin{screen}
+\begin{verbatim}
+EPJ * PS::TreeForForce::getEpjFromId(const PS::S64 id)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+id: input. Type const PS::S64. Index of Particle which user program
+want to obtain (The value returned by a member function getId() of
+EPJ).
+
+\item {\bf returned value}
+
+Type EPJ*: Pointer of EPJ corresponding to id.
+
+\item {\bf function}
+
+This API is usable \textit{only when} EPJ type has a member function
+getId(). This API returns the pointer to a EPJ whose particle ID
+is \texttt{id}. If \texttt{id} is not in the list of EPJ, the API just
+returns \texttt{NULL}. The action of the API is not determined for the
+case that EPJ more than one have the same ID.  For more information of
+getId(), please see section \ref{sec:EPJ:getId}.
+
+%EPJがメンバ関数getId()を持つ場合に使用可能。引数idとgetId()で返した値
+%が同じEPJのポインタを返す。対応するEPJがない場合はNULLを返す。また、複
+%数のEPJが同じidを持つ場合結果は保証されない。getId()についてはセクショ
+%ン\ref{sec:EPJ:getId}を参照。
+
+\end{itemize}

@@ -1,0 +1,442 @@
+\def\badot{{\bf \dot a}}
+\def\batwo{{\bf a}^{(2)}}
+\def\bathree{{\bf a}^{(3)}}
+\def\bx{\mbox{\boldmath $x$}}
+\def\bk{{\bf k}}
+\def\bv{\mbox{\boldmath $v$}}
+\def\br{\mbox{\boldmath $r$}}
+\def\ba{\mbox{\boldmath $a$}}
+\def\bbf{\mbox{\boldmath $f$}}
+\def\calE{{\cal E}}
+\def\sub#1{_{\rm #1}}
+\def\sup#1{^{\rm #1}}
+
+%% \def\mum{\mu {\rm m}}
+%% \def\bx{{\bf x}}
+%% \def\bv{{\bf v}}
+%% \def\barv{{\bar{ v}}}
+%% \def\bP{{\bf P}}
+%% \def\calE{{\cal E}}
+\def\erf{{\rm erf}}
+%% \def\sub#1{_{\rm #1}}
+%% \def\sup#1{^{\rm #1}}
+
+\input ../lmak_ohp
+
+\documentclass[12pt,dvipdfmx]{article}
+\usepackage[dvips]{color}
+\usepackage[dvipdfm]{hyperref}
+\usepackage{mathabx}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{epsf}
+\usepackage{psfig}
+\usepackage{ascmac_ntt}
+%\documentstyle[12pt,psfig,epsf,eclcolor,ascmac_ntt]{article}
+%\documentstyle[12pt,epsf,eclcolor,ascmac]{article}
+\pagestyle{empty}
+
+\raggedright
+
+%set dimensions of columns, gap between columns, and space between paragraphs
+\setlength{\textheight}{12cm}
+\setlength{\columnsep}{2.0pc}
+\setlength{\textwidth}{16cm}
+%\setlength{\footheight}{0.0in}
+\setlength{\topmargin}{0.0in}
+\setlength{\headheight}{0.0in}
+\setlength{\headsep}{0.0in}
+\setlength{\oddsidemargin}{-.19in}
+\setlength{\parindent}{1pc}
+
+%I copied stuff out of art10.sty and modified them to conform to IEEE format
+
+\makeatletter
+%as Latex considers descenders in its calculation of interline spacing,
+%to get 12 point spacing for normalsize text, must set it to 10 points
+\def\@normalsize{\@setsize\normalsize{12pt}\xpt\@xpt
+\abovedisplayskip 10pt plus2pt minus5pt\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ plus3pt\belowdisplayshortskip 6pt plus3pt
+minus3pt\let\@listi\@listI} 
+
+%need an 11 pt font size for subsection and abstract headings
+\def\subsize{\@setsize\subsize{12pt}\xipt\@xipt}
+
+%make section titles bold and 12 point, 2 blank lines before, 1 after
+\def\section{\@startsection {section}{1}{\z@}{24pt plus 2pt minus 2pt}
+{12pt plus 2pt minus 2pt}{\LARGE\bf}}
+
+%make subsection titles bold and 11 point, 1 blank line before, 1 after
+\def\subsection{\@startsection {subsection}{2}{\z@}{12pt plus 2pt minus 2pt}
+{12pt plus 2pt minus 2pt}{\LARGE\bf}}
+\makeatother
+\def\black{\color{black}}
+\def\red{\color{red}}
+\def\blue{\color{blue}}
+\def\green{\color{green}}
+\def\mossgreen{\color{green}} 
+\def\purple{\color{purple}}
+\def\yellow{\color{yellow}}
+
+\input ../lmak_ohp
+
+\begin{document}
+
+\LARGE
+
+\baselineskip 32 pt
+\lineskip 10 pt
+
+%don't want date printed
+\date{}
+
+
+
+\pagehead{FDPS 講習会 (FDPS で使っている)Fortran について}
+
+
+{\large
+
+\begin{center}
+牧野淳一郎\\
+理化学研究所 計算科学研究機構\\
+コデザイン推進チーム\\
+兼 粒子系シミュレータ開発チーム\\
+(本務は神戸大学理学惑星学専攻)
+
+\leavevmode
+
+
+\end{center}
+
+}
+
+\vfill
+
+\normalsize\bf
+\hfill 2017/03/08 AICS/FOCUS 共催 FDPS 講習会 Fortran篇
+
+
+\pageheadl{概要}
+
+\begin{itemize}
+
+\item F77 ユーザーを対象に、FDPS Fortran API で使っている Fortran 2003
+のみなれない機能、文法を概説します。
+
+\item F77 は知っていること想定。
+
+\item まず質問: F77 以外に使っている言語ありますか？
+
+\end{itemize}
+
+
+\pagehead{使っている新機能一覧}
+
+大きなもの
+
+
+
+
+\begin{enumerate}
+
+\item module, use
+\item type (構造型、C++ でいう構造体とクラス)
+\item iso\_c\_binding
+
+\end{enumerate}
+
+\pagehead{使っている新機能一覧(続き)}
+
+細々したもの
+
+\begin{enumerate}
+
+\item 変数宣言、サブルーチンの引数宣言の形式、値渡し、パラメータ文の形式
+\item do ... enddo
+\item コメントの形式
+\item 比較演算子
+\end{enumerate}
+
+まだもうちょっとあったかもしれません。
+
+\pageheadl{参考書？}
+
+http://www.cutt.co.jp/book/978-4-87783-399-2.html
+
+Fortran 2008入門
+
+\begin{itemize}
+
+\item module, use とかの解説もあった。構造体も全くないわけではない
+
+\end{itemize}
+\pageheadl{module, use}
+
+モジュール宣言文法
+
+\begin{verbatim}
+module モジュール名
+    [宣言部]
+　[contains
+    モジュール副プログラム部]
+end [module [モジュール名]]
+\end{verbatim}
+
+モジュール使用文法
+
+\begin{verbatim}
+use モジュール名
+\end{verbatim}
+
+モジュールが定義されているソースファイルを先にコンパイルすると、何か中間形式のファイルができる。使っているほうのコンパイルではコンパイラがそれを参照する
+
+\pageheadl{module, use(続き)}
+
+\begin{itemize}
+
+\item 複数のプログラム単位で使う様々なものをまとめられる。
+
+\item パラメータ宣言、データ(common block の代わりになる)、ユーザー定義型、ユーザー定義の関数やサブルーチン等。
+
+\item 構造型はモジュール内で定義して、使うサブルーチンでモジュー
+ルを use するのが基本。
+\item ちなみに C/C++ には相変わらずモジュールにあたるものはない。
+
+\end{itemize}
+
+\pageheadl{module, use(簡単な例)}
+\begin{verbatim}
+module sample
+  integer n
+  parameter (n=10)
+end
+program main
+  use sample
+  write(*,*) n
+end
+\end{verbatim}
+コンパイル、実行:
+\begin{verbatim}
+% gfortran module.F90; ;./a.out
+          10
+\end{verbatim}
+
+
+\pagehead{type (derived type、構造型)}
+文法 型宣言
+\begin{verbatim}
+type student
+  character(32) name
+  integer  age
+end
+\end{verbatim}
+
+変数宣言、使用
+\begin{verbatim}
+type(student)  a
+a%name="Sato"
+a%age=18
+\end{verbatim}
+
+
+\pagehead{type (derived type、構造型)}
+
+\begin{itemize}
+
+\item いわゆる構造体。Fortran 90 からあるのでまあそろそろどうでしょうみたいな。
+
+\item FDPS では、3次元ベクトル型、ユーザーが定義する「粒子型」等を使用。
+
+\item プログラミングスタイル云々という話もあるが、キャッシュに確実に載るようにするとかにも有用。
+
+
+\end{itemize}
+
+\pagehead{type 続き(型束縛手続き)}
+
+\begin{itemize}
+
+\item いつのまにか Fortran も「オブジェクト志向」に
+
+\item 雑にいうと、ある構造型の変数を第一引数にする手続きを foo(x) の代
+わりに x\%foo と書けるというだけ。こういうのを言語によってメッセージと
+かメンバー関数とかいう。
+        
+\item 但し、同じ名前でも別の構造体のメンバー関数なら別の関数になる。演
+算子も関数にできるので、構造体同士の演算を定義できる。
+
+\item 以下では「メンバー関数(手続き)」と呼ぶことに。
+
+\end{itemize}
+
+\pageheadl{メンバー関数の文法}
+
+\large \bf
+
+\begin{minipage}[t]{7cm}
+\begin{verbatim}
+module studentmodule
+  type, public:: student
+     character(32)  name
+     integer age
+   contains
+     procedure :: print
+  end type
+contains
+  subroutine print(self)
+    class(student) self
+    write(*,*) self%age
+  end
+end
+
+\end{verbatim}
+\end{minipage}
+\begin{minipage}[t]{7cm}
+\begin{verbatim}
+program main
+  use studentmodule
+  type (student)  a
+  a%name="Sato"
+  a%age=18
+  call a%print
+end
+\end{verbatim}
+
+
+Fortran でもオブジェクト志向
+
+\medskip
+
+
+関数のオーバーロード、演算子のオーバーロードができる(ベクトル型を定義
+して、ベクトル同士の加算とかする演算子を定義できる)
+(FDPS 側で提供してます)
+
+
+
+\end{minipage}
+
+\pagehead{iso\_c\_binding}
+
+\begin{itemize}
+
+\item 処理系とか OS 依存ではなく言語定義として公式に Fortran と C の
+相互運用性を保証する仕掛け
+
+\item Fortran の側で、C側で使える変数型とか関数の宣言のしかたを用意
+
+\item 文法はなんか面倒だけど、とにかくそれに従っておけば Cから (従って
+C++からも) Fortran で宣言した構造型や関数が使える
+
+\item というわけで FDPS の Fortran API は全面的にこの仕掛けを利用
+
+
+\end{itemize}
+
+\pageheadl{iso\_c\_binding 例(FDPSの中から)}
+\begin{verbatim}
+   type, public, bind(c) :: full_particle
+      integer(kind=c_long_long) :: id
+      real(kind=c_double)  mass !$fdps charge
+      ....
+      type(fdps_f64vec) :: pos !$fdps position
+   end type full_particle
+\end{verbatim}
+\begin{itemize}
+\item {\tt bind(c) } で構造体をCからもアクセスできるように(C側では別に宣言す
+る必要あり)
+\item {\tt (kind=c\_double)} とかで、基本データ型をCとコンパチブルに
+\item ({\tt fdps\_f64vec} は FDPS で提供している倍精度3次元ベクトル型)
+\end{itemize}
+
+\pagehead{細々したこと}
+
+\begin{enumerate}
+
+\item 変数宣言、サブルーチンの引数宣言の形式、値渡し、パラメータ文の形式
+\item do ... enddo
+\item コメントの形式
+\item 比較演算子
+\end{enumerate}
+
+\pageheadl{変数宣言}
+
+古代(F77)
+\begin{verbatim}
+   real a(50)
+   real c
+   parameter (c=1.0)
+\end{verbatim}
+
+現代
+\begin{verbatim}
+   real, dimension ::a(50)
+   real, parameter :: c=1.0
+\end{verbatim}
+
+\begin{itemize}
+\item dimension, parameter の他に色々属性をつけられる。つける時には変数名の
+前に "::" を。
+\item 古代語でもコンパイラは文句いわない(他の新機能も基本的にそう)
+
+\end{itemize}
+
+\pageheadl{do ... enddo}
+
+古代(F77)
+\begin{verbatim}
+   DO 10 i=1,50
+     ...
+50 CONTUNUE   
+
+\end{verbatim}
+
+現代
+\begin{verbatim}
+   do i=1,50
+      ...
+   enddo
+\end{verbatim}
+
+\pageheadl{コメントの形式}
+
+古代(F77)
+\begin{verbatim}
+c  この行はコメントです
+   x = x + 1
+\end{verbatim}
+
+現代
+\begin{verbatim}
+!  この行はコメントです
+   x = x + 1  ! ここにもコメントかけます
+\end{verbatim}
+
+\pageheadl{比較演算子}
+
+古代(F77)
+\begin{verbatim}
+       if (a .lt. b) then
+\end{verbatim}
+
+現代
+\begin{verbatim}
+       if (a < b) then
+\end{verbatim}
+{\tt ==, /=, <, <=, >, >=} がある。
+
+\pagehead{まとめ}
+
+\begin{itemize}
+
+\item FDPS Fortran API で使っている Fortran 77 にない機能を概説した。
+
+\item module, 構造体、 iso\_c\_binding が主。
+
+
+
+\item 他にも配列演算とか便利そうな機能があるが省略。
+
+\end{itemize}
+\end{document}

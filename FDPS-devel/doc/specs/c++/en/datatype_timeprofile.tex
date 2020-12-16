@@ -1,0 +1,119 @@
+\subsubsection{Abstract}
+
+In this section, we describe data type PS::TimeProfile. This data type
+is class to store calculation time for each function, and is used for
+three classes: DomainInfo, ParticleSystem, and TreeForForce. These
+three classes have ``PS::TimeProfile getTimeProfile()''. Users get the
+calculation time of each function by using the function
+``getTimeProfile()''.
+%%本節では、PS::TimeProfile型について記述する。PS::TimeProfile型はFDPS
+%%で使われる３つのクラス、領域分割クラス、粒子群クラス、相互作用ツリー
+%%クラス、各メソッドの計算時間を格納するクラスである。これら３つのクラ
+%%スには{\tt PS::TimeProfile getTimeProfile()}というメソッドが存在し、
+%%このメソッドをつかって、ユーザーは各メソッドの計算時間を取得出来る。
+
+This class is described as follows.
+%このクラスは以下のように記述されている。
+
+\begin{lstlisting}[caption=TimeProfile]
+namespace ParticleSimulator{
+    class TimeProfile{
+    publid:
+        F64 collect_sample_particle;
+        F64 decompose_domain;
+        F64 exchange_particle;
+        F64 make_local_tree;
+        F64 make_global_tree;
+        F64 calc_force;
+        F64 calc_moment_local_tree;
+        F64 calc_moment_global_tree;
+        F64 make_LET_1st;
+        F64 make_LET_2nd;        
+        F64 exchange_LET_1st;
+        F64 exchange_LET_2nd;
+    };
+}    
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Addition}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+PS::TimeProfile PS::TimeProfile::operator + 
+               (const PS::TimeProfile & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+{rhs}: Input. Type const TimeProfile \&.
+%{rhs}: 入力。{const TimeProfile \&}型。
+
+\item{{\bf Return value}}
+
+Type PS::TimeProfile. Add the components of rhs to its own components,
+and return the results.
+%%{PS::TimeProfile}型。{rhs}のすべてのメンバ変数の値と自身のメンバ変数
+%%の値の和を取った値を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Reduction}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+PS::F64 PS::TimeProfile::getTotalTime() const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+
+\item{{\bf Return value}}
+
+  Type PS::F64. Return values of all the member variables.
+%{PS::F64}型。すべてのメンバ変数の値の和を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Initialize}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::TimeProfile::clear();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+ None.
+
+\item{{\bf Return value}}
+
+ None.
+
+\item{{\bf Feature}}
+
+ Assign 0 to all the member variables.
+%すべてのメンバ変数に0を代入する。
+
+\end{itemize}

@@ -1,0 +1,558 @@
+\texttt{PS::Vector3} has three components: \texttt{x}, \texttt{y}, and \texttt{z}. We define various APIs
+and operators for these components. In the following, we list them.
+%%PS::Vecotr3はx, y, zの3要素を持つ。これらに対する様々なAPIや演算子を
+%%定義した。それらの宣言を以下に記述する。この節ではこれらについて詳し
+%%く記述する。
+\begin{lstlisting}[caption=Vector3]
+namespace ParticleSimulator{
+    template <typename T>
+    class Vector3{
+    public:
+        // Three member variables
+        T x, y, z;
+
+        // Constructor
+        Vector3() : x(T(0)), y(T(0)), z(T(0)) {}
+        Vector3(const T _x, const T _y, const T _z) : x(_x), y(_y), z(_z) {}
+        Vector3(const T s) : x(s), y(s), z(s) {}
+        Vector3(const Vector3 & src) : x(src.x), y(src.y), z(src.z) {}
+
+        // Assignment operator
+        const Vector3 & operator = (const Vector3 & rhs);
+
+        //[] operators
+        const T & opertor[](const int i);
+        T & operator[](const int i);
+
+        // Addition and subtraction
+        Vector3 operator + (const Vector3 & rhs) const;
+        const Vector3 & operator += (const Vector3 & rhs);
+        Vector3 operator - (const Vector3 & rhs) const;
+        const Vector3 & operator -= (const Vector3 & rhs);
+
+        // Scalar multiplication
+        Vector3 operator * (const T s) const;
+        const Vector3 & operator *= (const T s);
+        friend Vector3 operator * (const T s, const Vector3 & v);
+        Vector3 operator / (const T s) const;
+        const Vector3 & operator /= (const T s);
+
+        // Inner product (scalar product)
+        T operator * (const Vector3 & rhs) const;
+
+        // Outer product (vector product).
+        Vector3 operator ^ (const Vector3 & rhs) const;
+
+        // Typecast to Vector3<U>
+        template <typename U>
+        operator Vector3<U> () const;
+    };
+}
+\end{lstlisting}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Constructor}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T>::Vector3()
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+
+\item{{\bf Feature}}
+
+Default constructor. The member variables \texttt{x}, \texttt{y} and \texttt{z} are initialized as 0.
+%デフォルトコンストラクタ。メンバx,yは0で初期化される。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T>::Vector3(const T _x, const T _y, const T _z)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{\_x}: Input. Type \texttt{const T}.
+%{\_x}: 入力。{const T}型。
+
+\texttt{\_y}: Input. Type \texttt{const T}.
+%{\_y}: 入力。{const T}型。
+
+\texttt{\_z}: Input. Type \texttt{const T}.
+%{\_z}: 入力。{const T}型。
+
+\item{{\bf Feature}}
+
+Values of members \texttt{x}, \texttt{y} and \texttt{z} are set to values of arguments \texttt{\_x}, \texttt{\_y} and \texttt{\_z}, respectively.
+%メンバ{x}、{y}をそれぞれ{\_x}、{\_y}で初期化する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T>::Vector3(const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+%{s}: 入力。{const T}型。
+
+\item{{\bf Feature}}
+
+Values of members \texttt{x}, \texttt{y} and \texttt{z} are set to the value of argument \texttt{s}.
+%メンバ{x}、{y}を両方とも{s}の値で初期化する。
+
+\end{itemize}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Copy constructor}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T>::Vector3(const PS::Vector3<T> & src)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{src}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{src}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Feature}}
+
+Copy constructor. The new variable will have the same value as \texttt{src}.
+%コピーコンストラクタ。{src}で初期化する。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Member variables}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::Vector3<T>::x;
+
+template<typename T>
+T PS::Vector3<T>::y;
+
+template<typename T>
+T PS::Vector3<T>::z;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+  
+\item{{\bf function}}
+  
+  Member variables, {x}, {y} and {z} can be directly handled.
+  
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Assignment operator}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector3<T> & PS::Vector3<T>::operator = 
+                       (const PS::Vector3<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+Type \texttt{const PS::Vector3$<$T$>$ \&}. Assigns the values of components of \texttt{rhs}
+to its components, and returns the vector itself.
+%%{const PS::Vector3$<$T$>$ \&}型。{rhs}のx,yの値を自身のメンバx,yに代
+%%入し自身の参照を返す。代入演算子。
+
+\end{itemize}
+
+
+\subsubsubsection{[] operators}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const T & PS::Vector3<T>::operator[]
+                       (const int i);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{i}: input. Type \texttt{const int}.
+
+\item{{\bf Return value}}
+
+Type \texttt{const $<$T$>$ \&}. It returns $i$th-component of the vector.
+
+\item{{\bf Remark}}
+
+This operator would be slower than the direct access of the member variables.
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T & PS::Vector3<T>::operator[]
+                       (const int i);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{i}: input. Type \texttt{const int}.
+
+\item{{\bf Return value}}
+
+Type \texttt{$<$T$>$ \&}. It returns $i$th-component of the vector.
+
+\item{{\bf Remark}}
+
+This operator would be slower than the direct access of the member variables.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Addition and subtraction}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T> PS::Vector3<T>::operator + 
+               (const PS::Vector3<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector3$<$T$>$}. Add the components of \texttt{rhs} and its
+components, and return the results.
+%%{PS::Vector3$<$T$>$}型。{rhs}のx,yの値と自身のメンバx,yの値の和を取っ
+%%た値を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector3<T> & PS::Vector3<T>::operator += 
+                       (const PS::Vector3<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector3$<$T$>$ \&}. Add the components of \texttt{rhs} to its
+components, and return itself (lhs is changed).
+%%{const PS::Vector3$<$T$>$ \&}型。{rhs}のx,yの値を自身のメンバx,yに足
+%%し、自身を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T> PS::Vector3<T>::operator - 
+               (const PS::Vector3<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector3$<$T$>$}. Subtract the components of \texttt{rhs} from its
+components, and return the results.
+%%{PS::Vector3$<$T$>$}型。{rhs}のx,yの値と自身のメンバx,yの値の差を取っ
+%%た値を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector3<T> & PS::Vector3<T>::operator -= 
+                       (const PS::Vector3<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector3$<$T$>$ \&}. Subtract the components of \texttt{rhs} from
+its components, and return itself (lhs is changed).
+%%{const PS::Vector3$<$T$>$ \&}型。自身のメンバx,yから{rhs}のx,yを引き
+%%自身を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Scalar multiplication}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T> PS::Vector3<T>::operator * (const T s) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+%{s}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector3$<$T$>$}. Multiply its components by \texttt{s}, and return
+the results.
+%%{PS::Vector3$<$T$>$}型。自身のメンバx,yそれぞれに{s}をかけた値を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector3<T> & PS::Vector3<T>::operator *= (const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const T}.
+%{rhs}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector3$<$T$>$ \&}. Multiply its components by \texttt{s},
+and return itself (lhs is changed).
+%%{const PS::Vector3$<$T$>$ \&}型。自身のメンバx,yそれぞれに{s}をかけ自
+%%身を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector3<T> PS::Vector3<T>::operator / (const T s) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+%{s}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector3$<$T$>$}. Divide its components by \texttt{s}, and return
+the results.
+%%{PS::Vector3$<$T$>$}型。自身のメンバx,yそれぞれを{s}で割った値を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector3<T> & PS::Vector3<T>::operator /= (const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const T}.
+%{rhs}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector3$<$T$>$ \&}. Divide its components by \texttt{s}, and
+return itself (lhs is changed).
+%%{const PS::Vector3$<$T$>$ \&}型。自身のメンバx,yそれぞれを{s}で割り自
+%%身を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Inner and outer product}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::Vector3<T>::operator * (const PS::Vector3<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{T}. Take inner product of it and \texttt{rhs}, and return the result.
+%{T}型。自身と{rhs}の内積を取った値を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::Vector3<T>::operator ^ (const PS::Vector3<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{T}. Take outer product of it and \texttt{rhs}, and return the results.
+%{T}型。自身と{rhs}の外積を取った値を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Typecast to Vector3$<$U$>$}
+%\subsubsubsection{{Vector3$<$U$>$}への型変換}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+template <typename U>
+PS::Vector3<T>::operator PS::Vector3<U> () const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+
+\item{{\bf Return value}}
+
+  Type \texttt{const PS::Vector3$<$U$>$}.
+%  {const PS::Vector3$<$U$>$}型。
+
+\item{{\bf Feature}}
+
+  Typecast from type \texttt{const PS::Vector3$<$T$>$} to \texttt{const
+  PS::Vector3$<$U$>$}.
+%%  {const PS::Vector3$<$T$>$}型を{const PS::Vector3$<$U$>$}型にキャ ス
+%%  トする。
+
+\end{itemize}

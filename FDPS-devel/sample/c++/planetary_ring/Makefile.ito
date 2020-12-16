@@ -1,0 +1,22 @@
+SRC_FDPS_DIR = ../../../src/
+CXX = mpiicpc
+CXXFLAGS = -O3
+CXXFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+CXXFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -qopenmp
+CXXFLAGS += -Wall
+CXXFLAGS += -std=c++1z
+CXXFLAGS += -DADD_RNADOM_SHIFT
+
+INC = -I$(SRC_FDPS_DIR)
+
+ring_mono.out: main.cpp
+	$(CXX) $(INC) $(CXXFLAGS)  $< -o $@
+
+ring_mono_grav.out: main.cpp
+	$(CXX) $(INC) $(CXXFLAGS) -DGRAV_ONLY $< -o $@
+
+ring_mpt_mono.out: main.cpp
+	$(CXX) $(INC) $(CXXFLAGS) -DMIDPOINT_TREE $< -o $@
+
+clean:
+	rm *.out

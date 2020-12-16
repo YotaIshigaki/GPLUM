@@ -1,0 +1,13 @@
+PZC_TARGET_ARCH=sc32
+LLC_OPT=-O3 -disable-pz-mul53 -enable-pz-mad -enable-fp-mad
+
+TARGET = kernel.pz
+
+PZCSRC=../pzc/kernel.pzc
+
+MC_OPT=-verbose-pz-hexobj
+
+vpath %.pzc ../pzc
+
+include /opt/pzsdk.ver3.0/make/default_pzcl_kernel.mk
+

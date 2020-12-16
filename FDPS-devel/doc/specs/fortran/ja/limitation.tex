@@ -1,0 +1,18 @@
+本章では、FDPS および FDPS Fortran/C言語 インターフェースの限界と制約について記述する。FDPS Fortran/C言語 インターフェースは FDPS 本体の仕様による制限を無条件に受けるため、まずはじめに、FDPS 本体の限界について記述する。次に、FDPS Fortran/C言語 インターフェース固有の限界およびユーザが受ける制約について記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS 本体}
+\label{sec:limitation:FDPS}
+\input{../../c++/ja/limitation.tex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS Fortran/C言語 インターフェース}
+\label{sec:limitation:FDPS_ftn_if}
+
+現時点で、本 Fortran/C言語 インターフェースには次の制約・限界がある。
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item FDPS 本体の一部の低レベルAPI、および、入出力用APIはサポートしていない。
+\item GPU (Graphics Processing Unit) 上での実行はまだサポートしていない。
+\item ユーザがC++言語で記述されたユーザコードからFDPS 本体を直接使用する場合、ユーザは超粒子が持つべきモーメント情報を自由にカスタマイズすることが可能である。ここで、モーメント情報とは、粒子-超粒子間相互作用を計算する上で必要となる量で、超粒子を構成する粒子の持つ物理量から計算されるものである。例としては、単極子や双極子、高次の多重極子等がある。本 Fortran/C言語 インターフェースでは、FDPS 本体が予めで用意しているモーメント情報のみをサポートする(第\ref{chap:data_types}章\ref{sec:super_particle_types}節および第\ref{chap:API_spec_list}章\ref{sec:tree_APIs}節参照)。
+\end{itemize}

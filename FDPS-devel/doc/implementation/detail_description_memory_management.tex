@@ -1,0 +1,133 @@
+\subsubsection{ReallocatableArrayクラス}
+
+この節では, {\tt ReallocatableArray}クラスの詳細記述を行う. 
+
+{\tt ReallocatableArray}クラスは以下の様に記述される。メンバ{\tt
+data\_}はT型の配列で、格納最大要素数を{\tt capacity\_}、実際の要素数を
+{\tt size\_}に格納する。
+
+\begin{lstlisting}[caption=DomainInfo]
+namespace  ParticleSimulator{
+    template<class T>
+    class ReallocatableArray{
+    public:
+        T * data_;
+        int size_;
+        int capacity_;
+        ReallocatableArray();
+        ReallocatableArray(int capa);
+        ReallocatableArray(int size, const T & val);
+        ~ReallocatableArray();
+        void reserve(const int n);
+        int size() const;
+        int capacity() const;
+        const T & operator [] (const int i) const;
+        T & operator [] (const int i);
+        T & front(){ return data_[0]; }
+        T & back(){ return data_[size_-1]; }
+        T * data(){ return data_; }
+        const T * data() const { return data_; }
+        void push_back(const T & val);
+        void resizeNoInitialize(const int n)
+        T * getPointer(const int i=0) const;
+        void pushBackNoCheck(const T & val){
+        long getMemSize() const;
+        void dump(const std::string str="");
+
+        }
+    };
+}
+\end{lstlisting}
+
+コンストラクタは以下の3種類。
+
+\begin{screen}
+\begin{verbatim}
+ReallocatableArray();
+\end{verbatim}
+\end{screen}
+
+空のクラスを作成する。{\tt std::vector}と同じ振る舞いをする。
+
+\begin{screen}
+\begin{verbatim}
+ReallocatableArray(int capa);
+\end{verbatim}
+\end{screen}
+
+{\tt capacity\_}に引数{\tt capa}を代入する。この際、{\tt size\_}は0であ
+る。{\tt std::vector}と振る舞いが異なる。
+
+\begin{screen}
+\begin{verbatim}
+ReallocatableArray(int size, const T & val)
+\end{verbatim}
+\end{screen}
+
+以下はデストラクタである。
+
+\begin{screen}
+\begin{verbatim}
+~ReallocatableArray()
+\end{verbatim}
+\end{screen}
+
+{\tt data\_}の領域が開放される。
+
+
+{\tt capacity\_}と{\tt size\_}に引数{\tt size}を代入する。またsize個の
+要素を引数{￥tt val}で初期化する。{\tt std::vector}と同じ振る舞いをする。
+
+メソッド{\tt reserve()},{\tt size()},{\tt capacity()},{\tt
+front()},{\tt back()},{\tt data()},{\tt push\_back()},演算子{\tt []}は
+std::vectorのそれとほぼ同じである。
+
+以下には、{\tt AllocatableArray}クラス特有のメソッドを記述する。
+
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::AllocatableArray::resizeNoinitialize(const int n);
+\end{verbatim}
+\end{screen}
+
+{\tt size\_}に引数{\tt n}を代入する。nが{\tt capacity\_}を超えた場合は
+{\tt capacity\_}をnの2倍に変更する。{std::vector::resize}との違いは付け
+加えた要素の初期化はされない。
+
+
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::AllocatableArray::puchBackNoCheck(const T & val);
+\end{verbatim}
+\end{screen}
+
+{\tt val}を{\tt data\_}の末尾に付け加え、{\tt size\_}を一つインクリメン
+トする。{\tt std::vector::push\_back}と違い、配列の領域({\tt
+capacity\_})のチェックを行わない。
+
+\begin{screen}
+\begin{verbatim}
+public:
+T * PS::AllocatableArray::getPointer(const int i=0);
+\end{verbatim}
+\end{screen}
+メンバ{\tt data\_}のi番目のポインタを返す。
+
+\begin{screen}
+\begin{verbatim}
+public:
+long getMemSize();
+\end{verbatim}
+\end{screen}
+{\tt data\_}が使用しているバイト数を返す。
+
+\begin{screen}
+\begin{verbatim}
+public:
+void dump(const std::string str="");
+\end{verbatim}
+\end{screen}
+
+標準出力に引数{\tt str},{\tt size\_},{\tt capacity\_}を表示する。

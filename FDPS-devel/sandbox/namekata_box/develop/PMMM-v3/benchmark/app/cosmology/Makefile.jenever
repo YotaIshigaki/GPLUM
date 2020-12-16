@@ -1,0 +1,78 @@
+#-------------------------------
+#   Location of FFTW library
+#-------------------------------
+FFTW_ROOT  = /work4a/local/fftw
+FFTW_INC  = -I$(FFTW_ROOT)/include
+#FFTW_LIB  = -L$(FFTW_ROOT)/lib -lfftw3 
+#FFTW_LIB  = -L$(FFTW_ROOT)/lib -lfftw3_omp -lfftw3 
+#FFTW_LIB  = -L$(FFTW_ROOT)/lib -lfftw3_mpi -lfftw3
+FFTW_LIB  = -L$(FFTW_ROOT)/lib -lfftw3_mpi -lfftw3_omp -lfftw3
+
+#-----------------------
+#    Location of FDPS
+#-----------------------
+FDPS_ROOT  = ../../../
+PMM_ROOT  = $(FDPS_ROOT)/src/particle_mesh_multipole
+DCT_ROOT  = $(FDPS_ROOT)/src/direct_sum
+EWALD_ROOT = $(FDPS_ROOT)/src/ewald
+FDPS_INC  = -I$(FDPS_ROOT)/src -I$(PMM_ROOT) -I$(DCT_ROOT) -I$(EWALD_ROOT)
+FDPS_LIB  = 
+LDFLAGS   = $(FDPS_LIB) $(FFTW_LIB) -lm
+
+#---------------------------------
+# Compilers and compile options
+#---------------------------------
+#CXX = g++
+CXX = mpicxx
+#CXXFLAGS = -std=c++11 -Wall -Wextra -Wcast-align -Wconversion -O0 -fvar-tracking -ggdb3 -rdynamic
+CXXFLAGS = -std=c++11 -O3 -ffast-math -funroll-loops 
+CXXFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
+CXXFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+#CXXFLAGS += -DCHECK_DIVIDE_BY_ZERO_ERROR_IN_FORCE_KERNEL
+CXXFLAGS += $(FDPS_INC) $(FFTW_INC)
+
+#---------------------------------
+# Phantom-GRAPE library
+#---------------------------------
+use_phantom_grape_x86 = no
+
+ifeq ($(use_phantom_grape_x86),yes)
+PG_ROOT = $(FDPS_ROOT)/src/phantom_grape_x86/G5/newton/libpg5
+CXXFLAGS += -DENABLE_PHANTOM_GRAPE_X86
+CXXFLAGS += -I$(PG_ROOT)
+LDFLAGS += -L$(PG_ROOT) -lpg5
+PG_BUILD = cd $(PG_ROOT) && $(MAKE) distclean libpg5.a
+PG_CLEAN = cd $(PG_ROOT) && $(MAKE) distclean
+else
+PG_BUILD =
+PG_CLEAN = 
+endif
+
+#---------------------------------
+TARGET = cosmology.out
+
+OBJ = make_directory.o \
+      mathematical_constants.o \
+      main.o
+HDR = make_directory.h \
+      mathematical_constants.h \
+      cosmology.hpp \
+      run_param.hpp \
+      user_defined.hpp \
+      io.hpp \
+      timestep.hpp \
+      leapfrog.hpp
+
+%.o : %.cpp $(HDR)
+	$(CXX) $(CXXFLAGS) -c $<
+
+$(TARGET): $(OBJ) 
+	$(PG_BUILD)
+	$(CXX) $(CXXFLAGS) -o $@ $(OBJ) $(LDFLAGS)
+
+clean: 
+	rm -f *.o 
+
+distclean: clean
+	$(PG_CLEAN)
+	rm -f $(TARGET)

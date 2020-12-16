@@ -1,0 +1,128 @@
+
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+
+\item 2016/12/26
+\begin{itemize}
+\item Initial release of FDPS Fortran interface (as FDPS version 3.0)
+\end{itemize}
+
+\item 2017/08/23
+\begin{itemize}
+\item The default accuracy of superparticle types  is changed to 64 bit (FDPS 3.0a)。
+\end{itemize}
+
+\item 2017/11/01
+\begin{itemize}
+\item A new API \texttt{sort\_particle} is added. This API sorts an array of FullParticle stored in a ParticleSystem object using a given comparison function.
+\item An optional flag that makes FDPS reuse interaction lists is added to API \texttt{calc\_force\_all\_and\_write\_back} and \texttt{calc\_force\_all}.
+\item A new API \texttt{get\_epj\_from\_id} is added. This API gets the pointer to a EPJ corresponding to a given particle ID.
+\end{itemize}
+
+\item 2017/11/08
+\begin{itemize}
+\item Release FDPS 4.0
+\end{itemize}
+
+\item 2017/11/17
+\begin{itemize}
+\item A bug in API broadcast is fixed (FDPS 4.0a).
+\end{itemize}
+
+\item 2018/8/1
+\begin{itemize}
+\item The following serious problems in the Fortran interface generating script \texttt{get\_ftn\_if.py} are fixed (FDPS 4.1b)
+\begin{itemize}
+\item The previous versions of the script incorrectly process \texttt{copyFromForce} directive. More specifically, the older versions of the script process as \texttt{\$!fdps copyFromForce (dst\_mbr, src\_mbr) ...}. But, it should process according to the correct format \texttt{\$!fdps copyFromForce (dst\_mbr, src\_mbr)...}. Because of the bug, the script can stop with errors.
+\item The previous versions of the script internally generate TreeForForce class(es) that are not allowed to generate for given user-defined types. Because of this, compiling an user code can stop with errors.
+\end{itemize}
+\end{itemize}
+
+\item 2018/8/2
+\begin{itemize}
+\item A new API \texttt{get\_boundary\_condition} is added.
+\item The default value of the argument \texttt{weight} of API \texttt{collect\_sample\_particle} is changed from 1 to the number of local particles (i.e. the number of particles assigned to a MPI process calling the API).
+\item The (wrong) description of the default value of the argument \texttt{weight} of API \texttt{decompose\_domain\_all} is corrected.
+\end{itemize}
+
+\item 2018/8/31
+\begin{itemize}
+\item New APIs \texttt{barrier}, \texttt{set\_particle\_local\_tree}, \texttt{get\_force} are added.
+\item Thread-safe versions of APIs for pseudorandom number generator are added (the names of these APIs contains a word \texttt{mtts}).
+\end{itemize}
+
+\item 2018/11/8
+\begin{itemize}
+\item Description on C interface to FDPS is added (released as FDPS 5.0).
+\end{itemize}
+
+\item 2018/12/7
+\begin{itemize}
+\item New two subtypes called MonopoleWithSymmetrySearch-type and \newline QuadrupoleWithSymmetrySearch-type are added to Tree object for long range force (released as FDPS 5.0a).
+\end{itemize}
+
+\item 2019/1/25
+\begin{itemize}
+\item Fixed a bug in \path{gen_ftn_if.py} that came in FDPS v5.0a (released as FDPS 5.0c).
+\end{itemize}
+
+\item 2019/3/1
+\begin{itemize}
+\item Release FDPS 5.0d.
+\begin{itemize}
+\item Fixed a bug that \path{gen_ftn_if.py} incorrectly stops when EssentialParticleI types have search radius.
+\item From this version, the C++ core part of FDPS uses a feature of C++11. \textcolor{red}{Hence, users must add an appropriate compiler option such as \texttt{-std=c++11} in \texttt{gcc} for your C++ compiler.}
+\end{itemize}
+\end{itemize}
+
+\item 2019/3/7
+\begin{itemize}
+\item Improved the description about tree of type Long-MonopoleWithCutoff.
+\end{itemize}
+
+\item 2019/7/11
+\begin{itemize}
+\item Clarification of the specification of API \texttt{remove\_particle} and fixed the implementation of this API according to the specification.
+\end{itemize}
+ 
+ \item 2019/9/06
+\begin{itemize}
+\item Release FDPS 5.0f
+\begin{itemize}
+\item Fixed a problem that triggers a compile error when compiling with option \texttt{-DPARTICLE\_SIMULATOR\_TWO\_DIMENSION}.
+\item Fixed a problem that \path{gen_c_if.py} stops with an error when the name of member variable of user-defined type consists of one character.
+\item Added symbolic links \path{doc/doc_specs_c_ja.pdf} and \path{doc/doc_specs_c_en.pdf}.
+\end{itemize}
+\end{itemize}
+
+\item 2019/9/10
+\begin{itemize}
+\item Release FDPS 5.0g
+\begin{itemize}
+\item Fixed a problem that triggers a runtime error when compiling with option \texttt{-DPARTICLE\_SIMULATOR\_TWO\_DIMENSION}.
+\end{itemize}
+\end{itemize}
+
+\item 2020.8.16
+\begin{itemize}
+\item Release FDPS 6.0
+\begin{itemize}
+\item PIKG (\url{https://github.com/FDPS/PIKG}) included.
+\end{itemize}
+\end{itemize}
+    
+\item 2020.8.18
+\begin{itemize}
+\item Release FDPS 6.0a
+\begin{itemize}
+\item The version of PIKG bundled is updated to v0.1b
+\end{itemize}
+\end{itemize}
+
+  \item 2020.8.19
+    \begin{itemize}
+    \item Release FDPS 6.0b
+       \begin{itemize}
+          \item The implementations of the sample codes of $N$-body simulation in \path{sample/*/nbody} are improved so that they shows better performance when using kernels generated by PIKG.
+       \end{itemize}
+    \end{itemize}
+\end{itemize} 

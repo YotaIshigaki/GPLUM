@@ -1,0 +1,70 @@
+     //==================================\\n_tot = n_tot = n_tot = n_tot = n_tot = n_tot = 262288
+262288
+262288
+262288
+n_tot = 262288
+262288
+262288
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+
+n_tot = 262288
+n_tot = ./result/t-de.dat
+262288n_tot = 
+./result/t-de.dat262288
+n_tot = 262288n_tot = 262288./result/t-de.dat
+
+
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+
+n_tot = 
+     ||                                  ||
+     || ::::::: ::::::. ::::::. .::::::. ||
+     || ::      ::    : ::    : ::       ||
+     || ::::::  ::    : ::::::'  `:::::. ||
+     || ::      ::::::' ::      `......' ||
+     ||     Framework for Developing     ||
+     ||        Particle Simulator        ||
+     ||     Version 1.1 (2015/08)        ||
+     \\==================================//
+
+       Home   : https://github.com/fdps/fdps 
+       E-mail : fdps-support@mail.jmlab.jp262288
+
+       Licence: MIT (see, https://github.com/FDPS/FDPS/blob/master/LICENSE)
+       Note   : Please cite Iwasawa et al. (in prep.)
+
+       Copyright (C) 2015 
+         Masaki Iwasawa, Ataru Tanigawa, Natsuki Hosono,
+         Keigo Nitadori, Takayuki Muranushi, Junichiro Makino
+         and many others
+******** FDPS has successfully begun. ********
+n_tot = 262288./result/t-de.dat
+
+./result/t-de.dat
+Number of processes: 16
+Number of threads per process: 1
+np_ave=16393
+used mem size for tree=54112864
+used mem size for tree(0)=0.054112864
+time:  0.0000000 energy: -2.000063e-01 energy error: -0.000000e+00 wtime: +1.313e+00 +inf
+time:  0.0000000 energy: -2.000063e-01 energy error: -0.000000e+00 wtime: +1.313e+00 +inf
+time:  0.1250000 energy: -2.000061e-01 energy error: -1.269797e-06 wtime: +1.104e+01 +6.901e-01
+time:  0.1250000 energy: -2.000061e-01 energy error: -1.269797e-06 wtime: +1.104e+01 +6.901e-01
+time:  0.2500000 energy: -2.000054e-01 energy error: -4.816002e-06 wtime: +1.039e+01 +6.496e-01
+time:  0.2500000 energy: -2.000054e-01 energy error: -4.816002e-06 wtime: +1.039e+01 +6.496e-01
+time:  0.3750000 energy: -2.000043e-01 energy error: -9.985071e-06 wtime: +1.045e+01 +6.529e-01
+time:  0.3750000 energy: -2.000043e-01 energy error: -9.985071e-06 wtime: +1.045e+01 +6.529e-01
+time:  0.5000000 energy: -2.000029e-01 energy error: -1.690821e-05 wtime: +1.039e+01 +6.492e-01
+time:  0.5000000 energy: -2.000029e-01 energy error: -1.690821e-05 wtime: +1.039e+01 +6.492e-01
+[mpiexec@cognac0] Sending Ctrl-C to processes as requested
+[mpiexec@cognac0] Press Ctrl-C again to force abort

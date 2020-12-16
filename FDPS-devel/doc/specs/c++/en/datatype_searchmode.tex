@@ -1,0 +1,68 @@
+\subsubsection{Summary}
+
+In this section, we describe data type \texttt{PS::SEARCH\_MODE}.
+It is used only as template arguments of class \texttt{PS::TreeForForce}.
+This data type determines the interaction mode of the class.
+\texttt{PS::SEARCH\_MODE} can take the following values:
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item PS::SEARCH\_MODE\_LONG
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF
+\item PS::SEARCH\_MODE\_GATHER
+\item PS::SEARCH\_MODE\_SCATTER
+\item PS::SEARCH\_MODE\_SYMMETRY
+\item PS::SEARCH\_MODE\_LONG\_SCATTER
+\item PS::SEARCH\_MODE\_LONG\_SYMMETRY
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER
+\end{itemize}
+
+Each of them corresponds to a mode for interaction calculation.
+In the following, we describe them.
+
+\subsubsection{PS::SEARCH\_MODE\_LONG}
+
+This type is used when a group of distant particles is regarded as a
+superparticle as in the standard Barnes-Hut tree code.
+This type is for gravitational force and Coulomb's force under open boundary condition (Not usable in periodic boundary condition).
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+
+This type is used when a group of distant particles is regarded as a
+superparticle, and when its force does not reach to infinity.  This
+type is for gravitational force and Coulomb's force under
+periodic boundary condition.
+
+\subsubsection{PS::SEARCH\_MODE\_GATHER}
+
+This type is used when its force decays to zero at a finite distance,
+and when the distance is determined by the size of $i$-particle.
+
+\subsubsection{PS::SEARCH\_MODE\_SCATTER}
+
+This type is used when its force decays to zero at a finite distance,
+and when the distance is determined by the size of $j$-particle.
+
+\subsubsection{PS::SEARCH\_MODE\_SYMMETRY}
+
+This type is used when its force decays to zero at a finite distance,
+and when the distance is determined by the larger of the sizes of $i$-
+and $j$-particles.
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_SCATTER}
+
+Almost the same as {\tt SEARCH\_MODE\_LONG}, but if the distance
+between $i$- and $j$-particles is smaller than the search radius of
+$j$-particle, the $j$-particle is not included in superparticle.
+
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_SYMMETRY}
+
+Almost the same as {\tt SEARCH\_MODE\_LONG}, but if the distance
+between $i$- and $j$-particles is smaller than the larger of the search radii of
+$i$- and $j$-particle, the $j$-particle is not included in superparticle.
+
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER}
+
+Not implemented yet.
+
+%未実装。

@@ -1,0 +1,4 @@
+##############
+## Ver1.0.1
+*In decomposeDomain(), MPI::Send and MPI::Recv -> MPI::Gather ( only if __HPC_ACE__ is defined, MPI::Gather is used)
+*In exchangeParticle(), MPI::Iend and MPI::Iecv -> If the # of src and dest proc > 

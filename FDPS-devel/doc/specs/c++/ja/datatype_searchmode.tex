@@ -1,0 +1,60 @@
+\subsubsection{概要}
+
+本節では、PS::SEARCH\_MODE型について記述する。PS::SEARCH\_MODE型は相互
+作用ツリークラスのテンプレート引数としてのみ使用されるものである。この
+型によって、相互作用ツリークラスで計算する相互作用のモードを決定する。
+PS::SEARCH\_MODE型には以下がある:
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item PS::SEARCH\_MODE\_LONG
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF
+\item PS::SEARCH\_MODE\_GATHER
+\item PS::SEARCH\_MODE\_SCATTER
+\item PS::SEARCH\_MODE\_SYMMETRY
+\item PS::SEARCH\_MODE\_LONG\_SCATTER
+\item PS::SEARCH\_MODE\_LONG\_SYMMETRY
+\item PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER
+\end{itemize}
+以下で、それぞれが対応する相互作用のモードについて記述する。
+
+\subsubsection{PS::SEARCH\_MODE\_LONG}
+
+この型を使用するのは、遠くの粒子からの寄与を複数の粒子にまとめた超粒子
+からの寄与として計算する場合である。開放境界条件における重力やクーロン
+力に適用できる(周期境界条件では使用不可能)。
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+
+この型を使用するのは、遠くの粒子からの寄与を複数の粒子にまとめた超粒子
+からの寄与として計算し、かつ有限の距離までの寄与しか計算しない場合であ
+る。周期境界条件における重力やクーロン力(Particle Mesh法の並用が必要)
+などに適用できる。
+
+\subsubsection{PS::SEARCH\_MODE\_GATHER}
+
+この型を使用するのは、相互作用の到達距離が有限でかつ、その到達距離がi
+粒子の大きさで決まる場合である。
+
+\subsubsection{PS::SEARCH\_MODE\_SCATTER}
+
+この型を使用するのは、相互作用の到達距離が有限でかつ、その到達距離がj
+粒子の大きさで決まる場合である。
+
+\subsubsection{PS::SEARCH\_MODE\_SYMMETRY}
+
+この型を使用するのは、相互作用の到達距離が有限でかつ、その到達距離がi,
+j粒子のうち大きいほうのサイズで決まる場合である。
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_SCATTER}
+
+基本的にはSEARCH\_MODE\_LONGと同じであるが、i粒子とj粒子の距離がj粒子の
+探査半径よりも短い場合は、そのj粒子は超粒子に含めない(超粒子としてではなく粒子として扱う)。
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_SYMMETRY}
+
+基本的にはSEARCH\_MODE\_LONGと同じであるが、i粒子とj粒子の距離が、i粒子とj粒子の
+探査半径のどちらか大きい方よりも短い場合は、そのj粒子は超粒子に含めない(超粒子としてではなく粒子として扱う)。
+
+
+\subsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER}
+
+未実装。

@@ -1,0 +1,122 @@
+set lmargin 0
+set rmargin 0
+set tmargin 0
+set bmargin 0
+
+
+#set term po co eps enhanced "TimesNewRoman"
+#set term pdf
+#set output "cosmo_512x512.pdf"
+set term post eps color
+set output "cosmo_512x512.eps"
+
+#set size 0.58, 0.78
+#set origin 0.17, 0.15
+
+set multiplot
+
+set si ra 1
+set size 0.6
+#set si 0.8
+
+#dx=0.244
+#dy=0.406
+
+dx=0.293
+dy=0.418
+
+unset border
+
+set xrange [0:1]
+set format x ""
+unset xtics
+
+set yrange [0:1]
+set format y ""
+unset ytics
+
+unset key
+
+set pm3d
+set pm3d map
+set ticslevel 0
+set cbrange[0:2]
+set palette defined (0 "black", 1 "light-blue", 2 "white")
+unset colorbox
+
+#============================================================
+
+set origin 0*dx, 1*dy
+
+#set style arrow 1 heads size screen 0.008,90 ls 2
+
+set label 1 "z=60" at 0.1, 0.1 left textcolor rgb "#ffffff" font ",10" front
+#set label 2 "64Mpc/h" at -24, 22 left textcolor rgb "#ffffff" font ",25" front
+#set arrow 1 from -20, 18 to -5, 18 as 1 lc rgb "#ffffff" lw 3 lt 1 front
+spl "sb256_128x128_z60.dat" u 1:2:(log10(($3+1))) with pm3d
+
+#===========e=================================================
+
+set origin 1*dx, 1*dy
+
+unset label 1
+set label 1 "z=9" at 0.1, 0.1 left textcolor rgb "#ffffff" font ",10" front
+spl "sb256_128x128_z09.dat" u 1:2:(log10(($3+1))) with pm3d
+
+#============================================================
+
+set origin 0*dx, 0*dy
+
+unset label 1
+set label 1 "z=2" at 0.1, 0.1 left textcolor rgb "#ffffff" font ",10" front
+spl "sb256_512x512_z02.dat" u 1:2:(log10(($3+1))) with pm3d
+
+#============================================================
+
+set origin 1*dx, 0*dy
+
+unset label 1
+set label 1 "z=0" at 0.1, 0.1 left textcolor rgb "#ffffff" font ",10" front
+spl "sb256_512x512_z00.dat" u 1:2:(log10(($3+1))) with pm3d
+
+#============================================================
+#
+#set origin 0*dx, 1*dy
+#
+#set style arrow 1 heads size screen 0.008,90 ls 2
+#
+#set label 1 "t = 0.5 Gyr" at -24, -22 left textcolor rgb "#ffffff" font ",25" front
+#set label 2 "15kpc (4.9x10^4ly)" at -24, 22 left textcolor rgb "#ffffff" font ",25" front
+#set arrow 1 from -20, 18 to -5, 18 as 1 lc rgb "#ffffff" lw 3 lt 1 front
+#
+#splot \
+#"out/snap_050.con" with pm3d
+#
+#============================================================
+#
+#set origin 1*dx, 1*dy
+#
+#set label 1 "t = 1 Gyr"
+#unset label 2
+#unset arrow 1
+#
+#splot \
+#"out/snap_100.con" with pm3d
+#
+#============================================================
+#
+#set origin 0*dx, 0*dy
+#
+#set label 1 "t = 2 Gyr"
+#
+#splot \
+#"out/snap_200.con" with pm3d
+#
+#============================================================
+#
+#set origin 1*dx, 0*dy
+#
+#set label 1 "t = 3 Gyr"
+#
+#splot \
+#"out/snap_300.con" with pm3d

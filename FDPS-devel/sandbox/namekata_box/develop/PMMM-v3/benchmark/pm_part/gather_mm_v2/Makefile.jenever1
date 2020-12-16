@@ -1,0 +1,32 @@
+# Compiler, compile options, etc.
+FFTW_LOC  = /work4a/local/fftw
+FFTW_INC  = -I$(FFTW_LOC)/include
+FFTW_LIB  = -L$(FFTW_LOC)/lib -lfftw3_mpi -lfftw3 -lm
+
+CXX=time -p mpicxx
+CXXFLAGS = -std=c++11 -O3 -ffast-math -funroll-loops $(FFTW_INC)
+LDFLAGS = $(FFTW_LIB)
+
+# (iii) Job submission variables
+WORKDIR = ./work-jenever
+
+# (iv) Executable
+TARGET	= a.out
+
+
+all: $(TARGET)
+
+$(TARGET): main.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	mkdir -p $(WORKDIR)
+	mv $@ $(WORKDIR)
+
+main.o: main.cpp 
+	$(CXX) $(CXXFLAGS) -c $< 
+
+clean:
+	rm -f *.o
+
+distclean: clean
+	rm -f $(TARGET)
+	rm -f *.txt

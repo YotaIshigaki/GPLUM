@@ -1,0 +1,14 @@
+CXX = icpc
+CXXFLAGS = -std=c++11 -I/home/namekata/dislin
+LDFLAGS = /home/namekata/dislin/libdiscpp.so -lm
+TARGET = a.out
+
+.PHONY: all clean
+all:
+	$(CXX) $(CXXFLAGS) -o $(TARGET) main.cpp $(LDFLAGS)
+
+clean:
+	rm -f *.o *.met
+
+distclean: clean
+	rm -f $(TARGET)

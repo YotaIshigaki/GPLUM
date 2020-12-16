@@ -1,0 +1,30 @@
+%=================
+%   N体コード
+%=================
+\subsection{$N$体シミュレーション}$N$体シミュレーションのサンプルコードを以下に示す。このサンプルは第\ref{sec:getting_started}, \ref{sec:how_to_use}節で用いた$N$体シミュレーションのサンプルコードと同じものである。これをカット\&ペーストしてコンパイルすれば、正常に動作するN体シミュレーションコードを作ることができる。
+
+\ifCpp %C++用\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{user-defined.hpp})]{../../../../sample/c++/nbody/user-defined.hpp}\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{nbody.cpp})]{../../../../sample/c++/nbody/nbody.cpp}
+\endifCpp
+\ifFtn %Fortran用
+\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{user\_defined.F90})]{../../../../sample/fortran/nbody/user_defined.F90}\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{f\_main.F90})]{../../../../sample/fortran/nbody/f_main.F90}
+\endifFtn
+\ifC %C言語用
+\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{user\_defined.h})]{../../../../sample/c/nbody/user_defined.h}\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{user\_defined.c})]{../../../../sample/c/nbody/user_defined.c}\lstinputlisting[caption=$N$体シミュレーションのサンプルコード(\texttt{c\_main.c})]{../../../../sample/c/nbody/c_main.c}
+\endifC
+
+%=================
+%   SPHコード
+%=================
+\subsection{固定長SPHシミュレーション}固定長SPHシミュレーションのサンプルコードを以下に示す。このサンプルは第\ref{sec:getting_started}, \ref{sec:how_to_use}節で用いた固定長SPHシミュレーションのサンプルコードと同じものである。これをカット\&ペーストしてコンパイルすれば、正常に動作する固定長SPHシミュレーションコードを作ることができる。
+
+\ifCpp %C++用\lstinputlisting[caption=固定長SPHシミュレーションのサンプルコード]{../../../../sample/c++/sph/main.cpp}
+\endifCpp\ifFtn %Fortran用
+\lstinputlisting[caption=固定長SPHシミュレーションのサンプルコード (\texttt{user\_defined.F90})]{../../../../sample/fortran/sph/user_defined.F90}
+\lstinputlisting[caption=固定長SPHシミュレーションのサンプルコード (\texttt{f\_main.F90})]{../../../../sample/fortran/sph/f_main.F90}
+
+\endifFtn
+\ifC %C言語用
+\lstinputlisting[caption=固定長SPHシミュレーションのサンプルコード (\texttt{user\_defined.h})]{../../../../sample/c/sph/user_defined.h}
+\lstinputlisting[caption=固定長SPHシミュレーションのサンプルコード (\texttt{user\_defined.c})]{../../../../sample/c/sph/user_defined.c}
+\lstinputlisting[caption=固定長SPHシミュレーションのサンプルコード (\texttt{c\_main.c})]{../../../../sample/c/sph/c_main.c}
+\endifC

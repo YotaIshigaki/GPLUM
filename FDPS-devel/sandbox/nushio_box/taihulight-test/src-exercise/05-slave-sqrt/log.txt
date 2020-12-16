@@ -1,0 +1,35 @@
+# 2017-02-15 13:46:19.548559
+$ chmod 755 /home/nushio/hub/FDPS/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/run.sh
+$ ssh sunway 'mkdir -p /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/'
+$ rsync -avz /home/nushio/hub/FDPS/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/ sunway:/home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/
+sending incremental file list
+run.sh
+
+sent 173 bytes  received 40 bytes  28.40 bytes/sec
+total size is 2,062  speedup is 9.68
+$ ssh sunway /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src//run.sh
+sw5cc.new -O3 -msimd -host -E master.c > master.e
+#	sw5cc.new -O3 -msimd -host -s master.c -o master.s
+sw5cc.new -O3 -msimd -host -c master.c -o master.o
+sw5cc.new -O3 -msimd -slave -E slave.c > slave.e
+#sw5cc.new -O3 -msimd -slave -s slave.c -o slave.s
+sw5cc.new -O3 -msimd -slave -c slave.c -o slave.o
+sw5cc.new -hybrid  master.o slave.o -o main.out
+bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+Job <6420164> has been submitted to queue <q_sw_expr>
+waiting for dispatch ...
+hello Sunway TaihuLight
+1^2 == 1.000000
+3^2 == 9.000000
+7^2 == 49.000000
+15^2 == 225.000000
+31^2 == 961.000000
+63^2 == 3969.000000
+127^2 == 16129.000000
+255^2 == 65025.000000
+511^2 == 261121.000000
+1023^2 == 1046529.000000
+2047^2 == 4190209.000000
+4095^2 == 16769025.000000
+dispatching ...
+Job 6420164 has been finished.

@@ -1,0 +1,410 @@
+This section describes {\tt PS::Comm} class which is a module used to
+communicate data among processes and keep the data for
+communication. Since the singleton pattern is applied in this class,
+users do not need to create an object.
+
+%本節では、通信用データクラスについて記述する。このクラスはノード間通信
+%のための情報の保持や実際の通信を行うモジュールである。このクラスはシン
+%グルトンパターンとして管理されており、オブジェクトの生成は必要としない。
+%ここではこのモジュールのAPIを記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{API}
+
+%このモジュールのAPIの宣言は以下のようになっている。このあと各APIについ
+%て記述する。
+
+The APIs are declared below.
+
+\begin{lstlisting}[caption=Communication]
+namespace ParticleSimulator {
+    class Comm{
+    public:
+        static S32 getRank();
+        static S32 getNumberOfProc();
+        static S32 getRankMultiDim(const S32 id);
+        static S32 getNumberOfProcMultiDim(const S32 id);
+        static bool synchronizeConditionalBranchAND
+                    (const bool local);
+        static bool synchronizeConditionalBranchOR
+                    (const bool local);
+        template<class T>
+        static T getMinValue(const T val);
+        template<class Tfloat, class Tint>
+        static void getMinValue(const Tfloat f_in,
+                                const Tint i_in,
+                                Tfloat & f_out,
+                                Tint & i_out);
+        template<class T>
+        static T getMaxValue(const T val);
+        template<class Tfloat, class Tint>
+        static void getMaxValue(const Tfloat f_in,
+                                const Tint i_in,
+                                Tfloat & f_out,
+                                Tint & i_out );
+        template<class T>
+        static T getSum(const T val);
+        template<class T>
+        static void broadcast(T * val,
+                              const S32 n,
+                              const S32 src=0);
+    };
+}
+\end{lstlisting}
+
+\subsubsubsubsection{PS::Comm::getRank}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getRank();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+void.
+
+\item{\bf returned value}
+
+Type {\tt PS::S32}.
+
+\item{\bf function}
+
+Return the rank of the calling process.
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::getNumberOfProc}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getNumberOfProc();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+void.
+
+\item{\bf returned value}
+
+Type {\tt PS::S32}. The total number of processes.
+
+\item{\bf function}
+
+Return the total number of processes.
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::getRankMultiDim}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getRankMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt id}: input. Type {\tt const PS::S32}. Id of axes. x-axis:0,
+y-axis:1, z-axis:2.
+
+\item{\bf returned value}
+
+Type {\tt PS::S32}. The rank of the calling process along {\tt id}-th
+axis. In the case of two dimensional simulations, FDPS returns 0 for
+{\tt id}=2.
+
+%PS::S32型。id番目の軸でのランクを返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::getNumberOfProcMultiDim}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getNumberOfProcMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf }
+
+{\tt id}: input. Type const {\tt PS::S32}. id of axes. x-axis:0,
+y-axis:1, z-axis:2.
+
+%id: 入力。const PS::S32型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{\bf returned value}
+
+Type {\tt PS::S32}. The number of processes along {\tt id}-th axis.
+In the case of two dimensional simulations, FDPS returns 1 for {\tt
+id}=2.
+
+%PS::S32型。id番目の軸のプロセス数を返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::synchronizeConditionalBranchAND}
+
+\begin{screen}
+\begin{verbatim}
+static bool PS::Comm::synchronizeConditionalBranchAND(const bool local)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt local}: input. Type {\tt const bool}.
+
+%local: 入力。const bool型。
+
+\item{\bf returned value}
+
+{\tt bool} type. Logical product of {\tt local} over all processes.
+%bool型。全プロセスでlocalの論理積を取り、結果を返す。
+
+\item{\bf function}
+
+Return logical product of {\tt local} over all processes.
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::synchronizeConditionalBranchOR}
+
+\begin{screen}
+\begin{verbatim}
+static bool PS::Comm::synchronizeConditionalBranchOR(const bool local);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt local}: input. Type {\tt const bool}.
+%local: 入力。const bool型。
+
+\item{\bf returned value}
+
+Type {\tt bool}.
+
+\item{\bf function}
+
+Return logical sum of {\tt local} over all processes.
+%bool型。全プロセスでlocalの論理和を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::getMinValue}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getMinValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt val}: input. Type {\tt const T}. Type {\tt T} is allowed to be
+{\tt PS::F32}, {\tt PS::F64}, {\tt PS::S32}, {\tt PS::S64}, {\tt
+PS::U32} and {\tt PS::U64}
+
+%val: 入力。const T型。
+
+\item{\bf returned value}
+
+Type {\tt T}. The minimum value of val of all processes.
+
+%T型。全プロセスでvalの最小値を取り、結果を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+static void PS::Comm::getMinValue(const Tfloat f_in,
+                                  const Tint i_in,
+                                  Tfloat & f_out,
+                                  Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt f\_in}: input. Type {\tt const Tfloat}.
+
+{\tt i\_in}: input. Type {\tt const Tint}.
+
+{\tt f\_out}: output. Type {\tt Tfloat \&}. {\tt Tfloat} must be {\tt
+PS::F64} or {\tt PS::F32}. The minimum value of {\tt f\_in} among all
+processes.
+
+{\tt i\_out}: output. Type {\tt Tint \&}. {\tt Tint} must be {\tt
+PS::S64}, {\tt PS::S32}, {\tt PS::U64} or {\tt PS::U32}. The rank of
+the process of which {\tt f\_in} is the minimum.
+
+
+%f\_in: 入力。const Tfloat型。
+
+%i\_in: 入力。const Tint型。
+
+%f\_out: 出力。Tfloat型。全プロセスでf\_inの最小値を取
+%り、結果を返す。
+
+%i\_out: 出力。Tint型。f\_outに伴うIDを返す。
+
+\item{\bf returned value}
+
+void.
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::getMaxValue}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getMaxValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt val}: input. Type {\tt const T}.
+%val: 入力。const T型。
+
+\item{\bf returned value}
+
+Type {\tt T}. The maximum value of {\tt val} of all processes.
+%T型。全プロセスでvalの最大値を取り、結果を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+static void PS::Comm::getMaxValue(const Tfloat f_in,
+                                  const Tint i_in,
+                                  Tfloat & f_out,
+                                  Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt f\_in}: input. Type {\tt const Tfloat}. Type {\tt Tfloat} is {\tt
+PS::F32} or {\tt PS::F64}.
+
+{\tt i\_in}: input. Type {\tt const Tint}. Type {\tt Tint} is {\tt
+PS::S32}.
+
+{\tt f\_out}: output. Type {\tt Tfloat \&}. The maximum value of {\tt
+f\_in} among all processes.
+
+{\tt i\_out}: output. Type {\tt Tint \&}. The rank of the process of
+which {\tt f\_in} is the maximum.
+
+%{i\_out}: 出力。{Tint}型。{f\_out}に伴うIDを返す。
+
+%f\_in: 入力。const Tfloat型。
+
+%i\_in: 入力。{const Tint}型。
+
+%{f\_out}: 出力。{Tfloat}型。全プロセスで{f\_in}の最大値を取
+%り、結果を返す。
+
+%{i\_out}: 出力。{Tint}型。{f\_out}に伴うIDを返す。
+
+\item{\bf returned value}
+
+void.
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::getSum}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getSum(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt val}: input. Type {\tt const T}. Type T is allowed to be {\tt
+     PS::S32}, {\tt PS::S64}, {\tt PS::F32}, {\tt PS::F64}, {\tt
+     PS::U32}, {\tt PS::U64}, {\tt PS::F32vec} and {\tt F64vec}.
+     
+%{val}: 入力。{const T}型。
+
+\item{\bf returned value}
+
+Type {\tt T}. Return the global sum of {\tt val}.
+
+%{T}型。全プロセスで{val}の総和を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::Comm::broadcast}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static void PS::Comm::broadcast(T * val,
+                                const PS::S32 n,
+                                const PS::S32 src=0);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{\bf arguments}
+
+{\tt val}: input. Type {\tt T *}. Type {\tt T} is allowed to be any
+types.
+
+{\tt n}: input. Type {\tt const PS::S32}. The number of variables.
+
+{\tt src}: input. Type {\tt const PS::S32}. The rank of source
+process.
+
+%val: 入力。T *型。
+
+%n: 入力。const PS::F32型。T型変数の数。
+
+%src: 入力。const PS::F32型。放送するプロセスランク。デフォルトのランク
+%は0。
+
+\item{\bf returned value}
+
+void.
+
+\item{\bf function}
+
+Broadcast {\tt val} for the {\tt src}-th process.
+
+%プロセスランクsrcのプロセスがn個のT型変数を全プロセスに放送する。
+
+\end{itemize}

@@ -1,0 +1,17 @@
+set term post enh color eps 24
+
+set format y "10^{%L}"
+set logscale y
+#set logscale x 2
+set xlabel "r / Angstrom"
+set grid
+
+set output "accuracy.eps"
+set multiplot layout 2,1
+set yrange [1e-12:1e-6]
+set ylabel "Absolute error"
+p "./key4_0_5th.dat" u 1:4 w lp ps 0.5 not
+set yrange [1e-8:1e-1]
+set title ""
+set ylabel "Relative error"
+p "./key4_0_5th.dat"     u 1:5 w lp ps 0.5 not

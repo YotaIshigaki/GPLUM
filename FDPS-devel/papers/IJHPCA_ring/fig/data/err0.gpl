@@ -1,0 +1,17 @@
+set term post eps 20
+
+set style line  1 linetype 1 linewidth 4 pointtype  6 pointsize 3 linecolor 1
+set style line  2 linetype 2 linewidth 4 pointtype  4 pointsize 3 linecolor 2 dt "_"
+set style line  3 linetype 3 linewidth 4 pointtype  8 pointsize 3 linecolor 3 dt "."
+set style line  4 linetype 4 linewidth 4 pointtype 10 pointsize 3 linecolor 3
+set style line  5 linetype 5 linewidth 4 pointtype 12 pointsize 3 linecolor 4
+
+set output "err0.eps"
+
+set grid
+set xlabel "Time/T_{kep}"
+set ylabel "energy error"
+set key lef top
+pl [0:2.5]"./N5e6_np20_n1024_l16_t0.5_L64_mono.dat" eve 100::3 u ($2/6.28):8 ti "w/ PI" w l ls 1, \
+"./N5e6_np20_n1024_l16_t0.5_L01_mono.dat" eve 100::3 u ($2/6.28):8 ti "w/o PI" w l ls 2, \
+"./N5e6_np20_n1024_l16_t0.5_L64_rotate_mono.dat" eve 100::3 u ($2/6.28):8 ti "w/ PI and w/ MT" w l ls 3

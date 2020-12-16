@@ -1,0 +1,14 @@
+CXX = g++
+CXXFLAGS = -std=c++11 -I/usr/local/dislin
+LDFLAGS = -L/usr/local/dislin -ldiscpp -L/opt/local/lib -lXm 
+TARGET = a.out
+
+.PHONY: all clean
+all:
+	$(CXX) $(CXXFLAGS) -o $(TARGET) main.cpp $(LDFLAGS)
+
+clean:
+	rm -f *.o *.met
+
+distclean: clean
+	rm -f $(TARGET) *.tbl

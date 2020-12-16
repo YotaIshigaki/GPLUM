@@ -1,0 +1,324 @@
+
+Dear Dr. Bronis de Supinski
+
+In response to the referee's report, we have revised our manuscript
+and we resubmit our paper entitled "Implementation and Performance of
+Barnes-Hut N-body algorithm on Extreme-scale Heterogeneous Many-core
+Architectures". In the following, we describe changes we made in the
+form of the reply to referee's comments.
+
+Yours Sincerely,
+Masaki Iwasawa
+Daisuke Namekata
+Ryo Sakamoto
+Takashi Nakamura
+Yasuyuki Kimura
+Keigo Nitadori
+Long Wang
+Miyuki Tsubouchi
+Jun Makino
+Zhao Liu
+Haohuan Fu
+Guangwen Yang
+
+
+To reviewer 1
+
+> Reviewer: 1
+>
+> Comments to the Author
+> In this paper, the authors develop their parallel Barnes-Hut tree code
+> for two heterogeneous architectures, Sunway TaihuLight and PEZY-SC2.
+> The work presents new algorithms to achieve high performance for such
+> currently uncommon architectures and give great performance,
+> and is deserving of publication in IJHPCA. However, underlying
+> ideas and results are not well presented. Addressing the
+> following issues are necessary.
+>
+>
+
+Thank you for your careful reading and various comments on our
+manuscript. In the following your comments, we describe changes we
+made.
+
+> Major comments: Section 3: It is hard to understand the
+>specifications of the system used in this paper. Please use a table
+>to explain the features of the three systems.
+
+We added a table to specify the systems we used in this paper.
+
+
+> Section 3, last paragraph: "Just one of these ... previously known
+> parallelization algorithms". For item number 1, 3, 4, and 5, I agree
+> with this statement. Regarding 2, the well known algorithm by Barnes
+> 1990, which is used in the author's code, can significantly reduce
+> the required memory B/F if the cache memory size is enough. For the
+> application (Saturn's ring) in this paper, how severe is very small
+> memory B/F?
+
+For simple parallel tree algorithm, we need to access all particle
+data about 50 times per step and the size of a particle is about
+64B. Thus the amount of memory access is roughly 3200n.  On the other
+hand, for the force calculation, in the Saturn's ring simulation, the
+interaction list length is about 2000 and the number of operations per
+interaction is about 40. Thus the total number of floating operations
+per step is 80000n. Thus B/F should be much greater than 0.04. We
+added these discussions in section 3.
+
+
+> Section 4.2: the persistent interaction list method. This method
+> should give additional force errors depending on the distribution of
+> particles. To reduce the error, are there any differences in time
+> stepping and tree opening criterion between with and without sharing
+> interaction lists over multiple timesteps?
+
+If we use the persistent interaction list method, the tree node is
+stretched by the shear motion of the ring and this should cause the
+force error. However, in our simulation, this force error is not large
+if we chose reasonably small timestep determined by the collision
+between the particles. Thus the force error is not big issue.
+
+However, the time integration error would be serious because the force
+error is correlated with time. Roughly speaking, since the force error
+increases linearly with time, the integration error increases as
+square of time during the multiple timesteps. The easiest way to
+reduce this integration error, we construct the interaction lists at
+the half of the multiple time steps with shareing the same interaction
+list.
+
+
+
+
+> Figure 3:
+> Why do time per one step on TaihuLight and Shoubu-B show up-down?
+>
+
+This up-down is caused by a discrete change of the tree structure with
+changing the number of particles. In our simulations, the particle are
+almost on 2D plane. Thus, when we change the number of particles by a
+factor of four, the tree structure is self-similarly changed. We added
+these descriptions in section 5.2.
+
+>
+> Minor comments:
+>
+> Abstract: "global" simulation
+> The meaning of "global" is unclear.
+>
+
+We meant whole ring simulation by "global" simulation. We clearly
+mentioned this point in abstract and section 1.
+
+
+> Section 1 5th paragraph: "OpenACC results in rather poor performances
+> in the case of TaihuLight".
+> References are necessary.
+>
+
+Thank you for your comments. We added the references for this
+sentence.
+
+
+> "and thus the current system ... Xeon-D CPU".
+> Typo, without a verb.
+>
+
+Thank you. We corrected it.
+
+> Section 2, 1st paragraph: Clarify the meaning of "more Centaurs".
+>
+
+Centaurs are minor planets between Saturn and Uranus. Thus 10199
+Chariklo is one of Centaurs. We mentioned this description in section
+2.
+
+
+> Section 2, 6th paragraph: "Almost all previous ... only for 10 orbital periods".
+> This paragraph and the last two paragraphs are near duplicates.
+>
+
+Thank you for your comments. we combined these paragraphs.
+
+
+> Section 2, 7th paragraph: "or around 10^12 particle-steps".
+> I do not understand where the number 10^12 comes. Do the authors
+> implicitly assume 1,000 steps are necessary for an orbit? If so, please
+> specify.
+>
+
+Thank you for your comments. Yes, we meant 1,000 steps are necessary
+for an orbit. We specified it in section 2.
+
+
+> Section 4.2, 2nd paragraph: "However, on almost all modern implementation".
+> References are necessary.
+>
+
+Thank you for your comments. We added the references for this
+sentence.
+
+
+> Section 4.5, 3rd paragraph:
+> How can this algorithm reduce the communication cost? Please describe
+> a typical reduction rate.
+>
+
+XXX
+For many supercomputers, MPI_Alltoall is not highly optimized. For
+example, on TaihuLight, the time for MPI_Alltoall with a short message
+size among more than 10000 processes is a several minutes. Thus we
+need to avoid MPI_Alltoall. We added these descriptions in section
+4.5.
+
+
+> Section 4.6, item number 3: Typo "to the the CPE". .
+>
+
+Thank you for your comments. We corrected it.
+
+
+> Section 4.7, 1st paragraph: "does not give very good performance".
+> It would be helpful to mention the performance qualitatively.
+>
+
+XXX
+
+In the compiler generated code, there is no loop unrolling and the
+scheduring is not good. As a results, the achieved performance around
+10 %.
+
+
+> Section 5, last paragraph:
+> Why is this statement made here, what does it mean? What is your intent to compare with
+> results from old and "smaller" supercomputers?
+>
+
+In this paragraph, we compared the results from supercomputers with
+large B/F and would like to state that by using our algorithms,
+
+
+> Figure 5: It would be helpful to plot lines showing idealized scaling.
+>
+
+Thank you for your comments. We added the line showing idealized
+scaling.
+
+
+> Section 5.1, 3rd paragraph: "For particle-tree-node, interaction, we
+> used center-of-mass approximation".
+> When higher-order terms (e.g., quadrupole) are calculated, what
+> performance gain should be expected?
+>
+
+XXX
+
+If we used quadrupole moment with theta=XXX, the averaged force
+accuracy is almost the same as that with monopole approximation with
+theta=0.5. In this case of quadrupole moment approximation, the length
+of the interaction list per particle is reduced by ZZZ% but the
+number of floating point operations per interaction increases by XXX %.
+Thus 
+
+> Section 6, 3rd paragraph:
+> What does "Athread call" mean?
+>
+
+Atherad is a thread library to use CPEs in parallel. We added this
+explanation in section 6.
+
+
+
+
+To Reviewer 2
+
+> Reviewer: 2
+>
+> Comments to the Author
+> This paper is basically well written and presents useful information on the parallel Barnes-Hut algorithm on heterogeneous many-core systems (such as software frameworks, performance measurements, and new algorithms).
+>
+> However, I have several concerns.
+>
+> (1) Section 4.1 introduces several new algorithms. However, their individual effects (improvements) or even combined effects are not shown quantitatively in the paper except for "less than 1%" in Section 4.2. For example, in Section 4.5, "the reduction ... was quite significant" is not a quantitative evaluation.
+>
+
+We described individual effects quantitatively in section 4.
+
+* For using cylindrical coordinate (section 4.3).
+
+  The amount of communication is roughly proportional to the surface
+  area of domains. Thus, if we use 160K (5x32000) nodes, the total
+  surface area of domains in Cartesian coordinate is more than twenty
+  times larger than that in Cylindrical coordinate. We added these
+  descriptions in section 4.3.
+
+* For coordinate rotation (section 4.4).
+
+  In our simulation, each particle moves about 0.4 radian in the theta
+  direction per 64 combined step.  If we use 160K (5x32000) nodes,
+  without coordinate rotation, all particles need to be sent other
+  nodes. However, in the rotating frame, most of particles seem to
+  move very slow. Even the fastest particles moves only 2e-4 radian in
+  the theta direction per 64 combined step. As a result, by using
+  coordinate rotation method, the only 5 % of particles needs to be
+  exchanged. Thus we can reduce communication cost significantly. We
+  added these descriptions in section 4.4.
+
+
+* Elimination of all-to-all communication (section 4.5)
+
+
+
+On TaihuLight, Alltoall is very slow.
+
+* Load balance among computing cores (section 4.6)
+
+  Without this method, the variation of the force calculation cost
+  among all CPEs is about 40 %. On the other hand, with this method,
+  the variation is a few percent. We also found that the time for the
+  force calculation with this method decreases by 10 % compared to
+  without the method. We added these descriptions in section 4.6.
+
+* Interaction Kernel (section 4.7)
+
+XXX
+
+> (2) It is unclear how significantly persistent interaction lists make the calculation inaccurate compared to the pre-existing Barnes-Hut approximation. For example, if we need to make interaction lists 20% long in order to achieve the equivalent degree of approximation, the 20% increased floating operations are just overheads. Note that Hamada et al. 2009 seems not to count increased particle-particle interactions for GPU (compared to the corresponding particle-cell interactions for CPU) for their title's "42 TFlops".
+>
+
+
+XXX
+
+In our simulations, 
+
+Following Hamada et al. (2009), in our simulations, the correction
+factor for the interaction list length compared to CPU calculation is
+about XXX. Thus
+
+
+
+> (3) In Section 4.7, it is unclear how significantly the use of single precision operations make the calculation inaccurate compared to the pre-existing Barnes-Hut approximation.
+>
+
+According to McMillan and Aarseth (1993), the relative force error by
+introducing Barnes-Hut approximation with monopole approximation with
+theta=0.5 is about 0.1%. This force error can be expressed if we use
+more than 10 bits for the force evaluation. Thus the error coming from
+using single precision operations is much smaller than that from the
+Barnes-Hut approximation.  We added these descriptions in section 4.7.
+
+
+
+> (4) Since Section 5.1 shows that "For PEZY-SC2 based systems we used the same operation count as we used for TaihuLight", does this mean that performances such as 1.01PF and efficiency such as 35.5% are more than real values?
+
+Since PEZY-SC2 has special function units (SFU) for reciprocal square
+root operation, we use it for the force calculation. However, the
+latency of SFU is very large. If we considered this latency the
+performance for PEZY-SC2 based system, 
+
+%When we count one operation for reciprocal square root, the number of
+%operations per particle-particle interaction are 43 and 20. In other
+%words, if we use this operation count, the efficiency is 27.3%
+%(777TF). We added these descriptions in section 5.1.
+
+%However, the latency of reciprocal square root operation is very large
+%and if we count this, the performance becomes slightly increase.

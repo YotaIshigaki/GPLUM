@@ -1,0 +1,97 @@
+Job <41533137> has been submitted to queue <q_sw_gb>
+waiting for dispatch ...
+     //==================================\\
+     ||                                  ||
+     || ::::::: ::::::. ::::::. .::::::. ||
+     || ::      ::    : ::    : ::       ||
+     || ::::::  ::    : ::::::'  `:::::. ||
+     || ::      ::::::' ::      `......' ||
+     ||     Framework for Developing     ||
+     ||        Particle Simulator        ||
+     ||     Version 2.0 (2016/06)        ||
+     \\==================================//
+
+       Home   : https://github.com/fdps/fdps 
+       E-mail : fdps-support@mail.jmlab.jp
+       Licence: MIT (see, https://github.com/FDPS/FDPS/blob/master/LICENSE)
+       Note   : Please cite Iwasawa et al. (in press.)
+
+       Copyright (C) 2015 
+         Masaki Iwasawa, Ataru Tanikawa, Natsuki Hosono,
+         Keigo Nitadori, Takayuki Muranushi, Daisuke Namekata
+         Junichiro Makino and many others
+******** FDPS has successfully begun. ********
+etime(MPI startup) = 7.31779
+etime(athread_init) = 0.000104189
+etime(mkdir) = 0.000689029693603516
+s_debug: ./result/debug_00000.dat
+etime(fopen) = 0.0151889324188232
+s_wtime: ./result/wtime_00000.dat
+etime(fopen) = 0.0259289741516113
+This is a sample program of N-body simulation on FDPS!
+Number of processes: 4096
+Number of threads per process: 1
+nx= 2048 ny= 2 nz= 1
+nx= 2048 ny= 2 nz= 1
+n_theta= 1341294 dtheta= 4.6844206469123e-06 offset_theta= 9.70175281905811e-07
+OK 01 @SetParticleKeplerDiskCyl2
+OK 02 @SetParticleKeplerDiskCyl2
+etime(IC) = 1.06483888626099
+PS::TREE_Z_COORD_OFFSET= -2.49479684741168e-06 r_phy= 1.52587890624999e-06
+after make satellite
+dens= 7.28553511468021e-07 total mass= 4.57605370129943e-08 mass_dust= 5.32907051820063e-18 CM_POS_DUST_TOTAL= -1.48362898318743e-08   -1.43525720902402e-14    -8.00352652060472e-23
+SATELLITE[0].r_coll= 1.52587890624999e-06
+r_hill= 1.52587890624999e-06 mass_dust_total= 4.57605370129943e-08
+Epj::r_search= 4.57763671874996e-06
+[nan-0] 0
+OK1 @main
+OK2 @main
+OK3 @main
+dinfo.getNDomain(0)= 2048 dinfo.getNDomain(1)= 2 dinfo.getNDomain(2)= 1
+etime(boundary) = 0.00149703025817871
+etime(rootdomain) = 0.000967025756835938
+etime(DD) = 0.00331401824951172
+etime(multistep2) = 0.00315403938293457
+L0.x = -5.73934723065199e-32
+L0.y = -1.49304322235777e-32
+L0.z = 4.57632946140401e-08
+after ex ptcls (1st)
+*** ParticleSystem class ***
+ptcl_             = 0.147610944 [GB]
+    ptcl_.size()  = 2096527
+    sizeof(Tptcl) = 64 [B]
+idx_remove_ptcl_  = 9.64e-07 [GB]
+ptcl_send_        = 0 [GB]
+ptcl_send_buf_    = 0 [GB]
+ptcl_recv_        = 0 [GB]
+sum               = 0.147611908 [GB]
+sum (psys,max.)   = 0.147611908 [GB]
+etime(exch_ptcl) = 0.232722997665405
+etime(superdomain) = 4.54024600982666
+OK4 @main
+OK6 @main
+DT_TREE      = 0.015625
+Tdur         = 1
+ln_e_refl    = -0.693147180559945
+r_ep         = 1.52587890624999e-06
+r_sat        = 1.52587890624999e-06
+k_dash       = 39.4784176043574
+eta_dash     = 2.70747182312578
+m_planet     = 1
+n_loop_merge = 16
+n_smp_ave    = 512
+theta        = 0.5
+OK7 @main
+np_ave=2096426
+OK8 @main
+OK0 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK1 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK2 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK3 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK4 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK5 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK6 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+OK7 @calcForceAllAndWriteBackReuseListMultiWalkIndexLoopMerge
+******** FDPS has successfully finished. ********
+dispatching ...
+Job 41533137 has been finished.

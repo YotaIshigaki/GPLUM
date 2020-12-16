@@ -1,0 +1,104 @@
+//=======================================================================================
+//  OPLS-AA model
+//    ref: J. Am. Chem. Soc., Vol. 118, No. 45, (1996)  for intermolecular, bond, angle
+//=======================================================================================
+
+//=======================================================================================
+//  definition of parameters on each atoms.
+//    atom_name, res_name, mass, vdw_d, vdw_r
+//      atom_name [-]              string, must be same to "atom_name" in ***.mol2 file.
+//      res_name  [-]              string, up to 3 characters for pdb files.
+//      mass      [atomic weight]
+//      vdw_d     [kcal/mol]       function: V(r) = vdw_d*((vdw_r/r)^12 - 2*(vdw_r/r)^6)
+//      vdw_r     [angstrom]
+//=======================================================================================
+@<PARAM>ATOM
+    CT   alc  12.0107    0.066   3.929
+    HC   alc   1.00794   0.0     3.0
+    OH   alc  15.9994    0.17    3.502
+    HO   alc   1.00794   0.0     3.0
+
+//=======================================================================================
+//  definition of bond potential.
+//    i, j, form, r0, k, a
+//      i, j [-]          string, must be same to "atom_name" in ***.mol2 file.
+//      form [-]          must be "none", "harmonic", or "anharmonic".
+//      r0   [angstrom]   equivalent length
+//      k    [kcal/mol]
+//      a    [/angstrom]  used in "anharmonic" form.
+//
+//    form == "none",       free stretching.
+//    form == "harmonic",   function: V(r) = 0.5*k*(r - r0)^2
+//    form == "anharmonic", function: V(r) = k*[ar^2 - ar^3 + 7/12*ar^4], ar = a*(r - r0)
+//=======================================================================================
+@<PARAM>BOND
+    CT   CT   harmonic   1.526  310.0  0.0
+    HC   CT   harmonic   1.090  331.0  0.0
+    OH   CT   harmonic   1.412  310.0  0.0    // k of CT-CT is used.
+    HO   OH   harmonic   0.946  553.0  0.0
+
+//=======================================================================================
+//  definition of angle potential.
+//    j, i, k, form, theta0, k
+//      j, i, k [-]              j-i-k shape, string, must be same to "atom_name" in ***.mol2 file.
+//      form    [-]              must be "none" or "harmonic". other form is not defined.
+//      theta0  [degree]         equivalent angle
+//      k       [kcal/mol·rad^2]
+//
+//    form == "none",     free rotation.
+//    form == "harmonic", function: V(phi) = 0.5*k*[cos(phi) - cos(theta0)]^2/[sin(theta0)]^2
+//=======================================================================================
+@<PARAM>ANGLE
+    HC   CT   HC   harmonic  109.5  35.0
+    HC   CT   CT   harmonic  109.5  35.0
+    CT   CT   CT   harmonic  109.5  40.0
+    CT   CT   OH   harmonic  109.5  80.0
+    OH   CT   HC   harmonic  109.5  35.0
+    CT   OH   HO   harmonic  108.5  55.0
+
+//=======================================================================================
+//  definition of torsion potential.
+//    shape, i, j, k, l, form, v1, v2, v3
+//      shape       [-]         must be "dihedral" or "improper"
+//      i, j, k, l  [-]         i-jk-l shape, string, must be same to "atom_name" in ***.mol2 file.
+//      form        [-]         must be "none", "cos", or "OPLS_3".
+//
+//    form == "none" case, free rotation.
+//      v1, v2, v3  [-]         ignored.
+//
+//    form == "cos" case, CHARMM style.
+//      v1 = theta0 [degree]    equivalent angle
+//      v2 = v      [kcal/mol]  function: V(phi) = 0.5*v*(1-cos(n*phi - theta0))
+//      v3 = n      [integer]   number of local minimum point
+//
+//    form == "OPLS_3" case, OPLS_AA style.
+//      v1, v2, v3  [kcal/mol]  function: V(phi) = 0.5*v1*(1+cos(phi)) + 0.5*v2*(1-cos(2*phi)) + 0.5*v3*(1+cos(3*phi))
+//=======================================================================================
+@<PARAM>TORSION
+    dihedral  HC   CT   CT   HC   OPLS_3   0.0    0.0    0.318
+    dihedral  HC   CT   CT   CT   OPLS_3   0.0    0.0    0.366
+    dihedral  HC   CT   OH   HO   OPLS_3   0.0    0.0    0.450
+    dihedral  CT   CT   OH   HO   OPLS_3  -0.356 -0.174  0.492
+    dihedral  HC   CT   CT   OH   OPLS_3   0.0    0.0    0.468
+
+    improper  HC   CT   HC   HC   none
+    improper  HC   CT   CT   HC   none
+    improper  CT   CT   CT   HC   none
+    improper  CT   CT   CT   OH   none
+    improper  CT   CT   HC   HC   none
+    improper  CT   CT   HC   CT   none
+    improper  OH   CT   CT   HC   none
+    improper  OH   CT   HC   CT   none
+    improper  CT   CT   OH   CT   none
+    improper  HC   CT   OH   CT   none
+
+
+//=======================================================================================
+//  definition of scaling coefficient for intra-mask.
+//      scaling_LJ       1-2mask  1-3mask  1-4mask...
+//      scaling_coulomb  1-2mask  1-3mask  1-4mask...
+//          [-] numeric. accepts any order length (must be continous from 1-2 level).
+//=======================================================================================
+@<PARAM>SCALING
+scaling_LJ       0.0  0.0  0.125
+scaling_coulomb  0.0  0.0  0.5

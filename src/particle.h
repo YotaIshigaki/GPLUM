@@ -898,7 +898,7 @@ void calcRandomVel(Tpsys & pp,
 
     PS::S32 n_tot0 = 0;
     for(PS::S32 i=0; i<N; i++) {
-        v_disp_glb[i] = (n_ptcl_glb[i] > 0) ? sqrt(v_sq_glb[i] / n_ptcl_glb[i] - v_ave_glb*v_ave_glb) : 0.;
+        v_disp_glb[i] = (n_ptcl_glb[i] > 0) ? sqrt(v_sq_glb[i] / n_ptcl_glb[i] - v_ave_glb[i]*v_ave_glb[i]) : 0.;
         n_tot0 += n_ptcl_glb[i];
     }
     assert ( n_tot == n_tot0 ); 

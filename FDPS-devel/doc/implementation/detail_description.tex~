@@ -1,0 +1,44 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS並列版詳細記述}
+\label{sec:detail}
+
+この節では, ４つのモジュール, すなわち通信用データクラス,領域クラス, 粒
+子群クラス, 相互作用ツリークラスの動作の詳細、実装方法を記述する。様々
+なデータ構造が現れるが, 断らないかぎり, そのデータ構造はそのクラスに属
+す.
+
+\subsection{モジュール詳細}
+\label{sec:detail_module}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{detail_description_comm.tex}
+%\subsubsection{通信用データクラス}
+%\label{sec:detail_module_comm}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\input{detail_description_domain.tex}
+\input{detail_description_domain.tex}
+
+%\subsubsection{領域クラス}
+%\label{sec:detail_module_domain_info}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%\input{detail_description_particle_system.tex}
+\input{detail_description_particle_system.tex}
+%\subsubsection{粒子群クラス}
+%\label{sec:detail_module_paricle_system}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{detail_description_tree_for_force.tex}
+%\subsubsection{相互作用ツリークラス}
+
+
+\subsection{オプション詳細}
+\label{sec:detail_option}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\input{detail_option_particle_mesh.tex}
+%\subsubsection{Particle Meshクラス}

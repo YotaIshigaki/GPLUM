@@ -1,0 +1,28 @@
+Continuing.
+[New Thread 0x7ffff44dd700 (LWP 23285)]
+
+Program received signal SIGINT, Interrupt.
+0x00007ffff653ba74 in opal_progress ()
+   from /home/kawai/local/openmpi-1.10.2/lib/libopen-pal.so.13
+#0  0x00007ffff653ba74 in opal_progress ()
+   from /home/kawai/local/openmpi-1.10.2/lib/libopen-pal.so.13
+#1  0x00007ffff7926135 in ompi_request_default_wait ()
+   from /home/kawai/local/openmpi-1.10.2/lib/libmpi.so.12
+#2  0x00007ffff0f59536 in ompi_coll_tuned_bcast_intra_generic ()
+   from /home/kawai/local/openmpi-1.10.2/lib/openmpi/mca_coll_tuned.so
+#3  0x00007ffff0f599b2 in ompi_coll_tuned_bcast_intra_binomial ()
+   from /home/kawai/local/openmpi-1.10.2/lib/openmpi/mca_coll_tuned.so
+#4  0x00007ffff0f4e783 in ompi_coll_tuned_bcast_intra_dec_fixed ()
+   from /home/kawai/local/openmpi-1.10.2/lib/openmpi/mca_coll_tuned.so
+#5  0x00007ffff793c548 in PMPI_Bcast ()
+   from /home/kawai/local/openmpi-1.10.2/lib/libmpi.so.12
+#6  0x000000000040eb1f in MPI::Comm::Bcast (this=0x8798c0 <MPI::COMM_WORLD>, 
+    buffer=0x14fbc9f0, count=2, datatype=..., root=0)
+    at /home/kawai/local/openmpi-1.10.2/include/openmpi/ompi/mpi/cxx/comm_inln.h:317
+#7  0x0000000000412c23 in ParticleSimulator::DomainInfo::decomposeDomain (
+    this=0x7fffffffd5e0)
+    at /home/kawai/local/FDPS_2.0_20160302/src/domain_info.hpp:884
+#8  0x0000000000424180 in ParticleSimulator::DomainInfo::decomposeDomainAll<ParticleSimulator::ParticleSystem<FP> > (this=0x7fffffffd5e0, psys=...)
+    at /home/kawai/local/FDPS_2.0_20160302/src/domain_info.hpp:1065
+#9  0x000000000040c5b4 in main (argc=1, argv=0x7fffffffd8a8)
+    at atsevb_main.cpp:158
