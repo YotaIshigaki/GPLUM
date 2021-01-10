@@ -250,7 +250,11 @@ PS::S32 readParameter(const char * param_file,
 #ifdef MERGE_BINARY
         } else if ( name == "R_merge" ){
             FPGrav::R_merge = getvalue(value, 1., 1.);
-#endif      
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+        } else if ( name == "v_disp" ){
+            FPGrav::v_disp = getvalue(value, L_MKS/T, L_CGS/T);
+#endif
         } else if ( name == "gamma" ){
             EPGrav::setGamma(getvalue(value, 1., 1.));
 
@@ -376,7 +380,7 @@ void showParameter(char * init_file,
 {
     const PS::F64 L = 14959787070000;
     const PS::F64 M = 1.9884e33;
-    //const PS::F64 T = 365.25*24.*60.*60./(2.*M_PI);
+    const PS::F64 T = 365.25*24.*60.*60./(2.*M_PI);
     
     if ( PS::Comm::getRank() == 0 ){
         std::cout << "Number Of Processes:\t" << PS::Comm::getNumberOfProc() << std::endl;
@@ -443,6 +447,9 @@ void showParameter(char * init_file,
 #endif
 #ifdef MERGE_BINARY
                   << "R_merge       = " << FPGrav::R_merge << std::endl
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+                  << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
 #endif
                   << "gamma         = " << EPGrav::gamma << std::endl
                   << std::scientific << std::setprecision(15)
@@ -563,6 +570,9 @@ void showParameter(char * init_file,
 #endif
 #ifdef MERGE_BINARY
                    << "R_merge       = " << FPGrav::R_merge << std::endl
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+                   << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
 #endif
                    << "gamma         = " << EPGrav::gamma << std::endl
                    << std::scientific << std::setprecision(15)

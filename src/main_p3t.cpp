@@ -84,6 +84,9 @@ PS::F64 FPGrav::increase_factor = 1.;
 #ifdef MERGE_BINARY
 PS::F64 FPGrav::R_merge   = 0.2;
 #endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+PS::F64 FPGrav::v_disp    = 0.;
+#endif
 
 //PS::F64 HardSystem::f = 1.;
 //PS::F64 Collision0::f = 1.;

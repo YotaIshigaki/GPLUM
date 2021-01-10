@@ -39,6 +39,9 @@ collision = yes
 #Chembers = yes
 #merge_binary = yes
 
+#without_sun = yes
+#constant_random_velocity = yes
+
 #output_detail = yes
 #calc_time = yes
 
@@ -133,6 +136,12 @@ endif
 endif
 ifeq ($(merge_binary),yes)
 CFLAGS += -DMERGE_BINARY
+endif
+ifeq ($(without_sun),yes)
+CFLAGS += -DWITHOUT_SUN
+endif
+ifeq ($(constant_random_velocity),yes)
+CFLAGS += -DCONSTANT_RANDOM_VELOCITY
 endif
 
 ifeq ($(output_detail),yes)
