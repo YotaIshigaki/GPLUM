@@ -96,7 +96,7 @@ else
 KERNEL_EPEP = gravity_kernel_EPEP_shared.pikg
 ifeq ($(quad),yes)
 CFLAGS += -DUSE_QUAD
-KERNEL_EPSP = gravity_kernel_EPSP_quad_individual.pikg
+KERNEL_EPSP = gravity_kernel_EPSP_quad_shared.pikg
 #CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleScatter
 else
 KERNEL_EPSP = gravity_kernel_EPSP_mono_shared.pikg
