@@ -871,7 +871,7 @@ void calcRandomVel(Tpsys & pp,
         v_sq_loc[i] = 0.;
         n_ptcl_loc[i] = 0;
     }
-#pragma omp parallel for reduction (+:v_ave_loc[:N], v_sq_loc[:N], n_ptcl_loc[:N])
+    //#pragma omp parallel for reduction (+:v_ave_loc[:N], v_sq_loc[:N], n_ptcl_loc[:N])
     for(PS::S32 i=0; i<n_loc; i++){
         PS::F64vec pos = pp[i].pos;
         PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
@@ -910,7 +910,7 @@ void calcRandomVel(Tpsys & pp,
         v_disp_loc[i] = 0.;
         n_ptcl_loc[i] = 0;
     }
-#pragma omp parallel for reduction (+:v_disp_loc[:N], n_ptcl_loc[:N])
+    #pragma omp parallel for reduction (+:v_disp_loc[:N], n_ptcl_loc[:N])
     for(PS::S32 i=0; i<n_loc; i++){
         PS::F64vec pos = pp[i].pos;
         PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
@@ -989,7 +989,7 @@ PS::F64 calcRandomVelAll(Tpsys & pp,
     PS::S32 n_ptcl_glb = 0;
 
 #ifdef ISOTROPIC
-#pragma omp parallel for reduction (+:v_ave_loc, v_aq_loc, n_ptcl_loc)
+#pragma omp parallel for reduction (+:v_ave_loc, v_sq_loc, n_ptcl_loc)
     for(PS::S32 i=0; i<n_loc; i++){
         PS::F64vec vec = pp[i].vel;
         v_ave_loc += vec;
