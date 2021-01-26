@@ -17,6 +17,7 @@ public:
     }
 };
 
+#define SAFTY_FACTOR 1.05
 
 class EPGrav{
 public:
@@ -86,7 +87,7 @@ public:
 #endif
     }
     PS::F64 getROut_inv() const { return r_out_inv; }
-    PS::F64 getRSearch() const { return r_search; }
+    PS::F64 getRSearch() const { return SAFTY_FACTOR * r_search; }
     
     PS::F64vec getPos() const { return pos; }
     PS::F64 getCharge() const {
@@ -1096,7 +1097,7 @@ void setCutoffRadii(Tpsys & pp)
 #pragma omp parallel for
     for(PS::S32 i=0; i<n_loc; i++){
         pp[i].setROutRSearch();
-        pp[i].setRPlanet();
+        //pp[i].setRPlanet();
     }
 }
 
