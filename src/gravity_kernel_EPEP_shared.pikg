@@ -39,7 +39,7 @@ xjloc = xj - xi[0]
 mjloc = mj
 
 rout2    = rout * rout
-rsearch2 = rsearch * rsearch
+rsearch2 = rsearch * rsearch * 1.1025f
 
 rij     = xjloc - xiloc
 r2_real = rij*rij + eps2
