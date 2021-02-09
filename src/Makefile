@@ -26,7 +26,7 @@ CC = clang++ -std=c++11
 #########################
 ###   Other Options   ###
 #########################
-#individual_cutoff = yes
+individual_cutoff = yes
 quad = yes
 #isotropic = yes
 #gas_drag = yes
