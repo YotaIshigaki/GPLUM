@@ -915,7 +915,7 @@ PS_OMP_PARALLEL_FOR
         }
     }
     
-    template<class Ttc, class Ttp, class Tep, class Tsp>
+    template<class Ttc, class Ttp, class Tep, class Tsp, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
     inline void FindScatterParticle
     (const ReallocatableArray<Ttc> & tc_first,
      const ReallocatableArray<Ttp> & tp_first,
@@ -941,10 +941,6 @@ PS_OMP_PARALLEL_FOR
         dinfo.getPeriodicAxis(pa);
         auto pos_root_domain = dinfo.getPosRootDomain();
         auto len_peri = pos_root_domain.getFullLength();
-        //for(S32 i=0; i<DIMENSION; i++){
-        //    if(pa[i]==false) len_peri[i] = 0.0;
-        //}
-        //const auto outer_boundary_of_my_tree = tc_first[0].mom_.vertex_out_;
         const auto outer_boundary_of_my_tree = tc_first[0].geo_.getVertexOut();
         auto adr_tc = 0;
         auto adr_tree_sp_first = 0;

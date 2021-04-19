@@ -104,42 +104,101 @@ namespace ParticleSimulator{
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\subsubsection{PS::EXCHANGE_LET_MODE型}
-%\label{sec:datatype_enum_exchange_let_mode}
-%
-%\subsubsubsection{概要}
-%
-%EXCHANGE\_LET\_MODE型はLET交換の方法を決定するためのデータ型である。こ
-%れは以下のように定義されている。
+\subsubsection{PS::EXCHANGE\_LET\_MODE型}
+\label{sec:datatype_enum_exchange_let_mode}
 
-%\begin{lstlisting}[caption=boundarycondition]
-%namespace ParticleSimulator{
-%    enum EXCHANGE_LET_MODE{
-%        EXCHANGE_LET_A2A,
-%        EXCHANGE_LET_P2P_EXACT,
-%        EXCHANGE_LET_P2P_FAST,
-%    };
-%}
-%\end{lstlisting}
+\subsubsubsection{概要}
 
-%このデータ型はcalcForceAllAndWriteBack()等の関数の引数として使われる
-%(詳しくはセクション\ref{sec:treeForForceHighLevelAPI}を参照)。
+EXCHANGE\_LET\_MODE型はLET交換の方法を決定するためのデータ型である。こ
+れは以下のように定義されている。
 
-%\subsubsubsection{PS::EXCHANGE\_LET\_A2A}
+\begin{lstlisting}[caption=boundarycondition]
+namespace ParticleSimulator{
+    enum EXCHANGE_LET_MODE{
+        EXCHANGE_LET_A2A,
+        EXCHANGE_LET_P2P_EXACT,
+        EXCHANGE_LET_P2P_FAST,
+    };
+}
+\end{lstlisting}
 
-%LETの交換に{\tt MPI\_Alltoall}を使用する。
+このデータ型は{\tt PS::TreeForForce::setExchangeLet}の引数として使われる．
+(詳しくはセクション\ref{sec:treeForForceInitializeAPI}を参照)．
 
-%\subsubsubsection{PS::EXCHANGE\_LET\_P2P\_EXACT}
+\subsubsubsection{PS::EXCHANGE\_LET\_A2A}
 
-%LETの交換に{\tt MPI\_Alltoall}を使用せず、{\tt MPI\_Allgather}と{\tt
-%MPI\_Isend/recv}を使用する。{\tt MPI\_Alltoall}が効率的に動かない計算
-%機では、こちらの方が速い場合がある。結果は丸め誤差の範囲で
-%PS::EXCHANGE\_LET\_A2Aを用いた場合と一致する。
+LETの交換に{\tt MPI\_Alltoall}を使用する。
 
-%\subsubsubsection{EXCHANGE_LET_P2P_FAST}
+\subsubsubsection{PS::EXCHANGE\_LET\_P2P\_EXACT}
 
-%LETの交換に{\tt MPI\_Alltoall}を使用せず、{\tt MPI\_Allgather}と{\tt
-%MPI\_Isend/recv}を使用する。結果はPS::EXCHANGE\_LET\_P2P\_EXACTを用い
-%た場合と異なるが、より通信量が減っているため、高速に動作する可能性があ
-%る。
+LETの交換に{\tt MPI\_Alltoall}を使用せず、{\tt MPI\_Allgather}と{\tt
+MPI\_Isend/recv}を使用する。{\tt MPI\_Alltoall}が効率的に動かない計算
+機では、こちらの方が速い場合がある。結果は丸め誤差の範囲で
+PS::EXCHANGE\_LET\_A2Aを用いた場合と一致する。
 
+\subsubsubsection{EXCHANGE\_LET\_P2P\_FAST}
+
+LETの交換に{\tt MPI\_Alltoall}を使用せず、{\tt MPI\_Allgather}と{\tt
+MPI\_Isend/recv}を使用する。結果は{\tt PS::EXCHANGE\_LET\_P2P\_EXACT}
+を用いた場合と異なるが、より通信量が減っているため、高速に動作する可能
+性がある。
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{PS::CALC\_DISTANCE\_TYPE型}
+\label{sec:datatype_enum_calc_distance_type}
+
+\subsubsubsection{概要}
+
+{\tt CALC\_DISTANCE\_TYPE}型は粒子の距離の計算法を決定するための型である．
+
+\begin{lstlisting}[caption=boundarycondition]
+namespace ParticleSimulator{
+    enum CALC_DISTANCE_TYPE{
+        CALC_DISTANCE_TYPE_NORMAL = 0,
+        CALC_DISTANCE_TYPE_NEAREST_X = 1,
+	CALC_DISTANCE_TYPE_NEAREST_Y = 2,
+        CALC_DISTANCE_TYPE_NEAREST_XY = 3,
+	CALC_DISTANCE_TYPE_NEAREST_Z = 4,
+	CALC_DISTANCE_TYPE_NEAREST_XZ = 5,
+	CALC_DISTANCE_TYPE_NEAREST_YZ = 6,
+	CALC_DISTANCE_TYPE_NEAREST_XYZ = 7,
+    };
+}
+\end{lstlisting}
+
+このデータ型は{\tt PS::TreeForForce}のテンプレート引数として与えられる．
+(セクション\ref{sec:module_standard_treeforce_object}を参照)．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NORMAL}
+
+領域内の粒子のL2ノルムを計算する．特に指定のない場合は、この値が使われる．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_X}
+
+x方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_Y}
+
+Y方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_Z}
+
+Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_XY}
+
+X,Y方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_XZ}
+
+X,Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_YZ}
+
+Y,Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_XYZ}
+
+X,Y,Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．

@@ -288,17 +288,16 @@ PS_OMP_PARALLEL_FOR
             for(S32 i=0; i<n_loc_tot_; i++){
                 tp_glb_[i].setFromEP(epj_org_[i], i, morton_key_);
             }
-#if defined(USE_STD_SORT)
+#if defined(PARTICLE_SIMULATOR_USE_RADIX_SORT)
+            rs_.lsdSort(tp_glb_.getPointer(), tp_buf.getPointer(), 0, n_loc_tot_-1);
+#elif defined(PARTICLE_SIMULATOR_USE_STD_SORT)
             std::sort(tp_glb_.getPointer(), tp_glb_.getPointer()+n_loc_tot_, 
                       [](const TreeParticle & l, const TreeParticle & r )
-                      ->bool{return l.getKey() < r.getKey();} );            
-
-#elif defined(USE_MERGE_SORT)
+                      ->bool{return l.getKey() < r.getKey();} );
+#else
 	    MergeSortOmp(tp_glb_, 0, n_loc_tot_,
 			 [](const TreeParticle & l, const TreeParticle & r )
 			 ->bool{return l.getKey() < r.getKey();} );
-#else
-            rs_.lsdSort(tp_glb_.getPointer(), tp_buf.getPointer(), 0, n_loc_tot_-1);
 #endif
             for(S32 i=0; i<n_loc_tot_; i++){
                 //const S32 adr = tp_loc_[i].adr_ptcl_;
@@ -393,16 +392,16 @@ PS_OMP_PARALLEL_FOR
         adr_org_from_adr_sorted_glb_.resizeNoInitialize(n_glb_tot_);
         if(!reuse){
             ReallocatableArray<TreeParticle> tp_buf(n_glb_tot_, n_glb_tot_, MemoryAllocMode::Pool);
-            //tp_buf.resizeNoInitialize(n_glb_tot_);
-#if defined(USE_STD_SORT)
+#if defined(PARTICLE_SIMULATOR_USE_RADIX_SORT)
+            rs_.lsdSort(tp_glb_.getPointer(), tp_buf.getPointer(), 0, n_glb_tot_-1);
+#elif defined(PARTICLE_SIMULATOR_USE_STD_SORT)
             std::sort(tp_glb_.getPointer(), tp_glb_.getPointer()+n_glb_tot_, 
                       [](const TreeParticle & l, const TreeParticle & r )
                       ->bool{return l.getKey() < r.getKey();} );
-#elif defined(USE_MERGE_SORT)
+#else
             const S32 n_add = n_glb_tot_ - n_loc_tot_;
 	    ReallocatableArray<TreeParticle> tp_add_buf(n_add, n_add, MemoryAllocMode::Pool);
 	    ReallocatableArray<TreeParticle> tp_loc_buf(n_loc_tot_, n_loc_tot_, MemoryAllocMode::Pool);
-
 PS_OMP_PARALLEL_FOR
 	    for(S32 i=0; i<n_add; i++){
 	      tp_add_buf[i] = tp_glb_[n_loc_tot_+i];
@@ -412,21 +411,17 @@ PS_OMP_PARALLEL_FOR
 	      tp_loc_buf[i] = tp_glb_[i];
 	    }
 	    //for(S32 i=1; i<n_loc_tot_; i++){ assert(tp_loc_buf[i-1].getKey() <= tp_loc_buf[i].getKey()); }
-
 	    MergeSortOmp(tp_add_buf, 0, n_add,
 			 [](const TreeParticle & l, const TreeParticle & r )
 			 ->bool{return l.getKey() < r.getKey();} );
 	    //for(S32 i=1; i<n_add; i++){ assert(tp_add_buf[i-1].getKey() <= tp_add_buf[i].getKey()); }
 
-	    MergeSortOmpImpl(tp_loc_buf.getPointer(0), tp_loc_buf.getPointer(n_loc_tot_), tp_add_buf.getPointer(0), tp_add_buf.getPointer(n_add),
+	    MergeSortOmpImpl(tp_loc_buf.getPointer(0), tp_loc_buf.getPointer(n_loc_tot_),
+			     tp_add_buf.getPointer(0), tp_add_buf.getPointer(n_add),
 			     tp_glb_.getPointer(0),
 			     [](const TreeParticle & l, const TreeParticle & r )
 			     ->bool{return l.getKey() < r.getKey();} );
-
 	    //for(S32 i=1; i<n_add; i++){ assert(tp_glb_[i-1].getKey() <= tp_glb_[i].getKey()); }
-	    
-#else
-            rs_.lsdSort(tp_glb_.getPointer(), tp_buf.getPointer(), 0, n_glb_tot_-1);
 #endif
 PS_OMP_PARALLEL_FOR
             for(S32 i=0; i<n_glb_tot_; i++){

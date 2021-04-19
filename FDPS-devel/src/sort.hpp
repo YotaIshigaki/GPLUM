@@ -11,12 +11,12 @@ namespace ParticleSimulator{
     
     template<>
     inline size_t MyGetClassSize<KeyT>(){
-#if defined(USE_128BIT_KEY) 
-        return (size_t)16;
-#elif defined(USE_96BIT_KEY)
+#if defined(PARTICLE_SIMULATOR_USE_64BIT_KEY)
+        return (size_t)8;
+#elif defined(PARTICLE_SIMULATOR_USE_96BIT_KEY)
         return (size_t)12;
 #else
-        return (size_t)8;
+        return (size_t)16;
 #endif
     }
     
@@ -154,10 +154,10 @@ namespace ParticleSimulator{
                        Tpred pred){
     */
     template<typename T, typename Tpred>
-    void SampleSortOmp(ReallocatableArray<T> & val,
-                       const int n0,
-                       const int n1,
-                       Tpred pred){
+    inline void SampleSortOmp(ReallocatableArray<T> & val,
+			      const int n0,
+			      const int n1,
+			      Tpred pred){
         assert(n1>=n0);
 #ifndef PARTICLE_SIMULATOR_THREAD_PARALLEL
         std::sort(val.getPointer(n0), val.getPointer(n1), pred);
@@ -301,9 +301,9 @@ namespace ParticleSimulator{
     }
 
     
-#ifdef PARTICLE_SIMULATOR_THREAD_PARALLEL
+
     template<typename T, typename Tpred>
-    void FindSeparator(int & id_big, int & id_sml, const T * big, const T * sml, const int n_big, const int n_sml, const int id_mrg, Tpred pred){
+    inline void FindSeparator(int & id_big, int & id_sml, const T * big, const T * sml, const int n_big, const int n_sml, const int id_mrg, Tpred pred){
         const int id_start_big = std::min(id_mrg, n_big);
         const int id_start_sml = std::max(0, id_mrg-n_big);
         const int id_end_big   = std::max(0, id_mrg-n_sml);
@@ -348,23 +348,21 @@ namespace ParticleSimulator{
 #endif
     }
 
-    
-    template<typename T, typename Tpred>
+
     /*
+      template<typename T, typename Tpred>
     void MergeSortOmpImpl(ReallocatableArray<T> & val0, const int nb0, const int ne0,
                           ReallocatableArray<T> & val1, const int nb1, const int be1,
                           ReallocatableArray<T> & res, Tpred pred){    
     */
-    void MergeSortOmpImpl(T * first0, T * last0, T * first1, T * last1, T * res, Tpred pred){
+    template<typename T, typename Tpred>
+    inline void MergeSortOmpImpl(T * first0, T * last0, T * first1, T * last1, T * res, Tpred pred){
         //const auto n0 = ne0 - nb0;
         //const auto n1 = ne1 - nb1;
         const auto n0 = last0 - first0;
         const auto n1 = last1 - first1;
         const auto n  = n0+n1;
-#if 0
-        std::merge(first0, last0, first1, last1, res, pred);
-        //std::merge(val0.getPointer(nb0), val0.getPointer(ne0), val0.getPointer(nb1), val0.getPointer(ne1), res, pred);
-#else
+#if defined(PARTICLE_SIMULATOR_THREAD_PARALLEL)
         //T * big = (n0 >= n1) ? val0.getPointer(nb0) : val1.getPointer(nb1);
         //T * sml = (n0 < n1)  ? val0.getPointer(nb0) : val1.getPointer(nb1);
         T * big = (n0 >= n1) ? first0 : first1;
@@ -413,13 +411,11 @@ namespace ParticleSimulator{
             }
             std::merge(big+head_b, big+end_b, sml+head_s, sml+end_s, res+head_r[ith], pred);
         }
+#else
+	std::merge(first0, last0, first1, last1, res, pred);
 #endif
     }
 
-
-
-#endif
-    
     template<typename T, typename Tpred>
     /*
     void MergeSortOmp(T * first,
@@ -427,10 +423,10 @@ namespace ParticleSimulator{
                       const int n,
                       Tpred pred){
     */
-    void MergeSortOmp(ReallocatableArray<T> & val,
-                      const int n0,
-                      const int n1,
-                      Tpred pred){
+    inline void MergeSortOmp(ReallocatableArray<T> & val,
+			     const int n0,
+			     const int n1,
+			     Tpred pred){
 #ifndef PARTICLE_SIMULATOR_THREAD_PARALLEL
         std::sort(val.getPointer(n0), val.getPointer(n1), pred);
 #else
@@ -507,13 +503,6 @@ namespace ParticleSimulator{
         //std::cerr<<"t1= "<<t1<<" t2= "<<t2<<std::endl;
 #endif
     }
-
-    /*
-    template<typename T>
-    void MergeSort12(const ReallocatableArray<T> & val){
-        
-    }
-    */
 }
 
 

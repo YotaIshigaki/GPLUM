@@ -59,13 +59,11 @@ namespace ParticleSimulator{
             mom_.init();
         }
         void clear(){
-            //std::cerr<<"clear"<<std::endl;
             n_ptcl_ = adr_tc_ = adr_ptcl_ = level_ = 0;
             mom_.init();
             geo_.clear();
         }
         void clearMoment(){
-            //std::cerr<<"clear moment"<<std::endl;
             mom_.init();
             geo_.clear();
         }
@@ -156,10 +154,8 @@ namespace ParticleSimulator{
                        S32 & err,
                        std::ostream & fout=std::cout) const {
             if( !(this->isLeaf(n_leaf_limit)) ){
-                //std::cerr<<"adr_tc_="<<adr_tc_<<std::endl;
                 const TreeCell * child = first_tc_ptr + adr_tc_;
                 for(S32 ic=0; ic<N_CHILDREN; ic++){
-                    //std::cerr<<"(child + ic)->n_ptcl_="<<(child + ic)->n_ptcl_<<std::endl;
                     if((child + ic)->n_ptcl_ <= 0) continue;
                     const Tep * ptcl = first_ep_ptr + adr_ptcl_;
                     for(S32 ip=0; ip<n_ptcl_; ip++, ptcl++){
@@ -173,9 +169,6 @@ namespace ParticleSimulator{
                             err++;
                         }
                     }
-                    //std::cerr<<"ic="<<ic<<std::endl;
-                    //std::cerr<<"SHIFT_CENTER[ic]="<<SHIFT_CENTER[ic]<<std::endl;
-                    //std::cerr<<"center+SHIFT_CENTER[ic]*half_length="<<center+SHIFT_CENTER[ic]*half_length<<std::endl;
                     (child + ic)->checkTree
                         (first_ep_ptr, first_tc_ptr,
                          center+SHIFT_CENTER[ic]*half_length, half_length*0.5,

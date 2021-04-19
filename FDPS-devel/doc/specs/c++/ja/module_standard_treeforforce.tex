@@ -4,6 +4,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsubsection{オブジェクトの生成}
+\label{sec:module_standard_treeforce_object}
 
 このクラスは以下のように宣言されている。
 \begin{lstlisting}[caption=TreeForForce0]
@@ -14,16 +15,18 @@ namespace ParticleSimulator {
              class TEpj,
              class TMomLocal,
              class TMomGlobal,
-             class TSpj>
+             class TSpj,
+             enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE = CALC_DISTANCE_TYPE_NORMAL>
     class TreeForForce;
 }
 \end{lstlisting}
 
-テンプレート引数は順に、PS::SEARCH\_MODE型(ユーザー選択)、Forceク
-ラス(ユーザー定義)、EssentialParticleIクラス(ユーザー定義)、
+テンプレート引数は順に、PS::SEARCH\_MODE型(ユーザー選択)、Forceクラス
+(ユーザー定義)、EssentialParticleIクラス(ユーザー定義)、
 EssentialParticleJ型(ユーザー定義)、ローカルツリーのMoment型(ユーザー
 定義)、グローバルツリーのMoment型(ユーザー定義)、SuperParticleJ型(ユー
-ザー定義)である。
+ザー定義)、{\tt PS::CALC\_DISTANCE\_TYPE}型は粒子間の距離の計算方法を
+決定する為にFDPSで定義されている型である．
 
 PS::SEARCH\_MODE型に応じてラッパーを用意した。これらのラッパーを使えば
 入力するテンプレート引数の数が減るので、こちらのラッパーを用いることを
@@ -280,6 +283,7 @@ void PS::TreeForForce::MemberFunction2(TTT arg1);
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsubsubsection{初期設定}
+\label{sec:treeForForceInitializeAPI}
 
 初期設定関連のAPIの宣言は以下のようになっている。このあと各APIについて
 記述する。
@@ -360,6 +364,60 @@ n\_group\_limit。const PS::U32型。相互作用リストを共有する粒子�
 \item {\bf 機能}
 
 相互作用ツリークラスのオブジェクトを初期化する。
+
+\end{itemize}
+
+
+
+
+\subsubsubsubsubsection{PS::TreeForForce::setCommInfo}
+
+\begin{screen}
+\begin{verbatim}
+void setCommInfo(const CommInfo & comm);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+comm: 入力．{\tt CommInfo \&}型．
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+ユーザが{\tt comm}に割り当てたコミュニケータ上で通信を行う．
+
+\end{itemize}
+
+
+
+\subsubsubsubsubsection{PS::TreeForForce::setExchagneLETMode}
+
+\begin{screen}
+\begin{verbatim}
+void setExchagneLETMode(enum PS::EXCHANGE\_LET\_MODE elm)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+elm: 入力．{\tt enum PS::EXCHANGE\_LET\_MODE}型．
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+LET交換の方法を{\tt elm}で指定することができる．許される入力は、
+\ref{sec:datatype_enum_exchange_let_mode}で挙げた列挙型のみ。呼ばない場合は、{\tt PS::EXCHANGE\_LET\_A2A}が使われる．
 
 \end{itemize}
 

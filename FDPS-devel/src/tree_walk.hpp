@@ -456,7 +456,7 @@ namespace ParticleSimulator{
         return open_bit;
     }
 
-    template<class TSM, class Ttc>
+    template<class TSM, class Ttc, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
     inline U32 GetOpenBit(TagSearchLongSymmetry,
                           const ReallocatableArray<Ttc> & tc_first,
                           const S32 adr_tc,
@@ -488,7 +488,7 @@ namespace ParticleSimulator{
         return open_bit;
     }
 
-    template<class TSM, class Ttc>
+    template<class TSM, class Ttc, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
     inline U32 GetOpenBit(TagSearchLongCutoff,
                           const ReallocatableArray<Ttc> & tc_first,
                           const S32 adr_tc,
@@ -527,7 +527,7 @@ namespace ParticleSimulator{
         return open_bit;
     }
     
-    template<class TSM, class Ttc>
+    template<class TSM, class Ttc, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
     inline U32 GetOpenBit(TagSearchShortScatter,
                           const ReallocatableArray<Ttc> & tc_first,
                           const S32 adr_tc,
@@ -543,7 +543,7 @@ namespace ParticleSimulator{
         return open_bit;
     }
 
-    template<class TSM, class Ttc>
+    template<class TSM, class Ttc, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
     inline U32 GetOpenBit(TagSearchShortSymmetry,
                           const ReallocatableArray<Ttc> & tc_first,
                           const S32 adr_tc,
@@ -562,7 +562,7 @@ namespace ParticleSimulator{
         return open_bit;
     }
 
-    template<class TSM, class Ttc>
+    template<class TSM, class Ttc, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
     inline U32 GetOpenBit(TagSearchShortGather,
                           const ReallocatableArray<Ttc> & tc_first,
                           const S32 adr_tc,
@@ -605,8 +605,8 @@ namespace ParticleSimulator{
         const S32 adr_tc_child = tc_cur->adr_tc_;
         const F64 inv_theta_sq = (theta > 0.0) ? 1.0 / (theta*theta) : -1.0;
         if( !(tc_cur->isLeaf(n_leaf_limit)) ){ // not leaf
-	    U32 open_bit = GetOpenBit<TSM, Ttc, CALC_DISTANCE_TYPE>(typename TSM::search_type(), tc_first, adr_tc_child,
-								    target_box, len_peri, inv_theta_sq);
+	  U32 open_bit = GetOpenBit<TSM, Ttc, CALC_DISTANCE_TYPE>(typename TSM::search_type(), tc_first, adr_tc_child,
+						target_box, len_peri, inv_theta_sq);
             for(S32 i=0; i<N_CHILDREN; i++){
                 if( !((open_bit>>(i+N_CHILDREN)) & 0x1) ) continue;
                 else if( (open_bit>>i) & 0x1 ){ // close

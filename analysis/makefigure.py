@@ -201,8 +201,8 @@ def makeCumulativeNumberDistribution(datfiles, pngfile, \
         
         if xrange==None :
             mass = [i for i, j in cumulativeNumber]
-            xmin = min(mass+[xmin])*M
-            xmax = max(mass+[xmax])*M
+            xmin = min(mass+[xmin/M])*M
+            xmax = max(mass+[xmax/M])*M
         if yrange==None :
             Nc = [j for i, j in cumulativeNumber]
             ymin = min(Nc+[ymin])

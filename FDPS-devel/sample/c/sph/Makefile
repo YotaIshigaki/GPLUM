@@ -16,11 +16,11 @@ CXX=g++
 #CC=mpicc
 #CXX=mpic++
 # [Option 1] w/o optimization
-CFLAGS   = -Wall -Wextra -ftrapv -fexceptions -g3 $(FDPS_INC)
-CXXFLAGS = -std=c++11 -Wall -Wextra -ftrapv -fexceptions -g3 $(FDPS_INC)
+#CFLAGS   = -Wall -Wextra -ftrapv -fexceptions -g3 $(FDPS_INC)
+#CXXFLAGS = -std=c++11 -Wall -Wextra -ftrapv -fexceptions -g3 $(FDPS_INC)
 # [Option 2] w/ optimization 
-#CFLAGS = -O3 -ffast-math -funroll-loops $(FDPS_INC)
-#CXXFLAGS = -std=c++11 -O3 -ffast-math -funroll-loops $(FDPS_INC)
+CFLAGS = -O3 -ffast-math -funroll-loops $(FDPS_INC)
+CXXFLAGS = -std=c++11 -O3 -ffast-math -funroll-loops $(FDPS_INC)
 LDFLAGS = 
 # OpenMP options
 #CFLAGS   += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp

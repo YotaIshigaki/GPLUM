@@ -733,7 +733,7 @@ PS_OMP_PARALLEL_FOR
                                                   Tfunc_dispatch pfunc_dispatch,
                                                   Tfunc_retrieve pfunc_retrieve,
                                                   const S32 n_walk_limit,
-                                                  const bool clear);        
+                                                  const bool clear);
         template<class Tfunc_dispatch, class Tfunc_retrieve>
         void calcForceNoWalkForMultiWalkIndex(Tfunc_dispatch pfunc_dispatch,
                                               Tfunc_retrieve pfunc_retrieve,
@@ -760,7 +760,7 @@ PS_OMP_PARALLEL_FOR
                                                  Tfunc_dispatch pfunc_dispatch,
                                                  Tfunc_retrieve pfunc_retrieve,
                                                  const S32 n_walk_limit,
-                                                 const bool clear);        
+                                                 const bool clear);
         template<class Tfunc_dispatch, class Tfunc_retrieve>
         void calcForceNoWalkForMultiWalkPtcl(Tfunc_dispatch pfunc_dispatch,
                                              Tfunc_retrieve pfunc_retrieve,
@@ -923,44 +923,42 @@ PS_OMP_PARALLEL_FOR
                                  const bool clear_force=true,
                                  const INTERACTION_LIST_MODE list_mode = FDPS_DFLT_VAL_LIST_MODE,
                                  const bool flag_serialize=false){
+	    DEBUG_PRINT_MAKING_TREE(comm_info_);
             if (flag_serialize==true) {
                 PARTICLE_SIMULATOR_PRINT_ERROR("serialization is not yet supported.");
                 Abort(-1);
             }
             if(list_mode == MAKE_LIST || list_mode == MAKE_LIST_FOR_REUSE){
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 setRootCell(dinfo);
-
+		
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 mortonSortLocalTreeOnly();
 
                 epi_org_.freeMem();
-
+		
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 linkCellLocalTreeOnly();
 
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 calcMomentLocalTreeOnly();
 
-
-		//std::cerr<<"rank= "<<Comm::getRank()
-		//	 <<" tc_loc_[0].geo_.vertex_out_= "<<tc_loc_[0].geo_.vertex_out_
-		//	 <<std::endl;
-		//Finalize();
-		//exit(1);
-		
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 exchangeLocalEssentialTree(dinfo, false);
 
-		//Finalize();
-		//exit(1);
-		
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 setLocalEssentialTreeToGlobalTree(false);
 
-                epj_send_.freeMem(1);
-                spj_send_.freeMem(1);
-
+                epj_send_.freeMem();
+                spj_send_.freeMem();
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 mortonSortGlobalTreeOnly();
 
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 linkCellGlobalTreeOnly();
 
-                epj_org_.freeMem(1);
-                spj_org_.freeMem(1);
+                epj_org_.freeMem();
+                spj_org_.freeMem();
 
 		/*
                 if(comm_info_.getRank()==0){
@@ -1012,43 +1010,65 @@ PS_OMP_PARALLEL_FOR
                 comm_info_.barrier();
                 //exit(1);
 #endif
+
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 calcMomentGlobalTreeOnly();
 
-		//std::cerr<<"tc_glb_[0].mom_.getCharge()= "<<tc_glb_[0].mom_.getCharge()<<std::endl;
-		
                 if(list_mode == MAKE_LIST){
+
+		    DEBUG_PRINT_MAKING_TREE(comm_info_);
                     makeIPGroup();
+
+		    DEBUG_PRINT_MAKING_TREE(comm_info_);
                     calcForce(pfunc_ep_ep, pfunc_ep_sp, clear_force);
+
                 }
                 else{
+
+		    DEBUG_PRINT_MAKING_TREE(comm_info_);
                     addMomentAsSp();
+
+		    DEBUG_PRINT_MAKING_TREE(comm_info_);
                     makeIPGroup();
+
+		    DEBUG_PRINT_MAKING_TREE(comm_info_);
                     makeInteractionListIndexLong(dinfo);
+
+		    DEBUG_PRINT_MAKING_TREE(comm_info_);
                     calcForceNoWalk(pfunc_ep_ep, pfunc_ep_sp, clear_force);
                 }
             }
             else if(list_mode == REUSE_LIST){
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 mortonSortLocalTreeOnly(true);
 
-                epi_org_.freeMem(1);
-                
+                epi_org_.freeMem();
+
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 calcMomentLocalTreeOnly();
 
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 exchangeLocalEssentialTree(dinfo, true);
 
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 setLocalEssentialTreeToGlobalTree(true);
 
-                epj_send_.freeMem(1);
-                spj_send_.freeMem(1);
-                
+                epj_send_.freeMem();
+                spj_send_.freeMem();
+
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 mortonSortGlobalTreeOnly(true);
 
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 calcMomentGlobalTreeOnly();
 
-                spj_org_.freeMem(1);
-                
+                spj_org_.freeMem();
+
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 AddMomentAsSpImpl(typename TSM::force_type(), tc_glb_, spj_sorted_.size(), spj_sorted_);
                 n_walk_local_ += ipg_.size();
+
+		DEBUG_PRINT_MAKING_TREE(comm_info_);
                 calcForceNoWalk(pfunc_ep_ep, pfunc_ep_sp, clear_force);
             }
             else{
@@ -1057,6 +1077,7 @@ PS_OMP_PARALLEL_FOR
                 Abort(-1);
             }
             freeObjectFromMemoryPool();
+	    DEBUG_PRINT_MAKING_TREE(comm_info_);
 #ifdef PS_DEBUG_TREE_FORCE
             MemoryPool::checkEmpty();
 #endif

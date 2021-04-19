@@ -16,6 +16,9 @@ SRC = test_comm.cc
 
 PROGRAM = $(SRC:%.cc=%.out)
 
+test_a2a.out:test_a2a.cpp
+	$(CCC) -std=c++11 -I$(PS) $(CFLAGS) -o $@ $<
+
 test_comm_info.out:test_comm_info.cpp
 	$(CCC) -std=c++11 -I$(PS) $(GTEST_PATH) $(CFLAGS) -o $@ $< $(GTEST_LIB)
 

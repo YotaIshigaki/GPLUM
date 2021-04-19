@@ -622,6 +622,7 @@ namespace ParticleSimulator{
         }
     }
 
+    /*
     template<class Tep>
     void CheckMortonSort(const S32 n,
                          TreeParticle tp[],
@@ -655,7 +656,8 @@ namespace ParticleSimulator{
             fout<<"checkMortonSort: PASS"<<std::endl;
         }
     }
-
+    */
+    
     /*
     template<class Tep, class Tsp>
     void CheckMortonSort(const S32 n,

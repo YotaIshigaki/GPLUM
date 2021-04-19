@@ -134,13 +134,13 @@ Further details about the format of FDPS directive can be found in the specifica
 You must define an interaction function \textsf{calcForceEpEp} as \procedure in \progLangName. It should contain actual code for the calculation of interaction between particles. Listing~\ref{nbody_calcForceEpEp} shows the implementation of \textsf{calcForceEpEp} (see \describeForEach{\texttt{user-defined.hpp}}{\texttt{user\_defined.F90}}{\texttt{user\_defined.h}}).
 
 \ifCpp % for C++
-\lstinputlisting[linerange={122-146},caption=Function \textsf{calcForceEpEp},label=nbody_calcForceEpEp]{../../../../sample/c++/nbody/user-defined.hpp}
+\lstinputlisting[linerange={162-186},caption=Function \textsf{calcForceEpEp},label=nbody_calcForceEpEp]{../../../../sample/c++/nbody/user-defined.hpp}
 \endifCpp
 \ifFtn % for Fortran
-\lstinputlisting[linerange={144-191},caption=Function  \textsf{calcForceEpEp},label=nbody_calcForceEpEp]{../../../../sample/fortran/nbody/user_defined.F90}
+\lstinputlisting[linerange={245-292},caption=Function  \textsf{calcForceEpEp},label=nbody_calcForceEpEp]{../../../../sample/fortran/nbody/user_defined.F90}
 \endifFtn
 \ifC % for C
-\lstinputlisting[linerange={3-38},caption=Function  \textsf{calcForceEpEp},label=nbody_calcForceEpEp]{../../../../sample/c/nbody/user_defined.c}
+\lstinputlisting[linerange={85-120},caption=Function  \textsf{calcForceEpEp},label=nbody_calcForceEpEp]{../../../../sample/c/nbody/user_defined.c}
 \endifC
 \ifCpp % for C++
 Here, we show the implementation for the case that the code is executed on CPUs without the Phantom-GRAPE library.
@@ -159,10 +159,10 @@ In this sample code, it is implemented as the \procedure \texttt{calc\_gravity\_
 You must defined an interaction function \textsf{calcForceEpSp} as \procedure in \progLangName. It should contain actual code for the calculation of interaction between a particle and a superparticle. Listing~\ref{nbody_calcForceEpSp} shows the implementation of \textsf{calcForceEpSp} (see \texttt{user\_defined.F90}).
 
 \ifFtn % for Fortran
-\lstinputlisting[linerange={194-231},caption=calcForceEpSp,label=nbody_calcForceEpSp]{../../../../sample/fortran/nbody/user_defined.F90}
+\lstinputlisting[linerange={295-332},caption=calcForceEpSp,label=nbody_calcForceEpSp]{../../../../sample/fortran/nbody/user_defined.F90}
 \endifFtn
 \ifC % for C
-\lstinputlisting[linerange={40-75},caption= calcForceEpSp,label=nbody_calcForceEpSp]{../../../../sample/c/nbody/user_defined.c}
+\lstinputlisting[linerange={122-157},caption= calcForceEpSp,label=nbody_calcForceEpSp]{../../../../sample/c/nbody/user_defined.c}
 \endifC
 
 In this sample code, it is implemented as the \procedure \texttt{calc\_gravity\_ep\_sp}. Its dummy arguments are an array of \textsf{EssentialParticleI} type, the number of \textsf{EssentialParticleI} type variables, an array of superparticle type, the number of superparticle type variables, an array of \textsf{Force} type. Note that the data types of \textsf{EssentialParticleI} type and \textsf{Force type} are \texttt{full\_particle} type because \textsf{FullParticle} type acts as these user-defined types in this sample code. Also note that the data type of superparticle type must be consistent with the type of a \textsf{Tree} object used in the calculation of interactions.
@@ -346,22 +346,22 @@ fdps_init_psys(psys_num);
 
 
 \subsubsubsubsection{Initialization of \textsf{Tree} object}
-Next, we must initialize a \textsf{Tree} object. The initialization of a \textsf{Tree} object is done by calling the API \describeForEach{\texttt{initialize}}{\texttt{init\_tree}}{\texttt{fdps\_init\_tree}}. This API should be given a rough number of particles. In this sample, we set the total number of particles \texttt{ntot}:
+Next, we must initialize a \textsf{Tree} object. The initialization of a \textsf{Tree} object is done by calling the API \initTree . This API should be given an integer for determining the initial sizes of internally-used arrays. A number comparable to the number of local particles is enough. In this sample, we set the number of local particles (\texttt{n\_loc}):
 
 \ifCpp % for C++
 \begin{lstlisting}[caption=Initialization of \textsf{Tree} object]
-tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
+tree_grav.initialize(n_loc, theta, n_leaf_limit, n_group_limit);
 \end{lstlisting}
 \endifCpp
 \ifFtn % for Fortran
 \begin{lstlisting}[caption=Initialization of \textsf{Tree} object]
-call fdps_ctrl%init_tree(tree_num,ntot,theta, &
+call fdps_ctrl%init_tree(tree_num,n_loc,theta, &
                          n_leaf_limit,n_group_limit)
 \end{lstlisting}
 \endifFtn
 \ifC % for C
 \begin{lstlisting}[caption=Initialization of \textsf{Tree} object]
-fdps_init_tree(tree_num,ntot,theta,
+fdps_init_tree(tree_num,n_loc,theta,
                n_leaf_limit,n_group_limit);
 \end{lstlisting}
 \endifC
@@ -1128,26 +1128,26 @@ fdps_init_psys(psys_num);
 
 
 \subsubsubsubsection{Initialization of Tree objects}
-Finally, \textsf{Tree} objects should be initialized. This is done by calling API \describeForEach{\texttt{initialize}}{\texttt{init\_tree}}{\texttt{fdps\_init\_tree}} of \textsf{Tree} object. This API should be given the rough number of particles. In this sample, we set three times the total number of particles:
+Finally, \textsf{Tree} objects should be initialized. This is done by calling API \initTree. This API should be given an integer for determining the initial sizes of internally-used arrays. A number comparable to the number of local particles is enough. In this sample, we set three times the number of local particles:
 \ifCpp % for C++
 \begin{lstlisting}[caption=Initialization of tree objects]
-dens_tree.initialize(3 * sph_system.getNumberOfParticleGlobal());
-hydr_tree.initialize(3 * sph_system.getNumberOfParticleGlobal());
+dens_tree.initialize(n_loc);
+hydr_tree.initialize(n_loc);
 \end{lstlisting}
 \endifCpp
 \ifFtn % for Fortran
 \begin{lstlisting}[caption=Initialization of tree objects]
-call fdps_ctrl%init_tree(dens_tree_num,3*ntot,theta, &
+call fdps_ctrl%init_tree(dens_tree_num,n_loc,theta, &
                          n_leaf_limit,n_group_limit)
-call fdps_ctrl%init_tree(hydro_tree_num,3*ntot,theta, &
+call fdps_ctrl%init_tree(hydro_tree_num,n_loc,theta, &
                          n_leaf_limit,n_group_limit)
 \end{lstlisting}
 \endifFtn
 \ifC % for C
 \begin{lstlisting}[caption=Initialization of tree objects]
-fdps_init_tree(dens_tree_num,3*ntot,theta,
+fdps_init_tree(dens_tree_num,n_loc,theta,
                n_leaf_limit,n_group_limit);
-fdps_init_tree(hydro_tree_num,3*ntot,theta,
+fdps_init_tree(hydro_tree_num,n_loc,theta,
                n_leaf_limit,n_group_limit);
 \end{lstlisting}
 \endifC

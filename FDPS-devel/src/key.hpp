@@ -118,16 +118,16 @@ namespace ParticleSimulator{
     class MortonKey{
     private:
         enum{
-#if defined(USE_128BIT_KEY)
-            kLevMaxHi = 21,
-            kLevMaxLo = 21,
-            kLevMax = 42,
-#elif defined(USE_96BIT_KEY)
+#if defined(PARTICLE_SIMULATOR_USE_64BIT_KEY)
+            kLevMax = 21,
+#elif defined(PARTICLE_SIMULATOR_USE_96BIT_KEY)
             kLevMaxHi = 21,
             kLevMaxLo = 10,
             kLevMax = 31,
 #else
-            kLevMax = 21,
+            kLevMaxHi = 21,
+            kLevMaxLo = 21,
+            kLevMax = 42,
 #endif
         };
         F64 half_len_;
@@ -178,30 +178,30 @@ namespace ParticleSimulator{
             nz = (nz > nmax) ? nmax : nz;
             
             KeyT ret;
-#if defined (USE_96BIT_KEY) || defined (USE_128BIT_KEY)
+#if defined (PARTICLE_SIMULATOR_USE_64BIT_KEY)
+            ret.hi_ = separateBit(nx)<<2 | separateBit(ny)<<1 | separateBit(nz);
+#else
             U64 nx_hi = nx>>kLevMaxLo;
             U64 ny_hi = ny>>kLevMaxLo;
             U64 nz_hi = nz>>kLevMaxLo;
             ret.hi_ = (separateBit(nx_hi)<<2
                        | separateBit(ny_hi)<<1
                        | separateBit(nz_hi));
-#if defined (USE_128BIT_KEY)
-            U64 nx_lo = (U64)(nx & 0x1fffff); // mask 21bits
-            U64 ny_lo = (U64)(ny & 0x1fffff);
-            U64 nz_lo = (U64)(nz & 0x1fffff);
-            ret.lo_ = ( separateBit(nx_lo)<<2
-                        | separateBit(ny_lo)<<1
-                        | separateBit(nz_lo) );
-#else
+#if defined (PARTICLE_SIMULATOR_USE_96BIT_KEY)
             U32 nx_lo = (U32)(nx & 0x3ff); // mask 10 bits
             U32 ny_lo = (U32)(ny & 0x3ff);
             U32 nz_lo = (U32)(nz & 0x3ff);
             ret.lo_ = ( separateBit32(nx_lo)<<2
                         | separateBit32(ny_lo)<<1
                         | separateBit32(nz_lo) );
-#endif
 #else
-            ret.hi_ = separateBit(nx)<<2 | separateBit(ny)<<1 | separateBit(nz);
+            U64 nx_lo = (U64)(nx & 0x1fffff); // mask 21bits
+            U64 ny_lo = (U64)(ny & 0x1fffff);
+            U64 nz_lo = (U64)(nz & 0x1fffff);
+            ret.lo_ = ( separateBit(nx_lo)<<2
+                        | separateBit(ny_lo)<<1
+                        | separateBit(nz_lo) );
+#endif
 #endif
             return ret;
         }
@@ -209,15 +209,15 @@ namespace ParticleSimulator{
         template<typename Tkey>
         S32 getCellID(const S32 lev, const Tkey & mkey) const {
             U64 s;
-#if defined (USE_128BIT_KEY) || defined (USE_96BIT_KEY)
+#if defined (PARTICLE_SIMULATOR_USE_64BIT_KEY)
+            s = mkey.hi_ >> ( (kLevMax - lev) * 3 );
+#else
             if(lev <= kLevMaxHi){
                 s = mkey.hi_ >> ( (kLevMaxHi - lev) * 3 );
             }
             else{
                 s = mkey.lo_ >> ( (kLevMaxLo - (lev-kLevMaxHi)) * 3 );
             }
-#else
-            s = mkey.hi_ >> ( (kLevMax - lev) * 3 );
 #endif
             return (S32)(s & 0x7);
         }
@@ -226,8 +226,15 @@ namespace ParticleSimulator{
             const auto low  = getKey(box.low_);
             const auto high = getKey(box.high_);
             const auto tmp = high^low;
-            S32 lev = 0;
-#if defined (USE_128BIT_KEY) || defined (USE_96BIT_KEY)
+            S32 lev = 0;	
+#if defined (PARTICLE_SIMULATOR_USE_64BIT_KEY)
+            for(S32 i=TREE_LEVEL_LIMIT-1; i>=0; i--){
+                if( (((tmp.hi_ >> i*3)) & 0x7) != 0){
+                    lev = TREE_LEVEL_LIMIT-i-1;
+                    break;
+                }
+            }
+#else
             if(tmp.hi_ != 0x0){
                 for(S32 i=kLevMaxHi-1; i>=0; i--){
                     if( (((tmp.hi_ >> i*3)) & 0x7) != 0){
@@ -242,13 +249,6 @@ namespace ParticleSimulator{
                         lev = kLevMaxHi+kLevMaxLo-i-1;
                         break;
                     }
-                }
-            }
-#else
-            for(S32 i=TREE_LEVEL_LIMIT-1; i>=0; i--){
-                if( (((tmp.hi_ >> i*3)) & 0x7) != 0){
-                    lev = TREE_LEVEL_LIMIT-i-1;
-                    break;
                 }
             }
 #endif

@@ -222,7 +222,6 @@ namespace ParticleSimulator{
         if(flag_reuse){
             top_spj.resizeNoInitialize(n_proc);
             const F64 time_offset_exchange_top_moment = GetWtime();
-            //Comm::allGather(&my_top_spj, 1, top_spj.getPointer());
             comm_info_.allGather(&my_top_spj, 1, top_spj.getPointer());
             time_profile_.make_LET_1st__exchange_top_moment += GetWtime() - time_offset_exchange_top_moment;
         }
@@ -403,6 +402,87 @@ PS_OMP(omp parallel for reduction(+:n_ep_recv_tot_tmp), reduction(+:n_sp_recv_to
         time_profile_.exchange_LET_1st += GetWtime() - time_offset;
     }
 
+
+#if 0
+
+    /*
+    void  ExchangeNumberLong2(const ReallocatableArray<S32> & n_ep_send,
+			      ReallocatableArray<S32> * n_ep_recv,
+			      const ReallocatableArray<S32> * n_sp_send,
+			      ReallocatableArray<S32> & n_sp_recv,
+			      const ReallocatableArray<S32> & rank_send,
+			      const ReallocatableArray<S32> & rank_recv,
+			      const CommInfo & comm_info,
+			      const int dim){
+	
+    }
+    */
+    
+    template<class TSM, class Tforce, class Tepi, class Tepj,
+             class Tmomloc, class Tmomglb, class Tspj, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>
+    void TreeForForce<TSM, Tforce, Tepi, Tepj, Tmomloc, Tmomglb, Tspj, CALC_DISTANCE_TYPE>::
+    exchangeLocalEssentialTreeLong2(const DomainInfo & dinfo,
+				    const bool flag_reuse){
+        F64 time_offset = GetWtime();
+        if(!flag_reuse){
+            const auto n_proc  = comm_info_.getNumberOfProc();
+            ReallocatableArray<TopGeometry<TreeCellLoc, TSM>> top_geo(n_proc, n_proc, MemoryAllocMode::Pool);
+            TopGeometry<TreeCellLoc, TSM> my_top_geo;
+            my_top_geo.set(inner_boundary_of_local_tree_, tc_loc_[0]);
+            const F64 time_offset_exchange_top_moment = GetWtime();
+            comm_info_.allGather(&my_top_geo, 1, top_geo.getPointer());
+            time_profile_.make_LET_1st__exchange_top_moment += GetWtime() - time_offset_exchange_top_moment;
+            const F64 time_offset_find_particle = GetWtime();
+            FindScatterParticle<TSM, TreeCellLoc, TreeParticle, Tepj, Tspj, TopGeometry<TreeCellLoc, TSM>, CALC_DISTANCE_TYPE>
+                (tc_loc_, tp_glb_,
+                 epj_sorted_,
+                 comm_table_.n_ep_send_,   comm_table_.adr_ep_send_,
+                 dinfo,          n_leaf_limit_,
+                 comm_table_.n_sp_send_,   comm_table_.adr_sp_send_,
+                 comm_table_.shift_per_image_,
+                 comm_table_.n_image_per_proc_,
+                 comm_table_.n_ep_per_image_,
+                 comm_table_.n_sp_per_image_,
+                 top_geo,
+                 theta_);
+            
+            time_profile_.make_LET_1st__find_particle += GetWtime() - time_offset_find_particle;
+            const F64 time_offset_exchange_n = GetWtime();
+            ExchangeNumberLong2(comm_table_.n_ep_send_, comm_table_.n_ep_recv_,
+                               comm_table_.n_sp_send_, comm_table_.n_sp_recv_,
+                               comm_info_);
+
+            time_profile_.make_LET_1st__exchange_n += GetWtime() - time_offset_exchange_n;
+            comm_table_.n_ep_send_tot_ = comm_table_.adr_ep_send_.size();
+            comm_table_.n_sp_send_tot_ = comm_table_.adr_sp_send_.size();
+            comm_table_.n_ep_recv_tot_ = comm_table_.n_sp_recv_tot_ = 0;
+            S32 n_ep_recv_tot_tmp = 0;
+            S32 n_sp_recv_tot_tmp = 0;
+PS_OMP(omp parallel for reduction(+:n_ep_recv_tot_tmp), reduction(+:n_sp_recv_tot_tmp))
+            for(S32 i=0; i<n_proc; i++){
+                n_ep_recv_tot_tmp += comm_table_.n_ep_recv_[i];
+                n_sp_recv_tot_tmp += comm_table_.n_sp_recv_[i];
+            }
+            comm_table_.n_ep_recv_tot_ = n_ep_recv_tot_tmp;
+            comm_table_.n_sp_recv_tot_ = n_sp_recv_tot_tmp;
+        }
+        time_profile_.make_LET_1st += GetWtime() - time_offset;
+        time_offset = GetWtime();
+        
+        ExchangeLet2<TSM, Tepj, Tspj>(epj_sorted_, comm_table_.n_ep_send_,
+                                     comm_table_.n_ep_recv_, comm_table_.n_ep_per_image_,
+                                     comm_table_.adr_ep_send_,
+                                     epj_org_, n_loc_tot_,
+                                     tc_loc_, comm_table_.n_sp_send_,
+                                     comm_table_.n_sp_recv_, comm_table_.n_sp_per_image_,
+                                     comm_table_.adr_sp_send_,
+                                     spj_org_,
+                                     comm_table_.shift_per_image_,
+                                     comm_table_.n_image_per_proc_,
+                                     comm_info_);
+        time_profile_.exchange_LET_1st += GetWtime() - time_offset;
+    }    
+#endif
   
     template<class TSM, class Tforce, class Tepi, class Tepj,
     class Tmomloc, class Tmomglb, class Tspj, enum CALC_DISTANCE_TYPE CALC_DISTANCE_TYPE>

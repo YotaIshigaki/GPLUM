@@ -183,7 +183,7 @@ fdps_f64vec pos; //$fdps position
 \end{screen}
 \endifC
 \ifIF % Fortran,C用
-EssentialParticleI 型と EssentialParticleJ 型は FullParticle 型からデータを受け取る。ユーザは FullParticle 型のどのメンバ変数を EssentialParticle?型 (?=I,J) のどのメンバ変数にコピーするのかを、指示文を用いて指定する必要がある。本サンプルコードでは、以下のように記述している:
+EssentialParticleI 型と EssentialParticleJ 型は FullParticle 型からデータを受け取る。ユーザは FullParticle 型のどのメンバ変数を EssentialParticle?型 (?=I,J) のどのメンバ変数にコピーするのかを、指示文を用いて指定する必要がある。本サンプルコードでは、以下のように記述している:
 \endifIF
 \ifFtn % Fortran用
 \begin{screen}
@@ -220,7 +220,7 @@ EssentialParticleI 型と EssentialParticleJ 型は FullParticle 型からデ
 \endifC
 
 \ifIF % Fortran,C用
-まず、ユーザはこの\structure がForce型であることを指示文によって指定する必要がある。本サンプルコードでは、以下のように記述している:
+まず、ユーザはこの\structure がForce型であることを指示文によって指定する必要がある。本サンプルコードでは、以下のように記述している:
 \endifIF
 \ifFtn % Fortran用
 \begin{screen}
@@ -237,7 +237,7 @@ typedef struct force_pp { //$fdps Force
 \end{screen}
 \endifC
 \ifIF % Fortran,C用
-この\structure はForce型であるから、ユーザは\ulBold{必ず}、相互作用計算における積算対象のメンバ変数の初期化方法を指定する必要がある。本サンプルコードではForce型のすべてのメンバ変数にデフォルトの初期化方法を指定するため、単に、キーワード\texttt{clear}の指示文を記述している:
+この\structure はForce型であるから、ユーザは\ulBold{必ず}、相互作用計算における積算対象のメンバ変数の初期化方法を指定する必要がある。本サンプルコードではForce型のすべてのメンバ変数にデフォルトの初期化方法を指定するため、単に、キーワード\texttt{clear}の指示文を記述している:
 \endifIF
 \ifFtn % Fortran
 \begin{screen}
@@ -629,7 +629,7 @@ setup_NaCl_crystal(psys_num, dinfo_num, NaCl_params);
 \begin{equation}
 E = - \dfrac{N\alpha m^{2}}{R_{0}}
 \end{equation}
-と解析的に書ける。ここで、$N$は分子の総数(原子の数は$2N$個)、$m$は粒子の電荷量、$R_{0}$は最隣接原子間距離、$\alpha$はマーデリング(Madelung)定数である。NaCl結晶の場合、$\alpha\approx 1.747565$である(例えば、キッテル著 「固体物理学入門(第8版)」を参照せよ)。計算結果をこの解析解と比較するとき、系全体のエネルギーが粒子数に依存しては不便である。そこで、サンプルコードでは、系全体のエネルギーが粒子数に依存しないように、粒子の電荷量$m$を
+と解析的に書ける。ここで、$N$は分子の総数(原子の数は$2N$個)、$m$は粒子の電荷量、$R_{0}$は最隣接原子間距離、$\alpha$はマーデリング(Madelung)定数である。NaCl結晶の場合、$\alpha\approx 1.747565$である(例えば、キッテル著 「固体物理学入門(第8版)」を参照せよ)。計算結果をこの解析解と比較するとき、系全体のエネルギーが粒子数に依存しては不便である。そこで、サンプルコードでは、系全体のエネルギーが粒子数に依存しないように、粒子の電荷量$m$を
 \begin{equation}
 \dfrac{2Nm^{2}}{R_{0}}=1
 \end{equation}
@@ -961,14 +961,11 @@ TreePM法のPPパートは、$\mathrm{P^{3}M}$法と同様、距離に関する�
 
 % プログラム本体
 \subsubsection{プログラム本体}
-本節では、サンプルコード本体について解説を行う。詳細な説明に入る前に、サンプルコー ドの内容と全体構造について説明を与える。\ref{subsec:TreePM}節冒頭で述べたように、このサンプルコードでは宇宙論的$N$体シミュレーションをTreePM法を用いて実行する。初期条件としては、以下の3つの場合に対応している:
+本節では、サンプルコード本体について解説を行う。詳細な説明に入る前に、サンプルコー ドの内容と全体構造について説明を与える。\ref{subsec:TreePM}節冒頭で述べたように、このサンプルコードでは宇宙論的$N$体シミュレーションをTreePM法を用いて実行する。初期条件としては、以下の3つの場合に対応している:
 \begin{enumerate}[leftmargin=*,itemsep=-1ex,label=(\alph*)]
 \item Santa Barbara Cluster Comparison Test
   (\href{http://iopscience.iop.org/article/10.1086/307908/meta}{Frenk
-  et al.[1999, ApJ, 525, 554]})で用いられた初期条件(以下から初期条件を入手可能。$N=128^3$:
-  \href{http://particle.riken.jp/~fdps/data/sb/ic_sb128.tar}{http://particle.riken.jp{\slash}\~{}fdps{\slash}data{\slash}sb{\slash}ic\_sb128.tar}
-  、$N=256^3$:
-  \href{http://particle.riken.jp/~fdps/data/sb/ic_sb256.tar}{http://particle.riken.jp{\slash}\~{}fdps{\slash}data{\slash}sb{\slash}ic\_sb256.tar})
+  et al.[1999, ApJ, 525, 554]})で用いられた初期条件(\url{https://v2.jmlab.jp/owncloud/index.php/s/XnzvW5XAYwfqZYQ?path=%2Fsb}から初期条件を入手可能。ファイル \path{ic_sb128.tar} は粒子数$128^3$のデータ、ファイル \path{ic_sb256.tar} は粒子数$256^3$のデータ)
 \item 上記テストで用いられた初期条件ファイルと同じフォーマットで記述された初期条件
 \item ランダムにおいた粒子分布
 \end{enumerate}

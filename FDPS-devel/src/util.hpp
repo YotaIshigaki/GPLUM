@@ -513,8 +513,8 @@ namespace  ParticleSimulator{
     }
 
     static PS_INLINE S32 GetRank1d(const S32 rank_glb,
-			    const S32 n_domain[DIMENSION_LIMIT],
-			    const S32 cid){
+				   const S32 n_domain[DIMENSION_LIMIT],
+				   const S32 cid){
 	S32 ret = -1;
 #if defined(PARTICLE_SIMULATOR_TWO_DIMENSION)
 	if(cid==0)
@@ -650,8 +650,8 @@ namespace  ParticleSimulator{
 
     template<typename T>
     static void MyAlltoallv(const ReallocatableArray<T> & send_buf, const int * n_send,
-		     ReallocatableArray<T> & recv_buf, int * n_recv, 
-		     CommInfo & comm_info, S32 n_domain[], S32 dim){
+			    ReallocatableArray<T> & recv_buf, int * n_recv, 
+			    CommInfo & comm_info, S32 n_domain[], S32 dim){
 	const auto n_proc_glb  = comm_info.getNumberOfProc();
 	const auto my_rank_glb = comm_info.getRank();
 	ReallocatableArray<int> n_send_tmp(n_proc_glb, n_proc_glb, MemoryAllocMode::Default);
@@ -731,6 +731,464 @@ namespace  ParticleSimulator{
 	}
     }
 
+    static inline void Factorize(const S32 num, const S32 dim, S32 fact[]){
+	S32 num_tmp = num;
+	std::vector<S32> num_vec(dim);
+        for(S32 d=dim; d > 0; d--){
+	    S32 tmp = (S32)pow((F64)num_tmp+0.000001, (1.0/d)*1.000001 );
+	    while(num_tmp%tmp!=0){
+		tmp--;
+	    }
+	    num_vec[d-1] = tmp;
+            num_tmp /= num_vec[d-1];
+	}
+	std::sort(num_vec.begin(), num_vec.end(), std::greater<S32>());
+	for(auto k=0; k<dim; k++){
+	    fact[k] = num_vec[k];
+	}
+	S32 num_check = fact[0];
+	for(S32 d=1; d < dim; d++){
+	    num_check *= fact[d];
+	    assert(fact[d-1] >= fact[d]);
+	}
+	assert(num_check == num);
+    }
+    
+    template<typename T>
+    static inline void MyAlltoallReuse(const ReallocatableArray<T> & send_buf, int cnt, ReallocatableArray<T> * send_buf_multi_dim, ReallocatableArray<T> * recv_buf_multi_dim, const S32 n_domain[], const S32 dim, const CommInfo & comm_info){
+	const auto n_proc_glb = comm_info.getNumberOfProc();
+	const auto my_rank_glb = comm_info.getRank();
+	const auto n_recv_tot = cnt * n_proc_glb;
+	for(auto d=dim-1; d>=0; d--){
+	    const auto radix = n_proc_glb / n_domain[d];
+	    const auto color = GetColorForCommSplit(my_rank_glb, n_domain, dim, d);
+	    const auto comm_1d  = comm_info.split(color, my_rank_glb);
+	    for(auto i=0; i<n_proc_glb; i++){
+		const auto id_send = cnt * ( (i % radix) * n_domain[d] + i / radix );
+		const auto offset = i * cnt;
+		if(d==dim-1){
+		    for(auto j=0; j<cnt; j++){
+			send_buf_multi_dim[d][offset + j] = send_buf[id_send + j];
+		    }
+		} else {
+		    for(auto j=0; j<cnt; j++){
+			send_buf_multi_dim[d][offset + j] = recv_buf_multi_dim[d+1][id_send + j];
+		    }
+		}
+	    }
+	    MPI_Alltoall(send_buf_multi_dim[d].getPointer(), cnt*radix, GetDataType<T>(),
+	    recv_buf_multi_dim[d].getPointer(), cnt*radix, GetDataType<T>(), comm_1d.getCommunicator());
+	}
+    }
+    template<typename T>
+    static inline void MyAlltoallReuse(const ReallocatableArray<T> & send_buf, int cnt, ReallocatableArray<T> * send_buf_multi_dim, ReallocatableArray<T> * recv_buf_multi_dim, const S32 n_domain[], const S32 dim){
+	auto ci = Comm::getCommInfo();
+	MyAlltoallReuse(send_buf, cnt, send_buf_multi_dim, recv_buf_multi_dim, n_domain, dim, ci);
+    }
+
+    template<typename T>
+    static inline void MyAlltoallVReuse(const ReallocatableArray<T> & send_buf, ReallocatableArray<T> & recv_buf,
+					const ReallocatableArray<int> * n_send_multi_dim, const ReallocatableArray<int> * n_recv_multi_dim, const S32 n_domain[], const S32 dim, const CommInfo & comm_info){
+	const auto n_proc_glb  = comm_info.getNumberOfProc();
+	const auto my_rank_glb = comm_info.getRank();
+	ReallocatableArray<int> n_recv_tmp(n_proc_glb, n_proc_glb, MemoryAllocMode::Stack);
+	ReallocatableArray<int> n_disp_recv_tmp(n_proc_glb+1, n_proc_glb+1, MemoryAllocMode::Stack);
+	for(auto i=0; i<n_proc_glb; i++){
+	    const auto radix = n_proc_glb / n_domain[dim-1];
+	    const auto id_send = ( (i % radix) * n_domain[dim-1] + i / radix );
+	    n_recv_tmp[id_send] = n_send_multi_dim[dim-1][i];
+	}
+	recv_buf.resizeNoInitialize(send_buf.size());
+	for(auto i=0; i<send_buf.size(); i++){
+	    recv_buf[i] = send_buf[i];
+	}
+	// main loop
+	for(auto d=dim-1; d>=0; d--){
+	    const auto radix = n_proc_glb / n_domain[d];
+	    const auto color = GetColorForCommSplit(my_rank_glb, n_domain, dim, d);
+	    const auto comm_1d  = comm_info.split(color, my_rank_glb);
+	    n_disp_recv_tmp[0] = 0;
+	    for(auto i=0; i<n_proc_glb; i++){
+		n_disp_recv_tmp[i+1] = n_disp_recv_tmp[i] + n_recv_tmp[i];
+	    }	    
+	    recv_buf.resizeNoInitialize(n_disp_recv_tmp[n_proc_glb]);
+	    ReallocatableArray<T> send_buf_tmp(n_disp_recv_tmp[n_proc_glb], 0, MemoryAllocMode::Stack);
+	    for(auto i=0; i<n_proc_glb; i++){
+		const auto id_send = ( (i % radix) * n_domain[d] + i / radix );
+		for(auto j=0; j<n_recv_tmp[id_send]; j++){
+		    send_buf_tmp.pushBackNoCheck(recv_buf[n_disp_recv_tmp[id_send]+j]);
+		}
+	    }
+	    for(auto i=0; i<n_proc_glb; i++){
+		n_recv_tmp[i] = n_recv_multi_dim[d][i];
+	    }
+	    ReallocatableArray<int> n_recv_1d(n_domain[d], n_domain[d], MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_send_1d(n_domain[d], n_domain[d], MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_disp_recv_1d(n_domain[d]+1, n_domain[d]+1, MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_disp_send_1d(n_domain[d]+1, n_domain[d]+1, MemoryAllocMode::Stack);
+	    n_disp_recv_1d[0] = n_disp_send_1d[0] = 0;
+	    for(auto i=0; i<n_domain[d]; i++){
+		n_send_1d[i] = n_recv_1d[i] = 0;
+		for(auto j=0; j<radix; j++){
+		    n_send_1d[i] += n_send_multi_dim[d][i*radix+j];
+		    n_recv_1d[i] += n_recv_multi_dim[d][i*radix+j];
+		}
+		n_disp_send_1d[i+1] = n_disp_send_1d[i] + n_send_1d[i];
+		n_disp_recv_1d[i+1] = n_disp_recv_1d[i] + n_recv_1d[i];
+	    }
+	    recv_buf.resizeNoInitialize( n_disp_recv_1d[n_domain[d]] );
+	    MPI_Alltoallv(send_buf_tmp.getPointer(), n_send_1d.getPointer(), n_disp_send_1d.getPointer(), GetDataType<T>(),
+			  recv_buf.getPointer(), n_recv_1d.getPointer(), n_disp_recv_1d.getPointer(), GetDataType<T>(),
+			  comm_1d.getCommunicator());
+	}
+
+	/*
+	const auto n_proc_glb  = comm_info.getNumberOfProc();
+	const auto my_rank_glb = comm_info.getRank();
+	ReallocatableArray<int> n_recv_tmp(n_proc_glb, n_proc_glb, MemoryAllocMode::Stack);
+	ReallocatableArray<int> n_disp_recv_tmp(n_proc_glb+1, n_proc_glb+1, MemoryAllocMode::Stack);
+	for(auto i=0; i<n_proc_glb; i++){
+	    const auto radix = n_proc_glb / n_domain[dim-1];
+	    const auto id_send = ( (i % radix) * n_domain[dim-1] + i / radix );
+	    n_recv_tmp[id_send] = n_send_multi_dim[dim-1][i];
+	}
+	recv_buf.resizeNoInitialize(send_buf.size());
+	for(auto i=0; i<send_buf.size(); i++){
+	    recv_buf[i] = send_buf[i];
+	}
+	// main loop
+	for(auto d=dim-1; d>=0; d--){
+	    const auto radix = n_proc_glb / n_domain[d];
+	    const auto color = GetColorForCommSplit(my_rank_glb, n_domain, dim, d);
+	    const auto comm_1d  = comm_info.split(color, my_rank_glb);
+	    n_disp_recv_tmp[0] = 0;
+	    for(auto i=0; i<n_proc_glb; i++){
+		n_disp_recv_tmp[i+1] = n_disp_recv_tmp[i] + n_recv_tmp[i];
+	    }	    
+	    recv_buf.resizeNoInitialize(n_disp_recv_tmp[n_proc_glb]);
+	    ReallocatableArray<T> send_buf_tmp(n_disp_recv_tmp[n_proc_glb], 0, MemoryAllocMode::Stack);
+	    for(auto i=0; i<n_proc_glb; i++){
+		const auto id_send = ( (i % radix) * n_domain[d] + i / radix );
+		for(auto j=0; j<n_recv_tmp[id_send]; j++){
+		    send_buf_tmp.pushBackNoCheck(recv_buf[n_disp_recv_tmp[id_send]+j]);
+		}
+	    }
+	    for(auto i=0; i<n_proc_glb; i++){
+		n_recv_tmp[i] = n_recv_multi_dim[d][i];
+	    }
+	    ReallocatableArray<int> n_recv_1d(n_domain[d], n_domain[d], MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_send_1d(n_domain[d], n_domain[d], MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_disp_recv_1d(n_domain[d]+1, n_domain[d]+1, MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_disp_send_1d(n_domain[d]+1, n_domain[d]+1, MemoryAllocMode::Stack);
+	    n_disp_recv_1d[0] = n_disp_send_1d[0] = 0;
+	    for(auto i=0; i<n_domain[d]; i++){
+		n_send_1d[i] = n_recv_1d[i] = 0;
+		for(auto j=0; j<radix; j++){
+		    n_send_1d[i] += n_send_multi_dim[d][i*radix+j];
+		    n_recv_1d[i] += n_recv_multi_dim[d][i*radix+j];
+		}
+		n_disp_send_1d[i+1] = n_disp_send_1d[i] + n_send_1d[i];
+		n_disp_recv_1d[i+1] = n_disp_recv_1d[i] + n_recv_1d[i];
+	    }
+	    recv_buf.resizeNoInitialize( n_disp_recv_1d[n_domain[d]] );
+	    MPI_Alltoallv(send_buf_tmp.getPointer(), n_send_1d.getPointer(), n_disp_send_1d.getPointer(), GetDataType<T>(),
+			  recv_buf.getPointer(), n_recv_1d.getPointer(), n_disp_recv_1d.getPointer(), GetDataType<T>(),
+			  comm_1d.getCommunicator());
+	}
+	*/
+    }
+
+    
+#if 0    
+    template<typename T>
+    static void MyAlltoallvReuse(const ReallocatableArray<T> & send_buf, const int * n_send,
+				 ReallocatableArray<T> & recv_buf, int * n_recv, 
+				 CommInfo & comm_info, S32 n_domain[], S32 dim){
+	const auto n_proc_glb  = comm_info.getNumberOfProc();
+	const auto my_rank_glb = comm_info.getRank();
+	ReallocatableArray<int> n_send_tmp(n_proc_glb, n_proc_glb, MemoryAllocMode::Default);
+	ReallocatableArray<int> n_disp_recv_tmp(n_proc_glb+1, n_proc_glb+1, MemoryAllocMode::Default);
+	n_disp_recv_tmp[0] = 0;
+	for(auto i=0; i<n_proc_glb; i++){
+	    n_recv[i] = n_send[i];
+	    n_disp_recv_tmp[i+1] = n_disp_recv_tmp[i] + n_recv[i];
+	}
+	recv_buf.resizeNoInitialize(n_disp_recv_tmp[n_proc_glb]);
+	for(auto i=0; i<n_disp_recv_tmp[n_proc_glb]; i++){
+	    recv_buf[i] = send_buf[i];
+	}
+	// main loop
+	for(auto d=dim-1; d>=0; d--){
+	    const auto radix = n_proc_glb / n_domain[d];
+	    const auto color = GetColorForCommSplit(my_rank_glb, n_domain, dim, d);
+	    const auto comm_1d  = comm_info.split(color, my_rank_glb);
+	    
+	    n_disp_recv_tmp[0] = 0;
+	    for(auto i=0; i<n_proc_glb; i++){
+		n_disp_recv_tmp[i+1] = n_disp_recv_tmp[i] + n_recv[i];
+	    }
+	    recv_buf.resizeNoInitialize(n_disp_recv_tmp[n_proc_glb]);
+	    
+	    ReallocatableArray<T> send_buf_tmp(n_disp_recv_tmp[n_proc_glb], 0, MemoryAllocMode::Stack);
+	    for(auto i=0; i<n_proc_glb; i++){
+		const int id_send = ( (i % radix) * n_domain[d] + i / radix );
+		//if(my_rank_glb==0){
+		//    std::cerr<<"i= "<<i<<" id_send= "<<id_send<<" n_disp_recv_tmp[id_send]= "<<n_disp_recv_tmp[id_send]<<std::endl;
+		//}
+		n_send_tmp[i] = n_recv[id_send];
+		for(auto j=0; j<n_recv[id_send]; j++){
+		    send_buf_tmp.pushBackNoCheck(recv_buf[n_disp_recv_tmp[id_send]+j]);
+		}
+	    }
+	    if(my_rank_glb==0){
+		//std::cerr<<"send_buf_tmp.size()= "<<send_buf_tmp.size()<<std::endl;
+		//for(auto i=0; i<send_buf_tmp.size(); i++){
+		//    std::cerr<<"i= "<<i<<" send_buf_tmp[i].id= "<<send_buf_tmp[i].id<<std::endl;
+		//}
+	    }
+	    
+	    MPI_Alltoall(n_send_tmp.getPointer(), radix, GetDataType<int>(),
+			 n_recv, radix, GetDataType<int>(), comm_1d.getCommunicator());
+
+	    ReallocatableArray<int> n_recv_1d(n_domain[d], n_domain[d], MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_send_1d(n_domain[d], n_domain[d], MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_disp_recv_1d(n_domain[d]+1, n_domain[d]+1, MemoryAllocMode::Stack);
+	    ReallocatableArray<int> n_disp_send_1d(n_domain[d]+1, n_domain[d]+1, MemoryAllocMode::Stack);
+	    n_disp_recv_1d[0] = n_disp_send_1d[0] = 0;
+	    for(auto i=0; i<n_domain[d]; i++){
+		n_send_1d[i] = n_recv_1d[i] = 0;
+		for(auto j=0; j<radix; j++){
+		    n_send_1d[i] += n_send_tmp[i*radix+j];
+		    n_recv_1d[i] += n_recv[i*radix+j];
+		}
+		n_disp_send_1d[i+1] = n_disp_send_1d[i] + n_send_1d[i];
+		n_disp_recv_1d[i+1] = n_disp_recv_1d[i] + n_recv_1d[i];
+	    }
+	    recv_buf.resizeNoInitialize( n_disp_recv_1d[n_domain[d]] );
+	    //if(my_rank_glb==0){
+	    //	std::cerr<<"n_domain[d]= "<<n_domain[d]<<std::endl;
+	    //	for(auto i=0; i<n_domain[d]; i++){
+	    //	    std::cerr<<"i= "<<i<<" n_send_1d[i]= "<<n_send_1d[i]<<" n_recv_1d[i]= "<<n_recv_1d[i]<<std::endl;
+	    //	}
+	    //}
+	    MPI_Alltoallv(send_buf_tmp.getPointer(), n_send_1d.getPointer(), n_disp_send_1d.getPointer(), GetDataType<T>(),
+			  recv_buf.getPointer(), n_recv_1d.getPointer(), n_disp_recv_1d.getPointer(), GetDataType<T>(),
+			  comm_1d.getCommunicator());
+	    //if(my_rank_glb==0){
+	    //	std::cerr<<"recv_buf.size()= "<<recv_buf.size()<<std::endl;
+	    //	for(auto i=0; i<recv_buf.size(); i++){
+	    //	    std::cerr<<"i= "<<i<<" recv_buf[i].id= "<<recv_buf[i].id<<std::endl;
+	    //	}
+	    //}
+	}
+    }
+#endif
+    
+
+    /*
+    template<class T, int DIM_COMM=2>
+    class CommForAllToAll2{
+    private:
+        int rank_glb_;
+        int n_proc_glb_;
+        MPI_Comm comm_glb_;
+        int rank_1d_[DIM_COMM];
+        int n_proc_1d_[DIM_COMM];
+        MPI_Comm comm_1d_[DIM_COMM];
+        ReallocatableArray<T> val_send_glb_;
+        int * n_recv_disp_glb_;
+        int * n_send_disp_glb_;
+        int * n_send_glb_;
+        int * n_recv_1d_[DIM_COMM];
+        int * n_send_1d_[DIM_COMM];
+        int * n_recv_disp_1d_[DIM_COMM];
+        int * n_send_disp_1d_[DIM_COMM];
+
+    public:
+        CommForAllToAll(MPI_Comm comm = MPI_COMM_WORLD){
+            comm_glb_ = comm;
+            MPI_Comm_rank(comm_glb_, &rank_glb_);
+            MPI_Comm_size(comm_glb_, &n_proc_glb_);
+            n_recv_disp_glb_ = new int[n_proc_glb_ + 1];
+            n_send_disp_glb_ = new int[n_proc_glb_ + 1];
+            n_send_glb_ = new int[n_proc_glb_];
+            n_recv_1d_ = new int[n_proc_glb_];
+            n_send_1d_ = new int[n_proc_glb_];
+            n_recv_disp_1d_ = new int[n_proc_glb_ + 1];
+            n_send_disp_1d_ = new int[n_proc_glb_ + 1];
+            divideProc<DIM_COMM>(n_proc_1d_, rank_1d_, n_proc_glb_, rank_glb_);
+            int dim_max = -1;
+            for(int i=0; i<DIM_COMM; i++){
+                if(dim_max < n_proc_1d_[i]){
+                    dim_max = n_proc_1d_[i];
+                }
+            }
+            int split_color = 0;
+            int factor = 1;
+            for(int d=0; d<DIM_COMM; d++){
+                split_color += rank_1d_[d] * factor;
+                factor *= dim_max;
+            }
+            for(int d=DIM_COMM-1; d>=0; d--){
+                factor = rank_1d_[d];
+                for(int d0=0; d0<d; d0++){
+                    factor *= dim_max;
+                }
+                MPI_Comm_split(comm_glb_, split_color-factor, rank_glb_, comm_1d_+d);
+            }
+        } // Constructor
+	
+        // alltoall
+        void execute(const ReallocatableArray<T> & val_send,
+                     const int cnt,
+                     ReallocatableArray<T> & val_recv){
+            const int n_recv_tot = cnt * n_proc_glb_;
+            val_recv.resizeNoInitialize( n_recv_tot );
+            val_send_glb_.resizeNoInitialize( n_recv_tot );
+            for(int i=0; i<n_recv_tot; i++){
+                val_recv[i] = val_send[i];
+            }
+            for(int d=DIM_COMM-1; d>=0; d--){
+                const int radix = n_proc_glb_ / n_proc_1d_[d];
+                for(int ib=0; ib<n_proc_glb_; ib++){
+                    const int id_send = cnt * ( (ib % radix) * n_proc_1d_[d] + ib / radix );
+                    const int offset = ib * cnt;
+                    for(int i=0; i<cnt; i++){
+                        val_send_glb_[offset + i] = val_recv[id_send + i];
+                    }
+                }
+                MPI_Alltoall(val_send_glb_.getPointer(), cnt*radix, GetDataType<T>(),
+                             val_recv.getPointer(), cnt*radix, GetDataType<T>(), comm_1d_[d]);
+            }
+        }
+
+        void execute(const T val_send[],
+                     const int cnt,
+                     T val_recv[]){
+            const int n_recv_tot = cnt * n_proc_glb_;
+            val_send_glb_.resizeNoInitialize( n_recv_tot );
+            for(int i=0; i<n_recv_tot; i++){
+                val_recv[i] = val_send[i];
+            }
+            for(int d=DIM_COMM-1; d>=0; d--){
+                const int radix = n_proc_glb_ / n_proc_1d_[d];
+                for(int ib=0; ib<n_proc_glb_; ib++){
+                    const int id_send = cnt * ( (ib % radix) * n_proc_1d_[d] + ib / radix );
+                    const int offset = ib * cnt;
+                    for(int i=0; i<cnt; i++){
+                        val_send_glb_[offset + i] = val_recv[id_send + i];
+                    }
+                }
+                MPI_Alltoall(val_send_glb_.getPointer(), cnt*radix, GetDataType<T>(),
+                             val_recv, cnt*radix, GetDataType<T>(), comm_1d_[d]);
+            }
+        }
+
+        void executeV(const ReallocatableArray<T> & val_send,
+                      ReallocatableArray<T> & val_recv,
+                      const int n_send[],
+                      int n_recv[],
+                      const int n_send_offset=0,
+                      const int n_recv_offset=0){
+            int cnt = 0;
+            val_recv.reserveAtLeast(n_recv_offset+val_send.size()-n_send_offset);
+            val_recv.resizeNoInitialize(n_recv_offset);
+            for(int ib=0; ib<n_proc_glb_; ib++){
+                n_recv[ib] = n_send[ib];
+                for(int ip=0; ip<n_recv[ib]; ip++, cnt++){
+                    val_recv.pushBackNoCheck(val_send[cnt+n_send_offset]);
+                }
+            }
+            for(int d=DIM_COMM-1; d>=0; d--){
+                int radix = n_proc_glb_ / n_proc_1d_[d];
+                n_recv_disp_glb_[0] = 0;
+                for(int i=0; i<n_proc_glb_; i++){
+                    n_recv_disp_glb_[i+1] = n_recv_disp_glb_[i] + n_recv[i];
+                }
+                val_send_glb_.reserveAtLeast( val_recv.size()-n_recv_offset );
+                val_send_glb_.clearSize();
+                for(int ib0=0; ib0<n_proc_glb_; ib0++){
+                    int id_send = (ib0 % radix) * n_proc_1d_[d] + ib0 / radix;
+                    n_send_glb_[ib0] = n_recv[id_send];
+                    int offset = n_recv_disp_glb_[id_send];
+                    for(int ib1=0; ib1<n_send_glb_[ib0]; ib1++){
+                        val_send_glb_.pushBackNoCheck(val_recv[ib1 + offset + n_recv_offset]);
+                    }
+                }
+                MPI_Alltoall(n_send_glb_, radix, MPI_INT,
+                             n_recv, radix, MPI_INT, comm_1d_[d]);
+                n_send_disp_1d_[0] = n_recv_disp_1d_[0] = 0;
+                for(int ib0=0; ib0<n_proc_1d_[d]; ib0++){
+                    n_send_1d_[ib0] = n_recv_1d_[ib0] = 0;
+                    int offset = ib0 * radix;
+                    for(int ib1=0; ib1<radix; ib1++){
+                        n_send_1d_[ib0] += n_send_glb_[offset + ib1];
+                        n_recv_1d_[ib0] += n_recv[offset + ib1];
+                    }
+                    n_send_disp_1d_[ib0+1] = n_send_disp_1d_[ib0] + n_send_1d_[ib0];
+                    n_recv_disp_1d_[ib0+1] = n_recv_disp_1d_[ib0] + n_recv_1d_[ib0];
+                }
+                val_recv.resizeNoInitialize(n_recv_disp_1d_[n_proc_1d_[d]] + n_recv_offset);
+                MPI_Alltoallv(val_send_glb_.getPointer(), n_send_1d_, n_send_disp_1d_, GetDataType<T>(),
+                              val_recv.getPointer(n_recv_offset), n_recv_1d_, n_recv_disp_1d_, GetDataType<T>(), comm_1d_[d]);
+            }
+        }
+
+
+
+        void executeVReuse(const ReallocatableArray<T> & val_send,
+			   ReallocatableArray<T> & val_recv,
+			   const int n_send[],
+			   int n_recv[],
+			   const int n_send_offset=0,
+			   const int n_recv_offset=0){
+            int cnt = 0;
+            val_recv.reserveAtLeast(n_recv_offset+val_send.size()-n_send_offset);
+            val_recv.resizeNoInitialize(n_recv_offset);
+            for(int ib=0; ib<n_proc_glb_; ib++){
+                n_recv[ib] = n_send[ib];
+                for(int ip=0; ip<n_recv[ib]; ip++, cnt++){
+                    val_recv.pushBackNoCheck(val_send[cnt+n_send_offset]);
+                }
+            }
+            for(int d=DIM_COMM-1; d>=0; d--){
+                int radix = n_proc_glb_ / n_proc_1d_[d];
+                n_recv_disp_glb_[0] = 0;
+                for(int i=0; i<n_proc_glb_; i++){
+                    n_recv_disp_glb_[i+1] = n_recv_disp_glb_[i] + n_recv[i];
+                }
+                val_send_glb_.reserveAtLeast( val_recv.size()-n_recv_offset );
+                val_send_glb_.clearSize();
+                for(int ib0=0; ib0<n_proc_glb_; ib0++){
+                    int id_send = (ib0 % radix) * n_proc_1d_[d] + ib0 / radix;
+                    n_send_glb_[ib0] = n_recv[id_send];
+                    int offset = n_recv_disp_glb_[id_send];
+                    for(int ib1=0; ib1<n_send_glb_[ib0]; ib1++){
+                        val_send_glb_.pushBackNoCheck(val_recv[ib1 + offset + n_recv_offset]);
+                    }
+                }
+                MPI_Alltoall(n_send_glb_, radix, MPI_INT,
+                             n_recv, radix, MPI_INT, comm_1d_[d]);
+                n_send_disp_1d_[0] = n_recv_disp_1d_[0] = 0;
+                for(int ib0=0; ib0<n_proc_1d_[d]; ib0++){
+                    n_send_1d_[ib0] = n_recv_1d_[ib0] = 0;
+                    int offset = ib0 * radix;
+                    for(int ib1=0; ib1<radix; ib1++){
+                        n_send_1d_[ib0] += n_send_glb_[offset + ib1];
+                        n_recv_1d_[ib0] += n_recv[offset + ib1];
+                    }
+                    n_send_disp_1d_[ib0+1] = n_send_disp_1d_[ib0] + n_send_1d_[ib0];
+                    n_recv_disp_1d_[ib0+1] = n_recv_disp_1d_[ib0] + n_recv_1d_[ib0];
+                }
+                val_recv.resizeNoInitialize(n_recv_disp_1d_[n_proc_1d_[d]] + n_recv_offset);
+                MPI_Alltoallv(val_send_glb_.getPointer(), n_send_1d_, n_send_disp_1d_, GetDataType<T>(),
+                              val_recv.getPointer(n_recv_offset), n_recv_1d_, n_recv_disp_1d_, GetDataType<T>(), comm_1d_[d]);
+            }
+        }
+    }; //CommForAllToAll
+    */
+
+    
 #endif //PARTICLE_SIMULATOR_MPI_PARALLEL
   
 }

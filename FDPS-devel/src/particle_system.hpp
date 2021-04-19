@@ -240,26 +240,27 @@ namespace ParticleSimulator{
 			      TfuncHeader pFuncHead,
 			      const char * const open_format){
             if(format == NULL){//Read from single file
-                if(comm_info_.getRank() == 0){
-                    FILE* fp = fopen(filename, open_format);
-                    if(fp == NULL){
-                        PARTICLE_SIMULATOR_PRINT_ERROR("can not open input file ");
-                        std::cerr<<"filename: "<<filename<<std::endl;
-                        Abort(-1);
-                    }
-                    S32 n_ptcl_ = (header->*pFuncHead)(fp);
-                    if(n_ptcl_ < 0){//User does NOT return # of ptcl
-                        if(strcmp(open_format, "rb")==0){
-                            n_ptcl_ = countPtclBinary(fp, pFuncPtcl);
-                        }
-                        else{
-                            //count # of lines
-                            //KN
-                            n_ptcl_ = countPtclAscii(fp);
-                        }
-                        fseek(fp, 0, SEEK_SET);
-                        (header->*pFuncHead)(fp);
-                    }
+                //if(comm_info_.getRank() == 0){
+		FILE* fp = fopen(filename, open_format);
+		if(fp == NULL){
+		    PARTICLE_SIMULATOR_PRINT_ERROR("can not open input file ");
+		    std::cerr<<"filename: "<<filename<<std::endl;
+		    Abort(-1);
+		}
+		S32 n_ptcl_ = (header->*pFuncHead)(fp);
+		if(n_ptcl_ < 0){//User does NOT return # of ptcl
+		    if(strcmp(open_format, "rb")==0){
+			n_ptcl_ = countPtclBinary(fp, pFuncPtcl);
+		    }
+		    else{
+			//count # of lines
+			//KN
+			n_ptcl_ = countPtclAscii(fp);
+		    }
+		    fseek(fp, 0, SEEK_SET);
+		    (header->*pFuncHead)(fp);
+		}
+		if(comm_info_.getRank() == 0){		    
                     //Inform the # of ptcl for each process.
                     const S32 n_proc = comm_info_.getNumberOfProc();
                     S32 *n_ptcl = new S32[n_proc];
@@ -325,7 +326,8 @@ namespace ParticleSimulator{
                     this->createParticle(n_ptcl_ << 2);//Magic shift
                     ptcl_.resizeNoInitialize(n_ptcl_);
                     fseek(fp, 0, SEEK_SET);
-                    S32 tmp = (header->*pFuncHead)(fp);
+                    //S32 tmp = (header->*pFuncHead)(fp);
+		    (header->*pFuncHead)(fp);
                     for(S32 i = 0 ; i < ptcl_.size() ; ++ i){
                         (ptcl_[i].*pFuncPtcl)(fp);
                     }
@@ -351,7 +353,6 @@ namespace ParticleSimulator{
         void readParticleAscii(Tchar0 filename, Tchar1 format, Theader& header){
             readParticleImpl(filename, format, &header, &Tptcl::readAscii, &Theader::readAscii, "r");
         }
-	
         template <typename Tchar0, typename Theader,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr>
@@ -369,7 +370,6 @@ namespace ParticleSimulator{
         void readParticleAscii(Tchar0 filename){
             readParticleImpl<DummyHeader>(filename, NULL, NULL, &Tptcl::readAscii, &DummyHeader::readAscii, "r");
         }
-
 
         template <typename Tchar0, typename Tchar1, typename Theader, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
@@ -464,7 +464,7 @@ namespace ParticleSimulator{
                                Theader * header,
                                TfuncPtcl pFuncPtcl,
                                TfuncHeader pFuncHead,
-                               const char * const open_format){
+                               const char * const open_format) const {
             if(format == NULL){
                 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
                 //declare local # of ptcl.
@@ -534,81 +534,79 @@ namespace ParticleSimulator{
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Tchar1 format, Theader & header){
+        void writeParticleAscii(Tchar0 filename, Tchar1 format, Theader & header) const {
 	    writeParticleImpl(const_cast<const char * const>(filename), const_cast<const char * const>(format), &header, &Tptcl::writeAscii, &Theader::writeAscii, "w");
         }
         template <typename Tchar0, typename Theader,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Theader & header){
+        void writeParticleAscii(Tchar0 filename, Theader & header) const {
             writeParticleImpl(filename, NULL, &header, &Tptcl::writeAscii, &Theader::writeAscii, "w");
         }
         template <typename Tchar0, typename Tchar1,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Tchar1 format){
+        void writeParticleAscii(Tchar0 filename, Tchar1 format) const {
             writeParticleImpl<DummyHeader>(filename, format, NULL, &Tptcl::writeAscii, &DummyHeader::writeAscii, "w");
         }
         template <typename Tchar0,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename){
+        void writeParticleAscii(Tchar0 filename) const {
             writeParticleImpl<DummyHeader>(filename, NULL, NULL, &Tptcl::writeAscii, &DummyHeader::writeAscii, "w");
         }
+
         template <typename Tchar0, typename Tchar1, typename Theader, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Tchar1 format, Theader & header, Tfunc pFunc){
+        void writeParticleAscii(Tchar0 filename, Tchar1 format, Theader & header, Tfunc pFunc) const {
             writeParticleImpl(filename, format, &header, pFunc, &Theader::writeAscii, "w");
         }
         template <typename Tchar0, typename Theader, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Theader & header, Tfunc pFunc){
+        void writeParticleAscii(Tchar0 filename, Theader & header, Tfunc pFunc) const {
             writeParticleImpl(filename, NULL, &header, pFunc, &Theader::writeAscii, "w");
         }
         template <typename Tchar0, typename Tchar1, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Tchar1 format, Tfunc pFunc){
+        void writeParticleAscii(Tchar0 filename, Tchar1 format, Tfunc pFunc) const {
             writeParticleImpl<DummyHeader>(filename, format, NULL, pFunc, &DummyHeader::writeAscii, "w");
         }
         template <typename Tchar0, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleAscii(Tchar0 filename, Tfunc pFunc){
+        void writeParticleAscii(Tchar0 filename, Tfunc pFunc) const {
             writeParticleImpl<DummyHeader>(filename, NULL, NULL, pFunc, &DummyHeader::writeAscii, "w");
         }
-	
-
-
 
 
         template <typename Tchar0, typename Tchar1, typename Theader,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Tchar1 format, Theader& header){
+        void writeParticleBinary(Tchar0 filename, Tchar1 format, Theader& header) const {
             writeParticleImpl(filename, format, &header, &Tptcl::writeBinary, &Theader::writeBinary, "wb");
         }
         template <typename Tchar0, typename Theader,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Theader& header){
+        void writeParticleBinary(Tchar0 filename, Theader& header) const {
             writeParticleImpl(filename, NULL, &header, &Tptcl::writeBinary, &Theader::writeBinary, "wb");
         }
         template <typename Tchar0, typename Tchar1,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Tchar1 format){
+        void writeParticleBinary(Tchar0 filename, Tchar1 format) const {
             writeParticleImpl<DummyHeader>(filename, format, NULL, &Tptcl::writeBinary, &DummyHeader::writeBinary, "wb");
         }
         template <typename Tchar0,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename){
+        void writeParticleBinary(Tchar0 filename) const {
             writeParticleImpl<DummyHeader>(filename, NULL, NULL, &Tptcl::writeBinary, &DummyHeader::writeBinary, "wb");
         }
 
@@ -617,27 +615,27 @@ namespace ParticleSimulator{
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Tchar1 format, Theader& header, Tfunc pFunc){
+        void writeParticleBinary(Tchar0 filename, Tchar1 format, Theader& header, Tfunc pFunc) const {
             writeParticleImpl(filename, format, &header, pFunc, &Theader::writeBinary, "wb");
         }
         template <typename Tchar0, typename Theader, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_class<Theader>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Theader& header, Tfunc pFunc){
+        void writeParticleBinary(Tchar0 filename, Theader& header, Tfunc pFunc) const {
             writeParticleImpl(filename, NULL, &header, pFunc, &Theader::writeBinary, "wb");
         }
         template <typename Tchar0, typename Tchar1, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<my_is_char<Tchar1>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Tchar1 format, Tfunc pFunc){
+        void writeParticleBinary(Tchar0 filename, Tchar1 format, Tfunc pFunc) const {
             writeParticleImpl<DummyHeader>(filename, format, NULL, pFunc, &DummyHeader::writeBinary, "wb");
         }
         template <typename Tchar0, typename Tfunc,
 		  typename std::enable_if<my_is_char<Tchar0>::value>::type* = nullptr,
 		  typename std::enable_if<std::is_member_function_pointer<Tfunc>::value>::type* = nullptr>
-        void writeParticleBinary(Tchar0 filename, Tfunc pFunc){
+        void writeParticleBinary(Tchar0 filename, Tfunc pFunc) const {
             writeParticleImpl<DummyHeader>(filename, NULL, NULL, pFunc, &DummyHeader::writeBinary, "wb");
         }	
         

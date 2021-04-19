@@ -5,16 +5,16 @@ INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 ####################
 ###   Compiler   ###
 ####################
-CC = clang++ -std=c++11
-#CC = mpic++ -std=c++11
+#CC = clang++ -std=c++11
+CC = mpic++ -std=c++11
 #CC = time FCCpx -Nclang
 #CC = time mpiFCCpx -Nclang
 
 ########################
 ###   MPI & OpenMP   ###
 ########################
-#use_OpenMP = yes
-#use_MPI = yes
+use_OpenMP = yes
+use_MPI = yes
 
 ################
 ###   SIMD   ###

@@ -13,32 +13,6 @@ constexpr bool DEBUG_FLAG_DD = false;
 
 
 namespace ParticleSimulator{
-    template<S32 DIM>
-    inline void SetNumberOfDomainMultiDimension(S32 np[], S32 rank[], CommInfo & comm_info){
-        for(S32 i=0; i<DIMENSION_LIMIT; i++){
-            np[i] = 1;
-            rank[i] = 1;
-        }
-        std::vector<S32> npv;
-        npv.resize(DIM);
-        auto np_tmp = comm_info.getNumberOfProc();
-        for(S32 d=DIM, cid=0; cid<DIM-1; d--, cid++){
-            S32 tmp = (S32)pow(np_tmp+0.000001, (1.0/d)*1.000001 );
-            while(np_tmp%tmp){
-                tmp--;
-            }
-            npv[cid] = tmp;
-            np_tmp /= npv[cid];
-        }
-        npv[DIM-1] = np_tmp;
-        S32 rank_tmp = comm_info.getRank();
-        std::sort(npv.begin(), npv.end(), std::greater<S32>());
-        for(S32 i=DIM-1; i>=0; i--){
-            np[i] = npv[i];
-            rank[i] = rank_tmp % np[i];
-            rank_tmp /= np[i];
-        }
-    }
     
     inline void CommunicatorSplit(S32 np[],
                                   CommInfo & comm_info_src,
@@ -128,11 +102,13 @@ namespace ParticleSimulator{
             DeleteArray(n_smp_disp_array_);
             DeleteArray(pos_domain_);
             DeleteArray(pos_domain_temp_);
-            n_smp_array_ = new S32[comm_info_.getNumberOfProc()];
-            n_smp_disp_array_ = new S32[comm_info_.getNumberOfProc() + 1];
+            const S32 n_proc = comm_info_.getNumberOfProc();
+            const S32 my_rank = comm_info_.getRank();
+            n_smp_array_ = new S32[n_proc];
+            n_smp_disp_array_ = new S32[n_proc + 1];
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-            pos_domain_      = new F64ort[comm_info_.getNumberOfProc()];
-            pos_domain_temp_ = new F64ort[comm_info_.getNumberOfProc()];
+            pos_domain_      = new F64ort[n_proc];
+            pos_domain_temp_ = new F64ort[n_proc];
 #else
             pos_domain_     = new F64ort[1];
             pos_domain_temp_= new F64ort[1];
@@ -142,7 +118,7 @@ namespace ParticleSimulator{
             number_of_sample_particle_tot_ = 0;
             number_of_sample_particle_loc_ = 0;
             S32 rank_tmp[DIMENSION_LIMIT];
-            SetNumberOfDomainMultiDimension<DIMENSION>(n_domain_, rank_tmp, comm_info_);
+            SetNumberOfDomainMultiDimension<DIMENSION>(n_proc, my_rank, n_domain_, rank_tmp);
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
             CommunicatorSplit(n_domain_, comm_info_, comm_info_1d_, comm_info_sub_);
 #endif
@@ -1158,14 +1134,8 @@ namespace ParticleSimulator{
             F64 time_offset = GetWtime();
 
             const auto full_len_root_domain = pos_root_domain_.high_ - pos_root_domain_.low_;
-            //const auto my_rank = Comm::getRank();
-            //const auto n_proc  = Comm::getNumberOfProc();
             const auto my_rank = comm_info_.getRank();
             const auto n_proc  = comm_info_.getNumberOfProc();            
-            
-            //#ifndef PARTICLE_SIMULATOR_MPI_PARALLEL // ifNdef
-            //            pos_domain_[0] = pos_root_domain_;
-            //#else
 
             if(n_proc == 1){
                 pos_domain_[0] = pos_root_domain_;

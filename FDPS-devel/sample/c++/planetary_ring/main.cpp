@@ -4,47 +4,46 @@
 #include<random>
 #include<particle_simulator.hpp>
 #include"user_defined.hpp"
+#include"../../../sandbox/iwasawa_box/fdps-util/my_lib.hpp"
+#include"../../../sandbox/iwasawa_box/fdps-util/kepler.hpp"
+using namespace MY_LIB::LITERAL;
+void DEBUG_PRINT_RING(){
+#if defined(DEBUG_PRINT_RING)
+    PS::Comm::barrier();
+    std::cerr<<"function: "<<__FUNCTION__<<", line: "<<__LINE__<<", file: "<<__FILE__<<std::endl;
+#endif
+}
 
-constexpr PS::F64 MY_PI = 3.14159265358979323846;
-
+constexpr PS::F64 MY_PI = MY_LIB::CONSTANT::pi;
 FP_t PLANET;
 
-void PrintHelp() {
-    std::cerr<<"a: ring width (default: 1e-3)"<<std::endl;
-    std::cerr<<"d: inverse of dt (default: 256)"<<std::endl;
-    std::cerr<<"t: theta (default: 0.5)"<<std::endl;
-    std::cerr<<"T: time_end (default: 10.0)"<<std::endl;
-    std::cerr<<"l: n_leaf_limit (default: 8)"<<std::endl;
-    std::cerr<<"L: # of steps sharing the same list (default: 1)"<<std::endl;
-    std::cerr<<"n: n_group_limit (default: 64)"<<std::endl;
-    std::cerr<<"N: # of particles per process (default: 1024)"<<std::endl;
-    std::cerr<<"e: exchange LET mode"<<std::endl;
-    std::cerr<<"   0: PS::EXCHANGE_LET_A2A(default)"<<std::endl;
-    std::cerr<<"   1: PS::EXCHANGE_LET_P2P_EXACT"<<std::endl;
-    std::cerr<<"   2: PS::EXCHANGE_LET_P2P_FAST"<<std::endl;
-    std::cerr<<"E: restitution coefficient (default: 0.5)"<<std::endl;
-    std::cerr<<"D: inverse of duration time (default: 4)"<<std::endl;
-    std::cerr<<"O: optical depth (default: 1)"<<std::endl;
-    std::cerr<<"R: physical radius normalized hill radius (default: 1)"<<std::endl;
-    std::cerr<<"m: mid point tree method (default: off)"<<std::endl;
-    std::cerr<<"r: rotating frame (default: off)"<<std::endl;
-    std::cerr<<"h: help"<<std::endl;
+
+
+template<typename Tpsys, typename Tsat>
+void RemoveParticlesAroundSatellite(Tpsys & psys, Tsat & sat){
+    const auto n_loc = psys.getNumberOfParticleLocal();
+    const auto n_sat = sat.getNumberOfSat();
+    std::vector<PS::S32> id_remove;
+    for(auto i=0; i<n_loc; i++){
+        const auto pos_ptcl = psys[i].pos_car;
+	const auto r_coll_ptcl = psys[i].r_coll;
+	for(auto j=0; j<n_sat; j++){
+	    const auto rij = pos_ptcl -sat[j].pos_car;
+	    const auto r_coll = sat[j].r_coll + r_coll_ptcl;
+	    if( (rij*rij) < (r_coll*r_coll) ){
+	        id_remove.push_back(i);
+	    }
+	}
+    }
+    if(id_remove.size() > 0)
+        psys.removeParticle(&id_remove[0], id_remove.size());
+
+    if(id_remove.size() > 0){
+        std::cerr<<"rank= "<<PS::Comm::getRank()<<" id_remove.size()= "<<id_remove.size()<<std::endl;
+    }
 }
 
-inline PS::F64vec ConvertCar2Cyl(const PS::F64vec & pos){
-    const auto pos_r   = sqrt(pos.x*pos.x + pos.y*pos.y);
-    const auto pos_phi = atan2(pos.y, pos.x);
-    return PS::F64vec(pos_phi, pos_r, pos.z);
-}
 
-inline PS::F64vec ConvertCyl2Car(const PS::F64vec & pos){
-    const auto cth = cos(pos.x);
-    const auto sth = sin(pos.x);
-    const auto r = pos.y;
-    const auto pos_x = r*cth;
-    const auto pos_y = r*sth;
-    return PS::F64vec(pos_x, pos_y, pos.z);
-}
 
 template<typename Tpsys>
 void UpdateCyl(Tpsys & psys){
@@ -220,59 +219,17 @@ void Drift(Tpsys & psys,
     }
 }
 
-class Energy{
-public:
-    PS::F64 tot;
-    PS::F64 pot;
-    PS::F64 kin;
-    PS::F64 eng_disp;
-    Energy(){
-        pot = kin = tot = eng_disp = 0.0;
-    }
-    template<typename Tpsys>
-    void calc(const Tpsys & psys){
-        const auto n = psys.getNumberOfParticleLocal();
-        PS::F64 pot_loc = 0.0;
-        PS::F64 kin_loc = 0.0;
-        for(auto i=0; i<n; i++){
-            kin_loc += 0.5*psys[i].mass*psys[i].vel*psys[i].vel;
-            pot_loc += psys[i].mass*psys[i].pot;
-        }
-        pot = PS::Comm::getSum(pot_loc);
-        kin = PS::Comm::getSum(kin_loc);
-        tot = pot + kin;
-    }
-    template<typename Tptcl, typename Tforce>
-    void calc(const Tptcl  * psys,
-              const Tforce * force,
-              const FP_t & planet,
-              const int n){
-        PS::F64 pot_loc = 0.0;
-        PS::F64 kin_loc = 0.0;
-        for(auto i=0; i<n; i++){
-            kin_loc += 0.5*psys[i].mass*psys[i].vel*psys[i].vel;
-            pot_loc += psys[i].mass*force[i].pot;
-            PS::F64vec rij = planet.pos_car - psys[i].pos_car;
-            pot_loc -= psys[i].mass*planet.mass / sqrt(rij*rij);
-        }
-        pot = PS::Comm::getSum(pot_loc);
-        kin = PS::Comm::getSum(kin_loc);
-        tot = pot + kin;
-    }
-    void dump(std::ostream & fout = std::cerr){
-        fout<<"tot= "<<tot<<" pot= "<<pot<<" kin= "<<kin<<std::endl;
-    }
-};
+
 
 template<typename Tpsys>
-void SetID(Tpsys & psys){
+void SetID(Tpsys & psys, const PS::S32 start_id=0){
     PS::S32 n = psys.getNumberOfParticleLocal();
     PS::S32 n_proc  = PS::Comm::getNumberOfProc();
     PS::S32 my_rank = PS::Comm::getRank();
     PS::ReallocatableArray<PS::S32> n_ar;
     n_ar.resizeNoInitialize(n_proc);
     PS::Comm::allGather(&n, 1, n_ar.getPointer());
-    PS::S32 offset = 0;
+    PS::S32 offset = start_id;
     for(auto i=0; i<my_rank; i++){
         offset += n_ar[i];
     }
@@ -295,13 +252,6 @@ class DiskInfo{
     PS::F64 t_dur_;
     PS::F64 tau_;
     PS::S64 n_glb_;
-    PS::F64 getKappa(){
-	return std::pow((2.0*MY_PI/t_dur_), 2.0); // k^{'};
-    }
-    PS::F64 getEta(){
-	const auto ln_e_refl = std::log(e_refl_);
-	return 4.0*MY_PI*ln_e_refl/(t_dur_*std::sqrt(MY_PI*MY_PI+ln_e_refl)); // \eta^{'}
-    }
     void setParticlesOnLayer(std::vector<PS::F64vec> & pos, const PS::S64 id_x_head, const PS::S64 id_x_tail, const PS::S64 id_y_head, const PS::S64 id_y_tail, const PS::F64 dtheta, const PS::F64 dr, const PS::F64ort box,
 			     const PS::F64 offset_theta = 0.0, const PS::F64 offset_r = 0.0, const PS::F64 offset_z = 0.0, const PS::F64 eps = 0.0){
 	static std::mt19937 mt(PS::Comm::getRank());
@@ -320,8 +270,18 @@ class DiskInfo{
 	    }
 	}
     }
+
+    void calcKappa() {
+	kappa_ = std::pow((2.0*MY_PI/t_dur_), 2.0); // k^{'};
+    }
+    void calcEta() {
+	const auto ln_e_refl = std::log(e_refl_);
+	eta_ = 4.0*MY_PI/(t_dur_*std::sqrt(1.0+std::pow((MY_PI/ln_e_refl),2.0))); // \eta^{'}
+	//return 4.0*MY_PI*ln_e_refl/(t_dur_*std::sqrt(MY_PI*MY_PI+ln_e_refl)); // \eta^{'}
+    }
+    
 public:
-    DiskInfo(const PS::F64 delta_ax, const PS::F64 e_refl, const PS::F64 t_dur, const PS::F64 tau, const PS::F64 rphy_over_rhill, const PS::S64 n_glb){
+    void setParams(const PS::F64 delta_ax, const PS::F64 e_refl, const PS::F64 t_dur, const PS::F64 tau, const PS::F64 rphy_over_rhill, const PS::S64 n_glb){
 	ax_ = 1.0;
 	delta_ax_ = delta_ax;
 	e_refl_ = e_refl;
@@ -334,12 +294,38 @@ public:
 	r_hill_ = r_phy_ / rphy_over_rhill;
 	m_ptcl_ = (r_hill_/((ax_out+ax_in)*0.5))*(r_hill_/((ax_out+ax_in)*0.5))*(r_hill_/((ax_out+ax_in)*0.5))*3.0*PLANET.mass*0.5;
 	dens_ = m_ptcl_ * n_glb / (MY_PI*(ax_out*ax_out - ax_in*ax_in));
-	kappa_ = getKappa();
-	eta_ = getEta();
+	calcKappa();
+	calcEta();
+    }
+    DiskInfo(){}    
+    DiskInfo(const PS::F64 delta_ax, const PS::F64 e_refl, const PS::F64 t_dur, const PS::F64 tau, const PS::F64 rphy_over_rhill, const PS::S64 n_glb){
+	setParams(delta_ax, e_refl, t_dur, tau, rphy_over_rhill, n_glb);
+    }
+    void writeAscii(FILE * fp){
+        fprintf(fp, "%12.11e   %12.11e   %12.11e   %12.11e   %12.11e   %12.11e   %12.11e   %12.11e   %12.11e   %12.11e   %12.11e %lld \n",
+		ax_, delta_ax_, r_hill_, r_phy_, dens_, m_ptcl_, kappa_, eta_, e_refl_, t_dur_, tau_, n_glb_);
+    }
+    void readAscii(FILE * fp){
+        auto tmp = fscanf(fp, "%lf   %lf   %lf   %lf   %lf   %lf   %lf   %lf   %lf   %lf   %lf %lld",
+			  &ax_, &delta_ax_, &r_hill_, &r_phy_, &dens_, &m_ptcl_, &kappa_, &eta_, &e_refl_, &t_dur_, &tau_, &n_glb_);
+	assert(tmp == 12);
+	FP_t::kappa = kappa_;
+	FP_t::eta   = eta_;
+    }
+
+
+    void writeBinary(FILE * fp){
+	fwrite(this, sizeof(*this), 1, fp);
+    }
+    void readBinary(FILE * fp){
+	auto tmp = fread(this, sizeof(*this), 1, fp);
+	assert(tmp == 1);
+	FP_t::kappa = kappa_;
+	FP_t::eta   = eta_;
     }
     
     template<class Tpsys>
-    void setParticles(Tpsys & psys, const PS::F64ort box, const bool layer=true, const bool random_shift=true){
+    PS::S64 setParticles(Tpsys & psys, const PS::F64ort box, const bool layer=true, const bool random_shift=true){
 	const auto ax_in  = ax_ - 0.5*delta_ax_;
 	const auto ax_out = ax_ + 0.5*delta_ax_;
 	const auto area = MY_PI*(ax_out*ax_out-ax_in*ax_in);
@@ -407,6 +393,7 @@ public:
 	    psys[i].kappa = kappa_;
 	    psys[i].eta = eta_;
 	}
+	return n_loc;
     }
 };
 
@@ -418,104 +405,98 @@ int main(int argc, char *argv[]) {
     PS::Initialize(argc, argv);
     const auto my_rank = PS::Comm::getRank();
     const auto n_proc  = PS::Comm::getNumberOfProc();
-    PS::S64 n_loop_merge = 1;
 
     PLANET.mass = 1.0;
     PLANET.pos_car = PLANET.vel = 0.0;
-    
-    PS::F64 time_sys = 0.0;
-    PS::F64 dt = 1.0 / 256.0;
-    PS::S32 n_smp = 100;
-    PS::S32 n_leaf_limit = 8;
-    PS::S32 n_group_limit = 64;
-    PS::F64 theta = 0.5;
-    //PS::F64 ax_cen = 1.0;
-    PS::F64 delta_ax = 1e-3;
-    PS::S64 n_glb = 1024;
-    PS::S64 n_loc = 0;
-    PS::F64 time_end = 1.0;
-    PS::F64 e_refl = 0.5;    
-    PS::F64 t_dur = 1.0 / 4.0;
-    PS::F64 tau = 1.0;
-    PS::F64 rphy_over_rhill = 1.0;
 
+    MY_LIB::UnitManager unit_man;
+    unit_man.initializeByLMG(1e5_km2cm, MY_LIB::CONSTANT::mass_saturn_cgs, 1.0);
+    unit_man.dump(std::cerr);
+
+    FDPS_UTIL::ComandLineOptionManager cmd(argc, argv);
+    cmd.append("delta_ax",  "a", "the width of semi^major axis", "1.0e-3");
+    cmd.append("inv_dt",    "d", "inverse of dt", "256");
+    cmd.append("theta",     "t", "iopening criterion", "0.5");
+    cmd.append("time_end",  "T", "ending time", "10.0");
+    cmd.append("n_leaf_limit",    "l", "n_leaf_limit", "8");
+    cmd.append("n_group_limit",     "n", "maximum # of particles in a leaf cell", "64");
+    cmd.append("n_step_share",  "L", "# of steps sharing the same interaction list", "1");
+    cmd.append("n_loc",     "N", "# of particles per process", "1024");
+    cmd.append("ex_let_mode",   "e", "exchange LET mode \n  0: PS::EXCHANGE_LET_A2A \n  1: PS::EXCHANGE_LET_P2P_EXACT \n  2: PS::EXCHANGE_LET_P2P_FAST \n", "0");
+    cmd.append("e_refl",    "E", "restitution coefficient", "0.5");
+    cmd.append("t_dur",     "D", "inverse of duration time", "4");
+    cmd.append("tau",       "O", "optical depth", "1.0");
+    cmd.append("rphy_over_rhill", "R", "rphy / rhill", "1.0");
+    cmd.appendFlag("flag_mtm", "m", "use mid point tree method");
+    cmd.appendFlag("flag_rot", "r", "use rotation method");
+    cmd.appendFlag("flag_para_out", "output files in parallel");
+    cmd.appendFlag("flag_bin_out", "output binary format");
+    cmd.appendNoDefault("read_file",  "i", "write file name base", false);
+    cmd.appendNoDefault("write_file", "o", "write file name base", false);
+    cmd.append("sat_mode",  "satellite mode\n  0: no satellite\n  1: PAN\n  2:  few satellites", "0");
+    cmd.append("n_smp",  "# of sample particles per process", "100");
+    cmd.append("dt_snp",  "the interval time of snapshot", "1.0");
+    cmd.appendNoDefault("log_file",  "logfile name", false);
+    cmd.read();
+    
+    Param param;
+    param.setTimeSys(0.0);
+    PS::S64 id_snp = 0;
+    PS::F64 delta_ax = cmd.get("delta_ax");
+    PS::S32 inv_dt = cmd.get("inv_dt");
+    param.setDt( 1.0 / inv_dt );
+    PS::F64 theta    = cmd.get("theta");
+    PS::F64 time_end = cmd.get("time_end");
+    PS::S32 n_leaf_limit = cmd.get("n_leaf_limit");
+    PS::S32 n_group_limit = cmd.get("n_group_limit");
+    PS::S32 n_step_share = cmd.get("n_step_share");
+    PS::S64 n_loc        = cmd.get("n_loc");
+    PS::S64 n_glb        = n_loc * PS::Comm::getNumberOfProc();
+    PS::S32 ex_let_mode_n = cmd.get("ex_let_mode");
     auto ex_let_mode = PS::EXCHANGE_LET_A2A;
-    bool flag_mtm = false; // mid point tree method
-    bool flag_rot = false; // on the rotating reference frame
+    if(ex_let_mode_n == 0)
+	ex_let_mode = PS::EXCHANGE_LET_A2A;
+    else if(ex_let_mode_n == 1)
+	ex_let_mode = PS::EXCHANGE_LET_P2P_EXACT;
+    else if(ex_let_mode_n == 2)
+	ex_let_mode = PS::EXCHANGE_LET_P2P_FAST;
+    PS::F64 e_refl = cmd.get("e_refl");
+    PS::F64 t_dur  = cmd.get("t_dur");
+    PS::F64 tau  = cmd.get("tau");
+    PS::F64 rphy_over_rhill  = cmd.get("rphy_over_rhill");
+    bool    flag_mtm = cmd.get("flag_mtm");
+    bool    flag_rot = cmd.get("flag_rot");
+    bool    flag_para_out = cmd.get("flag_para_out");
+    bool    flag_bin_out = cmd.get("flag_bin_out");    
+    PS::S32 sat_mode = cmd.get("sat_mode");
+    PS::S32 n_smp    = cmd.get("n_smp");
+    PS::F64 dt_snp = cmd.get("dt_snp");
 
-    PS::S32 id_snp = 0;
-    PS::F64 dt_snp = 1.0;
+
+    std::string write_file_name_base;
+    bool flag_snapshot   = false; // output snapshot    
+    if(cmd.hasOption("write_file") || cmd.hasOption("o")){
+	write_file_name_base = cmd.get<std::string>("write_file");
+	flag_snapshot   = true;
+    }
     
-    PS::S32 c;
-    while((c=getopt(argc,argv,"t:a:d:T:l:L:n:N:e:E:D:O:R:mrh")) != -1){
-        switch(c){
-        case 'a':
-            delta_ax = atof(optarg);
-            break;
-        case 'd':
-            dt = 1.0/atoi(optarg);
-            break;
-        case 't':
-            theta = atof(optarg);
-            break;
-        case 'T':
-            time_end = atof(optarg);
-            break;
-        case 'l':
-            n_leaf_limit = atoi(optarg);
-            break;
-        case 'L':
-            n_loop_merge = atoi(optarg);
-            break;
-        case 'n':
-            n_group_limit = atoi(optarg);
-            break;
-        case 'N':
-	    n_glb = atol(optarg) * PS::Comm::getNumberOfProc();
-            break;
-	case 'e':
-	    if(atoi(optarg) == 0){
-		ex_let_mode = PS::EXCHANGE_LET_A2A;
-	    }
-	    else if(atoi(optarg) == 1){
-		ex_let_mode = PS::EXCHANGE_LET_P2P_EXACT;
-	    }
-	    else if(atoi(optarg) == 2){
-		ex_let_mode = PS::EXCHANGE_LET_P2P_FAST;
-	    }
-	    break;
-        case 'E':
-	    e_refl = atof(optarg);
-            break;
-        case 'D':
-	    t_dur = 1.0 / atoi(optarg);
-            break;
-        case 'O':
-	    tau = atof(optarg);
-            break;
-        case 'R':
-	    rphy_over_rhill = atof(optarg);
-            break;
-        case 'm':
-	    flag_mtm = true;
-            break;
-        case 'r':
-	    flag_rot = true;
-            break;
-        case 'h':
-            if(PS::Comm::getRank() == 0)
-                PrintHelp();
-            PS::Finalize();
-            return 0;
-        default:
-            if(PS::Comm::getRank() == 0) {
-                std::cerr<<"No such option! Available options are here."<<std::endl;
-                PrintHelp();
-            }
-            PS::Abort();
-        }
+    std::string read_file_name_base;
+    bool flag_start_file = false; // resume simulations using snapshot
+    if(cmd.hasOption("read_file") || cmd.hasOption("i")){
+	read_file_name_base = cmd.get<std::string>("read_file");
+	flag_start_file = true;
     }
 
+    std::ofstream fout_log;
+    if(cmd.hasOption("log_file")){
+	std::string log_file_name = cmd.get<std::string>("log_file");
+	//std::ofstream tmp;
+	//tmp.open(log_file_name);
+	//fout_log.rdbuf(tmp.rdbuf);
+	fout_log.open(log_file_name);
+    }
+    
+    
     PS::S32 nx, ny, nz;
     DivideNProc(nx, ny, nz, n_proc, delta_ax);
     PS::DomainInfo dinfo;
@@ -528,22 +509,111 @@ int main(int argc, char *argv[]) {
     system.setAverageTargetNumberOfSampleParticlePerProcess(n_smp);
     const auto pos_domain = GetPosDomainCyl(delta_ax, nx, ny);
     if(my_rank==0){
-	std::cerr<<"my_rank= "<<my_rank<<" pos_domain= "<<pos_domain<<std::endl;
+	fout_log<<"my_rank= "<<my_rank<<" pos_domain= "<<pos_domain<<std::endl;
     }
-    DiskInfo disk_info(delta_ax, e_refl, t_dur, tau, rphy_over_rhill, n_glb);
-    disk_info.setParticles(system, pos_domain);
-    
+    DiskInfo disk_info;
+    SatelliteSystem sat_system_glb;
+
+    FDPS_UTIL::SnapshotManager snapshot_manager(write_file_name_base, dt_snp, flag_para_out, flag_bin_out); // single ascii
+    Energy eng_init;
+    PS::F64 eng_disp_glb = 0;
+    if(flag_start_file){
+	PS::F64 t;
+	snapshot_manager.read< PS::ParticleSystem<FP_t>, DiskInfo, Energy, SatelliteSystem>(read_file_name_base, system, t, disk_info, eng_init, sat_system_glb);
+	param.setTimeSys(t);
+	eng_disp_glb = eng_init.getDisp();
+    } else {
+	disk_info.setParams(delta_ax, e_refl, t_dur, tau, rphy_over_rhill, n_glb);
+	n_loc = disk_info.setParticles(system, pos_domain);
+	n_glb = system.getNumberOfParticleGlobal();
+	for(auto i=0; i<n_loc; i++){
+	    if(!dinfo.getPosRootDomain().contained(system[i].getPos())){
+		std::cerr<<"n_loc= "<<n_loc<<std::endl;
+		std::cerr<<"dinfo.getPosRootDomain()= "<<dinfo.getPosRootDomain()<<std::endl;
+		std::cerr<<"i= "<<i<<" system[i].getPos()= "<<system[i].getPos()<<std::endl;
+		std::cerr<<"i= "<<i<<" system[i].pos_car= "<<system[i].pos_car<<std::endl;
+		std::cerr<<"i= "<<i<<" system[i].pos_cyl= "<<system[i].pos_cyl<<std::endl;
+	    }
+	    assert(dinfo.getPosRootDomain().contained(system[i].getPos()));
+	}
+	snapshot_manager.setIdSnp(id_snp);
+	snapshot_manager.setTimeSnp(param.getTimeSys());
+
+	SatelliteSystem sat_system_loc;
+	sat_system_loc.clear();
+	if (sat_mode == 1){
+	  if(my_rank==0){
+		FP_t sat_tmp = system[0];
+		using namespace MY_LIB::LITERAL;
+		PS::F64 ax  = 1.0;
+		// Daphnis
+		/*
+		PS::F64 sat_mass = 1e-13;
+		PS::F64 ecc = 3e-5;
+		PS::F64 inc = 4e-3_deg;
+		*/
+		/*
+		// PAN
+		PS::F64 sat_mass = 1e-11;
+		PS::F64 ecc = 1e-5;
+		PS::F64 inc = 1e-4_deg;
+		*/
+		PS::F64 sat_mass = system[0].mass * 64.0;
+		PS::F64 ecc = 0.0;
+		PS::F64 inc = 0.0;
+		PS::F64 OMG = M_PI; // pericenter is in the direction of -x
+		PS::F64 omg = 0.0;
+		PS::F64 u = M_PI; // satellite is at the apocenter
+		MY_LIB::OrbParam2PosVel(PLANET.pos_car, sat_tmp.pos_car, PLANET.vel, sat_tmp.vel, PLANET.mass, 0.0,
+					ax, ecc, inc, OMG, omg, u);
+		sat_tmp.mass = system[0].mass;
+		sat_tmp.changeMass(sat_mass);
+		std::cerr<<"sat_tmp.pos_car= "<<sat_tmp.pos_car
+			 <<" vel= "<<sat_tmp.vel
+			 <<" mass= "<<sat_tmp.mass
+			 <<std::endl;
+		std::cerr<<"system[0].mass= "<<system[0].mass<<std::endl;
+		sat_tmp.pos_cyl = ConvertCar2Cyl(sat_tmp.pos_car);
+		sat_system_loc.setSatellite(sat_tmp);	    
+	    }
+	} else if (sat_mode == 2){
+	    const PS::S32 n_remove = 10;
+	    PS::S32 id_remove[n_remove];
+	    for(auto i=0; i<n_remove; i++){
+		system[i].changeMass(system[i].mass * 8);
+		sat_system_loc.setSatellite(system[i]);
+		id_remove[i] = i;
+	    }
+	    system.removeParticle(id_remove, n_remove);
+	}
+	sat_system_glb.allgatherSystem(sat_system_loc);
+	sat_system_glb.setId();
+    }
+    if(sat_system_glb.getNumberOfSat() > 0){
+	std::cerr<<"sat_system_glb[0].mass= "<<sat_system_glb[0].mass
+		 <<" pos_car= "<<sat_system_glb[0].pos_car
+		 <<" pos_cyl= "<<sat_system_glb[0].pos_cyl
+		 <<" vel= "<<sat_system_glb[0].vel
+		 <<std::endl;
+    }
+    RemoveParticlesAroundSatellite(system, sat_system_glb); // remove overlapped particles
+    //exit(1);
+    if(my_rank==1){
+	std::cerr<<"sat_system_glb.getNumberOfSat()= "<<sat_system_glb.getNumberOfSat()<<std::endl;
+	for(auto i=0; i<sat_system_glb.getNumberOfSat(); i++){
+	    std::cerr<<"sat_system_glb[i].id= "<<sat_system_glb[i].id<<" pos= "<<sat_system_glb[i].pos_car<<std::endl;
+	}
+    }
     n_loc = system.getNumberOfParticleLocal();
-    n_glb = system.getNumberOfParticleGlobal();
+    n_glb = system.getNumberOfParticleGlobal();    
     if(my_rank==0){
 	std::cerr<<"my_rank= "<<my_rank<<" n_loc= "<<n_loc<<" n_glb= "<<n_glb<<std::endl;
+	//system[0].dump(unit_man, std::cerr);
+	//unit_man.dump(std::cerr);
+	system[0].dump(unit_man, fout_log);
+	unit_man.dump(fout_log);
     }
-    for(auto i=0; i<n_loc; i++){
-        assert(dinfo.getPosRootDomain().contained(system[i].getPos()));
-    }
-    
     dinfo.decomposeDomainAll(system);
-    
     if(my_rank==0){
         std::cerr<<"dinfo.getPosRootDomain()= "<<dinfo.getPosRootDomain()<<std::endl;
         for(auto i=0; i<n_proc; i++){
@@ -554,7 +624,7 @@ int main(int argc, char *argv[]) {
     n_loc = system.getNumberOfParticleLocal();
     system.exchangeParticle(dinfo);
     n_loc = system.getNumberOfParticleLocal();
-    SetID(system);
+    SetID(system, sat_system_glb.getNumberOfSat());
 
     PS::F64 mass_loc = 0.0;
     for(auto i=0; i<system.getNumberOfParticleLocal(); i++){
@@ -570,6 +640,11 @@ int main(int argc, char *argv[]) {
     tree.setExchagneLETMode(ex_let_mode);
     tree.calcForceAllAndWriteBack(CalcForceEp<EPI_t, EPJ_t, Force_t>(), CalcForceSp(), system, dinfo, true, PS::MAKE_LIST_FOR_REUSE);
 
+    //std::cerr<<"system[0].mass= "<<system[0].mass<<std::endl;
+    //std::cerr<<"system[0].vel= "<<system[0].vel<<std::endl;
+    //std::cerr<<"system[0].acc= "<<system[0].acc<<std::endl;
+    //std::cerr<<"system[0].acc_dash= "<<system[0].acc_dash<<std::endl;
+    
 #if defined(FORCE_CHECK)
     PS::ReallocatableArray<Force_t> force_mono(n_loc, n_loc, PS::MemoryAllocMode::Default);
     MyCalcForceAllAndWriteBack(tree, CalcForceEp<EPI_t, EPJ_t, Force_t>(), CalcForceSpMono<EPI_t, SPJ_t, Force_t>(), system, dinfo, true, PS::MAKE_LIST_FOR_REUSE);
@@ -584,7 +659,7 @@ int main(int argc, char *argv[]) {
     for(auto i=0; i<n_loc; i++){
         force_quad[i].acc = system[i].acc;
         force_quad[i].pot = system[i].pot;
-    }
+j    }
     */
     
     PS::ReallocatableArray<Force_t> force_dir(n_loc, n_loc, PS::MemoryAllocMode::Default);
@@ -601,87 +676,140 @@ int main(int argc, char *argv[]) {
     PS::Finalize();
     return 0;
 #endif
+    sat_system_glb.CalcForce(system);
+    AddSatToSys(system, sat_system_glb);
+
+    /*
+    if(my_rank==0){
+	if(sat_system_glb.getNumberOfSat() > 0){
+	    std::cerr<<"sat_system_glb[0].acc= "<<sat_system_glb[0].acc<<" pot= "<<sat_system_glb[0].pot<<std::endl;
+	    std::cerr<<"system[0].acc= "<<system[0].acc<<" pot= "<<system[0].pot<<std::endl;
+	}
+	else{
+	    std::cerr<<"system[0].acc= "<<system[0].acc<<" pot= "<<system[0].pot<<std::endl;
+	    std::cerr<<"system[1].acc= "<<system[1].acc<<" pot= "<<system[1].pot<<std::endl;
+	}
+    }
+    */
 
     CalcForceFromPlanet(system, PLANET);
 
-    Energy eng_init;
+    if(my_rank != 0){
+	RemoveSatFromSys(system, sat_system_glb);
+    }
     eng_init.calc(system);
+    if(my_rank != 0){
+	AddSatToSys(system, sat_system_glb);
+    }
+    //exit(1);
 
+    if(flag_snapshot){
+	RemoveSatFromSys(system, sat_system_glb);
+	snapshot_manager.write< PS::ParticleSystem<FP_t>, DiskInfo, Energy, SatelliteSystem>(system, param.getTimeSys(), disk_info, eng_init, sat_system_glb);
+	AddSatToSys(system, sat_system_glb);
+    }
+
+    
     PS::S64 n_loop = 0;
     PS::S64 n_loop_prev = 0;
-    PS::F64 eng_disp = 0.0;
-    while(time_sys <= time_end){
+    PS::F64 eng_disp_loc = 0.0;
+    //while(time_sys <= time_end){
+    while(param.getTimeSys() <= time_end){
 
         PS::Comm::barrier();
-
+	
         n_loc = system.getNumberOfParticleLocal();
         PS::F64 va0_loc = 0.0;
         for(int i=0; i<n_loc; i++){
             va0_loc += system[i].mass*system[i].acc_dash*system[i].vel;
         }
+	
+        Kick(system, 0.5*param.getDt());
+        Drift(system, param.getDt());
+	RemoveSatFromSys(system, sat_system_glb);
 
-        Kick(system, 0.5*dt);
-        Drift(system, dt);
-        time_sys += dt;
+	param.integrateTime();
         n_loop++;
-        if(n_loop % n_loop_merge == 0){
-	    if(my_rank==0){
-	        std::cerr<<"n_loop= "<<n_loop<<" n_loop_merge= "<<n_loop_merge<<std::endl;
-	    }
+        if(n_loop % n_step_share == 0){
+	    DEBUG_PRINT_RING();
             UpdateCyl(system);
 	    if(flag_rot){
-		RigidRotation(system, -dt*(n_loop-n_loop_prev) );
+		RigidRotation(system, -param.getDt()*(n_loop-n_loop_prev) );
 		n_loop_prev = n_loop;
 	    }
-	    
+	    DEBUG_PRINT_RING();
 	    if(flag_mtm){
-		Rotate(system, dt*n_loop_merge*0.5);
+		Rotate(system, param.getDt()*n_step_share*0.5);
 	    }
+	    DEBUG_PRINT_RING();
             dinfo.decomposeDomainAll(system);
+
+	    DEBUG_PRINT_RING();
             system.adjustPositionIntoRootDomain(dinfo);
+
+	    DEBUG_PRINT_RING();
             system.exchangeParticle(dinfo);
+
+	    DEBUG_PRINT_RING();
+
             n_loc = system.getNumberOfParticleLocal();
             n_glb = system.getNumberOfParticleGlobal();
         }
         tree.clearCounterAll();
 	
 	if(flag_mtm){	
-	    if(n_loop % n_loop_merge == 0){
+	    if(n_loop % n_step_share == 0){
 		tree.calcForceAllAndWriteBack(CalcForceEp<EPI_t, EPJ_t, Force_t>(), CalcForceSp(), system, dinfo, true, PS::MAKE_LIST_FOR_REUSE);
-		Rotate(system, -dt*n_loop_merge*0.5);
+
+		DEBUG_PRINT_RING();
+
+		Rotate(system, -param.getDt()*n_step_share*0.5);
+
+		DEBUG_PRINT_RING();
+		
 	    }
 	    tree.clearCounterAll();
 	    tree.calcForceAllAndWriteBack(CalcForceEp<EPI_t, EPJ_t, Force_t>(), CalcForceSp(), system, dinfo, true, PS::REUSE_LIST);
 	} else {
-	    const auto int_mode = (n_loop % n_loop_merge == 0) ? PS::MAKE_LIST_FOR_REUSE : PS::REUSE_LIST;
+	    const auto int_mode = (n_loop % n_step_share == 0) ? PS::MAKE_LIST_FOR_REUSE : PS::REUSE_LIST;
 	    tree.calcForceAllAndWriteBack(CalcForceEp<EPI_t, EPJ_t, Force_t>(), CalcForceSp(), system, dinfo, true, int_mode);
 	}
 	
+	DEBUG_PRINT_RING();
+
         PS::MemoryPool::checkEmpty();
-	
+        sat_system_glb.CalcForce(system);
+	AddSatToSys(system, sat_system_glb);	
         CalcForceFromPlanet(system, PLANET);
-    
-        Kick(system, 0.5*dt);
+	
+        Kick(system, 0.5*param.getDt());
 
         n_loc = system.getNumberOfParticleLocal();
         PS::F64 va1_loc = 0.0;
         for(int i=0; i<n_loc; i++){
             va1_loc += system[i].mass*system[i].acc_dash*system[i].vel;
         }
-        eng_disp += (va0_loc+va1_loc)*dt*0.5;
-        PS::F64 eng_disp_glb = PS::Comm::getSum(eng_disp);
+        eng_disp_loc += (va0_loc+va1_loc)*param.getDt()*0.5;
+        eng_disp_glb += PS::Comm::getSum(eng_disp_loc);
         Energy eng_now;
+	if(my_rank != 0){
+	    RemoveSatFromSys(system, sat_system_glb);
+	}
         eng_now.calc(system);
+	if(my_rank != 0){
+	    AddSatToSys(system, sat_system_glb);
+	}
+	eng_now.setEngDispGlb(eng_disp_glb);
 	
         auto n_walk = tree.getNumberOfWalkGlobal();
         auto n_int_ep_ep = tree.getNumberOfInteractionEPEPGlobal();
         auto n_int_ep_sp = tree.getNumberOfInteractionEPSPGlobal();
-        if(PS::Comm::getRank()==1){
+        if(PS::Comm::getRank()==0){
             eng_init.dump(std::cout);
             eng_now.dump(std::cout);
-            std::cout<<"eng_disp_glb= "<<eng_disp_glb<<std::endl;
-            std::cout<<"time_sys= "<<time_sys<<" n_loop= "<<n_loop<<" (eng_now.tot-eng_init.tot)/eng_init.tot= "<<(eng_now.tot-eng_init.tot)/eng_init.tot
-                     <<" (eng_now.tot-eng_init.tot-eng_disp)/eng_init.tot= "<<(eng_now.tot-eng_init.tot-eng_disp)/eng_init.tot
+            std::cout<<"eng_now.disp= "<<eng_now.disp<<std::endl;
+            std::cout<<"param.getTimeSys()= "<<param.getTimeSys()<<" n_loop= "<<n_loop<<" (eng_now.tot-eng_init.tot)/eng_init.tot= "<<(eng_now.tot-eng_init.tot)/eng_init.tot
+                     <<" (eng_now.tot-eng_init.tot-eng_now.disp)/eng_init.tot= "<<(eng_now.tot-eng_init.tot-eng_now.disp)/eng_init.tot
                      <<std::endl;
             std::cout<<"n_int_ep_ep= "<<n_int_ep_ep
                      <<" n_int_ep_sp= "<<n_int_ep_sp
@@ -689,6 +817,21 @@ int main(int argc, char *argv[]) {
                      <<" <n_epj>= "<<((PS::F64)n_int_ep_ep) / n_glb
                      <<" <n_spj>= "<<((PS::F64)n_int_ep_sp) / n_glb
                      <<std::endl;
+
+
+            eng_init.dump(fout_log);
+            eng_now.dump(fout_log);
+            fout_log<<"eng_now.disp= "<<eng_now.disp<<std::endl;
+            fout_log<<"param.getTimeSys()= "<<param.getTimeSys()<<" n_loop= "<<n_loop<<" (eng_now.tot-eng_init.tot)/eng_init.tot= "<<(eng_now.tot-eng_init.tot)/eng_init.tot
+		    <<" (eng_now.tot-eng_init.tot-eng_now.disp)/eng_init.tot= "<<(eng_now.tot-eng_init.tot-eng_now.disp)/eng_init.tot
+		    <<std::endl;
+            fout_log<<"n_int_ep_ep= "<<n_int_ep_ep
+		    <<" n_int_ep_sp= "<<n_int_ep_sp
+		    <<" <n_epi>= "<<((PS::F64)n_glb) / n_walk
+		    <<" <n_epj>= "<<((PS::F64)n_int_ep_ep) / n_glb
+		    <<" <n_spj>= "<<((PS::F64)n_int_ep_sp) / n_glb
+		    <<std::endl;
+	    
         }
         tree.clearCounterAll();
         PS::S64 size_used_loc = tree.getUsedMemorySize();
@@ -698,18 +841,13 @@ int main(int argc, char *argv[]) {
             std::cerr<<" tree.dumpMemSizeUsed():"<<std::endl;
             tree.dumpMemSizeUsed(std::cerr);
         }
-
-	/*
-	if(time_sys >= time_snp){
-	    FileHeader file_header;
-	    char * file_base;
-	    system.writeParticleBinary(file_prefix, "%s_%05d_%05d_", file_header)
-	    time_snp += time_sys + dt_snp;
-	    id_snp++;
+	if(flag_snapshot){
+	    RemoveSatFromSys(system, sat_system_glb);
+	    snapshot_manager.write< PS::ParticleSystem<FP_t>, DiskInfo, Energy, SatelliteSystem>(system, param.getTimeSys(), disk_info, eng_now, sat_system_glb);
+	    AddSatToSys(system, sat_system_glb);
 	}
-	*/
-
     }
+    
     PS::Finalize();
     return 0;
 }

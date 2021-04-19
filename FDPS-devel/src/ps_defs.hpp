@@ -1,7 +1,5 @@
 #pragma once
 
-//#include<bitset>
-
 #include<cmath>
 #include<vector>
 #include<functional>
@@ -39,12 +37,12 @@
 #endif
 
 #ifdef __GNUC__
-#define PS_INLINE __attribute__((always_inline))
+#define PS_INLINE inline __attribute__((always_inline))
 #else
 #define PS_INLINE inline
 #endif
 
-#define SET_CALLER_INFO(obj)					\
+#define PS_SET_CALLER_INFO(obj)					\
     do {							\
 	obj.setCallerInfo(__LINE__, __FUNCTION__, __FILE__);	\
     } while(0);							\
@@ -101,6 +99,15 @@
 
 #define PARTICLE_SIMULATOR_PRINT_LINE_INFO() \
     { std::cout<<"function: "<<__FUNCTION__<<", line: "<<__LINE__<<", file: "<<__FILE__<<std::endl; }
+
+template<typename Tcomm>
+void DEBUG_PRINT_MAKING_TREE(Tcomm & comm_info){
+#if defined(DEBUG_PRINT_MAKING_TREE)
+    comm_info.barrier();
+    if(comm_info.getRank()==0)
+	PARTICLE_SIMULATOR_PRINT_LINE_INFO();
+#endif
+}
 
 namespace ParticleSimulator{
     static const long long int LIMIT_NUMBER_OF_TREE_PARTICLE_PER_NODE = 1ll<<30;
@@ -172,16 +179,16 @@ namespace ParticleSimulator{
     typedef F64ort3 F64ort;
     static const S32 DIMENSION = 3;
     static const S32 N_CHILDREN = 8;
-#if defined(USE_128BIT_KEY)
-    static const S32 TREE_LEVEL_LIMIT = 42;
-    static const S32 KEY_LEVEL_MAX_HI = 21;
-    static const S32 KEY_LEVEL_MAX_LO = 21;
-#elif defined(USE_96BIT_KEY)
+#if defined(PARTICLE_SIMULATOR_USE_64BIT_KEY)
+    static const S32 TREE_LEVEL_LIMIT = 21;
+#elif defined(PARTICLE_SIMULATOR_USE_96BIT_KEY)
     static const S32 TREE_LEVEL_LIMIT = 31;
     static const S32 KEY_LEVEL_MAX_HI = 21;
     static const S32 KEY_LEVEL_MAX_LO = 10;
 #else
-    static const S32 TREE_LEVEL_LIMIT = 21;
+    static const S32 TREE_LEVEL_LIMIT = 42;
+    static const S32 KEY_LEVEL_MAX_HI = 21;
+    static const S32 KEY_LEVEL_MAX_LO = 21;
 #endif
     static const F64vec SHIFT_CENTER[N_CHILDREN] = 
         { F64vec(-0.5, -0.5, -0.5), F64vec(-0.5, -0.5, 0.5),
@@ -641,6 +648,34 @@ namespace ParticleSimulator{
 #endif
 
 
+    template <int DIM>
+    inline void SetNumberOfDomainMultiDimension(const int n_proc, const int my_rank,
+                                                int np[], int rank[]){
+        for (int i=0; i<DIMENSION_LIMIT; i++){
+            np[i] = 1;
+            rank[i] = 1;
+        }
+        std::vector<S32> npv;
+        npv.resize(DIM);
+        auto np_tmp = n_proc;
+        for(int d=DIM, cid=0; cid<DIM-1; d--, cid++){
+            int tmp = (S32)pow(np_tmp+0.000001, (1.0/d)*1.000001 );
+            while(np_tmp%tmp){
+                tmp--;
+            }
+            npv[cid] = tmp;
+            np_tmp /= npv[cid];
+        }
+        npv[DIM-1] = np_tmp;
+        int rank_tmp = my_rank;
+        std::sort(npv.begin(), npv.end(), std::greater<S32>());
+        for(int i=DIM-1; i>=0; i--){
+            np[i] = npv[i];
+            rank[i] = rank_tmp % np[i];
+            rank_tmp /= np[i];
+        }
+    }
+
     class CommInfo{
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Comm comm_;
@@ -711,6 +746,7 @@ namespace ParticleSimulator{
 #endif
             return ret;
         }
+
         template<class T>
         Vector2<T> allreduceSum(const Vector2<T> & val) const {
             Vector2<T> ret = val;
@@ -1263,25 +1299,28 @@ namespace ParticleSimulator{
         inline T getMaxValue(const T & val) const {
             return allreduceMax(val);
         }
+        template<class Tfloat>
+        inline void getMinValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out) {
+            static_assert(std::is_floating_point<Tfloat>::value == true,
+                          "Tfloat must be floating point type.");
+            allreduceMin(f_in, i_in, f_out, i_out);
+        }
+        template<class Tfloat>
+        inline void getMaxValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out) {
+            static_assert(std::is_floating_point<Tfloat>::value == true,
+                          "Tfloat must be floating point type.");
+            allreduceMax(f_in, i_in, f_out, i_out);
+        }
         template<typename T>
         inline T getSum(const T & val) const {
             return allreduceSum(val);
         }
-        template<typename Tfloat>
-        inline void getMinValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out){
-            allreduceMin(f_in, i_in, f_out, i_out);
-        }
-        template<typename Tfloat>
-        inline void getMaxValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out){
-            allreduceMax(f_in, i_in, f_out, i_out);
-        }
-        
     };
 
+    
     class Comm{
     private:
         Comm(){
-            //std::cerr<<"const comm"<<std::endl;
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
             comm_info_.setCommunicator(MPI_COMM_WORLD);
 #else
@@ -1294,6 +1333,15 @@ namespace ParticleSimulator{
 #else
             n_thread_ = 1;
 #endif
+
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+            constexpr int DIM = 2;
+#else
+            constexpr int DIM = 3;
+#endif
+            SetNumberOfDomainMultiDimension<DIM>(n_proc_, rank_,
+                                                 n_proc_multi_dim_,
+                                                 rank_multi_dim_);
         }
         ~Comm(){}
         Comm(const Comm & c){}
@@ -1342,6 +1390,7 @@ namespace ParticleSimulator{
         static CommInfo split(int color, int key){
             return getInstance().comm_info_.split(color, key);
         }
+
         static void barrier(){
             getInstance().comm_info_.barrier();
         }
@@ -1364,7 +1413,7 @@ namespace ParticleSimulator{
         ////////////////////////
         // MPI GATHER WRAPPER //
         template<class T>
-        inline void gather(T * val_send, // in
+        static inline void gather(T * val_send, // in
                            int n, // in
                            T * val_recv, // out
                            int dst=0 // in
@@ -1373,7 +1422,7 @@ namespace ParticleSimulator{
         }
 
         template<class T> 
-        inline void gatherV(T * val_send, // in
+        static inline void gatherV(T * val_send, // in
                             int n_send,   // in
                             T * val_recv, // out
                             int * n_recv, // in
@@ -1384,7 +1433,7 @@ namespace ParticleSimulator{
         }
 
         template<class T>
-        inline void gatherVAll(ReallocatableArray<T> & val_send,
+        static inline void gatherVAll(ReallocatableArray<T> & val_send,
                                int n_send,
                                ReallocatableArray<T> & val_recv,
                                int dst=0){
@@ -1501,11 +1550,11 @@ namespace ParticleSimulator{
         ///////////////////////////
         // MPI SEND/RECV WRAPPER //
         template<typename T>
-        inline int send(const T * val, const int n, const int dst=0, const int tag=0) const {
+        static inline int send(const T * val, const int n, const int dst=0, const int tag=0) {
             return getInstance().comm_info_.send(val, n, dst, tag);
         }
         template<typename T>
-        inline int recv(T * val, const int n, const int src=0, const int tag=0) const {
+        static inline int recv(T * val, const int n, const int src=0, const int tag=0) {
             return getInstance().comm_info_.recv(val, n, src, tag);
         }
         
@@ -1521,17 +1570,21 @@ namespace ParticleSimulator{
         static inline T getMaxValue(const T & val){
             return getInstance().comm_info_.getMaxValue(val);
         }
+        template<class Tfloat>
+        static inline void getMinValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out) {
+            static_assert(std::is_floating_point<Tfloat>::value == true,
+                          "Tfloat must be floating point type.");
+            return getInstance().comm_info_.getMinValue(f_in, i_in, f_out, i_out);
+        }
+        template<class Tfloat>
+        static inline void getMaxValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out) {
+            static_assert(std::is_floating_point<Tfloat>::value == true,
+                          "Tfloat must be floating point type.");
+            return getInstance().comm_info_.getMaxValue(f_in, i_in, f_out, i_out);
+        }
         template<typename T>
         static inline T getSum(const T & val){
             return getInstance().comm_info_.getSum(val);
-        }
-        template<typename Tfloat>
-        static inline void getMinValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out){
-            return getInstance().comm_info_.getMinValue(f_in, i_in, f_out, i_out);
-        }
-        template<typename Tfloat>
-        static inline void getMaxValue(const Tfloat & f_in, const int & i_in, Tfloat & f_out, int & i_out){
-            return getInstance().comm_info_.getMaxValue(f_in, i_in, f_out, i_out);
         }
         
         static S32 getNumberOfThread() { return getInstance().n_thread_; }
@@ -2420,109 +2473,7 @@ PS_OMP_PARALLEL
             }
         }
     }
-#if defined(USE_128BIT_KEY) || defined(USE_96BIT_KEY)
-    class KeyT{
-    public:
-        U64 hi_;
-#ifdef USE_128BIT_KEY
-        U64 lo_;
-        KeyT(const U64 hi, const U64 lo) : hi_(hi), lo_(lo){}
-#else
-        U32 lo_;
-        KeyT(const U64 hi, const U32 lo) : hi_(hi), lo_(lo){}
-#endif
-        KeyT() : hi_(0), lo_(0){}
-        template<typename Tint>
-        KeyT(const Tint lo) : hi_(0), lo_(lo){}
-        void init(){
-            hi_ = 0;
-            lo_ = 0;
-        }
-        bool operator == (const KeyT & rhs) const {
-            return (hi_ == rhs.hi_) && (lo_ == rhs.lo_);
-        }
-        bool operator != (const KeyT & rhs) const {
-            return !(*this == rhs);
-        }
-        bool operator < (const KeyT & rhs) const {
-            return (hi_ < rhs.hi_) || ((hi_ == rhs.hi_) && (lo_ < rhs.lo_));
-        }
-        bool operator <= (const KeyT & rhs) const {
-            return (hi_ < rhs.hi_) || ((hi_ == rhs.hi_) && (lo_ <= rhs.lo_));
-        }
-        bool operator > (const KeyT & rhs) const {
-            return !(*this <= rhs);
-        }
-        bool operator >= (const KeyT & rhs) const {
-            return !(*this < rhs);
-        }
-        KeyT operator & (const KeyT & rhs) const {
-            return KeyT(hi_&rhs.hi_, lo_&rhs.lo_);
-        }
-        KeyT operator ^ (const KeyT & rhs) const {
-            return KeyT(hi_^rhs.hi_, lo_^rhs.lo_);
-        }
-        KeyT operator | (const KeyT & rhs) const {
-            return KeyT(hi_|rhs.hi_, lo_|rhs.lo_);
-        }
-        const KeyT & operator |= (const KeyT & rhs){
-            (this->hi_) |= rhs.hi_;
-            (this->lo_) |= rhs.lo_;
-            return (*this);
-        }
-        // cast
-        operator int() const {return (int)lo_;}
-        operator unsigned int() const {return (unsigned int)lo_;}
-        operator long() const {return (long)lo_;}
-        operator unsigned long() const {return (unsigned long)lo_;}
-
-        // shift
-        template<typename T>
-        KeyT operator << (const T & s) const {
-#if defined(USE_128BIT_KEY)
-            U64 lo = ((U64)s < sizeof(lo_)*8) ? lo_<<s : 0;
-            const U64 rem = (s==0) ? 0 : (lo_>>(sizeof(hi_)*8-s));
-            U64 hi = ((U64)s < sizeof(lo_)*8) ? ((hi_<<s) | rem) : lo_ << (s-sizeof(lo_)*8);
-#elif defined(USE_96BIT_KEY)
-            U32 lo = ((U64)s < sizeof(lo_)*8) ? lo_<<s : 0;
-            U64 lo64 = (U64)lo_;
-            const U64 rem = ((U64)s < sizeof(hi_)*8) ? hi_<<s : 0;
-            const U64 inc = ((U64)s < sizeof(lo_)*8) ? (lo64>>(sizeof(lo_)*8-s)) : lo64<<(s-sizeof(lo_)*8);
-            U64 hi = rem | inc; 
-#endif
-            return KeyT(hi, lo);
-        }
-        template<typename T>
-        KeyT operator >> (const T & s) const {
-#if defined(USE_128BIT_KEY)
-            //assert(s < 128);
-            U64 hi = ((U64)s < sizeof(hi_)*8) ? hi_>>s : 0;
-            const U64 rem = (s==0) ? 0 : (hi_<<(sizeof(hi_)*8-s));
-            U64 lo = ((U64)s < sizeof(hi_)*8) ? (lo_>>s | rem) : hi_>>(s-sizeof(hi_)*8);
-#elif defined(USE_96BIT_KEY)
-            U64 hi = ((U64)s < sizeof(hi_)*8) ? hi_>>s : 0;
-            const U32 rem = ((U64)s < sizeof(lo_)*8) ? lo_ >> s : 0;
-            const U32 inc = (s==0) ? 0 : ((U64)s < sizeof(hi_)*8) ? (U32)((hi_<<(sizeof(hi_)*8-s))>>(sizeof(lo_)*8)) : (U32)(hi_>>(s-sizeof(lo_)*8));
-            U32 lo = rem | inc; 
-#endif
-            return KeyT(hi, lo);
-        }
-
-        void dump(std::ostream & fout=std::cerr) const {
-            fout<<std::setw(KEY_LEVEL_MAX_HI)<<std::setfill('0')<<std::oct<<hi_
-                <<std::setw(KEY_LEVEL_MAX_LO)<<std::setfill('0')<<lo_<<std::endl;
-            fout<<std::dec;
-        }
-        
-        friend std::ostream & operator <<(std::ostream & c, const KeyT & k){
-            c<<k.hi_<<"   "<<k.lo_;
-            return c;
-        }
-
-
-        
-    };
-#else
+#if defined(PARTICLE_SIMULATOR_USE_64BIT_KEY)
     class KeyT{
     public:
         U64 hi_;
@@ -2587,10 +2538,107 @@ PS_OMP_PARALLEL
             c<<k.hi_;
             return c;
         }
-
-
-
     };
+#else // for 96bit or 128bit
+    class KeyT{
+    public:
+        U64 hi_;
+#ifdef PARTICLE_SIMULATOR_USE_96BIT_KEY
+        U32 lo_;
+        KeyT(const U64 hi, const U32 lo) : hi_(hi), lo_(lo){}
+#else
+        U64 lo_;
+        KeyT(const U64 hi, const U64 lo) : hi_(hi), lo_(lo){}
+#endif
+        KeyT() : hi_(0), lo_(0){}
+        template<typename Tint>
+        KeyT(const Tint lo) : hi_(0), lo_(lo){}
+        void init(){
+            hi_ = 0;
+            lo_ = 0;
+        }
+        bool operator == (const KeyT & rhs) const {
+            return (hi_ == rhs.hi_) && (lo_ == rhs.lo_);
+        }
+        bool operator != (const KeyT & rhs) const {
+            return !(*this == rhs);
+        }
+        bool operator < (const KeyT & rhs) const {
+            return (hi_ < rhs.hi_) || ((hi_ == rhs.hi_) && (lo_ < rhs.lo_));
+        }
+        bool operator <= (const KeyT & rhs) const {
+            return (hi_ < rhs.hi_) || ((hi_ == rhs.hi_) && (lo_ <= rhs.lo_));
+        }
+        bool operator > (const KeyT & rhs) const {
+            return !(*this <= rhs);
+        }
+        bool operator >= (const KeyT & rhs) const {
+            return !(*this < rhs);
+        }
+        KeyT operator & (const KeyT & rhs) const {
+            return KeyT(hi_&rhs.hi_, lo_&rhs.lo_);
+        }
+        KeyT operator ^ (const KeyT & rhs) const {
+            return KeyT(hi_^rhs.hi_, lo_^rhs.lo_);
+        }
+        KeyT operator | (const KeyT & rhs) const {
+            return KeyT(hi_|rhs.hi_, lo_|rhs.lo_);
+        }
+        const KeyT & operator |= (const KeyT & rhs){
+            (this->hi_) |= rhs.hi_;
+            (this->lo_) |= rhs.lo_;
+            return (*this);
+        }
+        // cast
+        operator int() const {return (int)lo_;}
+        operator unsigned int() const {return (unsigned int)lo_;}
+        operator long() const {return (long)lo_;}
+        operator unsigned long() const {return (unsigned long)lo_;}
+
+        // shift
+        template<typename T>
+        KeyT operator << (const T & s) const {
+#if defined(PARTICLE_SIMULATOR_USE_96BIT_KEY)
+            U32 lo = ((U64)s < sizeof(lo_)*8) ? lo_<<s : 0;
+            U64 lo64 = (U64)lo_;
+            const U64 rem = ((U64)s < sizeof(hi_)*8) ? hi_<<s : 0;
+            const U64 inc = ((U64)s < sizeof(lo_)*8) ? (lo64>>(sizeof(lo_)*8-s)) : lo64<<(s-sizeof(lo_)*8);
+            U64 hi = rem | inc;
+#else
+            U64 lo = ((U64)s < sizeof(lo_)*8) ? lo_<<s : 0;
+            const U64 rem = (s==0) ? 0 : (lo_>>(sizeof(hi_)*8-s));
+            U64 hi = ((U64)s < sizeof(lo_)*8) ? ((hi_<<s) | rem) : lo_ << (s-sizeof(lo_)*8);
+#endif
+            return KeyT(hi, lo);
+        }
+        template<typename T>
+        KeyT operator >> (const T & s) const {
+#if defined(PARTICLE_SIMULATOR_USE_96BIT_KEY)
+            U64 hi = ((U64)s < sizeof(hi_)*8) ? hi_>>s : 0;
+            const U32 rem = ((U64)s < sizeof(lo_)*8) ? lo_ >> s : 0;
+            const U32 inc = (s==0) ? 0 : ((U64)s < sizeof(hi_)*8) ? (U32)((hi_<<(sizeof(hi_)*8-s))>>(sizeof(lo_)*8)) : (U32)(hi_>>(s-sizeof(lo_)*8));
+            U32 lo = rem | inc;
+#else
+            //assert(s < 128);
+            U64 hi = ((U64)s < sizeof(hi_)*8) ? hi_>>s : 0;
+            const U64 rem = (s==0) ? 0 : (hi_<<(sizeof(hi_)*8-s));
+            U64 lo = ((U64)s < sizeof(hi_)*8) ? (lo_>>s | rem) : hi_>>(s-sizeof(hi_)*8);	    
+#endif
+            return KeyT(hi, lo);
+        }
+
+        void dump(std::ostream & fout=std::cerr) const {
+            fout<<std::setw(KEY_LEVEL_MAX_HI)<<std::setfill('0')<<std::oct<<hi_
+                <<std::setw(KEY_LEVEL_MAX_LO)<<std::setfill('0')<<lo_<<std::endl;
+            fout<<std::dec;
+        }
+        
+        friend std::ostream & operator <<(std::ostream & c, const KeyT & k){
+            c<<k.hi_<<"   "<<k.lo_;
+            return c;
+        }
+    };
+    
 #endif
     
 #ifdef LOOP_TREE
@@ -2607,10 +2655,15 @@ PS_OMP_PARALLEL
     template<>  struct my_is_char<const char*>: std::true_type{};
     template<>  struct my_is_char<const char* const>: std::true_type{};
 
+    template<typename T>
+    struct my_is_string: std::false_type{};
+    template<>  struct my_is_string<std::string>: std::true_type{};
+    template<>  struct my_is_string<const std::string>: std::true_type{};
+
 
 	
     
 }
 
 #include"util.hpp"
-
+#include"timer.hpp"

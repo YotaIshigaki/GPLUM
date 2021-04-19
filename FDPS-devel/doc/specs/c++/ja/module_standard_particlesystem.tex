@@ -263,123 +263,18 @@ PS::S64。
 \subsubsubsubsection{ファイル入出力}
 \label{sec:ParticleSystem:IO}
 
-ファイル入出力関連の API の宣言は以下のようになっている。
-\begin{lstlisting}[caption=ParticleSystem3]
-namespace ParticleSimulator {
-    template<class Tptcl>
-    class ParticleSystem{
-    public:
-        template <class Theader>
-        void readParticleAscii(const char * const filename,
-                               const char * const format,
-                               Theader & header);
-        void readParticleAscii(const char * const filename,       
-                               const char * const format);
-        template <class Theader>
-        void readParticleAscii(const char * const filename,
-                               Theader & header);
-        void readParticleAscii(const char * const filename);
-        template <class Theader>
-        void readParticleAscii(const char * const filename,
-                               const char * const format,
-                               Theader & header,
-                               void (Tptcl::*pFunc)(FILE*));
-        void readParticleAscii(const char * const filename,       
-                               const char * const format,
-                               void (Tptcl::*pFunc)(FILE*));
-        template <class Theader>
-        void readParticleAscii(const char * const filename,
-                               Theader & header,
-                               void (Tptcl::*pFunc)(FILE*));
-        void readParticleAscii(const char * const filename,
-                               void (Tptcl::*pFunc)(FILE*) );
+ファイル入出力関連のAPIは{\tt void (read|write)Paritlce(Ascii|Binary)}
+  であり、プレフィックスの{\tt read}は入力、{\tt write}は出力、サフィッ
+  クスの{\tt Ascii}はファイルがアスキー形式の場合、{\tt Binary}はファ
+  イルがバイナリ形式の場合に使用する。それぞれの関数に対してさらに、引
+  数が異なる8つの関数がオーバーロードされている。それらを下記に示す。
 
-        template <class Theader>
-        void readParticleBinary(const char * const filename,
-                               const char * const format,
-                               Theader & header);
-        void readParticleBinary(const char * const filename,       
-                               const char * const format);
-        template <class Theader>
-        void readParticleBinary(const char * const filename,
-                               Theader & header);
-        void readParticleBinary(const char * const filename);
-        template <class Theader>
-        void readParticleBinary(const char * const filename,
-                               const char * const format,
-                               Theader & header,
-                               void (Tptcl::*pFunc)(FILE*));
-        void readParticleBinary(const char * const filename,       
-                               const char * const format,
-                               void (Tptcl::*pFunc)(FILE*));
-        template <class Theader>
-        void readParticleBinary(const char * const filename,
-                               Theader & header,
-                               void (Tptcl::*pFunc)(FILE*));
-        void readParticleBinary(const char * const filename,
-                               void (Tptcl::*pFunc)(FILE*) );
-
-        template <class Theader>
-        void writeParticleAscii(const char * const filename,
-                                const char * const format,
-                                const Theader & header);        
-        void writeParticleAscii(const char * const filename,
-                                const char * format);                                       
-        template <class Theader>
-        void writeParticleAscii(const char * const filename,
-                                const Theader & header);
-        void writeParticleAscii(const char * const filename);
-        template <class Theader>
-        void writeParticleAscii(const char * const filename,
-                                const char * const format,
-                                const Theader & header,
-                                void (Tptcl::*pFunc)(FILE*)const);   
-        void writeParticleAscii(const char * const filename,
-                                const char * format,
-                                void (Tptcl::*pFunc)(FILE*)const);
-        template <class Theader>
-        void writeParticleAscii(const char * const filename,
-                                const Theader & header,
-                                void (Tptcl::*pFunc)(FILE*)const);
-        void writeParticleAscii(const char * const filename,
-                                void (Tptcl::*pFunc)(FILE*)const);
-
-        template <class Theader>
-        void writeParticleBinary(const char * const filename,
-                                const char * const format,
-                                const Theader & header);        
-        void writeParticleBinary(const char * const filename,
-                                const char * format);                                       
-        template <class Theader>
-        void writeParticleBinary(const char * const filename,
-                                const Theader & header);
-        void writeParticleBinary(const char * const filename);
-        template <class Theader>
-        void writeParticleBinary(const char * const filename,
-                                const char * const format,
-                                const Theader & header,
-                                void (Tptcl::*pFunc)(FILE*)const);   
-        void writeParticleBinary(const char * const filename,
-                                const char * format,
-                                void (Tptcl::*pFunc)(FILE*)const);
-        template <class Theader>
-        void writeParticleBinary(const char * const filename,
-                                const Theader & header,
-                                void (Tptcl::*pFunc)(FILE*)const);
-        void writeParticleBinary(const char * const filename,
-                                void (Tptcl::*pFunc)(FILE*)const);
-    };
-}
-\end{lstlisting}
-
-
-上記に示すようにファイル入出力関連のAPIにはreadParticleAscii, readParticleBinary, writeParticleAscii, writeParticleBinaryが存在する。これらはオーバーロードされた関数であり、それぞれ8種類の異なる引数仕様を持つ。この数は下記に示す引数の有無の組み合わせに依るものである(引数の定義については後述する)。
-\begin{enumerate}[itemsep=-1ex,label=\arabic*)]
-\item \verb|template <class Theader> Theader & header|
-\item \verb|const char * const format|
-\item \verb|void (Tptcl::*pFunc)(FILE *)|
-\end{enumerate}
-このあと、各APIについて記述する。説明を簡潔にするため、オーバーロードされた関数群をまとめて記述する。
+%\begin{enumerate}[itemsep=-1ex,label=\arabic*)]
+%\item \verb|template <class Theader> Theader & header|
+%\item \verb|const char * const format|
+%\item \verb|void (Tptcl::*pFunc)(FILE *)|
+%\end{enumerate}
+%このあと、各APIについて記述する。説明を簡潔にするため、オーバーロードされた関数群をまとめて記述する。
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsubsubsubsubsection{PS::ParticleSystem::readParticleAscii}
@@ -388,52 +283,40 @@ namespace ParticleSimulator {
 readParticleAsciiは下記の8つの異なる引数仕様を持つ。
 \begin{breakitembox}<parindent=0pt>{}
 \begin{verbatim}
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptlc>::readParticleAscii
-                 (const char * const filename,
-                  const char * const format,
+                 (Tchar0 filename,
+                  Tchar1 format,
                   Theader & header);
                   
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleAscii
-            (const char * const filename,
-             const char * const format);
+            (Tchar0 filename,
+             Tchar1 format);
              
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptcl>::readParticleAscii
-            (const char * const filename,
+            (Tchar0 filename,
              Theader & header);
              
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleAscii
-            (const char * const filename);
+            (Tchar0 filename);
             
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptlc>::readParticleAscii
-                 (const char * const filename,
-                  const char * const format,
+                 (Tchar0 filename,
+                  Tchar1 format,
                   Theader & header,
                   void (Tptcl::*pFunc)(FILE*));
                   
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleAscii
-            (const char * const filename,
-             const char * const format,
+            (Tchar0 filename,
+             Tchar1 format,
              void (Tptcl::*pFunc)(FILE*));
              
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptcl>::readParticleAscii
-            (const char * const filename,
+            (Tchar0 filename,
              Theader & header,
              void (Tptcl::*pFunc)(FILE*));
              
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleAscii
-            (const char * const filename,
+            (Tchar0 filename,
              void (Tptcl::*pFunc)(FILE*));
 \end{verbatim}
 \end{breakitembox}
@@ -442,14 +325,21 @@ void PS::ParticleSystem<Tptcl>::readParticleAscii
 
 \item {\bf 引数}
 
-filename: 入力。const char *型。分散ファイル読み込み時には入力ファイル名のベースとなる部分。単一ファイル読み込み時には入力ファイル名。
+引数の型Tcha0とTchar1はconst char * const, const char *, もしくは char
+* 型を表す．
 
-format: 入力。const char *型。分散ファイルから粒子データを読み込む際の
-ファイルフォーマット。
+filename: 入力。const char * const, const char *, もしくは char * 型。
+それ以外の型が与えられた場合の動作は未定義。分散ファイル読み込み時には
+入力ファイル名のベースとなる部分。単一ファイル読み込み時には入力ファイ
+ル名。
+
+format: 入力。const char * const, const char *, もしくは char * 型。分
+散ファイルから粒子データを読み込む際のファイルフォーマット。
 
 header: 入力。Theader \&型。ファイルのヘッダ情報。
 
-pFunc: 入力。 void (Tptcl::*)(FILE*) 型。FILEポインタを引数にとりvoidを返すTptclのメンバ関数ポインタ。
+pFunc: 入力。 void (Tptcl::*)(FILE*) 型。FILEポインタを引数にとりvoid
+を返すTptclのメンバ関数ポインタ。
 
 \item {\bf 返値}
 
@@ -457,14 +347,37 @@ pFunc: 入力。 void (Tptcl::*)(FILE*) 型。FILEポインタを引数にとり
 
 \item {\bf 機能}
 
-引数formatが存在する場合、各プロセスがfilenameとformatの組によって指定される名前の入力ファイルから粒子データを読み出し、データをFullParticleクラスのオブジェクトに格納する(\textbf{分散ファイルの読み込み})。一方、引数formatが存在しない場合、ルートプロセスがfilenameで指定された入力ファイルから粒子データを読み出し、データをFullParticleクラスのオブジェクトに格納した後、各プロセスに分配する(\textbf{単一ファイルの読み込み})。いずれの場合においても、引数headerが存在しない場合、ファイルに保存されている粒子数を調べるため、1回ファイルを読み込んで行数を取得した後、もう一度ファイルを読み込み直し、粒子データを読み込む。すなわち、粒子数の推定は、1粒子のデータが1行に記述されているという仮定の下行う。
+引数formatが存在する場合、各プロセスがfilenameとformatの組によって指定
+される名前の入力ファイルから粒子データを読み出し、データをFullParticle
+クラスのオブジェクトに格納する(\textbf{分散ファイルの読み込み})。一方、
+引数formatが存在しない場合、ルートプロセスがfilenameで指定された入力ファ
+イルから粒子データを読み出し、データをFullParticleクラスのオブジェクト
+に格納した後、各プロセスに分配する(\textbf{単一ファイルの読み込み})。
+いずれの場合においても、引数headerが存在しない場合、ファイルに保存され
+ている粒子数を調べるため、1回ファイルを読み込んで行数を取得した後、も
+う一度ファイルを読み込み直し、粒子データを読み込む。すなわち、粒子数の
+推定は、1粒子のデータが1行に記述されているという仮定の下行う。
 
 
-分散ファイルを読み込む場合、filenameで、分散しているファイルのベースとなる名前を指定する。formatでファイル名のフォーマットを指定する。フォーマットの指定方法は標準Cライブラリの関数printfの第1引数と同じである。ただし変換指定は必ず3つであり、その指定子は1つめは文字列、残りはどちらも整数である。2つ目の変換指定にはそのジョブの全プロセス数が、3つ目の変換指定にはプロセス番号が入る。例えば、filenameがnbody、formatが\%s\_\%03d\_\%03d.initならば、全プロセス数$64$のジョブのプロセス番号$12$のプロセスは、nbody\_064\_012.initというファイルを読み込む。
+分散ファイルを読み込む場合、filenameで、分散しているファイルのベースと
+なる名前を指定する。formatでファイル名のフォーマットを指定する。フォー
+マットの指定方法は標準Cライブラリの関数printfの第1引数と同じである。た
+だし変換指定は必ず3つであり、その指定子は1つめは文字列、残りはどちらも
+整数である。2つ目の変換指定にはそのジョブの全プロセス数が、3つ目の変換
+指定にはプロセス番号が入る。例えば、filenameがnbody、format
+が\%s\_\%03d\_\%03d.initならば、全プロセス数$64$のジョブのプロセス番号
+$12$のプロセスは、nbody\_064\_012.initというファイルを読み込む。
 
-1粒子のデータを読み取る関数は引数pFuncが存在すればそれを使用し、そうでない場合にはFullParticleクラスのメンバ関数readAsciiを使用する。readAsciiはユーザが定義しなければならない。readAsciiの仕様については節\ref{sec:FP_readAscii}を、実装例については節\ref{sec:example_userdefined_fullparticle_io}を参照のこと。pFuncもreadAsciiと同じ仕様を満たす必要がある。
+1粒子のデータを読み取る関数は引数pFuncが存在すればそれを使用し、そうで
+ない場合にはFullParticleクラスのメンバ関数readAsciiを使用する。
+readAsciiはユーザが定義しなければならない。readAsciiの仕様については
+節\ref{sec:FP_readAscii}を、実装例については
+節\ref{sec:example_userdefined_fullparticle_io}を参照のこと。pFuncも
+readAsciiと同じ仕様を満たす必要がある。
 
-ファイルのヘッダのデータを読み取る関数はTheaderのメンバ関数readAsciiでユーザが定義する。仕様については節\ref{sec:Hdr_readAscii}を、実装例については節\ref{sec:example_userdefined_header}を参照のこと。
+ファイルのヘッダのデータを読み取る関数はTheaderのメンバ関数readAsciiで
+ユーザが定義する。仕様については節\ref{sec:Hdr_readAscii}を、実装例に
+ついては節\ref{sec:example_userdefined_header}を参照のこと。
 
 ファイルはアスキーモードで開く。
 
@@ -478,58 +391,45 @@ pFunc: 入力。 void (Tptcl::*)(FILE*) 型。FILEポインタを引数にとり
 readParticleBinaryは下記の8つの異なる引数仕様を持つ。
 \begin{breakitembox}<parindent=0pt>{}
 \begin{verbatim}
-template <class Tptcl>
-template <class Theader>
+
 void PS::ParticleSystem<Tptlc>::readParticleBinary
-                 (const char * const filename,
-                  const char * const format,
+                 (Tchar0 filename,
+                  Tchar1 format,
                   Theader & header);
 
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleBinary
-            (const char * const filename,
+            (Tchar0 filename,
              const char * const format); 
              
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptcl>::readParticleBinary
-            (const char * const filename,
+            (Tchar0 filename,
              Theader & header);
 
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleBinary
-            (const char * const filename);
+            (Tchar0 filename);
 
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptlc>::readParticleBinary
-                 (const char * const filename,
-                  const char * const format,
+                 (Tchar0 filename,
+                  Tchar1 format,
                   Theader & header,
                   void (Tptcl::*pFunc)(FILE*));
                  
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleBinary
-            (const char * const filename,
-             const char * const format,
+            (Tchar0 filename,
+             Tchar1 format,
              void (Tptcl::*pFunc)(FILE*));
 
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptcl>::readParticleBinary
-            (const char * const filename,
+            (Tchar0 filename,
              Theader & header,
              void (Tptcl::*pFunc)(FILE*));
              
-template <class Tptcl>
 void PS::ParticleSystem<Tptcl>::readParticleBinary
-            (const char * const filename,
+            (Tchar0 filename,
              void (Tptcl::*pFunc)(FILE*));
 
-template <class Tptcl>
-template <class Theader>
 void PS::ParticleSystem<Tptcl>::writeParticleAscii
-            (const char * const filename,
+            (Tchar0 const filename,
              const Theader & header,
              void (Tptcl::*pFunc)(FILE*)const);
 
@@ -540,14 +440,19 @@ void PS::ParticleSystem<Tptcl>::writeParticleAscii
 
 \item {\bf 引数}
 
-filename: 入力。const char *型。分散ファイル読み込み時には入力ファイル名のベースとなる部分。単一ファイル読み込み時にはファイル名。
+引数の型Tcha0とTchar1はconst char * const, const char *, もしくは char
+* 型を表す．
+
+filename: 入力．const char *型。分散ファイル読み込み時には入力ファイル
+名のベースとなる部分。単一ファイル読み込み時にはファイル名。
 
 format: 入力。const char *型。分散ファイルから粒子データを読み込む際の
 ファイルフォーマット。
 
 header: 入力。Theader \&型。ファイルのヘッダ情報。
 
-pFunc: 入力。 void (Tptcl::*)(FILE*) 型。FILEポインタを引数にとりvoidを返すTptclのメンバ関数ポインタ。
+pFunc: 入力。 void (Tptcl::*)(FILE*) 型。FILEポインタを引数にとりvoid
+を返すTptclのメンバ関数ポインタ。
 
 
 \item {\bf 返値}
