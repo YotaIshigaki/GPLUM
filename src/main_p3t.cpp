@@ -30,7 +30,6 @@
 #include "neighbor.h"
 #include "disk.h"
 #include "gravity.h"
-
 #include "collisionA.h"
 #include "collisionB.h"
 #include "hermite.h"
@@ -38,7 +37,6 @@
 #include "read.h"
 #include "time.h"
 #include "func.h"
-
 #include "gravity_kernel_EPEP.hpp"
 #include "gravity_kernel_EPSP.hpp"
 
@@ -144,8 +142,10 @@ int main(int argc, char *argv[])
     PS::S32 seed_opt;
     PS::F64 dt_opt;
     PS::F64 Rcut0_opt, Rcut1_opt;
-    bool opt_r=false, opt_i=false, opt_s=false, opt_o=false, opt_D=false, opt_R=false, opt_S=false;
-    while ((opt = getopt(argc, argv, "p:ri:s:e:o:D:R:S:")) != -1) {
+    PS::S32 nx_opt, ny_opt;
+    bool opt_r=false, opt_i=false, opt_s=false, opt_o=false,
+        opt_D=false, opt_R=false, opt_S=false, opt_x=false, opt_y=false;
+    while ((opt = getopt(argc, argv, "p:ri:s:e:o:D:R:S:x:y:")) != -1) {
         switch (opt) {
         case 'p':
             sprintf(param_file,"%s",optarg);
@@ -180,6 +180,14 @@ int main(int argc, char *argv[])
             Rcut1_opt = std::atof(optarg);
             opt_S = true;
             break;
+        case 'x':
+            nx_opt = std::atoi(optarg);
+            opt_x = true;
+            break;
+        case 'y':
+            ny_opt = std::atoi(optarg);
+            opt_y = true;
+            break;
         default:
             std::cout << "Usage: "
                       <<  argv[0]
@@ -188,17 +196,19 @@ int main(int argc, char *argv[])
             break;
         }
     }
+
     if ( readParameter(param_file, init_file, bHeader, output_dir, bRestart,  makeInit,
                        coef_ema, nx, ny,
                        theta, n_leaf_limit, n_group_limit, n_smp_ave,
                        t_end, dt_snap, r_max, r_min, seed, reset_step) ){
-        //errorMessage("Parameter file has NOT been successfully read.");
         PS::Comm::barrier();
         PS::Abort();
         PS::Comm::barrier();
         PS::Finalize();
         return 0;
+        
     }
+    
     if (opt_r) bRestart = true;
     if (opt_i) sprintf(init_file,"%s",init_file_opt);
     if (opt_s) seed = seed_opt;
@@ -206,6 +216,19 @@ int main(int argc, char *argv[])
     if (opt_D) FPGrav::dt_tree = dt_opt;
     if (opt_R) EPGrav::R_cut0 = Rcut0_opt;
     if (opt_S) EPGrav::R_cut1 = Rcut1_opt;
+    if (opt_x) nx = nx_opt;
+    if (opt_y) ny = ny_opt;
+
+    if ( checkParameter(init_file, bHeader, output_dir, bRestart,  makeInit,
+                        coef_ema, nx, ny,
+                        theta, n_leaf_limit, n_group_limit, n_smp_ave,
+                        t_end, dt_snap, r_max, r_min, seed, reset_step) ){
+        PS::Comm::barrier();
+        PS::Abort();
+        PS::Comm::barrier();
+        PS::Finalize();
+        return 0;
+    }
 
     EPGrav::setGamma(EPGrav::gamma);
     
