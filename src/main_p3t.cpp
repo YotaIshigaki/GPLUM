@@ -523,6 +523,7 @@ int main(int argc, char *argv[])
         //    ex_data_send[ii] = new PS::S32[n_size];
         //    ex_data_recv[ii] = new PS::S32[n_size];
         //}
+        NList.resizeExDataBuffer();
 
         bool check = true;
         bool check_loc = true;

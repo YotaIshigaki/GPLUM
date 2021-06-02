@@ -532,8 +532,8 @@ public:
             PS::S32 i = connected_list.at(ii);
             PS::S32 n_size = ex_data[i].size() * ExPair::getSize();
             
-            MPI_Isend(&ex_data_send[ii][0], n_size, PS::GetDataType(*ex_data_send[ii]), i, TAG, MPI_COMM_WORLD, &req0[ii]);
-            MPI_Irecv(&ex_data_recv[ii][0], n_size, PS::GetDataType(*ex_data_recv[ii]), i, TAG, MPI_COMM_WORLD, &req1[ii]);
+            MPI_Isend(&ex_data_send[ii][0], n_size, PS::GetDataType(ex_data_send[ii][0]), i, TAG, MPI_COMM_WORLD, &req0[ii]);
+            MPI_Irecv(&ex_data_recv[ii][0], n_size, PS::GetDataType(ex_data_recv[ii][0]), i, TAG, MPI_COMM_WORLD, &req1[ii]);
         }
         MPI_Waitall(n_send, req0, stat0);
         MPI_Waitall(n_send, req1, stat1);
