@@ -1,0 +1,247 @@
+\begin{itemize}
+\item 2015.03.13
+  \begin{itemize}
+  \item Correct \texttt{getRsearch} to \texttt{getRSearch}. (section
+    \ref{sec:userdefined}).
+  \item Add a function \texttt{PS::Abort} (section \ref{sec:initfin}).
+  \end{itemize}
+\item 2015.03.17
+  \begin{itemize}
+  \item Release version 1.0
+  \end{itemize}
+\item 2015.03.18
+  \begin{itemize}
+  \item Modify the licence related to class Particle Mesh.
+  \end{itemize}
+\item 2015.03.20
+  \begin{itemize}
+  \item Add the description of \texttt{PS::Comm::broadcast}.
+  \end{itemize}
+\item 2015.04.01
+  \begin{itemize}
+  \item Add a caution that class Particle Mesh does not work in the
+    case of 1 MPI process.
+  \end{itemize}
+  \item 2015.10.07
+  \begin{itemize}
+  \item Add the description of PM method. Section
+    \ref{sec:module_extended_PM}。
+  \end{itemize}
+\item 2015.12.01
+  \begin{itemize}
+  \item Add the description of Multiwalk method. Sections
+    \ref{sec:example_userdefined_calcForceDispatch}、
+    \ref{sec:example_userdefined_calcForceRetrieve}、
+    \ref{sec:module_standard_treeforforce_calcforceallandwriteback}、
+    \ref{sec:userdefined_calcForceDispatch}、
+    \ref{sec:userdefined_calcForceRetrieve}。
+  \end{itemize}
+\item 2016.02.19
+  \begin{itemize}
+  \item Added descriptions for \texttt{getNeighborListOneParticle} in 
+    \ref{sec:neighborlist}.
+
+  \item In accordance with the above change, added the descriptions of 
+    \texttt{PS:: MomentMonopoleScatter} and
+    \texttt{PS::MomentQuadrupoleScatter} in 
+    section  \ref{sec:MomentForSearchModeLong}.
+
+  \item Added the descriptions of their wrappers,
+    \texttt{MonopoleWithScatter} 
+    and 
+    \texttt{QuadrupoleWithScatter},
+    to section  \ref{sec:module_treeforce_standard_search_mode_long}.
+
+  \end{itemize}
+
+
+  \item 2016.09.13
+  \begin{itemize}
+  \item Added APIs for removing or adding particles. The discription
+    of them is added in \ref{sec:addAndRemoveParticle}.
+  \item The discription of out-of-range access in type Vector is added
+    in section \ref{sec:errormessage:vector_invalid_access}.
+  \end{itemize}
+
+    \item 2016.10.11
+  \begin{itemize}
+  \item The implementation of the operator ``[]'' in the Vector class
+    is cahnged. Added remarks of the Vector class in section \ref{sec:datatype_vector}.
+  \end{itemize}
+
+  \item 2016.11.04
+  \begin{itemize}
+  \item Added APIs for IO in sections
+    \ref{sec:readParticleAscii},\ref{sec:readParticleBinary},\ref{sec:writeParticleAscii},\ref{sec:writeParticleBinary}.
+  \end{itemize}
+
+    \item 2017.07.11
+  \begin{itemize}
+  \item Added a discription about reusing interaction list in section
+    \ref{sec:treeForForceHighLevelAPI}.
+  \end{itemize}
+
+    \item 2017.09.06
+  \begin{itemize}
+  \item Added API for sorting FP in particle system. The discription of this API is in section
+    \ref{sec:ParticleSystem:sortParticle}.
+  \item Added API for obtaining a pointer of EPJ from its id. The
+    discription of this API is in section
+    \ref{sec:EPJ:getId},\ref{sec:getEpjFromId}.
+  \end{itemize}
+
+    \item 2017.11.08
+  \begin{itemize}
+  \item Release FDPS version 4.0.
+  \end{itemize}
+
+  \item 2018.01.16
+    \begin{itemize}
+    \item Release FDPS version 4.0b.
+      \begin{itemize}
+      \item Fix a bug for memory allocation.
+      \item Add destructors for TreeForForce class, etc.
+      \end{itemize}
+    \end{itemize}
+
+  \item 2018.01.23
+    \begin{itemize}
+    \item Descriptions for APIs of the serialization of particle data in exchange of particles are added in Sections \ref{sec:FP:serialize}, \ref{sec:EPJ:serialize}, \ref{sec:SPJ:serialize},          \ref{sec:particleSystem:exchangeParticle}, and \ref{sec:treeForForceHighLevelAPI} (\textcolor{red}{specification only; not yet implemented}).
+    \end{itemize}
+
+  \item 2018.05.25
+    \begin{itemize}
+    \item Release FDPS version 4.0c.
+      \begin{itemize}
+      \item MPI C++ bindings in Particle Mesh extension are eliminated.
+      \end{itemize}
+    \end{itemize}
+
+  \item 2018.06.13
+    \begin{itemize}
+    \item Release FDPS version 4.1.
+      \begin{itemize}
+      \item Fix an issue when $\theta=0$ is specified (FDPS makes superparticles in some situations).
+      \item Description of orthotope type is added in Section \ref{sec:datatype_orthotope}.
+      \item Description of required member functions for specific cases is added in Section of Moment class.
+      \end{itemize}
+    \end{itemize}
+
+  \item 2018.06.20
+    \begin{itemize}
+    \item Release FDPS version 4.1a.
+      \begin{itemize}
+      \item Fix an omission in this section.
+      \end{itemize}
+    \end{itemize}
+
+  \item 2018.08.2
+    \begin{itemize}
+    \item A new API \texttt{getBoundaryCondition} is added.
+    \item The meaning of the argument \texttt{weight} of API \texttt{collectSampleParticle} is described in detail.
+    \end{itemize}
+
+  \item 2018.12.7
+    \begin{itemize}
+    \item Release FDPS version 5.0a.
+       \begin{itemize}
+          \item Descriptions on pre-defined classes for \newline
+          \texttt{PS::SEARCH\_MODE\_LONG\_SCATTER} \newline
+          \texttt{PS::SEARCH\_MODE\_LONG\_SYMMETRY} \newline
+          are added to the sections of Moment and SuperParticleJ classes (\S~\ref{sec:moment} and \S~\ref{sec:superparticlej}).
+          \item Descriptions on member functions \texttt{readBinary} and \texttt{writeBinary} are added to the sections of FullParticle and header classes (\S~\ref{sec:fullparticle} and \S~\ref{sec:userdefined_header}). Examples of implementations of them are also added to \S~\ref{sec:example_fullparticle} and \S~\ref{sec:example_userdefined_header}.
+       \end{itemize}
+    \end{itemize}
+
+  \item 2018.12.9
+    \begin{itemize}
+    \item Release FDPS 5.0b.
+       \begin{itemize}
+          \item In accurate description of API \texttt{getNeighborListOneParticle} is fixed (No changes in the source codes of FDPS except for the version information).
+       \end{itemize}
+    \end{itemize}
+
+  \item 2019.1.25
+    \begin{itemize}
+    \item Release FDPS 5.0c.
+       \begin{itemize}
+          \item A bug that causes an error in function LinkCell under certain conditions is fixed.
+       \end{itemize}
+    \end{itemize}
+
+  \item 2019.3.1
+    \begin{itemize}
+    \item Release FDPS 5.0d.
+       \begin{itemize}
+          \item Fixed a bug that the size of root cell of a tree becomes too large for specific boundary conditions.
+          \item Fixed a bug that member variables \texttt{make\_LET\_1st}, \texttt{make\_LET\_2nd}, \newline \texttt{exchange\_LET\_1st}, and  \texttt{exchange\_LET\_2nd} of class \texttt{PS::TimeProfile} are not correctly set for some \texttt{PS::SEARCH\_MODE} in FDPS version 5.0 - 5.0c. As we changed the scopes of time measurement, each value of these member variables is not compatible with that in FDPS version 4.1 or earlier, but the sum of them is compatible.
+          \item Fixed a problem that user's code stops due to segmentation fault when the memory pool used inside FDPS runs out.
+          \item This version of FDPS uses a feature of C++11. \textcolor{red}{Hence, users must add an appropriate compiler option such as \texttt{-std=c++11} in \texttt{gcc} to your C++ and CUDA compilers.}
+       \end{itemize}
+    \end{itemize}
+    
+  \item 2019.3.7
+    \begin{itemize}
+    \item Improved the description on TreeForForLong$\langle$,,$\rangle$::MonopoleWithCutoff.
+    \end{itemize}
+
+  \item 2019.9.6
+    \begin{itemize}
+    \item Release FDPS 5.0f
+       \begin{itemize}
+          \item Fixed a problem that triggers a compile error when compiling with option \texttt{-DPARTICLE\_SIMULATOR\_TWO\_DIMENSION}.
+       \end{itemize}
+    \end{itemize}
+
+  \item 2019.9.10
+    \begin{itemize}
+    \item Release FDPS 5.0g
+       \begin{itemize}
+          \item Fixed a problem that triggers a runtime error when compiling with option \texttt{-DPARTICLE\_SIMULATOR\_TWO\_DIMENSION}.
+       \end{itemize}
+    \end{itemize}
+
+  \item 2020.8.16
+    \begin{itemize}
+    \item Release FDPS 6.0
+       \begin{itemize}
+          \item PIKG (\url{https://github.com/FDPS/PIKG}) included.
+       \end{itemize}
+    \end{itemize}
+    
+  \item 2020.8.18
+    \begin{itemize}
+    \item Release FDPS 6.0a
+       \begin{itemize}
+          \item The version of PIKG bundled is updated to v0.1b
+       \end{itemize}
+    \end{itemize}
+
+  \item 2020.8.19
+    \begin{itemize}
+    \item Release FDPS 6.0b
+       \begin{itemize}
+          \item The implementations of the sample codes of $N$-body simulation in \path{sample/*/nbody} are improved so that they shows better performance when using kernels generated by PIKG.
+       \end{itemize}
+    \end{itemize}
+  \item 2020.8.28
+    \begin{itemize}
+    \item Release FDPS 6.0b1
+       \begin{itemize}
+          \item The web links, described in the tutorial documents, for the initial condition files used in the sample codes are changed.
+       \end{itemize}
+    \end{itemize}
+
+
+  \item 2020.9.02
+    \begin{itemize}
+    \item Release FDPS 6.0b2
+       \begin{itemize}
+          \item The first argument of TreeForForce::initialize/init\_tre/fdps\_init\_tree in the sample codes are fixed.
+          \item With this change, the corresponding parts in the descriptions of the tutorial documents are also fixed.
+       \end{itemize}
+    \end{itemize}
+
+
+
+\end{itemize}

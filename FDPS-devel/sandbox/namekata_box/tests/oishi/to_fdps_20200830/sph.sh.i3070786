@@ -1,0 +1,832 @@
+Job Information
+
+ JOB ID                    : 3070786
+ JOB NAME                  : sph.sh
+ JOB TYPE                  : BATCH
+ JOB MODEL                 : NM
+ RETRY NUM                 : 0
+ SUB JOB NUM               : -
+ USER                      : n99002
+ GROUP                     : po8020
+ RESOURCE UNIT             : unit1
+ RESOURCE GROUP            : small-flat
+ APRIORITY                 : 127
+ PRIORITY                  : 127
+ SHELL                     : /bin/bash
+ COMMENT                   : 
+ LAST STATE                : RNO
+ STATE                     : EXT
+ PRM DATE                  : 2020/08/20 20:31:17
+ EXIT CODE                 : 0
+ SIGNAL NO                 : 9
+ PJM CODE                  : 12
+ REASON                    : LIMIT OVER MEMORY
+ MAIL SEND FLAG            : ----
+ MAIL ADDRESS              : n99002
+ STEP DEPENDENCY EXP       : -
+ STEP EXITING WAIT MODE    : -
+ FILE MASK                 : 0027
+ STANDARD OUT FILE         : /work/2/po8020/n99002/sim40_r4/3066861/sph.sh.o3070786
+ STANDARD ERR FILE         : /work/2/po8020/n99002/sim40_r4/3066861/sph.sh.e3070786
+ INFORMATION FILE          : /work/2/po8020/n99002/sim40_r4/3066861/sph.sh.i3070786
+ PJSUB DIRECTORY           : /work/2/po8020/n99002/sim40_r4/3066861
+ FILE SYSTEM NAME          : /cache
+ APPLICATION NAME          : :submitted on ofp05:Power info not send
+ ACCEPT DATE               : 2020/08/20 20:29:18
+ QUEUED DATE               : 2020/08/20 20:29:19
+ EXIT DATE                 : 2020/08/20 20:32:40
+ LAST HOLD USER            : 
+ HOLD NUM                  : 0
+ HOLD TIME                 : 00:00:00 (0)
+ JOB START DATE            : 2020/08/20 20:29:54
+ JOB END DATE              : 2020/08/20 20:31:07
+ JOB DELETE DATE (REQUIRE) : -
+ JOB DELETE DATE           : -
+ STAGE IN START DATE       : -
+ STAGE IN END DATE         : -
+ STAGE IN SIZE             : -
+ STAGE OUT START DATE      : -
+ STAGE OUT END DATE        : -
+ STAGE OUT SIZE            : -
+ NODE NUM (REQUIRE)        : 16
+ CPU NUM (REQUIRE)         : 1088
+ ELAPSE TIME (LIMIT)       : 05:00:00 (18000)
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ PROC CPU LIMIT            : unlimited <DEFAULT>
+ PROC COREFILE LIMIT       : 0.0 MB (0) <DEFAULT>
+ PROC CREATE PROC LIMIT    : 2048 <DEFAULT>
+ PROC DATA LIMIT           : unlimited <DEFAULT>
+ PROC LOCKED MEMORY LIMIT  : unlimited <DEFAULT>
+ PROC MESSAGE QUEUE LIMIT  : unlimited <DEFAULT>
+ PROC OPEN FILES LIMIT     : 1048576 <DEFAULT>
+ PROC PENDING SIGNAL LIMIT : unlimited <DEFAULT>
+ PROC PERMFILE LIMIT       : unlimited <DEFAULT>
+ PROC STACK LIMIT          : unlimited <DEFAULT>
+ PROC VIRTUAL MEMORY LIMIT : unlimited <DEFAULT>
+ NODE NUM (ALLOC)          : 16
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 1088
+ ELAPSE TIME (USE)         : 00:01:14 (74)
+ NODE NUM (UNUSED)         : 0
+ NODE NUM (USE)            : 16
+ NODE ID (USE)             : 0x03FF00C1 0x03FF00C2 0x03FF00C3 0x03FF00C4 0x03FF00C5 0x03FF00C6 0x03FF00C7 0x03FF00C8 0x03FF00C9 0x03FF00CA 0x03FF00CB 0x03FF00CC 0x03FF00CD 0x03FF00CE 0x03FF00CF 0x03FF00D0 
+ TOFU COORDINATE (USE)     : -
+ MAX MEMORY SIZE (USE)     : 96646.5 MiB (101341175808)
+ CPU NUM (USE)             : 1084
+ VIRTUAL MEMORY SIZE (USE) : 11828298.5 MiB (12402869866496)
+ USER CPU TIME (USE)       : 828370 ms
+ SYSTEM CPU TIME (USE)     : 7449037 ms
+ CPU TIME (TOTAL)          : 8277407 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 6553.1 MB (6553089818)
+ FILE I/O SIZE             : 6516.7 MB (6516605366)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PRO START DATE            : 2020/08/20 20:29:53
+ PRO END DATE              : 2020/08/20 20:29:54
+ PRO EXIT CODE             : 0
+ EPI START DATE            : 2020/08/20 20:31:08
+ EPI END DATE              : 2020/08/20 20:31:17
+ EPI EXIT CODE             : 0
+ HOST NAME                 : ofp05.ofp
+ NODE ID (RANK)            : 0x03FF00C1(0) 0x03FF00C2(1) 0x03FF00C3(2) 0x03FF00C4(3) 0x03FF00C5(4) 0x03FF00C6(5) 0x03FF00C7(6) 0x03FF00C8(7) 0x03FF00C9(8) 0x03FF00CA(9) 0x03FF00CB(10) 0x03FF00CC(11) 0x03FF00CD(12) 0x03FF00CE(13) 0x03FF00CF(14) 0x03FF00D0(15) 
+ MPI STATIC PROC (REQUIRE) : 1024
+ MPI PROC (REQUIRE)        : 1024
+ MPI STATIC PROC (ALLOC)   : 1024
+ MPI PROC (ALLOC)          : 1024
+ TOTAL JOB PROC            : 1191
+ MAX JOB PROC              : 83
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ AFFECTED NODE ID          : -
+ BACKFILL                  : 1
+ NUMA POLICY               : 0
+ SPECIFIED JOB START DATE  : -
+ START BULKNO              : -
+ END BULKNO                : -
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C1
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.5 MiB (101341175808)
+ VIRTUAL MEMORY SIZE (USE) : 739449.2 MiB (775368650752)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 72855 ms
+ SYSTEM CPU TIME (USE)     : 512572 ms
+ CPU TIME (TOTAL)          : 585427 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 6419.7 MB (6419618885)
+ FILE I/O SIZE             : 6409.7 MB (6409608296)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 186
+ MAX JOB PROC              : 83
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xdc34a9a6097beeb8fbffffffffffffffffffffffffffffffffffffffffffffffffff
+ RANK NO                   : 0
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C2
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.4 MiB (101341089792)
+ VIRTUAL MEMORY SIZE (USE) : 742708.1 MiB (778785832960)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 52852 ms
+ SYSTEM CPU TIME (USE)     : 461746 ms
+ CPU TIME (TOTAL)          : 514598 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8896289)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xa13c0a1003be8eb7c7ffffffffffffffa83ffffffffffffffff7fffffffffffffffd
+ RANK NO                   : 1
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C3
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 95378.1 MiB (100011094016)
+ VIRTUAL MEMORY SIZE (USE) : 738980.4 MiB (774877036544)
+ CPU NUM (USE)             : 67
+ USER CPU TIME (USE)       : 52660 ms
+ SYSTEM CPU TIME (USE)     : 457317 ms
+ CPU TIME (TOTAL)          : 509977 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8897587)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xa0060bb20fa8c7aec3fffffffffffff6dc3fffffffffffffffe3fffffffffffffffd
+ RANK NO                   : 2
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C4
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96184.0 MiB (100856176640)
+ VIRTUAL MEMORY SIZE (USE) : 738909.4 MiB (774802604032)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 53232 ms
+ SYSTEM CPU TIME (USE)     : 459073 ms
+ CPU TIME (TOTAL)          : 512305 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898566)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0x8265228520bc2b83d3fffffffffffffffc3ffffffffffffffff7fffffffffffffffd
+ RANK NO                   : 3
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C5
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 29155.4 MiB (30571642880)
+ VIRTUAL MEMORY SIZE (USE) : 738930.3 MiB (774824558592)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 22693 ms
+ SYSTEM CPU TIME (USE)     : 491111 ms
+ CPU TIME (TOTAL)          : 513804 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8897558)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xd001ce189ae249afc3ffffffffffffdfbc3fffffffffffffffe3fffffffffffffffd
+ RANK NO                   : 4
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C6
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 95675.0 MiB (100322492416)
+ VIRTUAL MEMORY SIZE (USE) : 739071.8 MiB (774972850176)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 50227 ms
+ SYSTEM CPU TIME (USE)     : 459309 ms
+ CPU TIME (TOTAL)          : 509536 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898620)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xc924e20998294efbc3ffffffffffffffea7ffffffffffffffff3fffffffffffffffd
+ RANK NO                   : 5
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C7
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.4 MiB (101341093888)
+ VIRTUAL MEMORY SIZE (USE) : 739066.7 MiB (774967558144)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 54596 ms
+ SYSTEM CPU TIME (USE)     : 462976 ms
+ CPU TIME (TOTAL)          : 517572 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898700)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0x9e9f3b6d03cf59efc3ffffffffffffffb83fffffffffffffffe7fffffffffffffffd
+ RANK NO                   : 6
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C8
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.3 MiB (101340966912)
+ VIRTUAL MEMORY SIZE (USE) : 738935.7 MiB (774830219264)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 53365 ms
+ SYSTEM CPU TIME (USE)     : 461003 ms
+ CPU TIME (TOTAL)          : 514368 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8897072)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xaf8a312af9cfeaae83ffdffffffdffffd83ffffffffffffffff7fffffffffffffffd
+ RANK NO                   : 7
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00C9
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.3 MiB (101340958720)
+ VIRTUAL MEMORY SIZE (USE) : 739119.8 MiB (775023247360)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 53701 ms
+ SYSTEM CPU TIME (USE)     : 459256 ms
+ CPU TIME (TOTAL)          : 512957 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8897858)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xb04023a2bada3213c7fbfffffffffffff83fffffffffffffffe7fffffffffffffffd
+ RANK NO                   : 8
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00CA
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.3 MiB (101340962816)
+ VIRTUAL MEMORY SIZE (USE) : 739051.0 MiB (774951096320)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 54511 ms
+ SYSTEM CPU TIME (USE)     : 463291 ms
+ CPU TIME (TOTAL)          : 517802 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8897569)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xb046e7cb2ee8a3f757ffffffffffffeb9c3fffffffffffffffe3fffffffffffffffd
+ RANK NO                   : 9
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00CB
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 82598.0 MiB (86610178048)
+ VIRTUAL MEMORY SIZE (USE) : 738995.7 MiB (774893154304)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 47163 ms
+ SYSTEM CPU TIME (USE)     : 460788 ms
+ CPU TIME (TOTAL)          : 507951 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898604)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0x820ae0b2a6f90f37c7fffffefffffff7e87fffffffffffffffe7fffffffffffffffd
+ RANK NO                   : 10
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00CC
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.3 MiB (101340962816)
+ VIRTUAL MEMORY SIZE (USE) : 739178.9 MiB (775085162496)
+ CPU NUM (USE)             : 67
+ USER CPU TIME (USE)       : 52614 ms
+ SYSTEM CPU TIME (USE)     : 460561 ms
+ CPU TIME (TOTAL)          : 513175 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898676)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0x9a882226e003e2a9c3ffffffffffdfdffc3ffffffffffffffff3fffffffffffffffd
+ RANK NO                   : 11
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00CD
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 94696.3 MiB (99296202752)
+ VIRTUAL MEMORY SIZE (USE) : 738935.5 MiB (774829953024)
+ CPU NUM (USE)             : 67
+ USER CPU TIME (USE)       : 51587 ms
+ SYSTEM CPU TIME (USE)     : 460751 ms
+ CPU TIME (TOTAL)          : 512338 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898707)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0x9a8a348ba3e45847e3ffffffffffbffbfc3fffffffffffffffe3fffffffffffffffd
+ RANK NO                   : 12
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00CE
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.4 MiB (101341093888)
+ VIRTUAL MEMORY SIZE (USE) : 738942.9 MiB (774837686272)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 53729 ms
+ SYSTEM CPU TIME (USE)     : 458491 ms
+ CPU TIME (TOTAL)          : 512220 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898766)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xb6109099aa2b3d0c43ffffffffffffd7fcbffffffffffffffff7fffffffffffffffd
+ RANK NO                   : 13
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00CF
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 90083.4 MiB (94459203584)
+ VIRTUAL MEMORY SIZE (USE) : 738998.9 MiB (774896496640)
+ CPU NUM (USE)             : 67
+ USER CPU TIME (USE)       : 49627 ms
+ SYSTEM CPU TIME (USE)     : 460382 ms
+ CPU TIME (TOTAL)          : 510009 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8898494)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xa0422b1892e8ecb9c3fffffffffffffffc3fffffffffffffffe3ffffffffffffffff
+ RANK NO                   : 14
+
+--------------------------------------------------------------------------------
+Node Information
+
+ NODE ID                   : 0x03FF00D0
+ TOFU COORDINATE           : -
+ NODE AVAILABLE            : -
+ ARCHI INFORMATION         : PG
+ MEMORY SIZE (LIMIT)       : unlimited <DEFAULT>
+ CPU TIME (LIMIT)          : unlimited <DEFAULT>
+ DISK SIZE (LIMIT)         : unlimited <DEFAULT>
+ MEMORY SIZE (ALLOC)       : unlimited
+ CPU NUM (ALLOC)           : 68
+ MAX MEMORY SIZE (USE)     : 96646.3 MiB (101340962816)
+ VIRTUAL MEMORY SIZE (USE) : 739024.9 MiB (774923759616)
+ CPU NUM (USE)             : 68
+ USER CPU TIME (USE)       : 52958 ms
+ SYSTEM CPU TIME (USE)     : 460410 ms
+ CPU TIME (TOTAL)          : 513368 ms
+ DISK SIZE (USE)           : -
+ I/O SIZE                  : 8.9 MB (8897867)
+ FILE I/O SIZE             : 7.2 MB (7133138)
+ EXEC INST NUM             : 0
+ EXEC SIMD NUM             : 0
+ PERF COUNT 1              : -
+ PERF COUNT 2              : -
+ PERF COUNT 3              : -
+ PERF COUNT 4              : -
+ PERF COUNT 5              : -
+ PERF COUNT 6              : -
+ PERF COUNT 7              : -
+ PERF COUNT 8              : -
+ PERF COUNT 9              : -
+ MPI STATIC PROC (ALLOC)   : 1
+ MPI PROC (ALLOC)          : 64
+ TOTAL JOB PROC            : 67
+ MAX JOB PROC              : 65
+ ASSISTANT CORE (USE)      : -
+ ASSISTANT CORE USER CPU TIME (USE)       : -
+ ASSISTANT CORE SYSTEM CPU TIME (USE)     : -
+ ASSISTANT CORE MAX USER CPU TIME (USE)   : -
+ ASSISTANT CORE MAX SYSTEM CPU TIME (USE) : -
+ CPU BITMAP (ALLOC)        : 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+ CPU BITMAP (USE)          : 0xac8492423aa8189fc3ffffffffffffffec3fffffffffffffffeffffffffffffffffd
+ RANK NO                   : 15
+

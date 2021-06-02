@@ -1,0 +1,149 @@
+本章では、本仕様書の変更履歴を記述する。
+
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+
+\item 2016/12/26
+\begin{itemize}
+\item Fortran インターフェース 初リリース (FDPS 3.0として)
+\end{itemize}
+
+\item 2017/08/23
+\begin{itemize}
+\item FDPSに予め用意された超粒子型のデフォルトの精度を64ビットに変更 (FDPS 3.0a)。
+\end{itemize}
+
+\item 2017/11/01
+\begin{itemize}
+\item 粒子群オブジェクト用APIに粒子の並び替えを行うAPI \texttt{sort\_particle} を追加。
+\item ツリーオブジェクト用API \texttt{calc\_force\_all\_and\_write\_back} と \texttt{calc\_force\_all} に相互作用リストを再利用する機能を追加。
+\item ツリーオブジェクト用APIに粒子IDからそれに対応するEssentialParticleJを取得するAPI \texttt{get\_epj\_from\_id} を追加。
+\end{itemize}
+
+\item 2017/11/08
+\begin{itemize}
+\item FDPS 4.0 リリース
+\end{itemize}
+
+\item 2017/11/17
+\begin{itemize}
+\item API \texttt{broadcast} の不具合を修正 (FDPS 4.0a)
+\end{itemize}
+
+\item 2018/8/1
+\begin{itemize}
+\item Fortranインターフェス生成スクリプト\texttt{get\_ftn\_if.py}の以下の不具合を修正(FDPS 4.1b)
+\begin{itemize}
+\item 従来のスクリプトでは、\texttt{copyFromForce}指示文の処理を正しく行っていなかった。具体的には、\texttt{\$!fdps copyFromForce (src\_mbr, dst\_mbr) ...}と処理すべきところを、\texttt{\$!fdps copyFromForce (dst\_mbr, src\_mbr)...} として処理していた。このバグのため、スクリプトがエラーで停止する場合があった。
+\item 従来のスクリプトでは、内部の処理で、与えられたユーザ定義型からは生成できないはずのtreeクラスを生成する場合があった。この場合、コンパイルエラーが発生する問題があった。
+\end{itemize}
+\end{itemize}
+
+
+\item 2018/8/2
+\begin{itemize}
+\item API \texttt{get\_boundary\_condition} を追加
+\item API \texttt{collect\_sample\_particle}の引数\texttt{weight}のデフォルト値を1からローカル粒子数に変更。
+\item API \texttt{decompose\_domain\_all}の引数\texttt{weight}のデフォルト値が1と記述されていたが、実際にはローカル粒子数だったため、記述を修正。
+\end{itemize}
+
+\item 2018/8/31
+\begin{itemize}
+\item API \texttt{barrier}, \texttt{set\_particle\_local\_tree}, \texttt{get\_force} を追加
+\item スレッドセーフな疑似乱数生成用 API を追加 (APIに``mtts''がつくもの)
+\end{itemize}
+
+\item 2018/11/8
+\begin{itemize}
+\item C言語インターフェースの記述を追加 (FDPS 5.0としてリリース)
+\end{itemize}
+
+\item 2018/12/7
+\begin{itemize}
+\item 長距離力用ツリーの種別にMonopoleWithSymmetrySearch 型 及び QuadrupoleWithSymmetrySearch 型を追加 (FDPS 5.0aとしてリリース)
+\end{itemize}
+
+\item 2019/1/25
+\begin{itemize}
+\item FDPS v5.0a で\path{gen_ftn_if.py}に入ったバグを修正 (FDPS 5.0cとしてリリース)
+\end{itemize}
+
+\item 2019/3/1
+\begin{itemize}
+\item FDPS 5.0d リリース
+\begin{itemize}
+\item EssentialParticleI 型が探索半径を保持している場合に、 \path{gen_ftn_if.py}が停止してしまうバグを修正。
+\item 今回のリリースからFDPSのC++コア部分の実装でC++11の機能を使用している。\textcolor{red}{したがって、使用しているC++コンパイラに適切なオプション(\texttt{gcc}の場合、\texttt{-std=c++11})をつける必要がある。}
+\end{itemize}
+\end{itemize}
+
+\item 2019/3/7
+\begin{itemize}
+\item Long-MonopoleWithCutoff型に関する記述を改善
+\end{itemize}
+
+\item 2019/7/11
+\begin{itemize}
+\item API \texttt{remove\_particle}の仕様を明確化し、このAPIの実装を仕様に沿ったものに修正
+\end{itemize}
+
+\item 2019/9/06
+\begin{itemize}
+\item FDPS 5.0f リリース
+\begin{itemize}
+\item コンパイル時にマクロ\texttt{PARTICLE\_SIMULATOR\_TWO\_DIMENSION}を定義した場合、コンパイルエラーになる問題を修正
+\item C言語からFDPSを使う場合、ユーザ定義型のメンバ変数名が1文字だと\path{gen_c_if.py}が正しく動作しない問題を修正
+\item シンボリックリンク \path{doc/doc_specs_c_ja.pdf} 及び \path{doc/doc_specs_c_en.pdf} を追加
+\end{itemize}
+\end{itemize}
+
+\item 2019/9/10
+\begin{itemize}
+\item FDPS 5.0g リリース
+\begin{itemize}
+\item コンパイル時にマクロ\texttt{PARTICLE\_SIMULATOR\_TWO\_DIMENSION}を定義した場合、実行時エラーになる問題を修正
+\end{itemize}
+\end{itemize}
+
+
+\item 2020/8/16
+\begin{itemize}
+\item FDPS 6.0 リリース
+\begin{itemize}
+\item PIKGを導入
+\end{itemize}
+\end{itemize}
+
+\item 2020.8.18
+\begin{itemize}
+\item FDPS 6.0a リリース
+\begin{itemize}
+\item 付属のPIKGのバージョンをv0.1bに更新
+\end{itemize}
+\end{itemize}
+
+\item 2020.8.19
+\begin{itemize}
+\item FDPS 6.0b リリース
+\begin{itemize}
+\item $N$体シミュレーションサンプルコード(\path{sample/*/nbody})の実装をPIKGで生成したカーネルを使った場合に性能が出るように改善
+\end{itemize}
+\end{itemize}
+
+\item 2020.8.28
+\begin{itemize}
+\item FDPS 6.0b1 リリース
+\begin{itemize}
+\item サンプルコードで使用する初期条件配布先が変更になったため、チュートリアルを修正
+\end{itemize}
+\end{itemize}
+
+\item 2020.9.02
+\begin{itemize}
+\item FDPS 6.0b2 リリース
+\begin{itemize}
+\item サンプルコードのツリーオブジェクトを初期化する関数の第一引数を修正
+\item 対応するチュートリアルの記述も修正
+\end{itemize}
+\end{itemize}
+
+\end{itemize}

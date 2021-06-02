@@ -1,0 +1,221 @@
+\documentclass[12pt,a4paper]{jarticle}
+%%% LaTexパッケージのインクルード %%%
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{setspace}
+\usepackage{listings,jlisting}
+\usepackage{color}
+\usepackage{ascmac}
+\usepackage{here}
+\usepackage[dvipdfmx]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{enumitem}
+\usepackage{itembkbx}
+\usepackage{authblk}
+%%% ページレイアウト設定 %%%
+\topmargin=-5mm
+\oddsidemargin=-5mm
+\evensidemargin=-5mm
+\textheight=235mm
+\textwidth=165mm
+%%% コマンド定義 %%%
+\newcommand{\underbold}[1]{\underline{\bf #1}}
+\newcommand{\redtext}[1]{\textcolor{red}{#1}}
+%%% \subsubsubsection等の定義 (ここから) %%%
+\setcounter{secnumdepth}{6}
+\makeatletter
+\newcounter{subsubparagraph}[subparagraph]
+\renewcommand\thesubsubparagraph{\thesubparagraph.\@arabic\c@subsubparagraph}
+\newcommand\subsubparagraph{\@startsection{subsubparagraph}{6}{\parindent}%
+                                       {3.25ex \@plus1ex \@minus .2ex}%
+                                       {-1em}%
+                              {\normalfont\normalsize\bfseries}}
+\newcommand*\l@subsubparagraph{\@dottedtocline{6}{10em}{5em}}
+\newcommand{\subsubsubsection}{\@startsection{paragraph}{4}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\bfseries}
+}
+\newcommand{\subsubsubsubsection}{\@startsection{subparagraph}{5}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\itshape}
+}
+\newcommand{\subsubsubsubsubsection}{\@startsection{subsubparagraph}{6}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\itshape}
+}
+\setcounter{tocdepth}{6}
+%%% \subsubsubsection等の定義 (ここまで) %%%
+%%% lstlisting設定 %%%
+\lstset{language = C,
+numbers = left,
+numbersep = 8pt,
+breaklines = true,
+breakindent = 40pt,
+frame = lines,
+basicstyle = \ttfamily,
+}
+
+\title{FDPS仕様書}
+\author{谷川衝}
+\author{岩澤全規}
+\author{細野七月}
+\author{似鳥啓吾}
+\author{村主崇行}
+\author{行方大輔}
+\author{野村昴太郎}
+\author{牧野淳一郎}
+\affil{理化学研究所 計算科学研究センター 粒子系シミュレータ研究チーム}
+\date{}
+
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{この文書の概要}
+
+\input{preface.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS概要}
+\label{sec:overview}
+
+\input{overview.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ファイル構成}
+\label{sec:configuration}
+
+\input{configuration.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{コンパイル時のマクロによる選択}
+\label{sec:compile}
+
+\input{compile.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{名前空間}
+\label{sec:namespace}
+
+\input{namespace.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{データ型}
+\label{sec:datatype}
+
+\input{datatype.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ユーザー定義クラス・ユーザー定義関数オブジェクト}
+\label{sec:userdefined}
+
+\input{userdefined.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{プログラムの開始と終了}
+\label{sec:initfin}
+
+\input{initfin.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{モジュール}
+\label{sec:module}
+
+\input{module.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{エラー検出}
+\label{sec:errormessage}
+
+\input{errormessage.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{よくしこむバグ(仮)}
+
+%\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{よく知られているバグ}
+\label{sec:knownbug}
+
+% 周期境界での安易なシフト
+% 例: 領域0<=x<1, xi=1e-20, xi+=1. -> xi=1.(はみ出る)
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{限界}
+\label{sec:limitation}
+
+\input{limitation.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ユーザーサポート}
+\label{sec:usersupport}
+
+\input{usersupport.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ライセンス}
+\label{sec:license}
+
+\input{license.tex}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{変更履歴}
+\label{sec:changelog}
+
+\input{changelog.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+
+\appendix
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{ユーザー定義クラスの実装例}
+\label{sec:example_userdefined}
+
+\input{example_userdefined.tex}
+
+\end{document}
