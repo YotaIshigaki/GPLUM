@@ -1,0 +1,21 @@
+set term post enh color eps 24
+
+set style fill solid border lc rgb "black"
+
+set yrange [0:6984*0.2]
+set y2range [0:0.2]
+set y2tics
+set ytics nomirror
+
+set xtics 1
+set xtics nomirror
+set xrange [0.5:16.5]
+
+set ylabel "Active predicate count"
+set y2label "Active predicate rate"
+set xlabel "# of active predicate"
+
+set output "lane_fill_rate.eps"
+p "lane_fill_rate.dat" u 1:2 w boxes lw 2 not
+
+

@@ -1,0 +1,79 @@
+\documentclass[12pt,a4paper]{article}
+% Include LaTeX packages
+\usepackage[cpp,en]{fdps-tutorial}
+\usepackage{udline}
+
+% Title, Authors, Date
+\title{\docTitle}
+\author{Ataru Tanikawa}
+\author{Daisuke Namekata}
+\author{Natsuki Hosono}
+\author{Masaki Iwasawa}
+\author{Keigo Nitadori}
+\author{Takayuki Munanushi}
+\author{Junichiro Makino}
+\affil{\affiliation}
+\date{}
+
+% Document start
+\begin{document}
+
+% Output tile and ToC
+\maketitle
+\tableofcontents
+
+\newpage
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Change log}
+\label{sec:change_log}
+\input{changelog.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+\label{sec:overview}
+\input{overview.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Getting Started}
+\label{sec:getting_started}
+\input{getting_started.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{How to Use}
+\label{sec:how_to_use}
+\input{how_to_use.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sample Codes}
+\label{sec:sample_codes}
+\input{samplecode.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Extensions}
+\label{sec:extensions}
+\input{extension.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Practical Applications}
+\label{sec:applications}
+\input{applications.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{User Supports}
+\input{usersupport.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{License}
+\input{../../../specs/c++/en/license.tex}
+
+\end{document}

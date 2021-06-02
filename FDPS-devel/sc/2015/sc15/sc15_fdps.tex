@@ -1,0 +1,200 @@
+% fdps_sc15.tex
+% paper about FDPS for SC 15
+% Author: A. Tanikawa
+% 1 March 2015
+
+\documentclass{acm_proc_article-sp}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\usepackage{listings}
+\usepackage{color}
+\newcommand{\myvec}[1]{\vec{#1}}
+\newcommand{\redtext}[1]{\textcolor{red}{#1}}
+\newcommand{\araa}{Annual Review of Astronomy and Astrophysics}
+\newcommand{\icarus}{Icarus}
+\newcommand{\mnras}{Monthly Notices of the Royal Astronomical Society}
+\newcommand{\apj}{Astrophysical Journal}
+\newcommand{\pasa}{Publications of the Astronomical Society of Australia}
+\newcommand{\pasj}{Publications of the Astronomical Society of Japan}
+\newcommand{\aap}{Astronomy and Astrophysics}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{FDPS: A Novel Framework for Developing High-Performance
+  Particle Simulation Codes for Distributed-Memory Systems}
+
+%\subtitle{}
+
+\numberofauthors{5}
+
+\author{
+  \alignauthor
+  Masaki Iwasawa \\
+  \affaddr{RIKEN Advanced Institute for Computational Science} \\
+  \affaddr{7--1--26, Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan} \\
+  \email{masaki.iwasawa@riken.jp}
+  %
+  \alignauthor
+  Ataru Tanikawa \\
+  \affaddr{RIKEN Advanced Institute for Computational Science} \\
+  \affaddr{7--1--26, Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan} \\
+  \email{ataru.tanikawa@riken.jp}
+  %
+  \alignauthor
+  Natsuki Hosono \\
+  \affaddr{RIKEN Advanced Institute for Computational Science} \\
+  \affaddr{7--1--26, Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan} \\
+  \email{natsuki.hosono@riken.jp}
+  \and
+  %
+  \alignauthor
+  Keigo Nitadori \\
+  \affaddr{RIKEN Advanced Institute for Computational Science} \\
+  \affaddr{7--1--26, Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan} \\
+  \email{keigo@riken.jp}
+  %
+  \alignauthor
+  Takayuki Muranushi \\
+  \affaddr{RIKEN Advanced Institute for Computational Science} \\
+  \affaddr{7--1--26, Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan} \\
+  \email{takayuki.muranushi@riken.jp}
+  %
+  \alignauthor
+  Junichiro Makino \\
+  \affaddr{RIKEN Advanced Institute for Computational Science} \\
+  \affaddr{7--1--26, Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan} \\
+  \email{jmakino@riken.jp}
+}
+
+\maketitle
+
+\begin{abstract}
+
+  We have developed FDPS (Framework for Developing Particle
+  Simulator), which enables researchers and programmers to develop
+  high-performance particle simulation codes easily.  The basic idea
+  of FDPS is to separate the program code for complex parallelization
+  including domain decomposition, redistribution of particles, and
+  exchange of particle information for interaction calculation between
+  nodes, from actual interaction calculation and orbital
+  integration. FDPS provides the former part and the users write the
+  latter. Thus, a user can implement a high-performance $N$-body code
+  only in 120 lines. In this paper, we present the structure and
+  implementation of FDPS, and describe its performance on two sample
+  applications: gravitational $N$-body simulation and Smoothed
+  Particle Hydrodynamics simulation. Both codes show very good
+  parallel efficiency and scalability on the K computer. FDPS lets the
+  researchers concentrate on the implementation of physics and
+  mathematical schemes, without wasting their time on the development
+  and performance tuning of their codes.
+
+\end{abstract}
+
+\category{D.1.3}{Software}{PROGRAMMING TECHNIQUES}[Concurrent
+  Programming]
+%%
+\category{I.6.7}{Computing Methodologies}{SIMULATION AND
+  MODELING}[Simulation Support Systems]
+%%
+\category{J.2}{Computer Applications}{PHYSICAL SCIENCES AND
+  ENGINEERING}[Astronomy]
+%%
+\category{J.2}{Computer Applications}{PHYSICAL SCIENCES AND
+  ENGINEERING}[Earth and atmospheric sciences]
+%%
+\terms{Algorithm, Performance}
+%%
+\keywords{Framework for implementing parallel codes, high-performance
+  computing, particle simulation}
+
+\section{Introduction}
+
+\input{introduction.tex}
+
+\section{How FDPS works}
+\label{sec:user}
+
+In this section, we describe how FDPS works in detail.  In
+section~\ref{sec:design}, we describe the design concept of FDPS. In
+section~\ref{sec:samplecode}, we present an $N$-body simulation code
+as an example, and describe how FDPS does the parallelization and what
+a user program should do.
+
+\input{basic_concept.tex}
+
+\subsection{A working example --- gravitational \secit{N}-body problem}
+\label{sec:samplecode}
+
+\input{sample_code.tex}
+
+\section{Implementation}
+\label{sec:implementation}
+
+In this section, we describe how the operations discussed in the
+previous section are implemented in FDPS. In
+section~\ref{sec:decomposition} we describe the domain decomposition
+and particle exchange, and in section~\ref{sec:calculation}, the
+calculation of interactions.
+
+\subsection{Domain decomposition and particle exchange}
+\label{sec:decomposition}
+
+\input{decomposition.tex}
+
+\subsection{Interaction calculation}
+\label{sec:calculation}
+
+\input{calculation.tex}
+
+\section{Performance}
+\label{sec:performance}
+
+In this section, we report the performance of two astrophysical
+applications of FDPS: a gravitational $N$-body simulation code in
+section~\ref{sec:nbody} and an SPH simulation code with self-gravity
+in \ref{sec:sph}.
+
+
+\subsection{\secit{N}-body simulation}
+\label{sec:nbody}
+
+\input{nbody.tex}
+
+\subsection{SPH simulation}
+\label{sec:sph}
+
+\input{sph.tex}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\input{conclusion.tex}
+
+%FDPS, \textit{FDPS}, \textbf{FDPS}, \texttt{FDPS}
+%\section{Section \secit{Section}}
+%\subsection{Subsection \subsecit{Subsection}}
+%\subsubsection{Subsubsection}
+%\paragraph{Paragraph}
+%\paragraph*{Paragraph*}
+%$c_\mathrm{s}$, $c_{\mathrm{s},i}$
+
+\section{Acknowledgments}
+
+We thank M. Fujii for providing initial conditions of spiral
+simulations, T. Ishiyama for providing his Particle Mesh code, and
+Y. Maruyama for being the first user of FDPS.  We are grateful to
+M. Tsubouchi for her help in managing the FDPS development team. This
+research used computational resources of the K computer provided by
+the RIKEN Advanced Institute for Computational Science through the
+HPCI System Research project (Project ID:ra000008).
+
+\bibliographystyle{abbrv}
+\bibliography{sc15_fdps}
+
+\end{document}
+
+% LocalWords:  FDPS Masaki Iwasawa RIKEN Minatojima minami machi Chuo ku Hyogo
+% LocalWords:  Ataru Tanikawa Natsuki Hosono Keigo Nitadori Takayuki Muranushi
+% LocalWords:  Junichiro Makino parallelization scalability meshfree multi SIMD
+% LocalWords:  Github GreeM SPH APIs du dt sc fdps Fujii Ishiyama Maruyama HPCI
+% LocalWords:  Tsubouchi ra

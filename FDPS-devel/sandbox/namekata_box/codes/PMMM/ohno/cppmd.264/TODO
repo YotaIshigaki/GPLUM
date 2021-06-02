@@ -1,0 +1,5 @@
+pass
+boxsize_minimun_scale
+to calculationunit, integrator
+
+check boxsize/boxsize_1st > boxsize_minimun_scale when NPT

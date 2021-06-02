@@ -1,0 +1,20 @@
+
+
+CovalentBond<CBModule::CBInterface::ParticleIndex> covalentbond;
+
+call CovalentBond
+covalentbond.calcForce(bondlist,bondenergy,shortenergy,shortvirial);
+ CovalentBond::calcForce(CovalentBondList& bondlist, double& energy, double& shortenergy, double &shortvirial) In CobalentBond.h
+  cbInterface.calcBond<CBPARTICLE>(bondlist.bond,energy, shortenergy, shortvirial);
+   CBInterface::calcBond(const BondArray& bond, double& energy, double& shortenergy, double& shortvirial) In CBInterface.h
+    CBContext context(bond, energy, shortenergy, shortvirial);
+     CBContext::CBContext(const BondArray& bond, double& _energy, double& _shortenergy, double& _shortvirial) In CBInterface.h
+      pBond(&bond);
+       const BondArray* const pBond;  In CBInterface.h
+        typedef std::vector<CovalentBondInfo::Bond> BondArray; In CBInterface.h
+    cbObjects.calcCBBond<PR>(&context);
+     CBObjects::calcCBBond(CBInterface::Context pContext) In CBObject.cc
+
+  cbInterface.calcAngle<CBPARTICLE>(bondlist.angle,energy, shortenergy, shortvirial);
+  cbInterface.calcTorsion<CBPARTICLE>(bondlist.torsion,energy, shortenergy, shortvirial);
+  cbInterface.calcImproper<CBPARTICLE>(bondlist.improper,energy, shortenergy, shortvirial);

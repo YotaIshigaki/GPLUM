@@ -1,0 +1,326 @@
+%\documentclass{pasj01}
+\documentclass[proof]{pasj01}
+%\draft
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\usepackage[dvipdfmx]{graphicx}
+\usepackage{listings}
+\usepackage{color}
+%\usepackage{amsmath}
+\newcommand{\myvec}[1]{\vec{#1}}
+\newcommand{\redtext}[1]{\textcolor{red}{#1}}
+\newcommand{\icarus}{Icarus}
+\newcommand{\pasa}{Publications of the Astronomical Society of Australia}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\begin{document}
+
+\title{Implementation and Performance of FDPS: A Framework for Developing
+  Parallel Particle Simulation Codes}
+
+\author{Masaki \textsc{Iwasawa}\altaffilmark{1}}
+\email{masaki.iwasawa@riken.jp}
+\altaffiltext{1}{RIKEN Advanced Institute for Computational Science,
+7--1--26 Minatojima-minami-machi, Chuo-ku, Kobe, Hyogo, Japan}
+
+\author{Ataru \textsc{Tanikawa}\altaffilmark{1,2}}
+\email{tanikawa@ea.c.u-tokyo.ac.jp}
+\altaffiltext{2}{Department of Earth and Astronomy, College of Arts and Science, The University of
+Tokyo, 3--8--1 Komaba, Meguro-ku, Tokyo, Japan}
+  
+\author{Natsuki \textsc{Hosono}\altaffilmark{1}}
+\email{natsuki.hosono@riken.jp}
+
+\author{Keigo \textsc{Nitadori}\altaffilmark{1}}
+\email{keigo@riken.jp}
+
+\author{Takayuki \textsc{Muranushi}\altaffilmark{1}}
+\email{takayuki.muranushi@riken.jp}
+
+\author{Junichiro \textsc{Makino}\altaffilmark{3,1,4}}
+\email{makino@mail.jmlab.jp}
+\altaffiltext{3}{Department of Planetology, Graduate School of
+  Science, Kobe University, 1-1, Rokkodai-cho, Nada-ku, Kobe, Hyogo,
+  Japan}
+\altaffiltext{4}{Earth-Life Science Institute, Tokyo Institute of
+  Technology, 2--12--1 Ookayama, Meguro-ku, Tokyo, Japan}
+
+\KeyWords{Methods: numerical --- Galaxy: evolution --- Cosmology: dark
+  matter --- Planets and satellites: formation}
+
+\maketitle
+
+\begin{abstract}
+
+We present the basic idea, implementation, measured performance and
+performance model of FDPS (Framework for developing particle
+simulators). FDPS is an application-development framework which helps
+the researchers to develop simulation programs using particle methods
+for large-scale distributed-memory parallel supercomputers. A
+particle-based simulation program for distributed-memory parallel
+computers needs to perform domain decomposition, exchange of particles
+which are not in the domain of each computing node, and gathering of
+the particle information in other nodes which are necessary for
+interaction calculation. Also, even if distributed-memory parallel
+computers are not used, in order to reduce the amount of computation,
+algorithms such as Barnes-Hut tree algorithm or Fast Multipole Method
+should be used in the case of long-range interactions. For short-range
+interactions, some methods to limit the calculation to neighbor
+particles are necessary. FDPS provides all of these functions which
+are necessary for efficient parallel execution of particle-based
+simulations as ``templates'', which are independent of the actual data
+structure of particles and the functional form of the
+particle-particle interaction. By using FDPS, researchers can write
+their programs with the amount of work necessary to write a simple,
+sequential and unoptimized program of $O(N^2)$ calculation cost, and
+yet the program, once compiled with FDPS, will run efficiently on
+large-scale parallel supercomputers. A simple gravitational $N$-body
+program can be written in around 120 lines. We report the actual
+performance of these programs and the performance model. The weak
+scaling performance is very good, and almost linear speedup was
+obtained for up to the full system of K computer. The minimum
+calculation time per timestep is in the range of 30 ms ($N=10^7$) to
+300 ms ($N=10^9$). These are currently limited by the time for the
+calculation of the domain decomposition and communication necessary
+for the interaction calculation. We discuss how we can overcome these
+bottlenecks.
+
+\end{abstract}
+
+\section{Introduction}
+
+\input{introduction.tex}
+
+\section{How FDPS works}
+\label{sec:user}
+
+In this section, we describe the design concept of FDPS. In
+section~\ref{sec:design}, we present the design concept of FDPS. In
+section~\ref{sec:samplecode}, we show an $N$-body simulation code
+written using FDPS, and describe how FDPS is used to perform
+parallelization algorithms. Part of the contents in this scetion have been
+published in \citet{2015FDPS}.
+
+\input{basic_concept.tex}
+
+\subsection{An example --- gravitational \textit{N}-body problem}
+\label{sec:samplecode}
+
+\input{sample_code.tex}
+
+\section{Implementation}
+\label{sec:implementation}
+
+In this section, we describe how the operations discussed in the
+previous section are implemented in FDPS. In
+section~\ref{sec:decomposition} we describe the domain decomposition
+and particle exchange, and in section~\ref{sec:calculation}, the
+calculation of interactions. Part of the contents in this scetion have
+been published in \citet{2015FDPS}.
+
+\subsection{Domain decomposition and particle exchange}
+\label{sec:decomposition}
+
+\input{decomposition.tex}
+
+\subsection{Interaction calculation}
+\label{sec:calculation}
+
+\input{calculation.tex}
+
+\section{Performance of applications developed using FDPS}
+\label{sec:performance}
+
+In this section, we present the performance of three astrophysical
+applications developped using FDPS. One is the pure gravity code with
+open boundary applied to disk galaxy simulation. The second one is
+again pure gravity application but with periodic boundary applied to
+cosmological simulation. The third one is gravity + SPH calculation
+applied to the giant impact (GI) simulation.  For the performance
+measurement, we used two systems. One is K computer of RIKEN AICS, and
+the other is Cray XC30 of CfCA, National Astronomical Observatory of
+Japan. K computer consists of 82,944 Fujitsu SPARC64 VIIIfx
+processors, each with eight cores. The theoretical peak performance of
+one core is 16 Gflops, for both of single- and double-precision
+operations. Cray XC30 of CfCA consists of 1060 nodes, or 2120 Intel
+Xeon E5-2690v3 processors (12 cores, 2.6GHz). The theoretical peak
+performance of one core is 83.2 and 41.6 Gflops for single- and
+double-precision operations, respectively.  In all runs on K computer,
+we use the hybrid MPI-OpenMP mode of FDPS, in which one MPI process is
+assigned to one node. On the other hand, for XC30, we use the flat MPI
+mode of FDPS. The source code is the same except for that for the
+interaction calculation functions. The interaction calculation part
+was written to take full advantage of the SIMD instruction set of the
+target architecture, and thus written specifically for SPARC64 VIIIfx
+(HPC-ACE instruction set) and Xeon E5 v3 (AVX2 instruction set).
+
+\label{sec:measuredperformance}
+\subsection{Disk galaxy simulation}
+\label{sec:diskgalaxy}
+\input{galaxy.tex}
+
+\subsection{Cosmological simulation}
+
+\input{cosmology.tex}
+
+\subsection{Giant impact simulation}
+
+\label{sec:sph}
+
+\input{gi.tex}
+
+
+\section{Performance model}
+\label{sec:performancemodel}
+
+\input{performancemodel.tex}
+
+
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\input{conclusion.tex}
+
+\bigskip
+
+We thank M. Fujii for providing initial conditions of spiral
+simulations, T. Ishiyama for providing his Particle Mesh code,
+K. Yoshikawa for providing his TreePM code and Y. Maruyama for being
+the first user of FDPS.  We are grateful to M. Tsubouchi for her help
+in managing the FDPS development team. This research used
+computational resources of the K computer provided by the RIKEN
+Advanced Institute for Computational Science through the HPCI System
+Research project (Project ID:ra000008). Part of the research covered
+in this paper research was funded by MEXT's program for the
+Development and Improvement for the Next Generation Ultra High-Speed
+Computer System, under its Subsidies for Operating the Specific
+Advanced Large Research Facilities. Numerical computations were in
+part carried out on Cray XC30 at Center for Computational
+Astrophysics, National Astronomical Observatory of Japan.
+
+
+\begin{thebibliography}{}
+\bibitem[Abrahama et al.(2014)]{2014GROMACS}
+Abrahama,~M.~J., Murtolad,~T., Schulzb,~R., Palla,~S., Smithb,~J., Hessa,~B. \& Lindahl.,~E.\ 2015, SoftwareX, 1, 19
+\bibitem[Asphaug \& Reufer(2014)]{2014NatGe...7..564A}
+{{Asphaug},~E. \& {Reufer},~A.}\ 2014, Nature Geoscience, 7, 564
+\bibitem[Bagla(2002)]{2002JApA...23..185B}
+{Bagla},~J.~S.\ 2002, JApA, 23, 185
+\bibitem[{Balsara}(1995)]{1995JCoPh.121..357B}
+{Balsara},~D.~S.\ 1995, JCoPh, 121, 357
+\bibitem[Barnes \& Hut(1986)]{1986Natur.324..446B}
+{Barnes},~J. and {Hut},~P.\ 1986, Nature, 324, 446
+\bibitem[Barnes(1990)]{1990JCoPh..87..161B}
+{Barnes},~J.\ 1990, JCoPh, 87, 161
+\bibitem[{B{\'e}dorf} et al.(2012)]{2012JCoPh.231.2825B}
+{B{\'e}dorf},~J., {Gaburov},~E. \& {Portegies Zwart},~S.\ 2012, JCoPh, 231, 2825
+\bibitem[B{\'e}dorf et al.(2014)]{Bedorf:2014:PGT:2683593.2683600}
+B{\'e}dorf,~J., Gaburov,~E., Fujii,~M., Nitadori,~K., Ishiyama,~T., \& Portegies Zwart,~S.\ 2014, Proceedings of the International Conference for High Performance Computing, Networking, Storage and Analysis, IEEE Press, 54
+\bibitem[Benz et al.(1986)]{1986Icar...66..515B}
+{{Benz},~W., {Slattery},~W.~L. \& {Cameron},~A.~G.~W.}\ 1986, \icarus, 66, 515
+\bibitem[Blackston \& Suel(1997)]{Blackston:1997:HPE:509593.509597}
+Blackston,~D., \& Suel,~T.\ 1997, Proc. of the ACM/IEEE Conf. on Supercomputing, ACM, 1
+\bibitem[Bode et al.(2000)]{2000ApJS..128..561B}
+{Bode},~P., {Ostriker},~J.~P. \& {Xu},~G.\ 2000, ApJS, 128, 561
+\bibitem[Brooks et al. (2009)]{2009CHARMM}
+Brooks,~B., et al.\ 2009, J. Comp. Chem. 30, 1545
+\bibitem[Cameron \& Ward(1976)]{1976LPI.....7..120C}
+{{Cameron},~A.~G.~W. \& {Ward},~W.~R.}\ 1976, Lunar and Planetary Science Conference, 7, 120
+\bibitem[Canup et al.(2013)]{2013Icar..222..200C}
+{{Canup},~R.~M., {Barr},~A.~C. \& {Crawford},~D.~A.}\ 2013, \icarus, 222, 200
+\bibitem[Case et al.(2015)]{2015AMBER}
+Case,~D.~A., et al. 2015, AMBER 2015, (San Francisco:University of California)
+\bibitem[Dehnen \& Aly(2012)]{2012MNRAS.425.1068D}
+{{Dehnen},~W. \& {Aly},~H.}\ 2012, \mnras, 425, 1068
+\bibitem[Dehnen(2000)]{2000ApJ...536L..39D}
+Dehnen,~W.\ 2000, \apjl, 536, L39
+\bibitem[Dubinski(1996)]{1996NewA....1..133D}
+{Dubinski},~J.\ 1996, NewA, 1, 133,
+\bibitem[Dubinski et al.(2004)]{2004NewA....9..111D}
+Dubinski,~J., Kim,~J., Park,~C. \& Humble,~R.\ 2004, NewA, 9, 111
+\bibitem[Fujii et al.(2011)]{2011ApJ...730..109F}
+{Fujii},~M.~S., {Baba},~J., {Saitoh},~T.~R., {Makino},~J., {Kokubo},~E., \& {Wada},~K.\ 2011, ApJ, 730, 109
+\bibitem[Gaburov et al.(2009)]{2009NewA...14..630G}
+{Gaburov},~E., {Harfst},~S. \& {Portegies Zwart},~S.\ 2009, NewA, 14, 630
+\bibitem[Goodale et al.(2003)]{2003Cactus}
+Goodale,~T., Allen,~G., Lanfermann,~G., Mass{\'o},~J., Radke,~T., Seidel,~E. \& Shalf,~J.\ 2003, 5th International Conference, Lecture Notes in Computer Science, 2565
+\bibitem[Hamada et al.(2009a)]{Hamada:2009:THN:1654059.1654123}
+Hamada,~T., Narumi,~T., Yokota,~R., Yasuoka,~K., Nitadori,~K., \& Taiji,~M.\ 2009, Proceedings of the Conference on High Performance Computing Networking, Storage and Analysis, 62, 1  
+\bibitem[Hamada et al.(2009b)]{hamada2009novel}
+Hamada,~T., Nitadori,~K., Benkrid,~K., Ohno,~Y., Morimoto,~G., Masada,~T., Shibata,~Y., Oguri,~K. \& Taiji,~M.\ 2009, Computer Science-Research and Development, 24, 21
+\bibitem[Hamada \& Nitadori(2010)]{Hamada:2010:TAN:1884643.1884644}
+Hamada,~T., \& Nitadori,~K.\ 2010, Proceedings of the ACM/IEEE International Conference for High Performance Computing, Networking, Storage and Analysis, IEEE Computer Society, 1
+\bibitem[{Hartmann} \& {Davis}(1975)]{1975Icar...24..504H}
+{{Hartmann},~W.~K. \& {Davis},~D.~R.}\ 1975, \icarus, 24, 504
+\bibitem[{Hernquist}(1990)]{1990ApJ...356..359H}
+{Hernquist},~L.\ 1990, ApJ, 356, 359
+\bibitem[Hockney \& Eastwood(1988)]{hockney1988computer}
+Hockney,~R.~W. \& Eastwood,~J.~W.\ 1988, Computer Simulation Using Particles, CRC Press
+\bibitem[Ishiyama et al.(2009)]{2009PASJ...61.1319I}
+{Ishiyama},~T., {Fukushige},~T. \& {Makino},~J.\ 2009, PASJ, 61, 1319
+\bibitem[Ishiyama et al.(2012)]{Ishiyama:2012:PAN:2388996.2389003}
+Ishiyama,~T., Nitadori,~K., \& Makino, J.\ 2012, Proceedings of the International Conference on High Performance Computing, Networking, Storage and Analysis, 5, 1
+\bibitem[Iwasawa et al.(2015)]{2015FDPS}
+Iwasawa,~M., Tanikawa,~A., Hosono,~N., Nitadori,~K., Muranushi,~T. \& Makino,~J.\ 2015, WOLFHPC '15, 1, 1
+\bibitem[Navarro et al.(1996)]{1996ApJ...462..563N}
+{{Navarro},~J.~F., {Frenk},~C.~S. \& {White},~S.~D.~M.}\ 1996, ApJ, 462, 563
+\bibitem[Nitadori et al.(2006)]{2006NewA...12..169N}
+{Nitadori},~K., {Makino},~J. \& {Hut},~P.\ 2006, NewA, 12, 169
+\bibitem[{Makino}(1991)]{1991PASJ...43..859M}
+{Makino},~J.\ 1991, PASJ, 43, 859
+\bibitem[Makino et al.(2003)]{2003PASJ...55.1163M}
+Makino,~J., Fukushige,~T., Koga,~M., \& Namura,~K.\ 2003, \pasj, 55, 1163
+\bibitem[Makino(2004)]{2004PASJ...56..521M}
+{Makino},~J.\ 2004, \pasj, 56, 521  
+\bibitem[Monaghan(1992)]{1992ARA&A..30..543M}
+{Monaghan},~J.~J.\ 1992, ARA\&A, 30, 543
+\bibitem[{Monaghan}(1997)]{1997JCoPh.136..298M}
+{Monaghan},~J.~J.\ 1997, J. Comp. Phys., 136, 298
+\bibitem[Murotani et al.(2014)]{2014Murotani}
+Murotani,~K., et al.\ 2014, Journal of Advanced Simulation in Science and Engineering, 1, 16
+\bibitem[Phillips et al.(2005)]{2005NAMD}
+Phillips,~J., et al.\ 2005 J. Comp. Chem., 26, 1781
+\bibitem[Plimpton(1995)]{1995LAMMPS}
+Plimpton,~S.\ 1995, J. Comp. Phys., 117, 1
+\bibitem[{Rosswog}(2009)]{2009NewAR..53...78R}
+{Rosswog},~S.\ 2009, NewAR, 53, 78
+\bibitem[Salmon \& Warren(1994)]{1994JCoPh.111..136S}
+{Salmon},~J.~K. \& {Warren},~M.~S.\ 1994, 111, 136,
+\bibitem[Schuessler \& Schmitt(1981)]{1981A&A....97..373S}
+{Schuessler},~I. \& {Schmitt}, D.\ 1981, A\&A, 97, 3735
+\bibitem[Shaw et al.(2014)]{GB14}
+Shaw,~D.~E., et al.\ 2014, Proceedings of the International Conference on High Performance Computing, Networking, Storage and Analysis, 41
+\bibitem[Springel(2005)]{2005MNRAS.364.1105S}
+{Springel},~V.\ 2005, \mnras, 364, 1105
+\bibitem[Springel et al.(2005)]{2005Natur.435..629S}
+{Springel},~V., et al., 2005, \nat, 435, 629
+\bibitem[{Springel}(2010)]{2010ARA&A..48..391S}
+{Springel},~V.\ 2010, ARA\&A, 48, 391
+\bibitem[Sugimoto et al.(1990)]{1990Natur.345...33S}
+Sugimoto,~D., et al.\ 1990, \nat, 345, 33
+\bibitem[Tanikawa et al.(2012)]{2012NewA...17...82T}
+{Tanikawa},~A., {Yoshikawa},~K., {Okamoto},~T. \& {Nitadori},~K.\ 2012, NewA, 17, 82
+\bibitem[Tanikawa et al.(2013)]{2013NewA...19...74T}
+{Tanikawa},~A., {Yoshikawa},~K., {Nitadori},~K. \& {Okamoto},~T.\ 2013, NewA, 19, 74
+\bibitem[Teodoro et al.(2014)]{2014LPI....45.2703T}
+{{Teodoro},~L.~F.~A., {Warren},~M.~S., {Fryer},~C., {Eke},~V. \& {Zahnle},,K.}\ 2014, Lunar and Planetary Science Conference, 45, 2703
+\bibitem[{Wadsley} et al.(2004)]{2004NewA....9..137W}
+{Wadsley},~J.~W., {Stadel},~J. \& {Quinn},~T.\ 2004, NewA, 9, 137
+\bibitem[Warren \& Salmon(1995)]{1995CoPhC..87..266W}
+{Warren},~M.~S., \& {Salmon},~J.~K.\ 1995, Computer Physics Communications, 87, 266
+\bibitem{confscWarrenSBGSW97}
+M.~S.~Warren, J.~K.~Salmon, D.~J.~Becker, M.~P.~Goda, T.~L.~Sterling, \& W.~Winckelmans,\ 1997, Proceedings of the International Conference on High Performance Computing, Networking, Storage and Analysis, 61
+\bibitem[Widrow \& Dubinski(2005)]{2005ApJ...631..838W}
+{{Widrow},~L.~M. \& {Dubinski},~J.}\ 2005, ApJ, 631, 838
+\bibitem[Xu(1995)]{1995ApJS...98..355X}
+{Xu},~G.\ 1995, ApJS, 98, 355
+\bibitem[Yamada et al.(2015)]{2015LexADV_EMPS}
+Yamada,~T., Mitsume,~N., Yoshimura,~S. \& Murotani,~K.\ 2015, COUPLED PROBLEMS 2015
+\bibitem[Yoshikawa \& Fukushige(2005)]{2005PASJ...57..849Y}
+{Yoshikawa},~K. \& {Fukushige},~T.\ 2005, \pasj, 57, 849
+  
+\end{thebibliography}
+
+\end{document}
+
+

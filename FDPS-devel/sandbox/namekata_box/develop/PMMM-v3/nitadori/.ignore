@@ -1,0 +1,12 @@
+# executables
+obc
+pbc
+ewald
+# log/data files
+*.day
+!qpos.dat
+!ewald.dat
+# temporal files
+DS_Store
+*.swp
+*~

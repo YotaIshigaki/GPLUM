@@ -61,9 +61,10 @@ alpha           = 1.                    # parameter alpha to determinetimestep (
 # FOR GRAVITATONAL INTERACTION
 m_sun           = 1.                    # mass of central star
 dens            = 2.CGS                 # density of particles  
-eps             = 0.                    # softening parameter                   
-R_cut0          = 2.0                   # parameter to determine cut-off radius
-R_cut1          = 4.0                   # parameter to determine cut-off radius
+eps             = 0.                    # softening parameter
+eps_sun         = 0.                    # softening parameter for gravity of central star
+R_cut0          = 3.0                   # parameter to determine cut-off radius
+R_cut1          = 8.0                   # parameter to determine cut-off radius
 R_search0       = 1.1                   # parameter to determine search radius
 R_search1       = 6.0                   # parameter to determine search radius
 R_search2       = 1.1                   # parameter to determine search radius

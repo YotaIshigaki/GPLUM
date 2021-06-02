@@ -1,0 +1,2809 @@
+\subsection{FullParticleクラス}
+\label{sec:example_fullparticle}
+
+\subsubsection{概要}
+
+FullParticleクラスは粒子情報すべてを持つクラスであり、
+節\ref{sec:overview_action}の手順0で、粒子群クラスに渡されるユーザー定
+義クラスの１つである。ユーザーはこのクラスに対して、どのようなメンバ変
+数、メンバ関数を定義してもかまわない。ただし、FDPSからFullParticleクラ
+スの情報にアクセスする ために、ユーザーはいくつかの決まった名前のメン
+バ関数を定義する必要がある。以下、この節の前提、常に必要なメンバ関数と、
+場合によっては必要なメンバ関数について記述する。
+
+\subsubsection{前提}
+
+この節の中では、以下のように、FullParticleクラスとしてFPというクラスを
+一例とする。FPという名前は自由に変えることができる。
+\begin{screen}
+\begin{verbatim}
+class FP;
+\end{verbatim}
+\end{screen}
+
+\subsubsection{必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+常に必要なメンバ関数はFP::getPosとFP::copyFromForceである。FP::getPos
+はFullParticleの位置情報をFDPSに読み込ませるための関数で、
+FP::copyFromForceは計算された相互作用の結果をFullParticleに書き戻す関
+数である。これらのメンバ関数の記述例と解説を以下に示す。
+
+\subsubsubsection{FP::getPos}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64vec getPos() const;
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32vec型またはPS::F64vec型。FPクラスのオブジェクトの位置情報を保
+  持したメンバ変数。
+  
+\item {\bf 機能}
+
+  FPクラスのオブジェクトの位置情報を保持したメンバ変数を返す。
+  
+\end{itemize}
+
+\subsubsubsection{FP::copyFromForce}
+
+\begin{screen}
+\begin{verbatim}
+class Force {
+public:
+    PS::F64vec acc;
+    PS::F64    pot;
+};
+class FP {
+public:
+    PS::F64vec acceleration;
+    PS::F64    potential;
+    void copyFromForce(const Force & force) {
+        this->acceleration = force.acc;
+        this->potential    = force.pot;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Forceクラスは粒子の相互作用の計算結果を保持するクラス。
+
+\item {\bf 引数}
+
+  force: 入力。const Force \&型。粒子の相互作用の計算結果を保持。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子の相互作用の計算結果をFPクラスへ書き戻す。Forceクラスのメンバ変
+  数acc, potがそれぞれFPクラスのメンバ変数acceleration, potentialに対
+  応。
+  
+\item {\bf 備考}
+
+  Forceクラスというクラス名とそのメンバ変数名は変更可能。FPのメンバ変
+  数名は変更可能。メンバ関数FP::copyFromForceの引数名は変更可能。
+
+\end{itemize}
+
+\subsubsection{場合によっては必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+本節では、場合によっては必要なメンバ関数について記述する。相互作用ツリー
+クラスのPS::SEARCH\_MODE型にPS::SEARCH\_MODE\_LONG以外を用いる場合、粒
+子群クラスのファイル入出力APIを用いる場合、粒子群クラスのAPIである
+\\ParticleSystem::adjustPositionIntoRootDomainを用いる場合、拡張機能の
+Particle Meshクラスを用いる場合について必要となるメンバ関数を記述する。
+
+\subsubsubsection{相互作用ツリークラスのPS::SEARCH\_MODE型に\\PS::SEARCH\_MODE\_LONG以外を用いる場合}
+
+\subsubsubsubsection{FP::getRSearch}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64 search_radius;
+    PS::F64 getRSearch() const {
+        return this->search_radius;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  FPクラスのメンバ変数search\_radiusはある１つの粒子の近傍粒子を探す半
+  径の大きさ。このsearch\_radiusのデータ型はPS::F32型またはPS::F64型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32型またはPS::F64型。 FPクラスのオブジェクトの近傍粒子を探す半
+  径の大きさを保持したメンバ変数。
+  
+\item {\bf 機能}
+
+  FPクラスのオブジェクトの近傍粒子を探す半径の大きさを保持したメンバ変
+  数を返す。
+
+\item {\bf 備考}
+
+  FPクラスのメンバ変数search\_radiusの変数名は変更可能。
+  
+\end{itemize}
+
+\subsubsubsection{粒子群クラスのファイル入出力APIを用いる場合}
+\label{sec:example_userdefined_fullparticle_io}
+
+粒子群クラスのファイル入出力APIであるParticleSystem::readParticleAscii, ParticleSystem::writeParticleAscii, ParticleSystem::readParticleBinary, ParticleSystem::writeParticleBinaryを使用するときにそれぞれreadAscii, writeAscii, readBinary, writeBinaryというメンバ関数が必要となる(readAscii, writeAscii, readBinary, writeBinary以外の名前を使うことも可能。詳しくは節\ref{sec:ParticleSystem:IO}を参照)。以下、readAscii, writeAscii, readBinary, writeBinaryの実装例について記述する。
+
+
+\subsubsubsubsection{FP::readAscii}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::S32 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    void readAscii(FILE *fp) {
+        fscanf(fp, "%d%lf%lf%lf%lf", &this->id, &this->mass,
+               &this->pos[0], &this->pos[1], &this->pos[2]);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  粒子データの入力ファイルの１列目にはFPクラスのメンバ変数idを表すデー
+  タが、２列目にはメンバ変数massを表すデータが、３、４、５列めにはメン
+  バ変数posの第１、２、３要素が、それ以降には列がないとする。ファイル
+  の形式はアスキー形式とする。３次元直交座標系を選択したとする。
+
+\item {\bf 引数}
+
+  fp: FILE *型。粒子データの入力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子データの入力ファイルからFPクラスのid、mass、posの情報を読み取る。
+  
+\item {\bf 備考}
+
+  なし。
+  
+\end{itemize}
+
+\subsubsubsubsection{FP::writeAscii}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::S32 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    void writeAscii(FILE *fp) {
+        fscanf(fp, "%d %lf %lf %lf %lf", this->id, this->mass,
+               this->pos[0], this->pos[1], this->pos[2]);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  粒子データの出力ファイルの１列目にはFPクラスのメンバ変数idを表すデー
+  タが、２列目にはメンバ変数massを表すデータが、３、４、５列めにはメン
+  バ変数posの第１、２、３要素が、それ以降には列がないとする。ファイル
+  の形式はアスキー形式とする。３次元直交座標系を選択したとする。
+
+\item {\bf 引数}
+
+  fp: FILE *型。粒子データの出力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子データの出力ファイルへFPクラスのメンバ変数id、mass、posの情報を
+  書き出す。
+  
+\item {\bf 備考}
+
+  なし。
+  
+\end{itemize}
+
+\subsubsubsubsection{FP::readBinary}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::S32 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    void readBinary(FILE *fp) {
+        fread(&this->id, sizeof(PS::S32), 1, fp);
+        fread(&this->mass, sizeof(PS::F64), 1, fp);
+        fread(&this->pos, sizeof(PS::F64vec), 1, fp);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  粒子データの入力ファイルには(複数の)FPクラスのデータが連続して、すなわち、任意の2つのFPクラスのデータ間に余分な隙間なく、格納されているとする。FPクラス1個分のデータは、メンバ変数id, mass, posの第1、2、3要素がこの順に連続して並んでいるものとし、fpの現在位置はあるFPクラスのデータの先頭を指しているとする。ファイルの形式はバイナリー形式とする。３次元直交座標系を選択したとする。
+
+\item {\bf 引数}
+
+  fp: FILE *型。粒子データの入力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子データの入力ファイルからFPクラスのid、mass、posの情報を読み取る。
+  
+\item {\bf 備考}
+
+  なし。
+  
+\end{itemize}
+
+\subsubsubsubsection{FP::writeBinary}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::S32 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    void writeBinary(FILE *fp) {
+        fwrite(&this->id, sizeof(PS::S32), 1 , fp);
+        fwrite(&this->mass, sizeof(PS::F64), 1, fp);
+        fwrite(&this->pos, sizeof(PS::F64vec), 1, fp);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  粒子データの出力ファイルには(複数の)FPクラスのデータが連続して、すなわち、任意の2つのFPクラスのデータ間に余分な隙間なく、格納されているとする。引数fpが指す現在位置は最後に出力されたFPクラスのデータの末尾を指しているとする。今、FPクラス1個分のデータを、メンバ変数id, mass, posの第1、2、3要素がこの順に連続して並ぶ形で出力したい。ファイルの形式はバイナリー形式とする。３次元直交座標系を選択したとする。
+
+
+\item {\bf 引数}
+
+  fp: FILE *型。粒子データの出力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子データの出力ファイルへFPクラスのメンバ変数id、mass、posの情報を
+  書き出す。
+  
+\item {\bf 備考}
+
+  なし。
+  
+\end{itemize}
+
+
+
+\subsubsubsection{ParticleSystem::adjustPositionIntoRootDomainを用いる場合}
+
+\subsubsubsubsection{FP::setPos}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64vec pos;
+    void setPos(const PS::F64vec pos_new) {
+        this->pos = pos_new;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  FPクラスのメンバ変数posは１つの粒子の位置情報。このposのデータ型は
+  PS::F32vecまたはPS::F64vec。
+
+\item {\bf 引数}
+
+  pos\_new: 入力。const PS::F32vecまたはconst PS::F64vec型。FDPS側で修
+  正した粒子の位置情報。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  FDPSが修正した粒子の位置情報をFPクラスのオブジェクトの位置情報に書き
+  込む。
+
+\item {\bf 備考}
+
+  FPクラスのメンバ変数posの変数名は変更可能。メンバ関数FP::setPosの引
+  数名pos\_newは変更可能。posとpos\_newのデータ型が異なる場合の動作は
+  保証しない。
+
+\end{itemize}
+
+\subsubsubsection{Particle Meshクラスを用いる場合}
+
+Particle Meshクラスを用いる場合には、メンバ関数
+FP::getChargeParticleMeshと\\FP::copyFromForceParticleMeshを用意する必要
+がある。以下にそれぞれの規定を記述する。
+
+\subsubsubsubsection{FP::getChargeParticleMesh}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64 mass;
+    PS::F64 getChargeParticleMesh() const {
+        return this->mass;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  FPクラスのメンバ変数massは１つの粒子の質量または電荷の情報を持つ変数。
+  データ型はPS::F32またはPS::F64型。
+
+\item {\bf 引数}
+
+  なし。
+
+\item {\bf 返値}
+
+  PS::F32型またはPS::F64型。１つの粒子の質量または電荷の変数を返す。
+  
+\item {\bf 機能}
+
+  １つの粒子の質量または電荷を表すメンバ変数を返す。
+
+\item {\bf 備考}
+
+  FPクラスのメンバ変数massの変数名は変更可能。
+
+\end{itemize}
+
+
+\subsubsubsubsection{FP::copyFromForceParticleMesh}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64vec accelerationFromPM;
+    void copyFromForceParticleMesh(const PS::F32vec & acc_pm) {
+        this->accelerationFromPM = acc_pm;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  FPクラスのメンバ変数accelerationFromPM\_pmは１つの粒子のParticle
+  Meshによる力の情報を保持する変数。このaccelerationFromPM\_pmのデータ
+  型はPS::F32vecまたはPS::F64vec。
+
+\item {\bf 引数}
+
+  acc\_pm: const PS::F32vec型またはconst PS::F64vec型。１つの粒子の
+  Particle Meshによる力の計算結果。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  １つの粒子のParticle Meshによる力の計算結果をこの粒子のメンバ変数に
+  書き込む。
+  
+\item {\bf 備考}
+
+  FPクラスのメンバ変数acc\_pmの変数名は変更可能。メンバ関数
+  FP::copyFromForceParticleMeshの引数acc\_pmの引数名は変更可能。
+
+\end{itemize}
+
+\subsection{EssentialParticleIクラス}
+\label{sec:example_essentialparticlei}
+
+\subsubsection{概要}
+
+EssentialParticleIクラスは相互作用の計算に必要なi粒子の情報を持つクラ
+スであり、相互作用の定義(節\ref{sec:overview_action}の手順0)に必要とな
+る。EssentialParticleIクラスはFullParticleクラス
+(節\ref{sec:fullparticle})のサブセットである。FDPSは、このクラスのデー
+タにアクセスする必要がある。そのため、EssentialParticleIクラスはいくつ
+かのメンバ関数を持つ必要がある。以下、この節の前提、常に必要なメンバ関
+数と、場合によっては必要なメンバ関数について記述する。
+
+\subsubsection{前提}
+
+この節の中では、EssentialParticleIクラスとしてEPIというクラスを一例と
+して使う。また、FullParticleクラスの一例としてFPというクラスを使う。
+EPI, FPというクラス名は変更可能である。
+
+EPIとFPの宣言は以下の通りである。
+\begin{screen}
+\begin{verbatim}
+class FP;
+class EPI;
+\end{verbatim}
+\end{screen}
+
+\subsubsection{必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+常に必要なメンバ関数はEPI::getPosとEPI::copyfromFPである。EPI::getPos
+はEPIクラスの位置情報をFDPSに読み込ませるための関数で、EPI::copyFromFP
+はFPクラスの情報をEPIクラスに書きこむ関数である。これらのメンバ関数の
+記述例と解説を以下に示す。
+
+\subsubsubsection{EPI::getPos}
+
+\begin{screen}
+\begin{verbatim}
+class EPI {
+public:
+    PS::F64vec pos;
+    PS::F64vec getPos() const {
+        return this->pos;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+  
+  EPIのメンバ変数posはある１つの粒子の位置情報。このposのデー
+  タ型はPS::F64vec型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F64vec型。EPIクラスの位置情報を保持したメンバ変数。
+  
+\item {\bf 機能}
+
+  EPIクラスのオブジェクトの位置情報を保持したメンバ変数を返す。
+  
+\item {\bf 備考}
+
+  EPIクラスのメンバ変数posの変数名は変更可能。
+
+\end{itemize}
+
+\subsubsubsection{EPI::copyFromFP}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::S64    identity;
+    PS::F64    mass;
+    PS::F64vec position;
+    PS::F64vec velocity;
+    PS::F64vec acceleration;
+    PS::F64    potential;
+};
+class EPI {
+public:
+    PS::S64    id;
+    PS::F64vec pos;
+    void copyFromFP(const FP & fp) {
+        this->id  = fp.identity;
+        this->pos = fp.position;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  FPクラスのメンバ変数identity, positionとEPI
+  クラスのメンバ変数id, posはそれぞれ対応する情報を持つ。
+
+\item {\bf 引数}
+
+  fp: 入力。const FP \&型。FPクラスの情報を持つ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  FPクラスの持つ１粒子の情報の一部をEssnetialParticleIクラス
+  に書き込む。
+  
+\item {\bf 備考}
+
+  FPクラスのメンバ変数の変数名、EPIクラスのメ
+  ンバ変数の変数名は変更可能。メンバ関数EPI::copyFromFP
+  の引数名は変更可能。EPIクラスの粒子情報はFP
+  クラスの粒子情報のサブセット。対応する情報を持つメンバ変数同士のデー
+  タ型が一致している必要はないが、実数型とベクトル型(または整数型とベ
+  クトル型)という違いがある場合に正しく動作する保証はない。
+
+\end{itemize}
+
+\subsubsection{場合によっては必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+本節では、場合によっては必要なメンバ関数について記述する。相互作用ツリー
+クラスのPS::SEARCH\_MODE型にPS::SEARCH\_MODE\_GATHERまたは
+PS::SEARCH\_MODE\_SYMMETRYを用いる場合に必要となるメンバ関数ついて記述
+する。
+
+\subsubsubsection{相互作用ツリークラスのPS::SEARCH\_MODE型に\\PS::SEARCH\_MODE\_GATHERまたはPS::SEARCH\_MODE\_SYMMETRYを用いる場合}
+
+\subsubsubsubsection{EPI::getRSearch}
+
+\begin{screen}
+\begin{verbatim}
+class EPI {
+public:
+    PS::F64 search_radius;
+    PS::F64 getRSearch() const {
+        return this->search_radius;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  EPIクラスのメンバ変数search\_radiusはある１つの粒子の
+  近傍粒子を探す半径の大きさ。このsearch\_radiusのデータ型はPS::F32型
+  またはPS::F64型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32型またはPS::F64型。 EPIクラスの近傍粒子を探す
+  半径の大きさを保持したメンバ変数。
+  
+\item {\bf 機能}
+
+  EPIクラスの近傍粒子を探す半径の大きさを保持したメンバ
+  変数を返す。
+
+\item {\bf 備考}
+
+  EPIクラスのメンバ変数search\_radiusの変数名は変更可能。
+  
+\end{itemize}
+
+\subsection{EssentialParticleJクラス}
+\label{sec:example_essentialparticlej}
+
+\subsubsection{概要}
+
+EssentialParticleJクラスは相互作用の計算に必要なj粒子の情報を持つクラ
+スであり、相互作用の定義(節\ref{sec:overview_action}の手順0)に必要とな
+る。EssentialParticleJクラスはFullParticleクラス
+(節\ref{sec:fullparticle})のサブセットである。FDPSは、このクラスのデー
+タにアクセスする必要がある。このために、EssentialParticleJクラスはいく
+つかのメンバ関数を持つ必要がある。以下、この節の前提、常に必要なメンバ
+関数と、場合によっては必要なメンバ関数について記述する。
+
+\subsubsection{前提}
+
+この節の中では、EssentialParticleJクラスとしてEPJというクラスを一例と
+して使う。また、FullParticleクラスの一例としてFPというクラスを使う。
+EPJ, FPというクラス名は変更可能である。
+
+EPJとFPの宣言は以下の通りである。
+\begin{screen}
+\begin{verbatim}
+class FP;
+class EPJ;
+\end{verbatim}
+\end{screen}
+
+\subsubsection{必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+常に必要なメンバ関数はEPJ::getPosとEPJ::copyfromFPである。EPJ::getPos
+はEPJクラスの位置情報をFDPSに読み込ませるための関数で、EPJ::copyFromFP
+はFPクラスの情報をEPJクラスに書きこむ関数である。これら
+のメンバ関数の記述例と解説を以下に示す。
+
+\subsubsubsection{EPJ::getPos}
+
+\begin{screen}
+\begin{verbatim}
+class EPJ {
+public:
+    PS::F64vec pos;
+    PS::F64vec getPos() const {
+        return this->pos;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+  
+  EPJのメンバ変数posはある１つの粒子の位置情報。このposのデー
+  タ型はPS::F64vec型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F64vec型。EPJクラスの位置情報を保持したメンバ変数。
+  
+\item {\bf 機能}
+
+  EPJクラスの位置情報を保持したメンバ変数を返す。
+  
+\item {\bf 備考}
+
+  EPJクラスのメンバ変数posの変数名は変更可能。
+
+\end{itemize}
+
+\subsubsubsection{EPJ::copyFromFP}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::S64    identity;
+    PS::F64    mass;
+    PS::F64vec position;
+    PS::F64vec velocity;
+    PS::F64vec acceleration;
+    PS::F64    potential;
+};
+class EPJ {
+public:
+    PS::S64    id;
+    PS::F64    m;
+    PS::F64vec pos;
+    void copyFromFP(const FP & fp) {
+        this->id  = fp.identity;
+        this->m   = fp.mass;
+        this->pos = fp.position;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  FPクラスのメンバ変数identity, mass, positionと
+  EPJクラスのメンバ変数id, m, posはそれぞれ対応する情報
+  を持つ。
+
+\item {\bf 引数}
+
+  fp: 入力。const FP \&型。FPクラスの情報を持つ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  FPクラスの持つ１粒子の情報の一部をEPJクラスに書き込む。
+  
+\item {\bf 備考}
+
+  FPクラスのメンバ変数の変数名、EPJクラスのメンバ変数の変数名は変更可
+  能。メンバ関数EPJ::copyFromFPの引数名は変更可能。対応する情報を持つ
+  メンバ変数同士のデータ型が一致している必要はないが、実数型とベクトル
+  型(または整数型とベクトル型)という違いがある場合に正しく動作する保証
+  はない。
+
+\end{itemize}
+
+\subsubsection{場合によっては必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+本節では、場合によっては必要なメンバ関数について記述する。相互作用ツリー
+クラスのPS::SEARCH\_MODE型にPS::SEARCH\_MODE\_LONG以外を用いる場合に必
+要なメンバ関数、列挙型のBOUNDARY\_CONDITION型に
+PS::BOUNDARY\_CONDITION\_OPEN以外を選んだ場合に必要となるメンバ関数に
+ついて記述する。なお、既存のMomentクラスやSuperParticleJクラスを用いる
+際に必要となるメンバ変数はこれら既存のクラスの節を参照のこと。
+
+\subsubsubsection{相互作用ツリークラスのPS::SEARCH\_MODE型に\\PS::SEARCH\_MODE\_LONG以外を用いる場合}
+
+\subsubsubsubsection{EPJ::getRSearch}
+
+\begin{screen}
+\begin{verbatim}
+class EPJ {
+public:
+    PS::F64 search_radius;
+    PS::F64 getRSearch() const {
+        return this->search_radius;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  EPJクラスのメンバ変数search\_radiusはある１つの粒子の
+  近傍粒子を探す半径の大きさ。このsearch\_radiusのデータ型はPS::F32型
+  またはPS::F64型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32型またはPS::F64型。 EPJクラスの近傍粒子を探す
+  半径の大きさを保持したメンバ変数。
+  
+\item {\bf 機能}
+
+  EPJクラスの近傍粒子を探す半径の大きさを保持したメンバ
+  変数を返す。
+
+\item {\bf 備考}
+
+  EPJクラスのメンバ変数search\_radiusの変数名は変更可能。
+  
+\end{itemize}
+
+\subsubsubsection{BOUNDARY\_CONDITION型にPS::BOUNDARY\_CONDITION\_OPEN以外を用いる場合}
+
+\subsubsubsubsection{EPJ::setPos}
+
+\begin{screen}
+\begin{verbatim}
+class EPJ {
+public:
+    PS::F64vec pos;
+    void setPos(const PS::F64vec pos_new) {
+        this->pos = pos_new;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+  
+  EPJクラスのメンバ変数posは１つの粒子の位置情報。この
+  posのデータ型はPS::F32vecまたはPS::F64vec。EPJクラス
+  のメンバ変数posの元データとなっているのはFPクラスのメンバ
+  変数position。このデータ型はPS::F32vecまたはPS::F64vec。
+
+\item {\bf 引数}
+
+  pos\_new: 入力。const PS::F32vecまたはconst PS::F64vec型。FDPS側で修
+  正した粒子の位置情報。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  FDPSが修正した粒子の位置情報をEPJクラスの位置情報に書き込む。
+
+\item {\bf 備考}
+
+  EPJクラスのメンバ変数posの変数名は変更可能。メンバ関
+  数EPJ::setPosの引数名pos\_newは変更可能。posと
+  pos\_newのデータ型が異なる場合の動作は保証しない。
+
+\end{itemize}
+
+\subsection{Momentクラス}
+\label{sec:example_moment}
+
+\subsubsection{概要}
+
+Momentクラスは近い粒子同士でまとまった複数の粒子のモーメント情報を持つ
+クラスであり、相互作用の定義(節\ref{sec:overview_action}の手順0)に必要
+となる。モーメント情報の例としては、複数粒子の単極子や双極子、さらにこ
+れら粒子の持つ最大の大きさなど様々なものが考えられる。このクラスは、
+EssentialParticleJクラスからSuperParticleJクラスを作るための中間変数の
+ような役割を果す。従って、このクラスが持つメンバ関数は、
+EssentialParticleJクラスから情報を読み出してモーメントを計算するメンバ
+関数、少ない数の粒子のモーメントからそれらの粒子を含むより多くの粒子の
+モーメントを計算するメンバ関数などがある。
+
+このようなモーメント情報にはある程度決っているものが多いので、それらに
+ついてはFDPS側で用意した。これら既存のクラスについてまず記述する。その
+後にユーザーがモーメントクラスを自作する際に必ず必要なメンバ関数、場合
+によっては必要になるメンバ関数について記述する。
+
+\subsubsection{既存のクラス}
+
+\subsubsubsection{概要}
+
+FDPSはいくつかのMomentクラスを用意している。これらは相互作用ツリークラ
+スで特定のPS::SEARCH\_MODE型を選んだ場合に有効である。以下、各
+PS::SEARCH\_MODE型において選ぶことのできるMoment型を記述する。
+PS::SEARCH\_MODE\_GATHER, \\PS::SEARCH\_MODE\_SCATTER,
+PS::SEARCH\_MODE\_SYMMETRYについてはMomentクラスを意識してコーディング
+する必要がないので、これらについては記述しない。
+
+\subsubsubsection{PS::SEARCH\_MODE\_LONG}
+\label{sec:MomentForSearchModeLong}
+以下に述べる Moment クラスのうち、
+MomentMonopole 及び  MomentQuadrupole については、
+近接粒子探索を行うことができる PS::SEARCH\_MODE\_LONG\_SCATTER で使うものも同様
+に定義されている。それぞれ MomentMonopoleScatter および
+MomentQuadrupoleScatter である。
+
+
+\subsubsubsubsection{PS::MomentMonopole}
+
+単極子までを情報として持つクラス。単極子を計算する際の座標系の中心には
+粒子の重心や粒子電荷の重心を取る。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class MomentMonopole {
+    public:
+        F32    mass;
+        F32vec pos;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::MomentMonopole
+
+\item メンバ変数とその情報
+
+  mass: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の重心、または粒子電荷の重心
+
+\item 使用条件
+
+  EssentialParticleJクラス(節\ref{sec:essentialparticlej})がメンバ関数
+  EssentialParticleJ::getChargeとEssentialParticleJ::getPosを持ち、そ
+  れぞれが粒子質量(または粒子電荷)、粒子位置を返すこと。
+  EssentialParticleJクラスのクラス名は変更自由。
+
+  MomentMonopoleScatter の場合、EssentialParticleJクラスは
+  メンバ関数 getRSearch() をもつこと。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::MomentQuadrupole}
+
+単極子と四重極子を情報として持つクラス。これらのモーメントを計算する際
+の座標系の中心には粒子の重心を取る。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class MomentQuadrupole {
+    public:
+        F32    mass;    
+        F32vec pos;
+        F32mat quad;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::MomentQuadrupole
+
+\item メンバ変数とその情報
+
+  mass: 近傍でまとめた粒子の全質量
+
+  pos: 近傍でまとめた粒子の重心
+
+  quad: 近傍でまとめた粒子の四重極子
+
+\item 使用条件
+
+  EssentialParticleJクラス(節\ref{sec:essentialparticlej})がメンバ関数
+  EssentialParticleJ::getChargeとEssentialParticleJ::getPosを持ち、そ
+  れぞれが粒子質量(または粒子電荷)、粒子位置を返すこと。
+  EssentialParticleJクラスのクラス名は変更自由。
+
+  MomentQuadrupoleScatter の場合、EssentialParticleJクラスは
+  メンバ関数 getRSearch() をもつこと。
+  
+\end{itemize}
+
+\subsubsubsubsection{PS::MomentMonopoleGeometricCenter}
+
+単極子までを情報として持つクラス。これらのモーメントを計算する際の座標
+系の中心には粒子の幾何中心を取る。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class MomentMonopoleGeometricCenter {
+    public:
+        F32    charge;    
+        F32vec pos;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::MomentMonopoleGeometricCenter
+
+\item メンバ変数とその情報
+
+  charge: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の幾何中心
+
+\item 使用条件
+
+  EssentialParticleJクラス(節\ref{sec:essentialparticlej})がメンバ関数
+  EssentialParticleJ::getChargeとEssentialParticleJ::getPosを持ち、そ
+  れぞれが粒子質量(または粒子電荷)、粒子位置を返すこと。
+  EssentialParticleJクラスのクラス名は変更自由。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::MomentDipoleGeometricCenter}
+
+双極子までを情報として持つクラス。これらのモーメントを計算する際の座標
+系の中心には粒子の幾何中心を取る。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class MomentDipoleGeometricCenter {
+    public:
+        F32    charge;    
+        F32vec pos;
+        F32vec dipole;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::MomentDipoleGeometricCenter
+
+\item メンバ変数とその情報
+
+  charge: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の幾何中心
+
+  dipole: 粒子の質量または電荷の双極子
+
+\item 使用条件
+
+  EssentialParticleJクラス(節\ref{sec:essentialparticlej})がメンバ関数
+  EssentialParticleJ::getChargeとEssentialParticleJ::getPosを持ち、そ
+  れぞれが粒子質量(または粒子電荷)、粒子位置を返すこと。
+  EssentialParticleJクラスのクラス名は変更自由。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::MomentQuadrupoleGeometricCenter}
+
+四重極子までを情報として持つクラス。これらのモーメントを計算する際の座標
+系の中心には粒子の幾何中心を取る。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class MomentQuadrupoleGeometricCenter {
+    public:
+        F32    charge;    
+        F32vec pos;
+        F32vec dipole;
+        F32mat quadrupole;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::MomentQuadrupoleGeometricCenter
+
+\item メンバ変数とその情報
+
+  charge: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の幾何中心
+
+  dipole: 粒子の質量または電荷の双極子
+
+  quadrupole: 粒子の質量または電荷の四重極子
+
+\item 使用条件
+
+  EssentialParticleJクラス(節\ref{sec:essentialparticlej})がメンバ関数
+  EssentialParticleJ::getChargeとEssentialParticleJ::getPosを持ち、そ
+  れぞれが粒子質量(または粒子電荷)、粒子位置を返すこと。
+  EssentialParticleJクラスのクラス名は変更自由。
+
+\end{itemize}
+
+
+\subsubsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+
+以下に述べる Moment クラスのうち、
+MomentMonopoleCutoff については、
+近接粒子探索を行うことができる PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER で使うものも同様
+に定義されている。MomentMonopoleCutoffScatter である。
+
+
+\subsubsubsubsection{PS::MomentMonopoleCutoff}
+
+単極子までを情報として持つクラス。単極子を計算する際の座標系の中心には
+粒子の重心や粒子電荷の重心を取る。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class MomentMonopoleCutoff {
+    public:
+        F32    mass;
+        F32vec pos;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::MomentMonopoleCutoff
+
+\item メンバ変数とその情報
+
+  mass: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の重心、または粒子電荷の重心
+
+\item 使用条件
+
+  EssentialParticleJクラス(節\ref{sec:essentialparticlej})がメンバ関数
+  EssentialParticleJ::getCharge, EssentialParticleJ::getPos,
+  EssentialParticleJ::getRSearchを持ち、それぞれが粒子質量(または粒子
+  電荷)、粒子位置、粒子の力の到達距離を返すこと。EssentialParticleJク
+  ラスのクラス名は変更自由。
+
+   MomentMonopoleCutoffScatter の場合、EssentialParticleJクラスは
+  メンバ関数 getRSearch() をもつこと。
+
+
+\end{itemize}
+
+\subsubsection{必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+以下ではMomentクラスを定義する際に、必要なメンバ関数を記述する。このと
+きMomentクラスのクラス名をMomとする。これは変更自由である。
+
+\subsubsubsection{コンストラクタ}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    Mom () {
+        mass = 0.0;
+        pos  = 0.0;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momクラスのメンバ変数mass, posはMomの質量と位置。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  なし
+
+\item {\bf 機能}
+
+  Momクラスのオブジェクトの初期化をする。
+  
+\item {\bf 備考}
+
+  メンバ変数名の変更可能。メンバ変数を加えることも可能。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    Mom(const PS::F32 m,
+        const PS::F32vec & p) {
+        mass = m;
+        pos  = p;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momクラスのメンバ変数mass, posはMomの質量と位置。
+  
+\item {\bf 引数}
+
+  m: 入力。const PS::F32型。質量
+
+  p: 入力。const PS::F32vec \&型。位置。
+  
+\item {\bf 返値}
+
+  なし
+
+\item {\bf 機能}
+
+  Momクラスのオブジェクトの初期化をする。
+  
+\item {\bf 備考}
+
+  メンバ変数名の変更可能。メンバ変数を加えることも可能。
+
+\end{itemize}
+
+\subsubsubsection{Mom::init}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    void init();
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  なし
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  なし
+
+\item {\bf 機能}
+
+  Momクラスのオブジェクトの初期化をする。
+  
+\item {\bf 備考}
+
+  なし
+
+\end{itemize}
+
+\subsubsubsection{Mom::getPos}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32vec pos;
+    PS::F32vec getPos() const {
+        return pos;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数posは近傍でまとめた粒子の代表位置。このposのデータ
+  型はPS::F32vecまたはPS::F64vec型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32vecまたはPS::F64vec型。Momクラスのメンバ変数pos。
+
+\item {\bf 機能}
+
+  Momクラスのメンバ変数posを返す。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数posの変数名は変更自由。
+
+\end{itemize}
+
+\subsubsubsection{Mom::getCharge}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32 mass;
+    PS::F32 getCharge() const {
+        return mass;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数massは近傍でまとめた粒子の全質量または全電荷。この
+  massのデータ型はPS::F32またはPS::F64型。
+
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32またはPS::F64型。Momクラスのメンバ変数mass。
+
+\item {\bf 機能}
+
+  Momクラスのメンバ変数massを返す。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数massの変数名は変更自由。
+
+\end{itemize}
+
+\subsubsubsection{Mom::accumulateAtLeaf}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    template <class Tepj>
+    void accumulateAtLeaf(const Tepj & epj) {
+        mass += epj.getCharge();
+        pos  += epj.getPos();
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数massは近傍でまとめた粒子の全質量または全電荷。この
+  massのデータ型はPS::F32またはPS::F64型。Momのメンバ変数posは近傍
+  でまとめた粒子の代表位置。このposのデータ型はPS::F32vecまたは
+  PS::F64vec型。テンプレート引数TepjにはEssentialParticleJクラスが入り、
+  クラスはメンバ関数getChargeとgetPosを持つ。
+
+\item {\bf 引数}
+
+  epj: 入力。const Tepj \&型。Tepjのオブジェクト。
+  
+\item {\bf 返値}
+
+  なし。
+
+\item {\bf 機能}
+
+  EssentialParticleJクラスのオブジェクトからモーメントを計算する。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数mass, posの変数名は変更自由。引数epjの引数名
+  は変更自由。その他の変数を加えるのも可能。
+
+\end{itemize}
+
+\subsubsubsection{Mom::accumulate}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    void accumulate(const Mom & mom) {
+        mass += mom.mass;
+        pos  += mom.mass * mom.pos;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数massは近傍でまとめた粒子の全質量または全電荷。この
+  massのデータ型はPS::F32またはPS::F64型。Momのメンバ変数posは近傍
+  でまとめた粒子の重心または電荷の重心。このposのデータ型はPS::F32vec
+  またはPS::F64vec型。
+
+\item {\bf 引数}
+
+  mom: 入力。const Mom \&型。Momクラスのオブジェクト。
+  
+\item {\bf 返値}
+
+  なし。
+
+\item {\bf 機能}
+
+  MomクラスのオブジェクトからさらにMomクラスの情報を計算する。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数mass, posの変数名は変更自由。引数epjの引数名
+  は変更自由。その他の変数を加えるのも可能。
+
+\end{itemize}
+
+\subsubsubsection{Mom::set}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    void set() {
+        pos = pos / mass;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数massは近傍でまとめた粒子の全質量または全電荷。この
+  massのデータ型はPS::F32またはPS::F64型。Momのメンバ変数posは近傍
+  でまとめた粒子の重心または電荷の重心。このposのデータ型はPS::F32vec
+  またはPS::F64vec型。
+
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  なし
+
+\item {\bf 機能}
+
+  上記のメンバ関数Mom::accumulateAtLeaf, Mom::accumulateではモー
+  メントの位置情報の規格化ができていない場合ので、ここで規格化する。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数mass, posの変数名は変更自由。引数epjの引数名
+  は変更自由。
+
+\end{itemize}
+
+\subsubsubsection{Mom::accumulateAtLeaf2}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    PS::F32mat quad;
+    template <class Tepj>
+    void accumulateAtLeaf2(const Tepj & epj) {
+        PS::F64 ctmp    = epj.getCharge();
+        PS::F64vec ptmp = epj.getPos() - pos;
+        PS::F64 cx = ctmp * ptmp.x;
+        PS::F64 cy = ctmp * ptmp.y;
+        PS::F64 cz = ctmp * ptmp.z;
+        quad.xx += cx * ptmp.x;
+        quad.yy += cy * ptmp.y;
+        quad.zz += cz * ptmp.z;
+        quad.xy += cx * ptmp.y;
+        quad.xz += cx * ptmp.z;
+        quad.yz += cy * ptmp.z;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数massは近傍でまとめた粒子の全質量または全電荷。この
+  massのデータ型はPS::F32またはPS::F64型。Momのメンバ変数posは近傍でま
+  とめた粒子の代表位置。このposのデータ型はPS::F32vecまたはPS::F64vec
+  型。このposはMom::accumulateAtLeafですでに求めている。Momのメンバ変
+  数quadは近傍でまとめた粒子の四重極子。このquadのデータ型はPS::F32mat
+  またはPS::F64mat型。テンプレート引数TepjにはEssentialParticleJクラス
+  が入り、クラスはメンバ関数getChargeとgetPosを持つ。
+
+\item {\bf 引数}
+
+  epj: 入力。const Tepj \&型。Tepjのオブジェクト。
+  
+\item {\bf 返値}
+
+  なし。
+
+\item {\bf 機能}
+
+  EssentialParticleJクラスのオブジェクトからモーメントを計算する。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数mass, pos, quadの変数名は変更自由。引数epjの引
+  数名は変更自由。その他の変数を加えるのも可能。
+
+\end{itemize}
+
+\subsubsubsection{Mom::accumulate2}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    PS::F32mat quad;
+    void accumulate(const Mom & mom) {
+        PS::F64 mtmp    = mom.mass;
+        PS::F64vec ptmp = mom.pos - pos;
+        PS::F64 cx = mtmp * ptmp.x;
+        PS::F64 cy = mtmp * ptmp.y;
+        PS::F64 cz = mtmp * ptmp.z;
+        quad.xx += cx * ptmp.x + mom.quad.xx;
+        quad.yy += cy * ptmp.y + mom.quad.yy;
+        quad.zz += cz * ptmp.z + mom.quad.zz;
+        quad.xy += cx * ptmp.y + mom.quad.xy;
+        quad.xz += cx * ptmp.z + mom.quad.xz;
+        quad.yz += cy * ptmp.z + mom.quad.yz;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  Momのメンバ変数massは近傍でまとめた粒子の全質量または全電荷。この
+  massのデータ型はPS::F32またはPS::F64型。Momのメンバ変数posは近傍でま
+  とめた粒子の代表位置。このposのデータ型はPS::F32vecまたはPS::F64vec
+  型。このposはMom::accumulateですでに求めている。Momのメンバ変数quad
+  は近傍でまとめた粒子の四重極子。このquadのデータ型はPS::F32matまたは
+  PS::F64mat型。
+
+\item {\bf 引数}
+
+  mom: 入力。const Mom \&型。Momクラスのオブジェクト。
+  
+\item {\bf 返値}
+
+  なし。
+
+\item {\bf 機能}
+
+  MomクラスのオブジェクトからさらにMomクラスの情報を計算する。
+  
+\item {\bf 備考}
+
+  Momクラスのメンバ変数mass, pos, quadの変数名は変更自由。引数epjの引
+  数名は変更自由。その他の変数を加えるのも可能。
+
+\end{itemize}
+
+\subsection{SuperParticleJクラス}
+\label{sec:example_superparticlej}
+
+\subsubsection{概要}
+
+SuperParticleJクラスは近い粒子同士でまとまった複数の粒子を代表してまと
+めた超粒子の情報を持つクラスであり、相互作用の定義
+(節\ref{sec:overview_action}の手順0)に必要となる。このクラスが必要とな
+るのはPS::SEARCH\_MODEにPS::SEARCH\_MODE\_LONGまたは\\
+PS::SEARCH\_MODE\_LONG\_CUTOFFを選んだ場合だけである。このクラスのメン
+バ関数には、超粒子の位置情報をFDPS側とやりとりするメンバ関数がある。ま
+た、超粒子の情報とMomentクラスの情報は対になるものである。従って、この
+クラスのメンバ関数には、Momentクラスからこのクラスへ情報を変換(または
+その逆変換)するメンバ関数がある。
+
+SuperParticleJクラスもMomentクラス同様、ある程度決っているものが多いの
+で、それらについてはFDPS側で用意した。以下、既存のクラス、
+SuperParticleJクラスを作るときに必要なメンバ関数、場合によっては必要な
+メンバ関数について記述する。
+
+\subsubsection{既存のクラス}
+
+FDPSはいくつかのSuperParticleJクラスを用意している。以下、各
+PS::SEARCH\_MODEに対し選ぶことのできるクラスについて記述する。まず、
+PS::SEARCH\_MODE\_LONGの場合、次にPS::SEARCH\_MODE\_LONG\_CUTOFFの場合
+について記述する。その他の\\PS::SEARCH\_MODEでは超粒子を必要としない。
+
+\subsubsubsection{PS::SEARCH\_MODE\_LONG}
+
+\subsubsubsubsection{PS::SPJMonopole}
+
+単極子までの情報を持つMomentクラスPS::MomentMonopoleと対になる
+SuperParticleJクラス。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class SPJMonopole {
+    public:
+        F64    mass;
+        F64vec pos;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::SPJMonopole
+
+\item メンバ変数とその情報
+
+  mass: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の重心、または粒子電荷の重心
+
+\item 使用条件
+
+  MomentクラスであるPS::MomentMonopoleクラスの使用条件に準ずる。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::SPJQuadrupole}
+
+単極子と四重極子を情報を持つMomentクラスPS::MomentQuadrupoleと対になる
+SuperParticleJクラス。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class SPJQuadrupole {
+    public:
+        F32    mass;
+        F32vec pos;
+        F32mat quad;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::SPJQuadrupole
+
+\item メンバ変数とその情報
+
+  mass: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の重心、または粒子電荷の重心
+
+  quad: 近傍でまとめた粒子の四重極子
+
+\item 使用条件
+
+  MomentクラスであるPS::MomentQuadrupoleクラスの使用条件に準ずる。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::SPJMonopoleGeometricCenter}
+
+単極子までを情報として持つ(ただしモーメント計算の際の座標系の中心は粒
+子の幾何中心)MomentクラスPS::MomentMonopoleGeometricCenterと対となる
+SuperParticleJクラス。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class SPJMonopoleGeometricCenter {
+    public:
+        F32    charge;    
+        F32vec pos;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::SPJMonopoleGeometricCenter
+
+\item メンバ変数とその情報
+
+  charge: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の幾何中心
+
+\item 使用条件
+
+  PS::MomentMonopoleGeometricCenterの使用条件に準ずる。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::SPJDipoleGeometricCenter}
+
+双極子までを情報として持つ(ただしモーメント計算の際の座標系の中心は粒
+子の幾何中心)MomentクラスPS::MomentDipoleGeometricCenterと対となる
+SuperParticleJクラス。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class SPJDipoleGeometricCenter {
+    public:
+        F32    charge;    
+        F32vec pos;
+        F32vec dipole;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::SPJDipoleGeometricCenter
+
+\item メンバ変数とその情報
+
+  charge: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の幾何中心
+
+  dipole: 粒子の質量または電荷の双極子
+
+\item 使用条件
+
+  PS::MomentDipoleGeometricCenterの使用条件に準ずる。
+
+\end{itemize}
+
+\subsubsubsubsection{PS::SPJQuadrupoleGeometricCenter}
+
+四重極子までを情報として持つ(ただしモーメント計算の際の座標系の中心は
+粒子の幾何中心)MomentクラスPS::MomentQuadrupoleGeometricCenterと対とな
+るSuperParticleJクラス。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class SPJQuadrupoleGeometricCenter {
+    public:
+        F32    charge;    
+        F32vec pos;
+        F32vec dipole;
+        F32mat quadrupole;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::SPJQuadrupoleGeometricCenter
+
+\item メンバ変数とその情報
+
+  charge: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の幾何中心
+
+  dipole: 粒子の質量または電荷の双極子
+
+  quadrupole: 粒子の質量または電荷の四重極子
+
+\item 使用条件
+
+  PS::MomentQuadrupoleGeometricCenterの使用条件に準ずる。
+
+\end{itemize}
+
+\subsubsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+
+\subsubsubsubsection{PS::SPJMonopoleCutoff}
+
+単極子までを情報として持つクラスMomentクラスPS::MomentMonopoleCutoffと
+対となるSuperParticleJクラス。以下、このクラスの概要を記述する。
+\begin{screen}
+\begin{verbatim}
+namespace ParticleSimulator {
+    class SPJMonopoleCutoff {
+    public:
+        F32    mass;
+        F32vec pos;
+    };
+}
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+\item クラス名
+  PS::SPJMonopoleCutoff
+
+\item メンバ変数とその情報
+
+  mass: 近傍でまとめた粒子の全質量、または全電荷
+
+  pos: 近傍でまとめた粒子の重心、または粒子電荷の重心
+
+\item 使用条件
+
+  PS::MomentMonopoleCutoffの使用条件に準ずる。
+
+\end{itemize}
+
+\subsubsection{必要なメンバ関数}
+
+\subsubsubsection{概要}
+
+以下ではSuperParticleJクラスを作る際に必要なメンバ関数を記述する。この
+ときSuperParticleJクラスのクラス名をSPJとする。これは変更自由である。
+
+\subsubsubsection{SPJ::getPos}
+
+\begin{screen}
+\begin{verbatim}
+class SPJ {
+public:
+    PS::F64vec pos;
+    PS::F64vec getPos() const {
+        return this->pos;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+  
+  SPJのメンバ変数posはある１つの超粒子の位置情報。このposのデータ型は
+  PS::F32vecまたはPS::F64vec型。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  PS::F32vec型またはPS::F64vec型。SPJクラスの位置情報を保持したメンバ
+  変数。
+  
+\item {\bf 機能}
+
+  SPJクラスの位置情報を保持したメンバ変数を返す。
+  
+\item {\bf 備考}
+
+  SPJクラスのメンバ変数posの変数名は変更可能。
+
+\end{itemize}
+
+\subsubsubsection{SPJ::setPos}
+
+\begin{screen}
+\begin{verbatim}
+class SPJ {
+public:
+    PS::F64vec pos;
+    void setPos(const PS::F64vec pos_new) {
+        this->pos = pos_new;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+  
+  SPJクラスのメンバ変数posは１つの粒子の位置情報。このposのデータ型は
+  PS::F32vecまたはPS::F64vec。
+
+\item {\bf 引数}
+
+  pos\_new: 入力。const PS::F32vecまたはconst PS::F64vec型。FDPS側で修
+  正した粒子の位置情報。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  FDPSが修正した粒子の位置情報をSPJクラスの位置情報に書き込む。
+
+\item {\bf 備考}
+
+  SPJクラスのメンバ変数posの変数名は変更可能。メンバ関数SPJ::setPosの
+  引数名pos\_newは変更可能。posとpos\_newのデータ型が異なる場合の動作
+  は保証しない。
+
+\end{itemize}
+
+\subsubsubsection{SPJ::copyFromMoment}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+}
+class SPJ {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    void copyFromMoment(const Mom & mom) {
+        mass = mom.mass;
+        pos  = mom.pos;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  なし
+  
+\item {\bf 引数}
+
+  mom: 入力。const Mom \&型。Momにはユーザー定義またはFDPS側で用意した
+  Momentクラスが入る。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  Momクラスの情報をSPJクラスにコピーする。
+
+\item {\bf 備考}
+
+  Momクラスのクラス名は変更可能。MomクラスとSPJクラスのメンバ変数名は
+  変更可能。メンバ関数SPJ::copyFromMomentの引数名は変更可能。
+
+\end{itemize}
+
+\subsubsubsection{SPJ::convertToMoment}
+
+\begin{screen}
+\begin{verbatim}
+class Mom {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    Mom(const PS::F32 m,
+        const PS::F32vec & p) {
+        mass = m;
+        pos  = p;
+    }
+}
+class SPJ {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    Mom convertToMoment() const {
+        return Mom(mass, pos);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  なし
+  
+\item {\bf 引数}
+
+  なし
+
+\item {\bf 返値}
+
+  Mom型。Momクラスのコンストラクタ。
+  
+\item {\bf 機能}
+
+  Momクラスのコンストラクタを返す。
+
+\item {\bf 備考}
+
+  Momクラスのクラス名は変更可能。MomクラスとSPJクラスのメンバ変数名は
+  変更可能。メンバ関数SPJ::copyFromMomentの引数名は変更可能。メンバ関
+  数SPJ::convertToMomentで使用されるMomクラスのコンストラクタが定義さ
+  れている必要がある。
+
+\end{itemize}
+
+\subsubsubsection{SPJ::clear}
+
+\begin{screen}
+\begin{verbatim}
+class SPJ {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+    void clear() {
+        mass = 0.0;
+        pos  = 0.0;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  なし
+  
+\item {\bf 引数}
+
+  なし
+
+\item {\bf 返値}
+
+  なし
+  
+\item {\bf 機能}
+
+  SPJクラスのオブジェクトの情報をクリアする。
+
+\item {\bf 備考}
+
+  メンバ変数名は変更可能。
+
+\end{itemize}
+
+\subsection{Forceクラス}
+\label{sec:example_force}
+
+\subsubsection{概要}
+
+Forceクラスは相互作用の結果を保持するクラスであり、相互作用の定義
+(節\ref{sec:overview_action}の手順0)に必要となる。以下、この節の前提、
+常に必要なメンバ関数について記述する。
+
+\subsubsection{前提}
+
+この節で用いる例としてForceクラスのクラス名をResultとする。このクラス名
+は変更自由である。
+
+\subsubsection{必要なメンバ関数}
+
+常に必要なメンバ関数はResult::clearである。この関数は相互作用の計算結果を初期
+化する。以下、Result::clearについて記述する。
+
+\subsubsubsection{Result::clear}
+
+\begin{screen}
+\begin{verbatim}
+class Result {
+public:
+    PS::F32vec acc;
+    PS::F32    pot;
+    void clear() {
+        acc = 0.0;
+        pot = 0.0;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+  
+  Resultクラスのメンバ変数はaccとpot。
+  
+\item {\bf 引数}
+
+  なし
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  Resultクラスのメンバ変数を初期化する。
+  
+\item {\bf 備考}
+
+  Resultクラスのメンバ変数acc, potの変数名は変更可能。他のメンバ変数を
+  加えることも可能。
+
+\end{itemize}
+
+\subsection{ヘッダクラス}
+\label{sec:example_userdefined_header}
+
+\subsubsection{概要}
+
+ヘッダクラスは入出力ファイルのヘッダの形式を決めるクラスである。ヘッダクラスはFDPSが提供する粒子群クラスのファイル入出力APIを使用し、かつ入出力ファイルにヘッダを含ませたい場合に必要となるクラスである。粒子群クラスのファイル入出力APIとは、ParticleSystem::readParticleAscii, ParticleSystem::writeParticleAscii, ParticleSystem::readParticleBinary, ParticleSystem::writeParticleBinaryである。以下、この節における前提と、これらのAPIを使用する際に必要となるメンバ関数とその記述の規定を述べる。この節において、常に必要なメンバ関数というものは存在しない。
+
+\subsubsection{前提}
+
+この節では、ヘッダクラスのクラス名をHdrとする。このクラス名は変更可能である。
+
+\subsubsection{場合によっては必要なメンバ関数}
+
+\subsubsubsection{Hdr::readAscii}
+
+\begin{screen}
+\begin{verbatim}
+class Hdr {
+public:
+    PS::S32 nparticle;
+    PS::F64 time;
+    PS::S32 readAscii(FILE *fp) {
+        fscanf(fp, "%d%lf", &this->nparticle, &this->time);
+        return this->nparticle;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  このヘッダは粒子数、時刻の情報を持つ。これらのメンバ変数はそれぞれ
+  nparticleとtimeである。
+
+\item {\bf 引数}
+
+  fp: 入力。FILE *型。粒子データの入力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  PS::S32型。粒子数の情報を返す。ヘッダに粒子数の情報がない場合は-1を
+  返す。
+  
+\item {\bf 機能}
+
+  粒子データの入力ファイルからヘッダ情報を読みこむ。
+  
+\item {\bf 備考}
+
+  メンバ変数名は入力ファイルに合わせて変更可能。返値に粒子数の情報を指
+  定しない場合、または-1を指定しない場合の動作は保証しない。
+  
+\end{itemize}
+
+\subsubsubsection{Hdr::writeAscii}
+
+\begin{screen}
+\begin{verbatim}
+class Hdr {
+public:
+    PS::S32 nparticle;
+    PS::F64 time;
+    void writeAscii(FILE *fp) {
+        fprintf(fp, "%d %lf", this->nparticle, this->time);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  このヘッダは粒子数、時刻の情報を持つ。これらのメンバ変数はそれぞれ
+  nparticleとtimeである。
+
+\item {\bf 引数}
+
+  fp: 入力。FILE *型。粒子データの出力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子データの出力ファイルへヘッダ情報を書き込む。
+  
+\item {\bf 備考}
+
+  メンバ変数名は出力ファイルに合わせて変更可能。
+  
+\end{itemize}
+
+\subsubsubsection{Hdr::readBinary}
+
+\begin{screen}
+\begin{verbatim}
+class Hdr {
+public:
+    PS::S32 nparticle;
+    PS::F64 time;
+    PS::S32 readBinary(FILE *fp) {
+        fread(&this->nparticle, sizeof(PS::S32), 1, fp);
+        fread(&this->time, sizeof(PS::F64), 1, fp);
+        return this->nparticle;
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  このヘッダは粒子数、時刻の情報を持つ。これらのメンバ変数はそれぞれ
+  nparticleとtimeである。
+
+\item {\bf 引数}
+
+  fp: 入力。FILE *型。粒子データの入力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  PS::S32型。粒子数の情報を返す。ヘッダに粒子数の情報がない場合は-1を
+  返す。
+  
+\item {\bf 機能}
+
+  粒子データの入力ファイルからヘッダ情報を読みこむ。
+  
+\item {\bf 備考}
+
+  メンバ変数名は入力ファイルに合わせて変更可能。返値に粒子数の情報を指
+  定しない場合、または-1を指定しない場合の動作は保証しない。
+  
+\end{itemize}
+
+\subsubsubsection{Hdr::writeBinary}
+
+\begin{screen}
+\begin{verbatim}
+class Hdr {
+public:
+    PS::S32 nparticle;
+    PS::F64 time;
+    void writeBinary(FILE *fp) {
+        fwrite(&this->nparticle, sizeof(PS::S32), 1, fp);
+        fwrite(&this->time, sizeof(PS::F64), 1, fp);
+    }
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  このヘッダは粒子数、時刻の情報を持つ。これらのメンバ変数はそれぞれ
+  nparticleとtimeである。
+
+\item {\bf 引数}
+
+  fp: 入力。FILE *型。粒子データの出力ファイルを指すファイルポインタ。
+  
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  粒子データの出力ファイルへヘッダ情報を書き込む。
+  
+\item {\bf 備考}
+
+  メンバ変数名は出力ファイルに合わせて変更可能。
+  
+\end{itemize}
+
+
+\subsection{関数オブジェクトcalcForceEpEp}
+\label{sec:example_userdefined_calcForceEpEp}
+
+\subsubsection{概要}
+
+関数オブジェクトcalcForceEpEpは粒子同士の相互作用を記述するものであり、
+相互作用の定義(節\ref{sec:overview_action}の手順0)に必要となる。以下、
+これの書き方の規定を記述する。
+
+\subsubsection{前提}
+
+ここで示すのは重力N体シミュレーションの粒子間相互作用の記述の仕方であ
+る。関数オブジェクトcalcForceEpEpの名前はgravityEpEpとする。これは変更
+自由である。また、EssentialParitlceIクラスのクラス名をEPI,
+EssentialParitlceJクラスのクラス名をEPJ, Forceクラスのクラス名をResult
+とする。
+
+\subsubsection{gravityEpEp::operator ()}
+
+\begin{lstlisting}[caption=calcForceEpEp]
+class Result {
+public:
+    PS::F32vec acc;
+};
+class EPI {
+public:
+    PS::S32    id;
+    PS::F32vec pos;
+};
+class EPJ {
+public:
+    PS::S32    id;
+    PS::F32    mass;
+    PS::F32vec pos;
+};
+struct gravityEpEp {
+    static PS::F32 eps2;
+    void operator () (const EPI *epi,
+                      const PS::S32 ni,
+                      const EPJ *epj,
+                      const PS::S32 nj,
+                      Result *result) {
+
+        for(PS::S32 i = 0; i < ni; i++) {
+            PS::S32    ii = epi[i].id;
+            PS::F32vec xi = epi[i].pos;
+            PS::F32vec ai = 0.0;
+            for(PS::S32 j = 0; j < nj; j++) {
+                PS::S32    jj = epj[j].id;
+                PS::F32    mj = epj[j].mass;
+                PS::F32vec xj = epj[j].pos;
+
+                PS::F32vec dx   = xi - xj;
+                PS::F32    r2   = dx * dx + eps2;
+                PS::F32    rinv = (ii != jj) ? 1. / sqrt(r2)
+                                             : 0.0;
+
+                ai += mj * rinv * rinv * rinv * dx;
+            }
+            result.acc = ai;
+        }
+    }
+};
+PS::F32 gravityEpEp::eps2 = 9.765625e-4;
+\end{lstlisting}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  クラスResult, EPI, EPJに必要なメンバ関数は省略した。クラスResultのメ
+  ンバ変数accはi粒子がj粒子から受ける重力加速度である。クラスEPIとEPJ
+  のメンバ変数idとposはそれぞれの粒子IDと粒子位置である。クラスEPJのメ
+  ンバ変数massはj粒子の質量である。関数オブジェクトgravityEpEpのメンバ
+  変数eps2は重力ソフトニングの2乗である。ここの外側でスレッド並列になっ
+  ているため、ここでOpenMPを記述する必要はない。
+
+\item {\bf 引数}
+
+  epi: 入力。const EPI *型またはEPI *型。i粒子情報を持つ配列。
+
+  ni: 入力。const PS::S32型またはPS::S32型。i粒子数。
+
+  epj: 入力。const EPJ *型またはEPJ *型。j粒子情報を持つ配列。
+  
+  nj: 入力。const PS::S32型またはPS::S32型。j粒子数。
+
+  result: 出力。Result *型。i粒子の相互作用結果を返す配列。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  j粒子からi粒子への作用を計算する。
+  
+\item {\bf 備考}
+
+  引数名すべて変更可能。関数オブジェクトの内容などはすべて変更可能。
+  
+\end{itemize}
+
+\subsection{関数オブジェクトcalcForceSpEp}
+\label{sec:example_userdefined_calcForceSpEp}
+
+\subsubsection{概要}
+
+関数オブジェクトcalcForceSpEpは超粒子から粒子への作用を記述するもので
+あり、相互作用の定義(節\ref{sec:overview_action}の手順0)に必要となる。
+以下、これの書き方の規定を記述する。
+
+\subsubsection{前提}
+
+ここで示すのは重力N体シミュレーションにおける超粒子から粒子への作用の
+記述の仕方である。超粒子は単極子までの情報で作られているものとする。関
+数オブジェクトcalcForceSpEpの名前はgravitySpEpとする。これは変更自由で
+ある。また、EssentialParitlceIクラスのクラス名をEPI, SuperParitlceJク
+ラスのクラス名をSPJ, Forceクラスのクラス名をResultとする。
+
+\subsubsection{gravitySpEp::operator ()}
+
+\begin{lstlisting}[caption=calcForceSpEp]
+class Result {
+public:
+    PS::F32vec accfromspj;
+};
+class EPI {
+public:
+    PS::S32    id;
+    PS::F32vec pos;
+};
+class SPJ {
+public:
+    PS::F32    mass;
+    PS::F32vec pos;
+};
+struct gravitySpEp {
+    static PS::F32 eps2;
+    void operator () (const EPI *epi,
+                      const PS::S32 ni,
+                      const SPJ *spj,
+                      const PS::S32 nj,
+                      Result *result) {
+                      
+        for(PS::S32 i = 0; i < ni; i++) {
+            PS::F32vec xi = epi[i].pos;
+            PS::F32vec ai = 0.0;
+            for(PS::S32 j = 0; j < nj; j++) {
+                PS::F32    mj = spj[j].mass;
+                PS::F32vec xj = spj[j].pos;
+
+                PS::F32vec dx   = xi - xj;
+                PS::F32    r2   = dx * dx + eps2;
+                PS::F32    rinv = 1. / sqrt(r2);
+
+                ai += mj * rinv * rinv * rinv * dx;
+            }
+            result.accfromspj = ai;
+        }
+    }
+};
+PS::F32 gravitySpEp::eps2 = 9.765625e-4;
+\end{lstlisting}
+
+\begin{itemize}
+
+\item {\bf 前提}
+
+  クラスResult, EPI, SPJに必要なメンバ関数は省略した。クラスResultのメ
+  ンバ変数accfromspjはi粒子が超粒子から受ける重力加速度である。クラス
+  EPIとSPJのメンバ変数posはそれぞれの粒子位置である。クラスSPJのメンバ
+  変数massは超粒子の質量である。ファンクタgravitySpEpのメンバ変数eps2
+  は重力ソフトニングの2乗である。ここの外側でスレッド並列になっている
+  ため、ここでOpenMPを記述する必要はない。
+
+\item {\bf 引数}
+
+  epi: 入力。const EPI *型またはEPI *型。i粒子情報を持つ配列。
+
+  ni: 入力。const PS::S32型またはPS::S32型。i粒子数。
+
+  spj: 入力。const SPJ *型またはSPJ *型。超粒子情報を持つ配列。
+  
+  nj: 入力。const PS::S32型またはPS::S32型。超粒子数。
+
+  result: 出力。Result *型。i粒子の相互作用結果を返す配列。
+
+\item {\bf 返値}
+
+  なし。
+  
+\item {\bf 機能}
+
+  超粒子からi粒子への作用を計算する。
+  
+\item {\bf 備考}
+
+  引数名すべて変更可能。関数オブジェクトの内容などはすべて変更可能。
+  
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{関数オブジェクトcalcForceDispatch}
+\label{sec:example_userdefined_calcForceDispatch}
+
+\subsubsection{概要}
+
+関数オブジェクトcalcForceDispatchは相互作用計算にアクセラレータを使う
+場合に用いられ、粒子をアクセラレータに送り、相互作用カーネルを発行する。
+以下、これの書き方の規定を記述する。
+
+\subsubsection{前提}
+
+ここで示すのは重力N体シミュレーションにおける相互作用をcudaを用いて記
+述する方法である。関数オブジェクトcalcForceDispatchの名前は
+CalcForceDispatchとする。これは変更自由である。また、
+EssentialParitlceIクラスのクラス名をEPI, SuperParitlceJクラスのクラス
+名をSPJ, Forceクラスのクラス名をResultとする。
+
+\subsubsection{例}
+
+\begin{lstlisting}[caption=calcForceDispatch]
+
+class EpiGPU{
+public:
+    float2 pos[3];
+    int id_walk;
+};
+
+class EpjGPU{
+public:
+    float mass;
+    float2 pos[3];
+};
+
+class ForceGPU{
+public:
+    float2 acc[3];
+    float2 pot;
+};
+  
+__global__ void ForceKernel(const EpiGPU * epi,
+                            const EpjGPU * epj, 
+                            const int    * nj_disp,
+                            ForceGPU     * force,
+                            const float eps2){
+    int id_i = blockDim.x * blockIdx.x + threadIdx.x;
+    const EpiGPU & ip = epi[id_i];
+    float2 poti;
+    float2 acci[3];
+    poti = acci[0] = acci[1] = acci[2] = make_float2(0.0, 0.0);
+    const int j_head = nj_disp[ip.id_walk];
+    const int j_tail = nj_disp[ip.id_walk+1];
+    const int nj = j_tail - j_head;
+    for(int j=j_head; j<j_tail; j++){
+        EpjGPU jp = epj[j];
+        const float dx = (jp.pos[0].x - ip.pos[0].x) + (jp.pos[0].y - ip.pos[0].y);
+        const float dy = (jp.pos[1].x - ip.pos[1].x) + (jp.pos[1].y - ip.pos[1].y);
+        const float dz = (jp.pos[2].x - ip.pos[2].x) + (jp.pos[2].y - ip.pos[2].y);
+        const float r2 = ((eps2 + dx*dx) + dy*dy) + dz*dz;
+        const float r_inv = rsqrtf(r2);
+        const float pij = jp.mass * r_inv * (r2 > eps2); 
+        const float r2_inv = r_inv * r_inv; 
+        const float pij_r3_inv = pij * r2_inv; 
+        const float ax = pij_r3_inv * dx; 
+        const float ay = pij_r3_inv * dy;
+        const float az = pij_r3_inv * dz;
+        poti = float2_accum(poti, pij);
+        acci[0] = float2_accum(acci[0], ax);
+        acci[1] = float2_accum(acci[1], ay);
+        acci[2] = float2_accum(acci[2], az);
+    }
+    poti = float2_regularize(poti);
+    acci[0] = float2_regularize(acci[0]);
+    acci[1] = float2_regularize(acci[1]);
+    acci[2] = float2_regularize(acci[2]);
+    force[id_i].pot = poti;
+    force[id_i].acc[0] = acci[0];
+    force[id_i].acc[1] = acci[1];
+    force[id_i].acc[2] = acci[2];
+}
+
+static ForceGPU * force_d;
+static ForceGPU * force_h;
+static EpiGPU * epi_d;
+static EpiGPU * epi_h;
+static EpjGPU * epj_d;
+static EpjGPU * epj_h;
+static int * ni_disp_h;
+static int * nj_disp_d;
+static int * nj_disp_h;
+
+int DispatchKernelWithSP(const PS::S32 tag,
+                         const int    n_walk,
+                         const EPIGrav ** epi,
+                         const int  *  n_epi,
+                         const EPJGrav ** epj,
+                         const int  *  n_epj,
+                         const PS::SPJMonopole ** spj,
+                         const int  *  n_spj){
+    static bool first = true;
+    assert(n_walk <= N_WALK_LIMIT);
+    if(first){
+        CUDA_SAFE_CALL( cudaMalloc(     (void**)&nj_disp_d,  (N_WALK_LIMIT+1)*sizeof(int) ) );
+        CUDA_SAFE_CALL( cudaMallocHost( (void**)&ni_disp_h,  (N_WALK_LIMIT+1)*sizeof(int) ) );
+        CUDA_SAFE_CALL( cudaMallocHost( (void**)&nj_disp_h,  (N_WALK_LIMIT+1)*sizeof(int) ) );
+        CUDA_SAFE_CALL( cudaMalloc( (void**)&epi_d,       NI_LIMIT*sizeof(EpiGPU) ) );
+        CUDA_SAFE_CALL( cudaMalloc( (void**)&epj_d,       NJ_LIMIT*sizeof(EpjGPU) ) );
+        CUDA_SAFE_CALL( cudaMalloc( (void**)&force_d,     NI_LIMIT*sizeof(ForceGPU) ) );
+        CUDA_SAFE_CALL( cudaMallocHost( (void**)&epi_h,   NI_LIMIT*sizeof(EpiGPU) ) );
+        CUDA_SAFE_CALL( cudaMallocHost( (void**)&epj_h,   NJ_LIMIT*sizeof(EpjGPU) ) );
+        CUDA_SAFE_CALL( cudaMallocHost( (void**)&force_h, NI_LIMIT*sizeof(ForceGPU) ) );
+        first = false;
+    }
+    const float eps2 = EPIGrav::eps * EPIGrav::eps;
+    ni_disp_h[0] = nj_disp_h[0] = 0;
+    for(int i=0; i<n_walk; i++){
+        ni_disp_h[i+1] = ni_disp_h[i] + n_epi[i];
+        nj_disp_h[i+1] = nj_disp_h[i] + n_epj[i] + n_spj[i];
+    }
+    int ni_tot = ni_disp_h[n_walk];
+    const int ni_tot_reg = ni_disp_h[n_walk] + ( (ni_tot%N_THREAD_GPU != 0) ? (N_THREAD_GPU - (ni_tot%N_THREAD_GPU)) : 0);
+    assert(ni_tot_reg <= NI_LIMIT);
+    assert(nj_disp_h[n_walk] <= NJ_LIMIT);
+    ni_tot = 0;
+    int nj_tot = 0;
+    for(int iw=0; iw<n_walk; iw++){
+        for(int ip=0; ip<n_epi[iw]; ip++){
+            epi_h[ni_tot].pos[0]  = float2_split(epi[iw][ip].pos.x);
+            epi_h[ni_tot].pos[1]  = float2_split(epi[iw][ip].pos.y);
+            epi_h[ni_tot].pos[2]  = float2_split(epi[iw][ip].pos.z);
+            epi_h[ni_tot].id_walk = iw;
+            force_h[ni_tot].acc[0] = force_h[ni_tot].acc[1] 
+                = force_h[ni_tot].acc[2] = force_h[ni_tot].pot = make_float2(0.0, 0.0);
+            ni_tot++;
+        }
+        for(int jp=0; jp<n_epj[iw]; jp++){
+            epj_h[nj_tot].mass    = epj[iw][jp].mass;
+            epj_h[nj_tot].pos[0]  = float2_split(epj[iw][jp].pos.x);
+            epj_h[nj_tot].pos[1]  = float2_split(epj[iw][jp].pos.y);
+            epj_h[nj_tot].pos[2]  = float2_split(epj[iw][jp].pos.z);
+            nj_tot++;
+        }
+        for(int jp=0; jp<n_spj[iw]; jp++){
+            epj_h[nj_tot].mass    = spj[iw][jp].getCharge();
+            epj_h[nj_tot].pos[0]  = float2_split(spj[iw][jp].getPos().x);
+            epj_h[nj_tot].pos[1]  = float2_split(spj[iw][jp].getPos().y);
+            epj_h[nj_tot].pos[2]  = float2_split(spj[iw][jp].getPos().z);
+            nj_tot++;
+        }
+    }
+    for(int ip=ni_tot; ip<ni_tot_reg; ip++){
+        epi_h[ni_tot].pos[0]  = epi_h[ni_tot].pos[1]  = epi_h[ni_tot].pos[2]  = make_float2(0.0, 0.0);
+        epi_h[ni_tot].id_walk = 0;
+        force_h[ni_tot].acc[0] = force_h[ni_tot].acc[1] 
+            = force_h[ni_tot].acc[2] = force_h[ni_tot].pot = make_float2(0.0, 0.0);
+    }
+    CUDA_SAFE_CALL( cudaMemcpy(epi_d, epi_h, ni_tot_reg*sizeof(EpiGPU), cudaMemcpyHostToDevice) );
+    CUDA_SAFE_CALL( cudaMemcpy(epj_d, epj_h, nj_tot*sizeof(EpjGPU), cudaMemcpyHostToDevice) );
+    CUDA_SAFE_CALL( cudaMemcpy(nj_disp_d, nj_disp_h, (n_walk+1)*sizeof(int), cudaMemcpyHostToDevice) );
+    const int n_grid = ni_tot_reg/N_THREAD_GPU + ((ni_tot_reg%N_THREAD_GPU == 0) ? 0 : 1);
+    dim3 size_grid(n_grid, 1, 1);
+    dim3 size_thread(N_THREAD_GPU, 1, 1);
+    ForceKernel<<<size_grid, size_thread>>> (epi_d, epj_d, nj_disp_d, force_d, float(eps2));
+
+    return 0;
+}
+\end{lstlisting}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+  tag: 入力。const PS::S32型。対応するCalcForceRetrieve()のtag番号と一
+  致させる必要がある。
+  
+  nwalk: 入力。const PS::S32型。マルチウォークにより作成する相互作用リ
+  ストの数。
+  
+  epi: 入力。const EPI** 型またはEPI** 型。i粒子情報を持つ配列。
+
+  ni: 入力。const PS::S32* 型またはPS::S32* 型。i粒子数。
+
+  spj: 入力。const EPJ** 型またはEPJ** 型。超粒子情報を持つ配列。
+  
+  nj: 入力。const PS::S32* 型またはPS::S32* 型。超粒子数。
+
+\item {\bf 返値}
+
+  正常終了ならば0、それ以外の場合は0以外の値を返す。
+  
+\item {\bf 機能}
+
+  epi,epjをアクセラレータに送り、アクセラレータ上で相互作用計算を行わ
+  せる。
+  
+\item {\bf 備考}
+
+  引数名すべて変更可能。関数オブジェクトの内容などはすべて変更可能。
+  
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{関数オブジェクトcalcForceRetrieve}
+\label{sec:example_userdefined_calcForceRetrieve}
+
+\subsubsection{概要}
+
+関数オブジェクトcalcForceRetrieveはアクセラレータで計算された結果を回
+収する関数である。以下、これの書き方の規定を記述する。
+
+\subsubsection{前提}
+
+ここで示すのは重力N体シミュレーションにおける相互作用をcudaを用いて記
+述する方法である。関数オブジェクトcalcForceRetrieveの名前は
+RetieveKernelとする。これは変更自由である。また、Forceクラスのクラス名
+をForceGravとする。
+
+\begin{lstlisting}[caption=calcForceRetrieve]
+int RetrieveKernel(const PS::S32 tag,
+                   const PS::S32    n_walk,
+                   const PS::S32 *  ni,
+                   ForceGrav     ** force){
+    int ni_tot = 0;
+    for(int i=0; i<n_walk; i++){
+        ni_tot += ni[i];
+    }
+    CUDA_SAFE_CALL( cudaMemcpy(force_h, force_d,      ni_tot*sizeof(ForceGPU), cudaMemcpyDeviceToHost) );
+    int n_cnt = 0;
+    for(int iw=0; iw<n_walk; iw++){
+        for(int ip=0; ip<ni[iw]; ip++){
+            force[iw][ip].acc.x = (double)force_h[n_cnt].acc[0].x + (double)force_h[n_cnt].acc[0].y;
+            force[iw][ip].acc.y = (double)force_h[n_cnt].acc[1].x + (double)force_h[n_cnt].acc[1].y;
+            force[iw][ip].acc.z = (double)force_h[n_cnt].acc[2].x + (double)force_h[n_cnt].acc[2].y;
+            force[iw][ip].pot   = (double)force_h[n_cnt].pot.x    + (double)force_h[n_cnt].pot.y;
+            force[iw][ip].pot *= -1.0;
+            n_cnt++;
+        }
+    }
+    return 0;
+}
+
+\end{lstlisting}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+  tag: 入力。const PS::S32型。対応するCalcForceDispatch()のtag番号と一
+  致させる必要がある。
+  
+  nwalk: 入力。const PS::S32型。マルチウォークにより作成する相互作用リ
+  ストの数。
+  
+  ni: 入力。const PS::S32* 型またはPS::S32* 型。i粒子数。
+
+  force: 入力。Result** 型。
+  
+\item {\bf 返値}
+
+  正常終了ならば0、それ以外の場合は0以外の値を返す。
+  
+\item {\bf 機能}
+
+  calcForceDispachで計算された結果をforceに格納する。
+  
+\item {\bf 備考}
+
+  引数名すべて変更可能。関数オブジェクトの内容などはすべて変更可能。
+  
+\end{itemize}
+

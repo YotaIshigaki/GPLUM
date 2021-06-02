@@ -1,0 +1,86 @@
+\documentclass[12pt,a4paper]{jarticle} % pLaTeX
+%%% LaTeXパッケージのインクルード %%%
+\usepackage[cpp,ja]{fdps-tutorial} % チュートリアル文書用スタイルファイル
+\usepackage{udline}
+
+%%% udline の設定 %%%
+%\newcommand{\uwave}[1]{{\setnami\uc{#1}}}
+\newcommand{\usaw}[1]{{\setnoko\uc{#1}}}
+
+% タイトル、著者、作成日の情報
+\title{\docTitle}
+\author{谷川衝}
+\author{行方大輔}
+\author{細野七月}
+\author{岩澤全規}
+\author{似鳥啓吾}
+\author{村主崇行}
+\author{野村昴太郎}
+\author{牧野淳一郎}
+\affil{\affiliation}
+\date{}
+
+
+% 文書の開始
+\begin{document}
+
+% タイトルと目次の出力
+\maketitle
+\tableofcontents
+
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{変更記録}
+\label{sec:changelog}
+\input{changelog.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{概要}
+\label{sec:overview}
+\input{overview.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{入門：サンプルコードを動かしてみよう}
+\label{sec:getting_started}
+\input{getting_started.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{サンプルコードの解説}
+\label{sec:how_to_use}
+\input{how_to_use.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{サンプルコード}
+\label{sec:samplecode}
+\input{samplecode.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{拡張機能の解説}
+\label{sec:extension}
+\input{extension.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{より実用的なアプリケーションの解説}
+\label{sec:applications}
+\input{applications.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ユーザーサポート}
+\label{sec:usersupport}
+\input{usersupport.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{ライセンス}
+\label{sec:license}
+\input{license.tex}
+
+\end{document}

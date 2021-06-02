@@ -1,0 +1,42 @@
+使用に際しての簡単な説明を以下に記します。
+TeX もしくは Microsoft Word を用いて原稿の作成をお願いします。
+
+○圧縮ファイルの内容
+cite.sty : 連番の文献引用表示を [1-4] のように表示するためのスタイルファイル
+ensemble.sty : アンサンブル用スタイルファイル(TeX用)
+ensemble_template.tex : TeX 用 テンプレートファイル
+ensemble_template_word.docx : Word 用 テンプレートファイル
+makefile : make用（使わなくてもよい）
+photo.eps : サンプル写真（第1著者）
+photob.eps : サンプル写真（第2著者）
+README : 本ファイル
+
+○TeX から PDF file の作成
+Linux 環境（Cygwinなどでも可）のコマンドラインで、
+
+$ make pdf
+
+とすると、PDF が作成できる。
+ただし font の埋め込みがうまくいっていない場合が多いので
+特殊な文字を使用した際は注意する。
+
+○Word から PDF file の作成
+ファイル→印刷→PDF作成
+
+○編集者用
+以下の、ensemble.sty のヘッダ情報を変更する。
+
+% ヘッダ情報　【編集者が変更する】
+\newcommand{\@articlevolume}{18}     % 巻 (18)
+\newcommand{\@articlenumber}{4}      % 号 (4)
+\newcommand{\@articlemonth}{October} % 発行月 (October)
+\newcommand{\@articleyear}{2016}     % 発行年 (2016)
+\newcommand{\@articletotal}{76}      % 通巻 (76)
+%\setcounter{page}{1}                % 開始ページ (1) ※texファイルの方で設定する 
+
+○Word編集
+挿入→ヘッダー→ヘッダーの編集
+より、巻、号、発行月、通巻　を編集する。
+ページ番号の変更は
+(windows)挿入→ページ番号→ページ番号の書式設定→開始番号
+(mac)挿入→ページ番号→書式...→開始番号

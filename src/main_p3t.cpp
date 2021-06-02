@@ -29,7 +29,8 @@
 #include "particle.h"
 #include "neighbor.h"
 #include "disk.h"
-#include "gravity.h"
+#include "gravity_hard.h"
+#include "gravity_soft.h"
 #include "collisionA.h"
 #include "collisionB.h"
 #include "hermite.h"
@@ -40,10 +41,11 @@
 #include "gravity_kernel_EPEP.hpp"
 #include "gravity_kernel_EPSP.hpp"
 
-PS::F64 EPGrav::eps2   = 0.;
+PS::F64 EPGrav::eps2     = 0.;
+PS::F64 EPGrav::eps2_sun = 0.;
 #ifndef USE_INDIVIDUAL_CUTOFF
 PS::F64 EPGrav::r_out;
-PS::F64 EPGrav::r_out_inv;
+PS::F64 FPGrav::r_out_inv;
 PS::F64 EPGrav::r_search;
 #endif
 PS::F64 EPGrav::R_cut0    = 2.;
@@ -252,7 +254,7 @@ int main(int argc, char *argv[])
         }
         bHeader = true;
         makeInit = false;
-    }
+   }
 
     srand48( seed + PS::Comm::getRank() );
 
@@ -339,11 +341,12 @@ int main(int argc, char *argv[])
     ExParticleSystem<FPGrav> system_ex;
     system_hard.clear();
     system_ex.initialize();
-    PS::S32 nei_dist         = 0;
-    PS::S32 nei_tot_loc      = 0;
+    PS::S32 n_ngb_tot         = 0;
+    PS::S32 n_with_ngb      = 0;
     PS::S32 n_largestcluster = 0;
     PS::S32 n_cluster        = 0;
     PS::S32 n_isoparticle    = 0;
+    
 
     ////////////////////
     /*   Set Domain   */
@@ -389,7 +392,7 @@ int main(int argc, char *argv[])
                                            system_grav,
                                            dinfo);
         //NList.initializeList(system_grav);
-        correctForceLongInitial(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+        correctForceLongInitial(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
 #ifdef USE_RE_SEARCH_NEIGHBOR
     }
 #endif
@@ -512,15 +515,14 @@ int main(int argc, char *argv[])
         ////////////////////////////
         NList.createConnectedRankList();
         //NList.makeIdMap(system_grav);
-
-        PS::S32 n_send = NList.getNumberOfRankConnected();
-        PS::S32 ** ex_data_send = new PS::S32*[n_send];
-        PS::S32 ** ex_data_recv = new PS::S32*[n_send];
-        for ( PS::S32 ii=0; ii<n_send; ii++ ) {
-            PS::S32 n_size = NList.getNumberOfPairConnected(ii) * ExPair::getSize();            
-            ex_data_send[ii] = new PS::S32[n_size];
-            ex_data_recv[ii] = new PS::S32[n_size];
-        }
+        
+        //PS::S32 ** ex_data_send = new PS::S32*[n_send];
+        //PS::S32 ** ex_data_recv = new PS::S32*[n_send];
+        //for ( PS::S32 ii=0; ii<n_send; ii++ ) {
+        //    PS::S32 n_size = NList.getNumberOfPairConnected(ii) * ExPair::getSize();            
+        //    ex_data_send[ii] = new PS::S32[n_size];
+        //    ex_data_recv[ii] = new PS::S32[n_size];
+        //}
 
         bool check = true;
         bool check_loc = true;
@@ -528,18 +530,18 @@ int main(int argc, char *argv[])
         while ( check ) {
             NList.createNeighborCluster(system_grav);
             NList.inputExData(system_grav);
-            check_loc = NList.exchangeExData(system_grav, TAG, ex_data_send, ex_data_recv);
+            check_loc = NList.exchangeExData(system_grav, TAG);
             check = PS::Comm::synchronizeConditionalBranchOR(check_loc);
             //PS::Comm::barrier();
             TAG ++ ;
         }
         
-        for ( PS::S32 ii=0; ii<n_send; ii++ ) {          
-            delete [] ex_data_send[ii];
-            delete [] ex_data_recv[ii];
-        }
-        delete [] ex_data_send;
-        delete [] ex_data_recv;
+        // for ( PS::S32 ii=0; ii<n_send; ii++ ) {          
+        //     delete [] ex_data_send[ii];
+        //     delete [] ex_data_recv[ii];
+        // }
+        // delete [] ex_data_send;
+        // delete [] ex_data_recv;
 
         NList.selectSendRecvParticle(system_grav);
         
@@ -577,6 +579,7 @@ int main(int argc, char *argv[])
         PS::S32 n_in = 0;
         PS::S32 n_out = 0;
         system_hard.clear();
+        system_hard.reserve_hard(2 * (n_with_ngb + system_ex.getNumberOfParticleRecv()));
         n_in = system_hard.makeList(system_grav, system_ex);
         n_out = system_hard.timeIntegrate(system_grav, system_ex,
                                           NList.n_list, system_ex.n_list, istep);
@@ -647,7 +650,7 @@ int main(int argc, char *argv[])
         wtime.calc_soft_force += wtime.calc_soft_force_step = wtime.lap(PS::GetWtime());
 #endif
         //NList.initializeList(system_grav);
-        correctForceLong(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+        correctForceLong(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
 #ifdef INDIRECT_TERM
         calcIndirectTerm(system_grav);
 #endif
@@ -739,7 +742,7 @@ int main(int argc, char *argv[])
             wtime.calc_soft_force += time_tmp;
 #endif
             //NList.initializeList(system_grav);
-            correctForceLongInitial(system_grav, tree_grav, NList, nei_dist, nei_tot_loc);
+            correctForceLongInitial(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
 #ifdef INDIRECT_TERM
     calcIndirectTerm(system_grav);
 #endif

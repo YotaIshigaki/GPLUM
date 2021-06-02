@@ -1,0 +1,132 @@
+\subsection{General}
+
+%プログラムの開始と終了に必要なAPIなどを記述する。
+
+This section describes the APIs of initialization and finalization of FDPS.
+
+\subsection{API}
+
+\subsubsection{PS::Initialize}
+
+%プログラムの開始を行うには以下のAPIを呼び出す必要がある。
+This API must be called to initialize FDPS.
+
+\begin{screen}
+\begin{verbatim}
+void PS::Initialize
+              (PS::S32 & argc,
+               char ** & argv,
+               const PS::S64 mpool_size=100000000);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+\texttt{argc}: input. Type \texttt{PS::S32} \&. The total number of arguments on the command line.
+
+\texttt{argv}: input. Type \texttt{char **} \&. The pointer to pointer to strings on the command line.
+
+\texttt{mpool\_size}: input. Type \texttt{const PS::S64}. The size of memory pool inside FDPS (in bytes). The default value is $10^{8}$ bytes. 
+
+\item {\bf returned value}
+
+void.
+
+\item {\bf function}
+
+  Initialize FDPS. This API must be called before other APIs of FDPS
+  are called. Note, since MPI::Init is called, that inside this API
+  arguments ``argc'' and ``argv'' may change.
+  
+  %FDPSの初期化を行う。FDPSのAPIのうち最初に呼び出さなければならない。
+  %内部ではMPI::Initを呼び出すため、引数argcとargvが変っている可能性が
+  %ある。
+
+\end{itemize}
+
+\subsubsection{PS::Finalize}
+
+%プログラムの終了するには以下のAPIを呼び出す必要がある。
+
+To finalize FDPS, this API must be called.
+
+\begin{screen}
+\begin{verbatim}
+void PS::Finalize();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+  void.
+
+\item {\bf return value}
+
+  void.
+
+\item {\bf function}
+
+Finalize FDPS.
+%FDPSの終了処理を行う。
+
+\end{itemize}
+
+\subsubsection{PS::Abort}
+
+\begin{screen}
+\begin{verbatim}
+void PS::Abort(const PS::S32 err = -1);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+err: Input. Type const {\tt PS::S32}. The termination status of a
+program. Default value is -1.
+
+\item {\bf returned value}
+
+  void.
+
+\item {\bf function}
+
+  Terminate the user program abnormally. The argument is the termination
+  status of the program. Under MPI environment, MPI::Abort() is called,
+  otherwise exit() is called.
+  
+  %FDPSの異常終了処理を行う。引数はプログラムの終了ステータスである。こ
+  %の引数は、MPIを使用していない場合はexit関数に渡され、MPIを使用してい
+  %る場合はMPIのAbort関数に渡される。
+
+\end{itemize}
+
+\subsubsection{PS::DisplayInfo}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DisplayInfo();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf arguments}
+
+  void.
+
+\item {\bf returned value}
+
+  void.
+
+\item {\bf function}
+
+  Show the license and other information of FDPS.
+  %FDPSのライセンス情報などを表示する。
+
+\end{itemize}

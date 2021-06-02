@@ -1,0 +1,365 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% 分子シミュレーション学会誌「アンサンブル」用スタイルファイル
+%
+% Ver. 3.0  2016/07/08
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\UseRawInputEncoding
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{ensemble}[2016/07/04 The Molecular Simulation Society of Japan]
+
+\RequirePackage{amsmath,amssymb}
+\RequirePackage{cite}
+\RequirePackage{color}
+\RequirePackage{graphicx}
+\RequirePackage{here}
+
+
+% review
+\newif\if@ensemblereview
+\@ensemblereviewfalse
+\DeclareOption{review}{\@ensemblereviewtrue}
+
+% review2
+\newif\if@ensemblereviewb
+\@ensemblereviewbfalse
+\DeclareOption{reviewb}{\@ensemblereviewbtrue}
+
+% intro
+\newif\if@ensembleintro
+\@ensembleintrofalse
+\DeclareOption{intro}{\@ensembleintrotrue}
+
+% introb
+\newif\if@ensembleintrob
+\@ensembleintrofalse
+\DeclareOption{introb}{\@ensembleintrobtrue}
+
+% report
+\newif\if@ensemblereport
+\@ensemblereportfalse
+\DeclareOption{report}{\@ensemblereporttrue}
+
+% noauther
+\newif\if@ensemblenoauther
+\@ensemblenoautherfalse
+\DeclareOption{noauther}{\@ensemblenoauthertrue}
+
+%Default
+\ExecuteOptions{noauther}
+
+\ProcessOptions\relax
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% ヘッダ情報　【編集者が変更する】
+\newcommand{\@articlevolume}{18}     % 巻 (18)
+\newcommand{\@articlenumber}{4}      % 号 (4)
+\newcommand{\@articlemonth}{October} % 発行月 (October)
+\newcommand{\@articleyear}{2016}     % 発行年 (2016)
+\newcommand{\@articletotal}{76}      % 通巻 (76)
+%\setcounter{page}{1}                 % 開始ページ (1) ※texファイルの方で設定する
+
+%-----------------------------------------------------------------------
+%-----------------------------------------------------------------------
+% 各種長さ設定
+\setlength{\voffset}{-1in}
+\setlength{\topmargin}{1.5cm}
+\setlength{\headheight}{10pt}
+\setlength{\headsep}{1cm}
+%左右の余白の設定
+\setlength{\hoffset}{-1in}
+\setlength{\oddsidemargin}{1.8cm}
+\setlength{\evensidemargin}{1.8cm}
+%本文のスペースの設定
+\setlength{\textwidth}{17cm}
+\setlength{\textheight}{24.5cm}
+\setlength{\columnsep}{.8cm}
+
+%-----------------------------------------------------------------------
+
+%著者2
+\newcommand{\authorb}[1]{\renewcommand*{\@authorb}{#1}}
+\newcommand{\@authorb}{}
+
+%所属1
+\newcommand{\affiliation}[1]{\renewcommand*{\@affiliation}{#1}}
+\newcommand{\@affiliation}{}
+%所属2
+\newcommand{\affiliationb}[1]{\renewcommand*{\@affiliationb}{#1}}
+\newcommand{\@affiliationb}{}
+
+%e-mail定義1
+\newcommand{\@email}{}
+\newcommand{\email}[1]{\renewcommand{\@email}{#1}}
+%e-mail定義2
+\newcommand{\@emailb}{}
+\newcommand{\emailb}[1]{\renewcommand{\@emailb}{#1}}
+
+% 経歴定義1
+\newcommand{\@career}{}
+\newcommand{\career}[1]{\renewcommand{\@career}{#1}}
+% 経歴定義2
+\newcommand{\@careerb}{}
+\newcommand{\careerb}[1]{\renewcommand{\@careerb}{#1}}
+
+% 顔写真ファイル1
+\newcommand{\@photofile}{photo.eps}
+\newcommand{\photofile}[1]{\renewcommand{\@photofile}{#1}}
+% 顔写真ファイル2
+\newcommand{\@photofileb}{photob.eps}
+\newcommand{\photofileb}[1]{\renewcommand{\@photofileb}{#1}}
+
+%アブスト定義
+\newcommand{\@abst}{}
+\newcommand{\abst}[1]{\renewcommand{\@abst}{#1}}
+
+%キーワード定義
+\newcommand{\@keyword}{}
+\newcommand{\keyword}[1]{\renewcommand{\@keyword}{#1}}
+
+% 著者紹介
+
+\newcommand{\profile}{%
+\if@ensemblereview \profilea
+\fi
+\if@ensemblereviewb \profileb
+\fi
+\if@ensembleintro \profilea
+\fi
+\if@ensembleintrob \profileb
+\fi
+ }
+
+\newcommand{\profilea}{
+\begin{table}[H]
+\begin{tabular}{cc}
+\begin{minipage}{3cm}
+{\bf 著者紹介} \\
+\includegraphics[width=2.6cm]{\@photofile}  %写真
+\end{minipage}
+&
+\begin{minipage}{5cm}
+\@career
+\end{minipage}
+\end{tabular}
+\end{table}
+}
+
+\newcommand{\profileb}{
+\begin{table}[H]
+\begin{tabular}{cc}
+\begin{minipage}{3cm}
+{\bf 著者紹介} \\
+\includegraphics[width=2.6cm]{\@photofile}  %写真
+\end{minipage}
+&
+\begin{minipage}{5cm}
+\@career
+\end{minipage}
+\\
+\\
+\begin{minipage}{3cm}
+\includegraphics[width=2.6cm]{\@photofileb}  %写真
+\end{minipage}
+&
+\begin{minipage}{5cm}
+\@careerb
+\end{minipage}
+\end{tabular}
+\end{table}
+}
+
+%-----------------------------------------------------------------------
+%セクション再定義
+\renewcommand{\section}{%
+  \@startsection{section}{1}{\z@}%
+    {.5\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+    {.3\Cvs \@plus.3\Cdp}%
+    {\reset@font\normalsize\bfseries}
+}
+\renewcommand{\subsection}{%
+  \@startsection{subsection}{2}{\z@}%
+    {.3\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+    {.1\Cvs \@plus.3\Cdp}%
+    {\reset@font\normalsize\bfseries}
+}
+
+\renewcommand{\subsubsection}{%
+  \@startsection{subsubsection}{3}{\z@}%
+    {.2\Cvs \@plus.5\Cdp \@minus.2\Cdp}%
+    {.1\Cvs \@plus.3\Cdp}%
+    {\reset@font\normalsize\bfseries}
+}
+%-----------------------------------------------------------------------
+%ページスタイル再定義
+
+\setcounter{page}{1}
+\def\ps@myheadings{%
+   \let\@oddfoot\@empty
+   \let\@evenfoot\@empty
+   \def\@oddhead{%
+     \reset@font
+     \normalsize
+     \ifodd  \thepage
+        分子シミュレーション学会誌 \ ``アンサンブル'' \ \textit{Vol. \@articlevolume, No. \@articlenumber, \@articlemonth‾\@articleyear} (通巻 \@articletotal 号) \hfill \thepage 
+     \else
+        \thepage \hfil \textit{The Molecular Simulation Society of Japan}
+     \fi
+   }
+}
+
+\pagestyle{myheadings}
+
+%-----------------------------------------------------------------------
+%タイトル再定義
+\renewcommand{\@maketitle}{%
+\if@ensemblenoauther \ensembletitlenoauther
+\fi
+\if@ensemblereview \ensembletitlereviewa
+\fi
+\if@ensemblereviewb \ensembletitlereviewb
+\fi
+\if@ensembleintro \ensembletitleintroa
+\fi
+\if@ensembleintrob \ensembletitleintrob
+\fi
+\if@ensemblereport \ensembletitlereport
+\fi
+}
+
+
+\newcommand{\ensembletitlenoauther}{
+  \newpage\null
+  \let\footnote\thanks
+    {\Large \textbf{\@title} \par}%
+    \vskip 1.5em%
+    \par\vskip 1em%
+}
+
+\newcommand{\ensembletitlereviewa}{
+\begin{flushright}
+\normalsize \bf \gt
+\@affiliation\\
+\@author \quad \textsf{\@email}
+\end{flushright}
+\begin{flushleft}
+{\bf 概要}\\
+\@abst\\
+{\bf キーワード}：\@keyword
+\end{flushleft}
+\par\vskip 1em%
+}
+
+\newcommand{\ensembletitlereviewb}{
+\begin{flushright}
+\normalsize \bf \gt
+\@affiliation\\
+\@author \quad \textsf{\@email}\\
+\normalsize \bf \gt
+\@affiliationb\\
+\@authorb \quad \textsf{\@emailb}
+\end{flushright}
+\begin{flushleft}
+{\bf 概要}\\
+\@abst\\
+{\bf キーワード}：\@keyword
+\end{flushleft}
+\par\vskip 1em%
+}
+
+\newcommand{\ensembletitleintroa}{
+\begin{flushright}
+\normalsize \bf \gt
+\@affiliation\\
+\@author \quad \textsf{\@email}
+\end{flushright}
+\par\vskip 1em%
+}
+
+\newcommand{\ensembletitleintrob}{
+\begin{flushright}
+\normalsize \bf \gt
+\@affiliation\\
+\@author \quad \textsf{\@email}\\
+\normalsize \bf \gt
+\@affiliationb\\
+\@authorb \quad \textsf{\@emailb}
+\end{flushright}
+\par\vskip 1em%
+}
+
+\newcommand{\ensembletitlereport}{
+\begin{flushright}
+\normalsize \bf \gt
+\@affiliation\\
+\@author \quad \textsf{\@email}
+\end{flushright}
+\par\vskip 1em%
+}
+
+
+
+\renewcommand{\maketitle}{\par
+  \begingroup
+    \renewcommand{\thefootnote}{\fnsymbol{footnote}}%
+    \def\@makefnmark{\hbox{\ifydir $\m@th^{\@thefnmark}$
+      \else\hbox{\yoko$\m@th^{\@thefnmark}$}\fi}}%
+     \long\def\@makefntext##1{\parindent 1em\noindent
+       \hbox to1.8em{\hss$\m@th^{\@thefnmark}$}##1}%
+    \if@twocolumn
+      \ifnum \col@number=\@ne \@maketitle
+      \else \twocolumn[\@maketitle]%
+      \fi
+    \else
+      \newpage
+      \global\@topnum\z@   % Prevents figures from going at top of page.
+      \@maketitle
+    \fi
+  \endgroup
+  \setcounter{footnote}{0}%
+  \global\let\thanks\relax
+  \global\let\maketitle\relax
+  \global\let\p@thanks\relax
+  \global\let\@thanks\@empty
+  \global\let\@author\@empty
+  \global\let\@date\@empty
+  \global\let\title\relax
+  \global\let\author\relax
+  \global\let\date\relax
+  \global\let\and\relax
+}
+
+\newcommand{\acknowledgement}[1]{
+\vspace*{1em}
+\noindent\textgt{\normalsize\bfseries 謝辞}
+\\
+{\hspace*{1em}#1}
+}
+
+\renewenvironment{thebibliography}[1]{
+\vspace*{1em}
+  \noindent\textgt{\normalsize\bfseries 参考文献}
+  \list{\@biblabel{\@arabic\c@enumiv}}%
+        {\settowidth\labelwidth{\@biblabel{#1}}%
+         \leftmargin\labelwidth
+         \advance\leftmargin\labelsep
+         \@openbib@code
+         \normalsize
+         \setlength{\itemsep}{0pt}
+         \usecounter{enumiv}%
+         \let\p@enumiv\@empty
+         \renewcommand\theenumiv{\@arabic\c@enumiv}}%
+   \sloppy
+   \clubpenalty4000
+   \@clubpenalty\clubpenalty
+   \widowpenalty4000%
+   \sfcode`\.\@m}
+  {\def\@noitemerr
+    {\@latex@warning{Empty `thebibliography' environment}
+  }%
+  \endlist
+}
+
+
+\endinput

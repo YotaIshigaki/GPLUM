@@ -1,0 +1,105 @@
+
+Dear Prof. Kotake
+
+In response to the referee's report, we revised our manuscript and we
+resubmit our paper entitled "Implementation and performance of FDPS: A
+Framework for Developing Parallel Particle Simulation Codes".
+
+In the following, we describe changes we made in the form of the reply
+to referee's comments.
+
+Yours Sincerely,
+Masaki Iwasawa
+Ataru Tanikawa
+Natsuki Hosono
+Keigo Nitadori
+Takayuki Muranushi
+Junichiro Makino
+
+
+To Referee,
+
+> The authors provide an application-independent framework for
+> particle simulations.  The main idea is to separate the physical
+> application from the technically challenging and cumbersome
+> long-term code developments related to an efficient parallelization.
+> This is realized in their FDPS ("Framework for Developing Particle
+> Simulator").  Overall I find this a very good paper and an excellent
+> service to the scientific community. Therefore, I think the paper
+> should be published after a number of moderate improvements have
+> been carried out. A detailed list of points is attached below.
+
+Thank you for your careful reading and useful comments on our
+paper. In the following your comments, we describe changes we made in
+the form of the reply to your detailed comments.
+
+
+> * The paper follows a clear train of thought, but it is packed
+>     language mistakes (many on every single page) that make it
+>     sometimes hard to focus on the contents.  Please ask a native
+>     speaker to correct the (mainly grammar) mistakes.
+
+We tried to correct language mistakes.
+
+
+> * Although, I agree that C++ is a natural language for this task,
+>    much of scientific computing is performed in Fortran90/2003. It
+>    would help the success of this paper and project if the framework
+>    would also allow the user to write his source code in
+>    Fortran90/2003. Do the authors see the possibility of, or maybe
+>    actually already plan, a frontend in Fortran90/2003? A more
+>    flexible frontend could make this framework a very big success
+>    across different branches of computational physics.
+
+Thank you for your comments. We agree with you. We will investigate a
+possible way to use APIs of FDPS from programs written in Fortran. We
+added this discussion in footnote in section 2.1.2.
+
+
+> * In the giant impact simulation the authors use 300 neighbours per
+>    particle, but only state that they use "standard SPH". If this
+>    also applies to the kernel function, i.e. the cubic spline kernel
+>    is used, this does not make much sense since the pairing
+>    instability sets in. Therefore, please repeat this test in a more
+>    realistic and meaningful way: either use a neighbour number where
+>    no pairing occurs (~40) or, better, use a higher-oder kernel
+>    where a neighbour number of 300 makes sense.
+
+Thank you for your comments. We used a higher-order kernel, the
+Wendland C6 kernel (Dehnen & Aly 2012). For this kernel, the neighbor
+number of 300 is appropriate. We added this description on the kernel
+and neighbor number in section 4.3.
+
+
+> * Please annotate the figures more carefully, for example, use "wall
+>    clock time PER TIMESTEP" wherever applicable.
+
+Thank you for your comments. We added "per timestep" in the
+appropriate figures.
+
+
+> * Looking at Fig. 16 the wording "fitted curve" seems a bit far
+>    fetched given the three points (and one of them completely
+>    missed).
+
+Thank you for your comments. The word "fitted curve" actually means
+"analytic model". We renamed the word "fitted curve" to "analytic
+model" in the new draft. In Fig. 16, for small np, the "analytic
+model" gives the value about 2 times smaller than the measured
+point. This is because the measured values include not only the time
+to exchange particles but also the time to determine appropriate
+processes to send particles, while the "analytic model" includes only
+the time to exchange particles. For small np, the time to determine
+the appropriate process is not negligible, and therefor the "analytic
+model" gives an underestimate. However, we are mainly interested in
+the behavior of the model for large np. Thus main conclusion in this
+section has not been changed. We added the above discussion in section
+5.2.
+
+Yours Sincerely,
+Masaki Iwasawa
+Ataru Tanikawa
+Natsuki Hosono
+Keigo Nitadori
+Takayuki Muranushi
+Junichiro Makino

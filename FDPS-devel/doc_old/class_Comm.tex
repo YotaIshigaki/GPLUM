@@ -1,0 +1,289 @@
+\subsubsection{概要}
+
+並列化手法(MPI, OpenMP, SIMD)には様々な最適化パラメータが存在する。MPI
+関連のパラメータやコミュニケータはシングルトンパターンを使って管理する。
+
+以下のように定義する。
+
+\begin{lstlisting}[caption={\tt Comm}の定義]
+namespace ParticleSimulator {
+    class Comm{
+    public:
+        static S32 getRank();
+        static S32 getNumberOfProc();
+        static S32 getRankMultiDim(const S32 id);
+        static S32 getNumberOfProcMultiDim(const S32 id);
+        static bool synchronizeConditionalBranchAND(const bool local);        
+        static bool synchronizeConditionalBranchOR(const bool local);        
+        template<class T>
+        static T getMinValue(const T val);
+        template<class T>
+        static T getMaxValue(const T val);
+        template<class Tfloat, class Tint>
+        static void getMinValue(const Tfloat f_in, const Tint i_in, Tfloat & f_out, Tint & i_out);
+        template<class Tfloat, class Tint>
+        static void getMaxValue(const Tfloat f_in, const Tint i_in, Tfloat & f_out, Tint & i_out);
+        template<class T>
+        static T getSum(const T val);
+}
+\end{lstlisting}
+
+\subsubsection{API}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+static PS::S32 getRank();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+{\tt PS::S32}型。全プロセス中でのランクを返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getNumberOfProc();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+{\tt PS::S32}型。全プロセス数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getRankMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt id}: 入力。{\tt const PS::S32}型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{{\bf 返り値}}
+
+{\tt PS::S32}型。id番目の軸でのランクを返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getNumberOfProcMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt id}: 入力。{\tt const PS::S32}型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{{\bf 返り値}}
+
+{\tt PS::S32}型。id番目の軸のプロセス数を返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+static bool PS::Comm::synchronizeConditionalBranchAND(const bool local)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt local}: 入力。{\tt const bool}型。
+
+\item{{\bf 返り値}}
+
+{\tt bool}型。全プロセスで{\tt local}の{\tt AND}を取り、結果を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+static bool PS::Comm::synchronizeConditionalBranchOR(const bool local);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt local}: 入力。{\tt const bool}型。
+
+\item{{\bf 返り値}}
+
+{\tt bool}型。全プロセスで{\tt local}の{\tt OR}を取り、結果を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getMinValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt val}: 入力。{\tt const T}型。
+
+\item{{\bf 返り値}}
+
+{\tt T}型。全プロセスで{\tt val}の最小値を取り、結果を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getMaxValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt val}: 入力。{\tt const T}型。
+
+\item{{\bf 返り値}}
+
+{\tt T}型。全プロセスで{\tt val}の最大値を取り、結果を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+static void PS::Comm::getMinValue(const Tfloat f_in, const Tint i_in,
+                                  Tfloat & f_out, Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt f\_in}: 入力。{\tt const Tfloat}型。
+
+{\tt i\_in}: 入力。{\tt const Tint}型。
+
+{\tt f\_out}: 出力。{\tt Tfloat}型。全プロセスで{\tt f\_in}の最小値を取
+り、結果を返す。
+
+{\tt i\_out}: 出力。{\tt Tint}型。{\tt f\_out}に伴うIDを返す。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+static void PS::Comm::getMaxValue(const Tfloat f_in, const Tint i_in,
+                                  Tfloat & f_out, Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt f\_in}: 入力。{\tt const Tfloat}型。
+
+{\tt i\_in}: 入力。{\tt const Tint}型。
+
+{\tt f\_out}: 出力。{\tt Tfloat}型。全プロセスで{\tt f\_in}の最大値を取
+り、結果を返す。
+
+{\tt i\_out}: 出力。{\tt Tint}型。{\tt f\_out}に伴うIDを返す。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getSum(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt val}: 入力。{\tt const T}型。
+
+\item{{\bf 返り値}}
+
+{\tt T}型。全プロセスで{\tt val}の総和を取り、結果を返す。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{screen}
+%\begin{verbatim}
+%static void PS::Comm::setNProcXD(const PS::S32 nx, const PS::S32 ny, const PS::S32 nz);
+%\end{verbatim}
+%\end{screen}
+
+%\begin{itemize}
+
+%\item{{\bf 引数}}
+
+%{\tt nx}: 入力。{\tt const PS::S32}型。x軸方向のプロセスの分割数。
+
+%{\tt ny}: 入力。{\tt const PS::S32}型。y軸方向のプロセスの分割数。
+
+%{\tt nz}: 入力。{\tt const PS::S32}型。z軸方向のプロセスの分割数。
+
+%\item{{\bf 返り値}}
+
+%なし。
+
+%\item{{\bf 機能}}
+
+%プロセッサの分割数を設定する。nx,ny,nzの積が全プロセス数にならない場合
+%は例外を送出する。
+%\end{itemize}

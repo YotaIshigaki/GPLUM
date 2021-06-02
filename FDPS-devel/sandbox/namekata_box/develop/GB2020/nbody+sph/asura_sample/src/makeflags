@@ -1,0 +1,461 @@
+#
+# makeflags for ASURA.
+#
+#______________________Version information
+OPTIONS     +=      -DASURA_MAJOR_VERSION=3
+OPTIONS     +=      -DASURA_MINOR_VERSION=7
+OPTIONS     +=      -DASURA_MICRO_VERSION=0
+
+#______________________For debug
+#OPTIONS     +=      -DUSE_DEBUG_MODE
+OPTIONS     +=      -DDEBUG_LEVEL=0
+
+
+#______________________For data structures
+#OPTIONS     +=      -DDATAFORMAT=0 
+#if an old type data format is necessary, you have to set the flag > 0
+OPTIONS     +=      -DPARTICLE_SORT_TYPE=SORT_MORTON # SORT_MORTON or SORT_TIMESTEP
+#OPTIONS     +=      -DPARTICLE_SORT_TYPE=SORT_TIMESTEP # SORT_MORTON or SORT_TIMESTEP
+
+
+#______________________For IO
+OPTIONS     +=      -DHEADER_SIZE=256  # size of header, HEADER_SIZE*sizeof(int)
+OPTIONS     +=      -DINITIAL_CONDITION_LOAD_STEP=32  # Load INITIAL_CONDITION_LOAD_STEP files at once.
+#OPTIONS     +=      -DCOMPACT_IO_FORMAT # Remove unnecessary data. This flag also changes input parts. Use float.
+#OPTIONS     +=      -DCOMPACT_DOUBLE_IO_FORMAT # Remove unnecessary data. This flag also changes input parts. Use double.
+OPTIONS     +=      -DCOMPACT_MIX_IO_FORMAT # Remove unnecessary data. This flag also changes input parts. Use float/double.
+#OPTIONS     +=      -DUSE_LEAN_IO_FORMAT # Use lean format.
+OPTIONS     +=      -DLEAN_IO_FORMAT_FULL_IO_INTERVAL=10 # Full IO interval for the case with the Lean format.
+OPTIONS     +=      -DOUTPUT_CONSTANT_INTERVAL  #
+OPTIONS     +=      -DDATA_DUMP_INTERVAL=55.0  # in unit of minute.
+#OPTIONS     +=      -DDATA_DUMP_INTERVAL=2.0  # in unit of minute.
+#OPTIONS     +=      -DSTOP_AFTER_DATA_DUMP   # if this flag is used, simulation stops after data dump.
+OPTIONS     +=      -DASCIIDATA_DUMP_INTERVAL=60.0  # in unit of minute.
+#OPTIONS     +=      -DASCIIDATA_DUMP_INTERVAL=0.5  # in unit of minute.
+OPTIONS     +=      -DWRITE_ALLDATA_AT_ONCE      # IO timing.
+OPTIONS     +=      -DLOCK_FILE_ID=12345         # LOCK_FILE_ID. Any integer number is ok.
+
+#OPTIONS     +=      -DUSE_ON_THE_FLY_4D2U        # 
+OPTIONS     +=      -DUSE_ON_THE_FLY_4D2U_WRITE_PARALLEL        # 
+OPTIONS     +=      -DUSE_ON_THE_FLY_4D2U_EXTRA_INFO #
+OPTIONS     +=      -DON_THE_FLY_4D2U_EXTRA_INFO_INTERVAL=10 # OutPutInterval/ON_THE_FLY_4D2U_EXTRA_INFO_INTERVAL is the output interval.
+OPTIONS     +=      -DON_THE_FLY_4D2U_EXTRA_INFO_CRITERIA=10 # Particles 10*dt < OutPutInterval/ON_THE_FLY_4D2U_EXTRA_INFO_INTERVAL will be stored
+
+
+#______________________For run
+#OPTIONS    +=      -DPERIODIC_RUN
+OPTIONS    +=      -DCOSMOLOGICAL_RUN
+#OPTIONS    +=      -DISOTHERMAL_EOS_RUN
+#OPTIONS    +=      -DBAROTROPIC_EOS_RUN
+OPTIONS    +=      -DGRAVITY_RUN
+OPTIONS    +=      -DHYDRO_RUN
+
+#______________________For boundary condition
+#OPTIONS     +=      -DUSE_BOUNDARY_CONDITION
+OPTIONS     +=      -DBOUNDARY_CONDITION_TYPE=10 # 
+OPTIONS     +=      -DBOUNDARY_CONDITION_SPHERICAL_SHELL_EDGE=0.5*MPC_CGS    # Type 3
+OPTIONS     +=      -DBOUNDARY_CONDITION_COSMOLOGICAL_SHELL_EDGE=3*MPC_CGS # Type 10
+OPTIONS     +=      -DBOUNDARY_CONDITION_COSMOLOGICAL_MAX_VELOCITY=3000.0  # Type 11, Unit km/s
+OPTIONS     +=      -DBOUNDARY_CONDITION_COSMOLOGICAL_DRAG_FACTOR=0.05
+
+#OPTIONS     +=      -DUSE_DRAG_TERM
+OPTIONS     +=      -DDRAG_TERM_INTERVAL=1.e5 # Unit year
+
+
+#______________________For time step
+OPTIONS     +=      -DUSE_VARIABLE_TIMESTEP # Use variable time-steps
+OPTIONS     +=      -DUSE_INDIVIDUAL_TIMESTEP # Use individual time-steps
+#OPTIONS     +=      -DMAXIMUM_TIME_HIERARCHY=0 # dt_max = 2^MAXIMUM_TIME_HIERARCHY * dt_min
+OPTIONS     +=      -DMAXIMUM_TIME_HIERARCHY=31 # dt_max = 2^MAXIMUM_TIME_HIERARCHY * dt_min
+OPTIONS     +=      -DUSE_FAST_SCHEME #  FAST flag.
+#OPTIONS     +=      -DUSE_ACC_DOT_TIMESTEP   # Use a_dot to evaluate time-steps
+OPTIONS     +=      -DHYDRO_TIMESTEP_LIMITER # Hydro time-step limiter.
+OPTIONS     +=      -DMAX_K_LOCAL=2 # Limit dt_hydro <= 2^THIS_PARAM * dt_hydro_localmin.
+OPTIONS     +=      -DMAX_K_GRAVITY=10 # Limit dt_gravity <= 2^THIS_PARAM * dt_hdyro. If 0, omit this function.
+#OPTIONS     +=      -DUSE_HYDRO_TIMESTEP_LIMITER_FOR_FB  #
+OPTIONS     +=      -DMAX_K_LOCAL_FB=3 # Timestep limiter for heated region.
+OPTIONS     +=      -DUPDATE_TIMESTEP_IN_HEATEDREGION # When SNe inject the thermal energy
+                    #into gas particles, shrink their time-steps (REUSE THE TIME STEP LIMITER).
+#OPTIONS     +=      -DDTMAX_RESCALE_FACTOR=1.0 #
+OPTIONS     +=      -DDTMAX_RESCALE_LIMIT_KMAX=8 #
+#OPTIONS     +=      -DUSE_TIMESTEP_PREDICTOR_CHANGE # Use time-steps based on kernel size changes.
+
+#______________________For decomposition
+OPTIONS     +=      -DDECOMPOSITION_TYPE=1 # 0: bisection, 1: X*Y*Z evaluated by MPI_Dims_create()
+#OPTIONS     +=      -DPREDECOMPOSITION_INTERVAL_STEPS=200
+#OPTIONS     +=      -DPREDECOMPOSITION_SAMPLING_NUMBER=30
+#OPTIONS     +=      -DUSE_INTERACTIONLIST_FOR_PREDECOMPOSITION_SAMPLING
+OPTIONS     +=      -DPREDECOMPOSITION_SAMPLING_NUMBER=200
+OPTIONS     +=      -DDECOMPOSITION_MAX_ITERATION_TIMES=100
+OPTIONS     +=      -DDECOMPOSITION_FREQUENCY=32
+#OPTIONS     +=      -DUSE_BARYON_COMM # Use mpi communicators for baryon interactions  
+OPTIONS     +=      -DUSE_DECOMPOSITION_WEIGHT
+OPTIONS     +=      -DDECOMPOSITION_WEIGHT_LEVEL=1 # if 0, use only DECOMPOSITION_BARYON_WEIGHT
+                                                   # if 1, use further aggressive weights.
+OPTIONS     +=      -DDECOMPOSITION_BARYON_WEIGHT=2
+
+
+#______________________For gravity
+OPTIONS     +=      -DGRAPE_HOLDING_TIME_IN_SEC=60.0 # unit : sec
+OPTIONS     +=      -DMINIMUM_MASS_FACTOR_FOR_GRAPE=64.0
+OPTIONS     +=      -DUSE_SHIFT_GRAVITYFIELD  # This flag shifts particless so that particles who share an interaction list are being the center of coordinates.
+OPTIONS     +=      -DUSE_SYMMETRIZED_SOFTENING  # Adopt mass weighted softening for a tree node.
+
+
+#______________________For hydro tree
+
+
+#______________________For hydro
+OPTIONS    +=       -DEVALUATE_SIZES_ALL_TOGETHER # Sizes for SPH kernels, stromgren radii and feedback radii are evaluated all together.
+OPTIONS    +=       -DUSE_DISPH # Use the density independent SPH (Saitoh & Makino 2013)
+#OPTIONS    +=       -DUSE_SPSPH # Use the smoothed pseud-density SPH (Yamamoto, Saitoh & Makino 2014)
+OPTIONS    +=       -DSPSPH_DIFFUSION_FACTOR=0.1 # Diffusion factor for SPSPH.
+OPTIONS    +=       -DUSE_GRAD_H # Use the grad-h term
+OPTIONS    +=       -DUSE_GRAD_N # Use an advanced grad-h term (Hopkins 2013).
+                                 # USE_GRAD_H flag is necessary to work this flag.
+                                 # If this flag is on, the result of 1D shocktube has a little offset from the analytic solution.
+OPTIONS    +=       -DUSE_GRAD_H_LIMITER
+#OPTIONS    +=       -DGRAD_H_MAX=3.0
+#OPTIONS    +=       -DGRAD_H_MIN=0.1
+#OPTIONS    +=       -DGRAD_H_MAX=1.5
+#OPTIONS    +=       -DGRAD_H_MIN=0.5
+OPTIONS    +=       -DGRAD_H_MAX=10
+OPTIONS    +=       -DGRAD_H_MIN=0.1
+OPTIONS    +=       -DKERNEL_TYPE=2  # 0=Spline, 1=WC2, 2=WC4, 3=WC6
+OPTIONS    +=       -DWRITE_KERNEL_SHAPE 
+#OPTIONS     +=      -DUSE_NEIGHBOR_LIST
+#OPTIONS     +=      -DUSE_NEIGHBOR_LIST_AND_SORT
+#OPTIONS     +=      -DNEIGHBOR_LIST_SORT_LIMIT_FACTOR=2
+OPTIONS     +=      -DMAX_NEIGHBOR_SIZE=32768
+#OPTIONS     +=      -DUSE_SMOOTHED_NEIGHBOR_NUMBER
+OPTIONS     +=      -DEVALUATE_KERNEL_BY_ITERATION  # if off, h = KERNEL_FACTOR*(m/\rho)
+OPTIONS     +=      -DKERNEL_FACTOR=1.2
+#OPTIONS     +=      -DUSE_MINIMUM_KERNEL_SIZE
+#OPTIONS     +=      -DUSE_MAXIMUM_KERNEL_SIZE
+#OPTIONS     +=      -DMAXIMUM_KERNEL_SIZE=1000*KPC_CGS # unit : Kpc
+#OPTIONS     +=      -DITERATIVE_APPROACH_FOR_NEIGHBOR_SEARCH # In order to get the complite neighbor list...
+OPTIONS     +=      -DUSE_KERNEL_LOCAL_UPDATE # Adopt local update for accelerate the kernel size estimate
+OPTIONS     +=      -DUSE_PARTICLE_TAG # allow to use a particle tag for each particle.
+#OPTIONS    +=       -DUSE_ADIABATIC_CHANGE_LIMITER
+OPTIONS    +=       -DADIABATIC_CHANGE_LIMITER_MAX=50.0
+
+#______________________For hydro artificial viscosity
+OPTIONS     +=      -DUSE_VARIABLE_ALPHA
+OPTIONS     +=      -DSIGNAL_VELOCITY_BETA=3.0
+OPTIONS     +=      -DVISCOSITY_TYPE=0 # 0: Standard Visc, 1: Hosono type Visc.
+OPTIONS     +=      -DVARIABLE_VISCOSITY_MIN=0.1
+#OPTIONS     +=      -DVARIABLE_VISCOSITY_MAX=10.0
+OPTIONS     +=      -DVARIABLE_VISCOSITY_MAX=3.0
+OPTIONS     +=      -DUSE_MAX_ALPHA_AT_SNREGIONS
+#OPTIONS     +=      -DVISCOSITY_MAX_AT_SNREGIONS=10.0
+OPTIONS     +=      -DVISCOSITY_MAX_AT_SNREGIONS=3.0
+
+#______________________For equation of state
+OPTIONS    +=      -DCRITICAL_DENSITY_FOR_BAROTROPIC_RUN=1.e-13 # unit : g/cm^-3
+OPTIONS    +=      -DSOUND_VELOCITY_FOR_BAROTROPIC_RUN=1.84e+4 # unit : cm/s
+
+#______________________For cooling and heating
+OPTIONS     +=      -DCOOLING_RUN # select one of three flags in below.
+OPTIONS     +=      -DUSE_COOLING_ENERGYLOSS_LIMIT # Energy loss in dt is limited by 1/2 of the original Energy.
+OPTIONS     +=      -DUSE_ASRCH  # use ASRCH, cooling/heating library.
+OPTIONS     +=      -DASRCH_OLD_API  # use ASRCH, cooling/heating library.
+OPTIONS     +=      -DASRCH_REIONIZATION_REDSHIFT=8.5  # Reionization redshift for ASRCH.
+#OPTIONS     +=      -DUSE_CLOUDY_COOLING_FUNCTIONS  # use Cloudy coolings.
+#OPTIONS     +=      -DUSE_SPAANS1997_COOLING_FUNCTIONS # use Spaans & Norman (1997)
+#OPTIONS     +=      -DUSE_SPAANS2008_COOLING_FUNCTIONS # use Spaans et al. (2008)
+OPTIONS     +=      -DUSE_EXACT_COOLING_SOLVER # Zhu et al. (2017), need USE_CLOUDY_COOLING_FUNCTIONS
+                      # Under test, does not work correctly.
+#OPTIONS     +=      -DUSE_INVERSE_COMPTON_COOLING # C.C. for Spaans' cooling functions
+OPTIONS     +=      -DMOLECULAR_COOLING #if 
+#OPTIONS     +=      -DCOOLING_CUTOFF_TEMPERATURE=500.0 # if ordinary case, you have to use 10.0
+OPTIONS     +=      -DUSE_FARULTRAVIOLET_HEATING
+OPTIONS     +=      -DFARULTRAVIOLET_HEATING_CUTOFF #if on, FUV field has a cut off T of 10^4 K.
+OPTIONS     +=      -DFUV_G0=10.0
+#OPTIONS     +=      -DINITIAL_SKIP_COOLING_ROUTINE=5.e+7*YEAR_CGS # unit : yr
+OPTIONS     +=      -DINITIAL_SKIP_COOLING_ROUTINE=0*1.e+8*YEAR_CGS # unit : yr
+
+OPTIONS     +=      -DUSE_MAXIMUM_TEMPERATURE # if this flag is on, the max T is introduced.
+OPTIONS     +=      -DMAXIMUM_TEMPERATURE=1.e9 # The max T 
+
+
+#______________________For FUVFEEDBACK
+#OPTIONS     +=      -DUSE_FUVFEEDBACK 
+#OPTIONS     +=      -DUSE_FUVFEEDBACK_CONSTANT_VALUE # Use fixed G0 
+OPTIONS     +=      -DFUVFEEDBACK_CONSTANT_VALUE=1.7 # G0 
+OPTIONS     +=      -DFUVFEEDBACK_THETA=0.5
+OPTIONS     +=      -DFUVFEEDBACK_NGROUP=32
+OPTIONS     +=      -DFUVFEEDBACK_NORMALIZATION=1.0
+OPTIONS     +=      -DFUVFEEDBACK_SIGMA1000=2e-21 # cm^2, 
+OPTIONS     +=      -DUSE_FUVFEEDBACK_METAL_DEPEND_SIGMA1000 
+       # The effective cross-section for dust extinction at lambda=1000A 
+       # (Draine & Bertoldi 1996; Glover & Mac Low 2007)
+#OPTIONS     +=      -DUSE_FUVFEEDBACK_COLUMNDENSITY_CONSTANT_SCALE # 
+OPTIONS     +=      -DFUVFEEDBACK_COLUMNDENSITY_CONSTANT_SCALE=10*PC_CGS #
+OPTIONS     +=      -DUSE_FUVFEEDBACK_STEP
+OPTIONS     +=      -DFUVFEEDBACK_G0_EVALUATION_INTERVAL=1.e+4 # year. 
+OPTIONS     +=      -DYOUNGSTARTREE_AGELIMIT=5.0*GIGAYEAR_CGS #//Gyr
+#OPTIONS     +=      -DUSE_ASRSIC # 
+OPTIONS     +=      -DUSE_FUVFEEDBACK_TRANCATION_RADIUS # if use this flag, FUV is trancated.
+#OPTIONS     +=      -DFUVFEEDBACK_TRANCATION_RADIUS_MIN=60.0*PC_CGS #
+#OPTIONS     +=      -DFUVFEEDBACK_TRANCATION_RADIUS_MAX=300.0*PC_CGS #
+OPTIONS     +=      -DFUVFEEDBACK_TRANCATION_RADIUS_MIN=3.0*KPC_CGS #
+OPTIONS     +=      -DFUVFEEDBACK_TRANCATION_RADIUS_MAX=3.5*KPC_CGS #
+#OPTIONS     +=      -DFUVFEEDBACK_TRANCATION_RADIUS_MIN=0.3*KPC_CGS #
+#OPTIONS     +=      -DFUVFEEDBACK_TRANCATION_RADIUS_MAX=0.6*KPC_CGS #
+OPTIONS     +=      -DUSE_FUVFEEDBACK_LOCAL_CORRECTION 
+
+
+
+
+
+#______________________For thermal conductivity
+#OPTIONS     +=      -DUSE_THERMAL_CONDUCTIVITY
+OPTIONS     +=      -DTHERMAL_CONDUCTIVITY_COEF_TYPE=0 #0=Parker 1953, 1=Spitzer
+OPTIONS     +=      -DUSE_THERMAL_CONDUCTIVITY_TIMESTEP
+OPTIONS     +=      -DTHERMAL_CONDUCTIVITY_TIMESTEP_FACTOR=0.5
+
+#______________________For star formation
+OPTIONS     +=      -DSTARFORMATION
+OPTIONS     +=      -DSFCONDITION_DENSITY
+OPTIONS     +=      -DSFCONDITION_TEMPERATURE
+OPTIONS     +=      -DSFCONDITION_CONVERGING_FLOW
+OPTIONS     +=      -DSFCONDITION_HAVE_SNE_HEAT # prevent starformation for particles with DQheat > 0.e0
+
+#OPTIONS     +=      -DSF_EFFICIENCY=0.033
+OPTIONS     +=      -DSF_EFFICIENCY=0.5
+#OPTIONS     +=      -DSF_EFFICIENCY=1.0
+#OPTIONS     +=      -DSFCONDITION_DENSITY_CRITERION=1.e-1
+#OPTIONS     +=      -DSFCONDITION_TEMPERATURE_CRITERION=1.5e+4
+OPTIONS     +=      -DSFCONDITION_DENSITY_CRITERION=1.e+2
+OPTIONS     +=      -DSFCONDITION_TEMPERATURE_CRITERION=1.0e+3
+#OPTIONS     +=      -DSFCONDITION_TEMPERATURE_CRITERION=1.0e+2 
+#OPTIONS     +=      -DSFCONDITION_DENSITY_CRITERION=1.e+1
+#OPTIONS     +=      -DSFCONDITION_TEMPERATURE_CRITERION=5.0e+3 
+#OPTIONS     +=      -DSFCONDITION_DENSITY_CRITERION=1.e+5
+#OPTIONS     +=      -DSFCONDITION_TEMPERATURE_CRITERION=5.0e+3
+OPTIONS     +=      -DUSE_INSTANTANEOUS_STARFORMATION
+OPTIONS     +=      -DINSTANTANEOUS_STARFORMATION_DENSITY_THRESHOLD_FACTOR=100
+                      # If the density becomes larger than this value times SFCONDITION_DENSITY_CRITERION,
+                      # a gas particle forcibly converts into star particles.
+OPTIONS     +=      -DUSE_FORCIBLE_STARFORMATION
+OPTIONS     +=      -DUSE_FORCIBLE_STARFORMATION_DENSITY_CRITERION_FACTOR=0.01
+
+#OPTIONS     +=      -DUSE_STARFORMATION_BIGSTEP
+OPTIONS     +=      -DSTARFORMATION_BIGSTEP_K_FACTOR=2 # Every 2^k step, SF is checked.
+#OPTIONS     +=      -DUSE_WARMSTART
+
+
+#______________________For SN feedback
+#OPTIONS     +=      -DDELAYED_FEEDBACK
+OPTIONS     +=      -DMAXIMUM_ENERGY_INPUT
+OPTIONS     +=      -DSKIP_COOLING=OFF
+OPTIONS     +=      -DSNII_ENERGY_EFFICIENCY=1.0
+#OPTIONS     +=      -DPRESERVE_SNII_EVENTRATE       # Preserve event rate of SNII 
+         # This option works correctly only when the number of SNII in each star particle < 1.0
+#OPTIONS     +=      -DSET_SNII_TEMPERATURE     # Set minimum SNII temperature
+#OPTIONS     +=      -DSET_SNII_TEMPERATURE_GAS # Set minimum SNII temperature, check when a gas particle is heated
+                                               # -DSET_SNII_TEMPERATURE flag
+                                               # should be turned off.
+#OPTIONS     +=      -DUSE_SET_SNII_TEMPERATURE_VARIABLE
+OPTIONS     +=      -DSET_SNII_TEMPERATURE_VARIABLE_MODEL=0
+                    #Case 0: Tsn = 5e8 fo rho > 1e2, Tsn = 5e6 for rho < 1e-2. 
+                    #        Interplattion is used for the intermediate density
+                    #Case 1: Random Tsn between 5e6 and 5e8
+#OPTIONS     +=      -DSNII_PEAK_TEMPERATURE   # if use this flag, ASURA sets the
+         #peak temperature of a SNII region as SNII_TEMPERATURE. 
+         #Otherwith it sets the mean temp as SNII_TEMPERATURE.
+OPTIONS     +=      -DSNII_TEMPERATURE=5.e+7  # The minimum SNII temperature
+#OPTIONS     +=      -DSNII_TEMPERATURE=5.e+5  # The minimum SNII temperature
+OPTIONS     +=      -DUSE_SN_INPUT_PARTICLE_NUMBER # This option changes the input particle number for SN.
+#OPTIONS     +=      -DSN_INPUT_PARTICLE_NUMBER=32  # Particle number which injects SN energy/metal.
+#OPTIONS     +=      -DSN_INPUT_PARTICLE_NUMBER_MARGIN=4 # Margin for input particle number.
+OPTIONS     +=      -DSN_INPUT_PARTICLE_NUMBER=128  # Particle number which injects SN energy/metal.
+OPTIONS     +=      -DSN_INPUT_PARTICLE_NUMBER_MARGIN=8 # Mergin for input particle number.
+
+OPTIONS     += -DUSE_MOMENTUM_FEEDBACK # Use momentum feedbcak for Type II/Ia SNe
+OPTIONS     += -DSNE_EFFICIENCY=1.0 # To cover the low mass regime which is not covered by the Nomoto yields.
+OPTIONS     += -DTERMINAL_MOMENTUM_EFFICIENCY=1.0 # A factor for Pt.
+#OPTIONS     += -DUSE_MOMENTUM_FEEDBACK_CARRY_OVER 
+OPTIONS     += -DMOMENTUM_FEEDBACK_CARRY_OVER_FRACTION=0.3
+
+#OPTIONS     +=      -DUSE_SNE_ITERATION_LIMIT
+OPTIONS     +=      -DSNE_ITERATION_LIMIT_COUNT=20
+
+#______________________For Stellar Wind
+#OPTIONS     +=      -DUSE_STELLAR_WIND
+OPTIONS     +=      -DSTELLAR_WIND_TYPE=1 # 0, the simplest model.
+OPTIONS     +=      -DSTELLAR_WIND_SOURCE_LIFETIME=5*MEGAYEAR_CGS
+OPTIONS     +=      -DUSE_STELLAR_WIND_TIME_STEP
+OPTIONS     +=      -DSTELLAR_WIND_MAX_TIMESTEP=1.e5*YEAR_CGS
+
+#______________________For Radiation Pressure 
+#OPTIONS     +=      -DUSE_RADIATION_PRESSURE
+OPTIONS     +=      -DRADIATION_PRESSURE_MODEL=1
+OPTIONS     +=      -DRADIATION_PRESSURE_SOURCE_LIFETIME=5*MEGAYEAR_CGS
+OPTIONS     +=      -DRADIATION_PRESSURE_MAX_TIMESTEP=1.e5*YEAR_CGS
+#OPTIONS     +=      -DRADIATION_PRESSURE_MIN_COLUMN_DENSITY=1e21
+OPTIONS     +=      -DRADIATION_PRESSURE_ETA1=2
+OPTIONS     +=      -DRADIATION_PRESSURE_ETA2=2
+OPTIONS     +=      -DRADIATION_PRESSURE_TAUIR=10
+OPTIONS     +=      -DRADIATION_PRESSURE_TAU0=30
+OPTIONS     +=      -DRADIATION_PRESSURE_INPUT_PARTICLE_NUMBER=32
+OPTIONS     +=      -DRADIATION_PRESSURE_INPUT_PARTICLE_NUMBER_MERGIN=4
+
+
+
+
+#______________________For HII region
+OPTIONS     +=      -DUSE_HIIREGION_MODEL
+OPTIONS     +=      -DUSE_ASRFLX_NLY # Use ASRFLX to evaluate nLy
+OPTIONS     +=      -DUSE_HIIREGION_ITERATION_LIMIT
+OPTIONS     +=      -DHIIREGION_ITERATION_LIMIT_COUNT=10
+
+#______________________For Chemical Evolution
+OPTIONS     +=      -DUSE_CELIB
+OPTIONS     +=      -DCHEMICALEVOLUTION_IMFTYPE=CELibIMF_Chabrier #0=Salpeter,1=DietSapleter,2=MillarScalo,3=Kroupa,4=Kennicutt,5=Chabrier
+OPTIONS     +=      -DCHEMICALEVOLUTION_IMF_LOWERMASS=0.1 # Lower mass bound of the selected IMF.
+OPTIONS     +=      -DCHEMICALEVOLUTION_IMF_UPPERMASS=100 # Upper mass bound of the selected IMF.
+OPTIONS     +=      -DCHEMICALEVOLUTION_POPIII_IMF=1 #0=Not use,1=Use
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_YIELD_TYPE=1 #0=Portinari+1999,1=Nomoto+2013
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_YIELD_MODIFICATION_P98=1 # Modifications for yields of Portinari+1999
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_HYPERNOVA_FRACTION=0.05 # Hypernova fraction
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_LOWERMASS=8.0 # Lower mass bound of the star who results in SNII.
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_UPPERMASS=100.0 # Upper mass bound of the star who results in SNII.
+
+OPTIONS     +=      -DUSE_CELIB_SNII_INDIVIDUAL
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_EVENTNUMBER=1 # This is the size of type II SNe association.
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNII_TIMEINTERVAL_MIN=1e4 # year.
+
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNIa_TYPE=1 # 0=GreggioRenzini+1983, 1=Maoz+2012, 2=Vogelsberger+2013
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNIa_YIELD_TYPE=2 # 0=Iamoto+1999, 1=Maeda+2010, 2=Seitenzahl+2013, 3=Travaglio+2004
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNIa_YIELD_MODEL=7 # 
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNIa_LOWERMASS=3.0 # Lower mass bound of the star who results in SNIa.
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNIa_UPPERMASS=6.0 # Upper mass bound of the star who results in SNIa.
+OPTIONS     +=      -DCHEMICALEVOLUTION_SNIa_EVENTNUMBER=1 # This number defines the size of association of Type Ia SNe
+OPTIONS     +=      -DUSE_CELIB_AGB  # Use AGB mode
+OPTIONS     +=      -DCHEMICALEVOLUTION_AGB_BIN_TYPE=0 # 0=Linear bin, 1=Log bin
+OPTIONS     +=      -DCHEMICALEVOLUTION_AGB_NBIN=100    # Number of bin for the log bin case.
+OPTIONS     +=      -DCHEMICALEVOLUTION_AGB_INTERVAL=1.e8 # Time interval for the linear bin case.
+OPTIONS     +=      -DUSE_CELIB_NSM  # Use NSM mode
+OPTIONS     +=      -DCHEMICALEVOLUTION_NSM_DTD_INDEX=-1.0  #
+OPTIONS     +=      -DCHEMICALEVOLUTION_NSM_DTD_OFFSET=1.e+8  #
+
+OPTIONS     +=      -DUSE_FEEDBACK_TIMESTEP
+OPTIONS     +=      -DUSE_STAR_TIMESTEP_LIMITER
+
+
+#______________________For metallicity diffusion 
+OPTIONS     +=      -DUSE_METAL_DIFFUSION # This function can be used when you use CELib.
+OPTIONS     +=      -DDIFFUSION_TYPE=1 # Type 0: Greif, Type 1: Shen
+OPTIONS     +=      -DTURBULENT_DIFFUSION_COEF=0.01 # Used in the case of Type 1
+                      # 0.01 is the fiducial value. 
+                      # See Hirai & Saitoh (2017) and Hirai, Saitoh et al. (2018?)
+
+
+#______________________For multiphase model
+#OPTIONS     +=      -DUSE_MULTIPHASE_MODEL
+OPTIONS     +=      -DMULTIPHASE_MODEL_CRITERION=10 # tcool ~ MULTIPHASE_MODEL_CRITERION*tcross
+OPTIONS     +=      -DMULTIPHASE_MODEL_MAX_LIFETIME=100 # Tend = TCurrent+MULTIPHASE_MODEL_MAX_LIFETIME*tcross
+OPTIONS     +=      -DMULTIPHASE_MODEL_ADIAVATIC_CHANGE=0 # 0 changes Uhot, 1 changes Mhot.
+
+
+#______________________For sink particles
+#OPTIONS     +=      -DUSE_SINK_PARTICLE 
+#OPTIONS     +=      -DMAKE_SINK_PARTICLE
+#OPTIONS     +=      -DUSE_SINK_NOLOCALSINK_CONDITION
+#OPTIONS     +=      -DSINK_STAR_PARTICLES
+#OPTIONS     +=      -DSINK_THRESHOLD_DENSITY=1.e-10 # unit :  g/cm^3
+#OPTIONS     +=      -DSINK_THRESHOLD_DENSITY=1.67e-19 # unit :  g/cm^3 // use for star formation
+#OPTIONS     +=      -DSINK_THRESHOLD_DENSITY=1.67e-14 # unit :  g/cm^3 // use for star formation
+OPTIONS     +=      -DSINK_THRESHOLD_DENSITY=1.67e-12 # unit :  g/cm^3 // use for star formation
+#OPTIONS     +=      -DSINK_GASABSORPTION_THRESHOLD_DENSITY=1.67e-19 # unit :  g/cm^3
+#OPTIONS     +=      -DSINK_GASABSORPTION_THRESHOLD_DENSITY=1.67e-21 # unit :  g/cm^3
+OPTIONS     +=      -DSINK_GASABSORPTION_THRESHOLD_DENSITY=1.67e-15 # unit :  g/cm^3
+#OPTIONS     +=      -DSINKHYDRO_ACCRETION_RADIUS=30*AU_CGS # unit
+OPTIONS     +=      -DSINKHYDRO_ACCRETION_RADIUS=50*AU_CGS # unit
+#OPTIONS     +=      -DSINKHYDRO_ACCRETION_RADIUS=1*AU_CGS # unit
+#OPTIONS     +=      -DSINKHYDRO_ACCRETION_RADIUS=0.1*PC_CGS # unit
+#OPTIONS     +=      -DSINKHYDRO_ACCRETION_RADIUS=5.e+14 # unit
+#OPTIONS     +=      -DSINKSINK_MERGING_DISTANCE=1*AU_CGS  # unit
+OPTIONS     +=      -DSINKSINK_MERGING_DISTANCE=50*AU_CGS  # unit
+#OPTIONS     +=      -DUSE_SINKSINK_MERGING_BOUND_CONDITION # unit
+OPTIONS     +=      -DUSE_SINK_TIMESTEP_LIMITER # Sink time-step limiter.
+OPTIONS     +=      -DSINK_TIMESTEP_MAX_K_LOCAL=3 # Limit dt_sink <= 2^THIS_PARAM * dt_hydro_localmin.
+#OPTIONS     +=      -DUSE_SMOOTHED_POTENTIAL #
+
+
+#______________________Particle splitting
+#OPTIONS     +=      -DUSE_PARTICLE_SPLITTING
+OPTIONS     +=      -DPARTICLE_SPLITTING_INTERAVAL=8 #
+OPTIONS     +=      -DPARTICLE_SPLITTING_CRITERION=0 # 0=Jeans lengh, 1=Jeans mass
+OPTIONS     +=      -DPARTICLE_SPLITTING_MASSFACTOR=200 # MJeans/Mi > FACTOR
+OPTIONS     +=      -DPARTICLE_SPLITTING_TYPE=1 # 0=HCP, 1=CUBE, 2=BCC, 3=VORO
+#OPTIONS     +=      -DUSE_AGRESSIVE_PARTICLE_SPLITTING_STRATEGY
+OPTIONS     +=      -DAGRESSIVE_PARTICLE_SPLITTING_THRESHOLD=0.75
+OPTIONS     +=      -DMAX_PARTICLE_SPLIT_GENERATION=1 # 
+
+#______________________For PowderSnow
+OPTIONS     +=      -D_POSIX_C_SOURCE=199309L 
+OPTIONS     +=      -D_XOPEN_SOURCE=500
+
+#______________________Print out logs
+OPTIONS     +=      -DPRINT_LOG_KERNEL_ITERATION
+#OPTIONS     +=      -DPRINT_LOG_DELAYED_FEEDBACK
+OPTIONS     +=      -DPRINT_LOG_TIMESTEP_IN_PHYSICAL_UNIT
+#OPTIONS     +=      -DPRINT_LOG_HOLD_RELEASE_GRAPE
+#OPTIONS     +=      -DPRINT_LOG_THIS_STEP
+
+
+#______________________Task list
+#OPTIONS += -DTASK_GALAXY_FORMATION
+#OPTIONS += -DTASK_TORUS
+#OPTIONS += -DTASK_MERGER # test clear.
+OPTIONS += -DTASK_DICE_RUN
+#OPTIONS += -DTASK_MW # test clear.
+#OPTIONS += -DTASK_NFW
+#OPTIONS += -DTASK_CLOUD_EXPLOSION 
+#OPTIONS += -DTASK_BLAST_WAVE       # SPSPH pass
+#OPTIONS += -DTASK_SINUSOIDAL_WAVE
+#OPTIONS += -DTASK_3D_COLLAPSE      # SPSPH pass
+#OPTIONS += -DTASK_3D_SHOCKE_TUBE
+#OPTIONS += -DTASK_1D_SHOCKE_TUBE   # SPSPH pass
+#OPTIONS += -DTASK_M2_COLLAPSE
+#OPTIONS += -DTASK_TURBULENCE
+#OPTIONS += -DTASK_ROTATINGDISK_WITH_SINK
+#OPTIONS += -DTASK_AGNTORUS
+#OPTIONS += -DTASK_COLD_COLLAPSE
+#OPTIONS += -DTASK_HYDROSTATIC      # SPSPH pass
+#OPTIONS += -DTASK_KELVINHELMHOLTZ_INSTABILITY # SPSPH pass
+#OPTIONS += -DTASK_GALACTIC_CENTER # SPSPH pass
+#OPTIONS += -DTASK_SANTABARBARA # SPSPH pass
+#OPTIONS += -DTASK_1D_TWOFLUIDS 
+#OPTIONS += -DTASK_KEPLER
+
+#OPTIONS += -DTASK_MAKE_SMOOTHDISK
+
+#OPTIONS += -DTASK_TEST_PARTICLE_SPLITTING
+#OPTIONS += -DTASK_TEST_SYMMETRIZED_POTENTIAL_ERROR
+#OPTIONS += -DTASK_TEST_HYDRO_QUANTITIES # SPSPH pass
+#OPTIONS += -DTASK_TEST_STELLARFEEDBACK
+#OPTIONS += -DTASK_TEST_MOMENTUMFEEDBACK
+#OPTIONS += -DTASK_TEST_EQUILIBRIUM_TEMPERATURE
+#OPTIONS += -DTASK_TEST_REINICKE_MEYER_TER_VEHN
+#OPTIONS += -DTASK_TEST_1D_THERMAL_CONDUCTIVITY
+#OPTIONS += -DTASK_TEST_3D_THERMAL_CONDUCTIVITY
+#OPTIONS += -DTASK_TEST_FUVFEEDBACK
+#OPTIONS += -DTASK_TEST_EXACTCOOLING
+#OPTIONS += -DTASK_TEST_DOMAINDECOMPOSITION
+
+#OPTIONS += -DTASK_TEST_HYDROTREE
+#OPTIONS += -DTASK_TEST_GRAVITYTREE
+#OPTIONS += -DTASK_TEST_SINKPARTICLE
+#OPTIONS += -DTASK_TEST_NEIGHBORSEARCH
+#OPTIONS += -DTASK_TEST_STROMGRENSPHERE
+#OPTIONS += -DTASK_TEST_RADIATION_PRESSURE
+
+#OPTIONS += -DTASK_TEST_FOF
+#OPTIONS += -DTASK_TEST_CDM_NEIGHBOR_SEARCH
+#OPTIONS += -DTASK_TEST_HYDRO_CHECK_DIRECT_AND_TREE
+#OPTIONS += -DTASK_TEST_NEIGHBOR_SEARCH_TEST
+#OPTIONS += -DTASK_TEST_TREE_ODD_DISTRIBUTION
+#OPTIONS += -DTASK_TEST_NEIGHBOR_SEARCH_TEST

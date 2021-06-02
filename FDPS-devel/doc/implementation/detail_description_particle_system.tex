@@ -1,0 +1,299 @@
+\subsubsection{粒子群クラス}
+\label{sec:detail_module_paricle_system}
+
+\subsubsubsection{ファイル入力}
+
+ここでは、ユーザーが用意した粒子の初期条件ファイルの入力メソッドについて記述する。
+
+ファイル入力を行う関数は以下の二つである。
+
+\begin{screen}
+\begin{verbatim}
+void loadParticleSingle(
+                        const char * filename,
+                        const char * mode,
+                        void (*(FullParticle::pfunc))(FILE *));
+\end{verbatim}
+\end{screen}
+
+\begin{screen}
+\begin{verbatim}
+void loadParticle(
+                  const char * format,
+                  const char * mode,
+                  void (*(FullParticle::pfunc))(FILE *))
+\end{verbatim}
+\end{screen}
+
+前者は一つの初期条件ファイルを読み込む場合、後者はファイルが分割されて
+いる場合に使う。
+
+これらの関数では、以下の様にメンバが設定、変更される。
+\begin{itemize}
+\item プロセスの持つ粒子数{\tt n\_ptcl\_loc\_}を設定。
+\item 全プロセスが持つ粒子数の合計{\tt n\_ptcl\_tot\_}を設定。
+\item {\tt ptcl\_}の配列サイズ{\tt n\_ptcl\_loc\_max\_}を設定。
+\item {\tt ptcl\_}の配列の確保と初期条件ファイルからの代入。
+\end{itemize}
+
+
+まず、{\tt loadParticleSingle(...)}。大まかな流れはプロセス番号0のプロ
+セスがユーザーが用意した初期条件ファイルからユーザーが定義した粒子読み
+取り関数（フルパーティクルクラスのメソッド）を使って粒子データを読み取
+り、各プロセスの持つ粒子数が同じになるようにフルパーティクルデータを送
+信する。ユーザーが用意する初期条件ファイルはアスキーの場合は一行に一粒
+子の情報が書き込まれていなければならない。バイナリーの場合は一粒子ごと
+まとまって情報が書かれている必要がある。アスキー、バイナリーは第二引数
+で{\tt "r"}、{\tt "rb"}を選択する事で切り替える。これら以外のものが設定
+された場合は例外を送出する。粒子読み取り関数は以下の様に定義されている。
+
+\begin{verbatim}
+void FullParticle::loadOneParticleAscDec(FILE *fp) {
+    fscanf(fp, "%lf%lf%lf%lf%lf%lf%lf",
+                  &this->mass,
+                  &this->pos[0], &this->pos[1], &this->pos[2],
+                  &this->vel[0], &this->vel[1], &this->vel[2]);
+}
+\end{verbatim}
+
+初期条件ファイルには、粒子数の情報が無いので、最初にファイルを終りまで
+読み込み粒子数を数え、それをメンバ{\tt n\_ptcl\_tot\_}に格納し、{\tt
+n\_ptcl\_tot\_}とプロセス数から、各プロセスが持つ粒子数{\tt
+n\_ptcl\_loc\_}と{\tt ptcl\_}の配列の大きさ{\tt n\_ptcl\_loc\_max\_}を
+決定し、{\tt ptcl\_}の配列を確保する。
+
+{\tt n\_ptcl\_loc\_max\_}はデフォルトでは以下の様に決定する。
+
+\begin{equation}
+{\rm n\_ptcl\_loc\_max\_} = {\rm n\_ptcl\_tot\_} / プロセス数 * 4 + 1000;
+\end{equation}
+
+配列の大きさの決め方はユーザーも定義出来るようにしたいが、どの様にする
+かは決まっていない。
+
+{\tt n\_ptcl\_loc\_}は各プロセスで同じになるようにする。{\tt
+n\_ptcl\_tot\_}がプロセス数で割り切れない場合はプロセス番号の若いプロセ
+スから順に粒子を一つ多く持つようにする。ここまで実行したのち、再びファ
+イルを頭から読み込み、データを{\tt ptcl\_}に格納する。
+
+次に、{\tt loadParticle(...)}の詳細について述べる。ユーザーが用意する粒
+子の初期条件ファイルの形式や読み込み関数は{\tt loadParticleSingl(...)}
+の場合と同じである。第一引数{\tt fileformat}でファイル名のフォーマット
+を指定する。フォーマットの指定方法は標準Cライブラリの関数\verb|printf|
+の第１引数と同じである。ただし変換指定は必ず2つであり、その指定子はどち
+らも整数である。1つ目の変換指定にはそのジョブの全プロセス数が、2つ目の
+変換指定にはプロセス番号が入る。例えば、引数が
+\verb|nbody_%03d_%03d.init|ならば、全プロセス数$64$のジョブのプロセス番
+号$12$のプロセスは、\verb|nbody_064_012.init|というファイルを読み込む。
+フォーマットの指定正しくない場合は例外を送出する。
+
+各プロセスは割り当てられた初期条件ファイルから粒子データを読み取り{\tt
+ptcl\_}に格納する。初期条件ファイルには、粒子数の情報が無いので、最初に
+ファイルを終りまで読み込み粒子数を数え、それをメンバ{\tt
+n\_ptcl\_loc\_}に格納し、{\tt MPI::Allreduce}を使って{\tt
+n\_ptcl\_loc\_}の和を{\tt n\_ptcl\_tot\_}に格納する。{\tt
+n\_ptcl\_tot\_}とプロセス数から、{\tt ptcl\_}の配列の大きさ{\tt
+n\_ptcl\_loc\_max\_}を{\tt loadParticleSingle(...)}の場合と同じ方法で決
+定し、{ptcl\_}の配列を確保する。もし、{\tt n\_ptcl\_loc\_max\_}が{\tt
+n\_ptcl\_loc\_}より、小さくなってしまった場合は例外を送出する。
+
+\subsubsubsection{ファイル出力}
+
+%ここでは、ユーザーが用意した粒子のスナップショットファイルの出力メソッ
+%ドについて記述する。
+
+%ファイル出力を行う関数は以下の二つである。
+
+%\begin{screen}
+%\begin{verbatim}
+%void PS::ParticleSystem::dumpParticleSingle(
+%                            const char * filename,
+%                            const char * mode,
+%                            void (*(FullParticle::pfunc))(FILE *))
+%\end{verbatim}
+%\end{screen}
+
+%\begin{screen}
+%\begin{verbatim}
+%void PS::ParticleSystem::dumpParticle(
+%                            const char * format,
+%                            const char * mode,
+%                            void (*(FullParticle::pfunc))(FILE *))
+%\end{verbatim}
+%\end{screen}
+
+%前者は一つのスナップショットファイルを出力する場合、後者は各プロセスが
+%ファイルを出力する場合に使う。
+
+%まず、前者について述べる。大まかな流れは、以下の様である。プロセス番号
+%iのプロセスがユーザーの定義した一粒子書き込み関数にしたがって、{\tt
+%ptcl_}から情報をダンプし、そのプロセスの持つ全ての粒子をダンプしたら、
+%ファイルポインタをプロセス番号i+1のプロセスに渡し、同様に粒子データをダ
+%ンプする。
+
+%{\tt mode}は以下の四つが定義されている。
+%\begin{tabular}{llll} 
+%{\tt mode} &=& {\tt "w"} &　アスキー用 \\ 
+%     &=& {\tt "wb"}　&　バイナリー用 \\
+%     &=& {\tt "a"}　&　追加書き込みアスキー用 \\
+%     &=& {\tt "ab"}　&　追加書き込みバイナリー用
+%\end{tabular}
+%これ以外が選ばれた場合は例外を送出する。
+
+%また、一粒子書き込み関数は以下の様に定義してもらう。
+%\begin{verbatim}
+%void RealParticle::dumpOneParticleAscDec(FILE *fp) {
+%    fprintf(fp, "%lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",
+%                   this->mass,
+%                   this->pos[0], this->pos[1], this->pos[2],
+%                   this->vel[0], this->vel[1], this->vel[2],
+%                   this->acc[0], this->acc[1], this->acc[2]);
+%}
+%\end{verbatim}
+
+\subsubsubsection{初期設定}
+
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::ParticleSystem::initialize()
+\end{verbatim}
+\end{screen}
+
+いまのところやることがないが, そのうちできるかもしれないので, とりあえ
+ず残しておく.
+
+\subsubsubsection{粒子配列のメモリ確保}
+
+各プロセスにおける粒子配列のメモリ確保は, 以下の関数を各プロセスで呼び
+出すことで行われる.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::ParticleSystem::createParticle(const PS::S32 n_limit)
+\end{verbatim}
+\end{screen}
+
+引数{\tt n\_limit}は粒子配列のサイズである. 
+
+この関数は必ず呼出されなければならない.
+
+\subsubsubsection{サンプル粒子数の設定}
+
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::ParticleSystem::setAvarageTargetNumberOfSampleParticlePerProcess
+(const PS::S32 nsampleperprocess)
+\end{verbatim}
+\end{screen}
+
+引数は, 領域分割のためにサンプルする粒子の目標数. この目標数は, 各プロ
+セスがある粒子種で集める粒子数の平均である. この粒子数と全プロセス数か
+ら, 全プロセスでサンプルすべき粒子数を求めることができ, この数が{\tt
+n\_smp\_ptcl\_tot\_}に格納される.
+
+この関数は呼出さなくてもよい. この場合, デフォルト値が採用される. デフォ
+ルト値は30である.
+
+%%\subsubsubsection{あるプロセスの担当する粒子を包含する最小の直方体を求める関数}
+%%
+%%あるプロセスの担当するある粒子種すべてを包含する最小の直方体を求める関
+%%数である.
+%%\begin{screen}
+%%\begin{verbatim}
+%%public:
+%%PS::F32ort PS::ParticleSystem::getParticleDomain(void)
+%%\end{verbatim}
+%%\end{screen}
+%%この直方体は, この関数を呼ぶと, 返値としてあたえられる.
+%%
+%%内部で行っていることは, ある粒子種の各軸方向の最大値最小値を取るだけである.
+
+\subsubsubsection{リアル粒子のサンプル}
+
+各プロセスで以下の関数を呼び出すと, 各プロセスでその担当粒子から粒子の
+サンプルが行われる.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::ParticleSystem::getSampleParticle(PS::S32 & number_of_sample_particle,
+                                           PS::F32vec pos_sample [],
+                                           const PS::F32 weight)
+\end{verbatim}
+\end{screen}
+
+第1, 第2引数は出力である. 第1引数{\tt number\_of\_sample\_partile}はサ
+ンプルする粒子の数, 第2引数{\tt pos\_sample}はサンプルした粒子の位置座
+標である. 第3引数は入力であり, そのプロセスでサンプルすべき粒子の数のウェ
+イトである.
+
+サンプルする粒子の数は{\tt (PS::S32) (weight * n\_smp\_ptcl\_tot\_ /
+weight\_all)}として与えられる. {\tt weight\_all}は全プロセスの{\tt
+weight}の和である.
+
+サンプルする粒子はメルセンヌ・ツイスター法を用いたモンテカルロ法で選ば
+れる.
+
+この関数は領域クラスのメンバ関数である{\tt collectSampleParticle}で呼出
+されるだけであり, ユーザーに使用されることはない.
+
+\redtext{getSampleParticle: テストDomainInfo::collectSampleParticleと同じような感じ}
+
+\subsubsubsection{リアル粒子の交換}
+
+この節では, リアル粒子の交換に関する詳細記述を行う. この動作は以下の関
+数を全プロセスで呼び出すことで行われる.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::ParticleSystem::exchangeParticle(const PS::DomainInfo & dinfo)
+\end{verbatim}
+\end{screen}
+
+%%この関数では、以下の様にメンバが設定、変更される。
+%%\begin{itemize}
+%%\item 他プロセスからの粒子を{\tt ptcl\_}に格納する。
+%%\item {\tt n\_ptcl\_loc\_}を設定。
+%%\end{itemize}
+
+手順は以下の2段階. 1段階目では, 領域クラスのメンバ変数で{\tt
+PS::F32ort}型の配列{\tt pos\_domain\_}を使って, 各粒子がどのドメインに
+入るかを計算する. 2段目では, 自プロセス以外が担当するドメインに入る粒子
+があれば, フルパーティクルデータごと該当プロセスへ送信する.
+
+%%1段階目を記述する. 各プロセスは, 各粒子に対して, どのドメインに入るかを
+%%決める. (以下書きかけ) どのドメインに入るかはツリー構造を使って探す. 送
+%%信バッファは前回のサイズから推定, リンクトリストの使用, またはループを
+%%2回まわすことで設定する.
+
+1段階目を記述する. これは各プロセスで行われる. 行われることは以下の通り.
+各粒子に対して, 自分のドメインに入るか, 入らないかを調べる. もし入らな
+い場合, その粒子が入るドメインを探す. 探し方は以下の通り. まず, その粒
+子が入るスラブを探す. 次に, その粒子が, そのスラブ内のどのカラムに入る
+かを探す. 最後に, その粒子が, そのカラム内のどのドメインに入るかを探す.
+上記のスラブ, カラム, ドメインの探し方は, 二分探索である.
+
+%%2段階目を記述する. 各プロセスは, 他のプロセスにフルパーティクルデータを
+%%送る. (以下書きかけ) {\tt ptcl\_}には, 元々自プロセスが持っていた粒子が
+%%先頭, 他プロセスから送られてきた粒子は後に置くことにする.
+
+2段階目を記述する. 各プロセスは, 他のプロセスにフルパーティクルデータを
+送る. {\tt ptcl\_}には, 元々自プロセスが持っていた粒子が先頭, 他プロセ
+スから送られてきた粒子は後に置くことにする.
+
+%%実装方法は大きく2通り考えられる。一つはプロセス数でループを回し、さら
+%%に粒子方向にもループを回して、粒子の行き先のプロセスを探して、送信バッ
+%%ファに入れていく方法。もう一つは粒子方向でループを回し、各粒子がどの
+%%プロセスに行くかを探す方法である。
+
+%%後者では粒子の行き先を探すのにルートドメインの分割のツリー構造が使え
+%%るため、高速であるが、各送信バッファに入る粒子数は最後までわからない。
+%%しかし、送信バッファのサイズは前回のサイズから推定する事も出来るし、
+%%そうでなくてもリンクトリストを使ったり、ループを二回回して、最初のルー
+%%プで送信する粒子の個数を数えて、2回目で粒子を送信用バッファーにコピー
+%%すればよい。なので、後者の方法を採用する。
+
+%%この関数を呼んだ後には、{\tt ptcl\_}には新たな粒子が設定されている。
+%%粒子の並びは先頭が元々自プロセルが持っていた粒子で、その後ろに他プロ
+%%セスから来た粒子が並ぶようにする。

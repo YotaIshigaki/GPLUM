@@ -1,12 +1,12 @@
-PS_PATH_FDPS = ../FDPS-5.0g/src/
-PS_PATH_PIKG = ../PIKG/inc/
+PS_PATH_FDPS = ../FDPS-devel/src/
+#PS_PATH_PIKG = ../PIKG/inc/
+PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 
 ####################
 ###   Compiler   ###
 ####################
 CC = clang++ -std=c++11
-#CC = g++ -std=c++11
 #CC = mpic++ -std=c++11
 #CC = time FCCpx -Nclang
 #CC = time mpiFCCpx -Nclang
@@ -14,7 +14,7 @@ CC = clang++ -std=c++11
 ########################
 ###   MPI & OpenMP   ###
 ########################
-use_OpenMP = yes
+#use_OpenMP = yes
 #use_MPI = yes
 
 ################
@@ -30,12 +30,12 @@ use_AVX2 = yes
 individual_cutoff = yes
 quad = yes
 #isotropic = yes
-gas_drag = yes
+#gas_drag = yes
 #integrate_6th = yes
 #absorb_particle = yes
 #test_particle = yes
 
-#collision = yes
+collision = yes
 #Kominami = yes
 #Chembers = yes
 #merge_binary = yes
@@ -52,8 +52,7 @@ CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
 ifeq ($(use_OpenMP),yes)
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
-CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
 endif
 ifeq ($(use_MPI),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL

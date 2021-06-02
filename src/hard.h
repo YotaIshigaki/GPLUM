@@ -1,60 +1,79 @@
 #pragma once
 
-template <class Tp>
-class VectorNoClear : public std::vector<Tp> {
-    PS::U32 siz;
+#define NMAX_HARD 65536
 
+class ParticleCluster{
 public:
-    VectorNoClear() : std::vector<Tp> (4) { siz = 0; }
-    //VectorNoClear(std::vector<Tp> & vec) : std::vector<Tp>(vec) { siz = std::vector<Tp>::size(); }
-    //VectorNoClear(VectorNoClear<Tp> & vec) {
-    //    if ( siz < vec.siz ) resize(vec.siz);
-    //    for (PS::S32 i=0; i<vec.siz; i++) std::vector<Tp>::at(i) = vec.at(i);
-    //    siz = vec.siz;
-    //}
+    static std::vector<FPHard> ptcl_hard;   
+    std::vector<PS::S32> id_list;
+
+    static void resize_hard(PS::S32 n) { ptcl_hard.resize(n); }
+    static void reserve_hard(PS::S32 n) { ptcl_hard.reserve(n); }
+    static void clear_hard() { ptcl_hard.clear(); }
     
-    void clear() {  siz = 0; }
-    void push_back(const Tp & pi) {
-        if ( siz < std::vector<Tp>::size() ) {
-            std::vector<Tp>::at(siz) = pi;
-        } else {
-            std::vector<Tp>::push_back(pi);
+    FPHard & operator [](PS::S32 i) { return ptcl_hard[id_list[i]]; }
+    FPHard const & operator [](PS::S32 i) const { return ptcl_hard[id_list[i]]; }
+    FPHard & at(PS::S32 i) { return ptcl_hard.at(id_list.at(i)); }
+    FPHard const & at(PS::S32 i) const { return ptcl_hard.at(id_list.at(i)); }
+
+    void clear() { id_list.clear(); }
+    
+    void push_back(const FPHard & pi) {
+        PS::S32 i = 0;
+#pragma omp critical
+        {
+            i = ptcl_hard.size();
+            ptcl_hard.push_back(pi);
         }
-        siz ++;
-        //assert ( siz <= std::vector<Tp>::size() );
+        id_list.push_back(i);
     }
-    void push_back(Tp && pi) {
-        if ( siz < std::vector<Tp>::size() ) {
-            //std::vector<Tp>::at(siz) = pi;
-            this->at(siz) = pi;
-        } else {
-            std::vector<Tp>::push_back(pi);
+    void push_back(FPHard && pi) {
+        PS::S32 i = 0;
+#pragma omp critical
+        {
+            i = ptcl_hard.size();
+            ptcl_hard.push_back(pi);
         }
-        siz ++;
-        //assert ( siz <= std::vector<Tp>::size() );
+        id_list.push_back(i);
     }
     void resize(const PS::U32 n) {
-        if ( n > std::vector<Tp>::size() ){
-            std::vector<Tp>::resize(n);
+        PS::S32 i = 0;
+        PS::S32 m = n - id_list.size();
+        if ( m > 0 ) {
+#pragma omp critical
+            {
+                i = ptcl_hard.size();
+                ptcl_hard.resize(i + m);
+            }
         }
-        siz = n;
+        PS::S32 j = id_list.size();
+        id_list.resize(n);
+        for (PS::S32 k=j; k<n; k++) id_list.at(k) = i + k;
     }
-    void reserve (const PS::U32 n) {
-        if ( n > std::vector<Tp>::capacity() ){
-            std::vector<Tp>::reserve(n);
-        }
+    void reserve (const PS::U32 n) { id_list.reserve(n); }
+
+    PS::U32 size() const { return id_list.size(); }
+    PS::U32 capacity() const { return id_list.capacity(); }
+};
+
+std::vector<FPHard> ParticleCluster::ptcl_hard;
+
+class ClusterSystem : public std::vector<ParticleCluster> {
+public:
+    void clear() { 
+        std::vector<ParticleCluster>::clear();
+        ParticleCluster::clear_hard();
     }
-    PS::U32 size() const { return siz; }
-    PS::U32 capacity() const { return std::vector<Tp>::capacity(); }
+
+    void reserve_hard(const PS::U32 n) { ParticleCluster::reserve_hard(n); }
 };
 
 class HardSystem{
 public:
     std::vector<PS::S32> list_iso;
-    //std::vector<std::vector<std::pair<bool,PS::S32> > > list_multi;
+    std::vector<std::vector<std::pair<bool,PS::S32> > > list_multi;
     //std::vector<std::vector<FPHard> > ptcl_multi;
-    VectorNoClear<std::vector<std::pair<bool,PS::S32> > > list_multi;
-    VectorNoClear<VectorNoClear<FPHard> > ptcl_multi;
+    ClusterSystem ptcl_multi;
     std::map<PS::S32,PS::S32> mp_cluster;  // cluster ID -> cluster adress in HardSystem
 
     std::vector<Collision> collision_list;
@@ -152,6 +171,8 @@ public:
         return edisp_d;
 #endif
     }
+
+    void reserve_hard(const PS::U32 n) { ptcl_multi.reserve_hard(n); }
     
     void showParticleID() const {
         PS::S32 size = ptcl_multi.size();

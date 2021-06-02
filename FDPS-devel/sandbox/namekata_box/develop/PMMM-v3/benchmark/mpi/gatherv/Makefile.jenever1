@@ -1,0 +1,28 @@
+# Compiler, compile options, etc.
+CXX=time -p mpicxx
+CXXFLAGS = -std=c++11 -O3 -ffast-math -funroll-loops
+LDFLAGS = 
+
+# (iii) Job submission variables
+WORKDIR = ./work-jenever1
+
+# (iv) Executable
+TARGET	= gatherv.out
+
+
+all: $(TARGET)
+
+$(TARGET): main.o
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
+	mkdir -p $(WORKDIR)
+	mv $@ $(WORKDIR)
+
+main.o: main.cpp 
+	$(CXX) $(CXXFLAGS) -c $< 
+
+clean:
+	rm -f *.o
+
+distclean: clean
+	rm -f $(TARGET)
+	rm -f *.txt

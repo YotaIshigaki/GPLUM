@@ -1,0 +1,243 @@
+n_tot = 262288
+n_tot = 262288
+n_tot = 262288
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288n_tot = 
+./result/t-de.dat
+n_tot = 262288
+262288
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+n_tot = 262288
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+     //==================================\\
+     ||                                  ||
+     || ::::::: ::::::. ::::::. .::::::. ||
+     || ::      ::    : ::    : ::       ||
+     || ::::::  ::    : ::::::'  `:::::. ||
+     || ::      ::::::' ::      `......' ||
+     ||     Framework for Developing     ||
+     ||        Particle Simulator        ||
+     ||     Version 1.1 (2015/08)        ||
+     \\==================================//
+
+       Home   : https://github.com/fdps/fdps 
+       E-mail : fdps-support@mail.jmlab.jp
+       Licence: MIT (see, https://github.com/FDPS/FDPS/blob/master/LICENSE)
+       Note   : Please cite Iwasawa et al. (in prep.)
+
+       Copyright (C) 2015 
+         Masaki Iwasawa, Ataru Tanigawa, Natsuki Hosono,
+         Keigo Nitadori, Takayuki Muranushi, Junichiro Makino
+         and many others
+******** FDPS has successfully begun. ********
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+Directory "./result" is successfully made.
+./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+Number of processes: 60
+Number of threads per process: 4
+np_ave=4371
+used mem size for tree=29843296
+used mem size for tree(0)=0.029843296
+time:  0.0000000 energy: -2.000068e-01 energy error: -0.000000e+00 wtime: +5.811e+00 +inf
+time:  0.0000000 energy: -2.000068e-01 energy error: -0.000000e+00 wtime: +5.811e+00 +inf
+time:  0.1250000 energy: -2.000067e-01 energy error: -2.633468e-07 wtime: +3.990e+00 +2.494e-01
+time:  0.1250000 energy: -2.000067e-01 energy error: -2.633468e-07 wtime: +3.990e+00 +2.494e-01
+time:  0.2500000 energy: -2.000061e-01 energy error: -3.496056e-06 wtime: +3.798e+00 +2.374e-01
+time:  0.2500000 energy: -2.000061e-01 energy error: -3.496056e-06 wtime: +3.798e+00 +2.374e-01
+time:  0.3750000 energy: -2.000051e-01 energy error: -8.470960e-06 wtime: +3.734e+00 +2.334e-01
+time:  0.3750000 energy: -2.000051e-01 energy error: -8.470960e-06 wtime: +3.734e+00 +2.334e-01
+time:  0.5000000 energy: -2.000038e-01 energy error: -1.515393e-05 wtime: +3.712e+00 +2.320e-01
+time:  0.5000000 energy: -2.000038e-01 energy error: -1.515393e-05 wtime: +3.712e+00 +2.320e-01
+time:  0.6250000 energy: -2.000020e-01 energy error: -2.406883e-05 wtime: +3.725e+00 +2.328e-01
+time:  0.6250000 energy: -2.000020e-01 energy error: -2.406883e-05 wtime: +3.725e+00 +2.328e-01
+time:  0.7500000 energy: -1.999998e-01 energy error: -3.507110e-05 wtime: +3.753e+00 +2.345e-01
+time:  0.7500000 energy: -1.999998e-01 energy error: -3.507110e-05 wtime: +3.753e+00 +2.345e-01
+time:  0.8750000 energy: -1.999971e-01 energy error: -4.835573e-05 wtime: +3.792e+00 +2.370e-01
+time:  0.8750000 energy: -1.999971e-01 energy error: -4.835573e-05 wtime: +3.792e+00 +2.370e-01
+time:  1.0000000 energy: -1.999942e-01 energy error: -6.279949e-05 wtime: +1.017e+01 +6.354e-01
+time:  1.0000000 energy: -1.999942e-01 energy error: -6.279949e-05 wtime: +1.017e+01 +6.354e-01
+time:  1.1250000 energy: -1.999906e-01 energy error: -8.108608e-05 wtime: +3.815e+00 +2.384e-01
+time:  1.1250000 energy: -1.999906e-01 energy error: -8.108608e-05 wtime: +3.815e+00 +2.384e-01
+time:  1.2500000 energy: -1.999867e-01 energy error: -1.004002e-04 wtime: +3.792e+00 +2.370e-01
+time:  1.2500000 energy: -1.999867e-01 energy error: -1.004002e-04 wtime: +3.792e+00 +2.370e-01
+time:  1.3750000 energy: -1.999822e-01 energy error: -1.227929e-04 wtime: +3.768e+00 +2.355e-01
+time:  1.3750000 energy: -1.999822e-01 energy error: -1.227929e-04 wtime: +3.768e+00 +2.355e-01
+time:  1.5000000 energy: -1.999772e-01 energy error: -1.480115e-04 wtime: +3.729e+00 +2.330e-01
+time:  1.5000000 energy: -1.999772e-01 energy error: -1.480115e-04 wtime: +3.729e+00 +2.330e-01
+time:  1.6250000 energy: -1.999718e-01 energy error: -1.748960e-04 wtime: +3.780e+00 +2.363e-01
+time:  1.6250000 energy: -1.999718e-01 energy error: -1.748960e-04 wtime: +3.780e+00 +2.363e-01
+time:  1.7500000 energy: -1.999657e-01 energy error: -2.053574e-04 wtime: +3.822e+00 +2.389e-01
+time:  1.7500000 energy: -1.999657e-01 energy error: -2.053574e-04 wtime: +3.822e+00 +2.389e-01
+time:  1.8750000 energy: -1.999592e-01 energy error: -2.381774e-04 wtime: +3.771e+00 +2.357e-01
+time:  1.8750000 energy: -1.999592e-01 energy error: -2.381774e-04 wtime: +3.771e+00 +2.357e-01
+time:  2.0000000 energy: -1.999518e-01 energy error: -2.750059e-04 wtime: +1.005e+01 +6.281e-01
+time:  2.0000000 energy: -1.999518e-01 energy error: -2.750059e-04 wtime: +1.005e+01 +6.281e-01
+time:  2.1250000 energy: -1.999440e-01 energy error: -3.141155e-04 wtime: +3.803e+00 +2.377e-01
+time:  2.1250000 energy: -1.999440e-01 energy error: -3.141155e-04 wtime: +3.803e+00 +2.377e-01
+time:  2.2500000 energy: -1.999352e-01 energy error: -3.577548e-04 wtime: +3.882e+00 +2.426e-01
+time:  2.2500000 energy: -1.999352e-01 energy error: -3.577548e-04 wtime: +3.882e+00 +2.426e-01
+time:  2.3750000 energy: -1.999259e-01 energy error: -4.045628e-04 wtime: +3.831e+00 +2.394e-01
+time:  2.3750000 energy: -1.999259e-01 energy error: -4.045628e-04 wtime: +3.831e+00 +2.394e-01
+time:  2.5000000 energy: -1.999154e-01 energy error: -4.571401e-04 wtime: +3.751e+00 +2.345e-01
+time:  2.5000000 energy: -1.999154e-01 energy error: -4.571401e-04 wtime: +3.751e+00 +2.345e-01
+time:  2.6250000 energy: -1.999038e-01 energy error: -5.147817e-04 wtime: +3.705e+00 +2.316e-01
+time:  2.6250000 energy: -1.999038e-01 energy error: -5.147817e-04 wtime: +3.705e+00 +2.316e-01
+time:  2.7500000 energy: -1.998913e-01 energy error: -5.773890e-04 wtime: +3.710e+00 +2.319e-01
+time:  2.7500000 energy: -1.998913e-01 energy error: -5.773890e-04 wtime: +3.710e+00 +2.319e-01
+time:  2.8750000 energy: -1.998776e-01 energy error: -6.459677e-04 wtime: +3.804e+00 +2.378e-01
+time:  2.8750000 energy: -1.998776e-01 energy error: -6.459677e-04 wtime: +3.804e+00 +2.378e-01
+time:  3.0000000 energy: -1.998628e-01 energy error: -7.198958e-04 wtime: +1.005e+01 +6.284e-01
+time:  3.0000000 energy: -1.998628e-01 energy error: -7.198958e-04 wtime: +1.005e+01 +6.284e-01
+time:  3.1250000 energy: -1.998464e-01 energy error: -8.017208e-04 wtime: +3.754e+00 +2.346e-01
+time:  3.1250000 energy: -1.998464e-01 energy error: -8.017208e-04 wtime: +3.754e+00 +2.346e-01
+time:  3.2500000 energy: -1.998285e-01 energy error: -8.916720e-04 wtime: +3.682e+00 +2.301e-01
+time:  3.2500000 energy: -1.998285e-01 energy error: -8.916720e-04 wtime: +3.682e+00 +2.301e-01
+time:  3.3750000 energy: -1.998089e-01 energy error: -9.891915e-04 wtime: +3.766e+00 +2.354e-01
+time:  3.3750000 energy: -1.998089e-01 energy error: -9.891915e-04 wtime: +3.766e+00 +2.354e-01
+time:  3.5000000 energy: -1.997870e-01 energy error: -1.098748e-03 wtime: +3.772e+00 +2.358e-01
+time:  3.5000000 energy: -1.997870e-01 energy error: -1.098748e-03 wtime: +3.772e+00 +2.358e-01
+time:  3.6250000 energy: -1.997625e-01 energy error: -1.221254e-03 wtime: +3.732e+00 +2.332e-01
+time:  3.6250000 energy: -1.997625e-01 energy error: -1.221254e-03 wtime: +3.732e+00 +2.332e-01
+time:  3.7500000 energy: -1.997354e-01 energy error: -1.356699e-03 wtime: +3.744e+00 +2.340e-01
+time:  3.7500000 energy: -1.997354e-01 energy error: -1.356699e-03 wtime: +3.744e+00 +2.340e-01
+time:  3.8750000 energy: -1.997054e-01 energy error: -1.507017e-03 wtime: +3.739e+00 +2.337e-01
+time:  3.8750000 energy: -1.997054e-01 energy error: -1.507017e-03 wtime: +3.739e+00 +2.337e-01
+time:  4.0000000 energy: -1.996714e-01 energy error: -1.677148e-03 wtime: +9.966e+00 +6.229e-01
+time:  4.0000000 energy: -1.996714e-01 energy error: -1.677148e-03 wtime: +9.966e+00 +6.229e-01
+time:  4.1250000 energy: -1.996329e-01 energy error: -1.869436e-03 wtime: +3.795e+00 +2.372e-01
+time:  4.1250000 energy: -1.996329e-01 energy error: -1.869436e-03 wtime: +3.795e+00 +2.372e-01
+time:  4.2500000 energy: -1.995888e-01 energy error: -2.089648e-03 wtime: +3.739e+00 +2.337e-01
+time:  4.2500000 energy: -1.995888e-01 energy error: -2.089648e-03 wtime: +3.739e+00 +2.337e-01
+time:  4.3750000 energy: -1.995376e-01 energy error: -2.345968e-03 wtime: +3.744e+00 +2.340e-01
+time:  4.3750000 energy: -1.995376e-01 energy error: -2.345968e-03 wtime: +3.744e+00 +2.340e-01
+time:  4.5000000 energy: -1.994782e-01 energy error: -2.642878e-03 wtime: +3.800e+00 +2.375e-01
+time:  4.5000000 energy: -1.994782e-01 energy error: -2.642878e-03 wtime: +3.800e+00 +2.375e-01
+time:  4.6250000 energy: -1.994067e-01 energy error: -3.000214e-03 wtime: +3.802e+00 +2.376e-01
+time:  4.6250000 energy: -1.994067e-01 energy error: -3.000214e-03 wtime: +3.802e+00 +2.376e-01
+time:  4.7500000 energy: -1.993223e-01 energy error: -3.422146e-03 wtime: +3.801e+00 +2.376e-01
+time:  4.7500000 energy: -1.993223e-01 energy error: -3.422146e-03 wtime: +3.801e+00 +2.376e-01
+time:  4.8750000 energy: -1.992165e-01 energy error: -3.951234e-03 wtime: +3.864e+00 +2.415e-01
+time:  4.8750000 energy: -1.992165e-01 energy error: -3.951234e-03 wtime: +3.864e+00 +2.415e-01
+time:  5.0000000 energy: -1.990815e-01 energy error: -4.626117e-03 wtime: +1.031e+01 +6.441e-01
+time:  5.0000000 energy: -1.990815e-01 energy error: -4.626117e-03 wtime: +1.031e+01 +6.441e-01
+time:  5.1250000 energy: -1.989000e-01 energy error: -5.533943e-03 wtime: +4.027e+00 +2.517e-01
+time:  5.1250000 energy: -1.989000e-01 energy error: -5.533943e-03 wtime: +4.027e+00 +2.517e-01
+time:  5.2500000 energy: -1.986415e-01 energy error: -6.826374e-03 wtime: +4.205e+00 +2.628e-01
+time:  5.2500000 energy: -1.986415e-01 energy error: -6.826374e-03 wtime: +4.205e+00 +2.628e-01
+time:  5.3750000 energy: -1.982536e-01 energy error: -8.765808e-03 wtime: +4.484e+00 +2.802e-01
+time:  5.3750000 energy: -1.982536e-01 energy error: -8.765808e-03 wtime: +4.484e+00 +2.802e-01
+time:  5.5000000 energy: -1.976250e-01 energy error: -1.190841e-02 wtime: +5.310e+00 +3.319e-01
+time:  5.5000000 energy: -1.976250e-01 energy error: -1.190841e-02 wtime: +5.310e+00 +3.319e-01
+time:  5.6250000 energy: -1.961683e-01 energy error: -1.919182e-02 wtime: +8.329e+00 +5.206e-01
+time:  5.6250000 energy: -1.961683e-01 energy error: -1.919182e-02 wtime: +8.329e+00 +5.206e-01
+time:  5.7500000 energy: -1.737088e-01 energy error: -1.314855e-01 wtime: +2.846e+01 +1.779e+00
+time:  5.7500000 energy: -1.737088e-01 energy error: -1.314855e-01 wtime: +2.846e+01 +1.779e+00
+[mpiexec@cognac0-mic0] Sending Ctrl-C to processes as requested
+[mpiexec@cognac0-mic0] Press Ctrl-C again to force abort

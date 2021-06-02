@@ -1,0 +1,144 @@
+# This file describes the response to the reviewers.
+
+We are grateful to the reviewers for his/her helpful comments
+and very useful suggestions that improve our paper.
+We have revised our manuscript according to the reviewer's comments.
+We hope our manuscript to be accepted for the publication.
+
+#####################################
+#   Correction notes of the paper
+#####################################
+In the following, we describe our reply to the reviewers' comments
+in the order of the report sent by the ICCS 2018 Organising Committee.
+
+
+#====================================
+#    Comments from reviewer 1
+#====================================
+!-----------------------------------------------------------------------------
+! Comment 1 ::
+!    I found this paper extremely interesting, both from the perspective of
+!    the large-scale hardware and the problem being studied. The paper
+!    presents a number of optimizations to the existing FDPS code that were
+!    necessary to create scalable performance when modeling the rings of
+!    Saturn on the world's most powerful supercomputer. The paper is well
+!    written and easy to follow. Each of the optimizations was interesting
+!    and well argued.
+!
+!    I was a little confused by Section 5.1. First it says "... the total
+!    number of particles is 2G.", then it says "... where N is the total
+!    number of particles" ???
+!-----------------------------------------------------------------------------
+
+We apologize that the descriptions in Section 5.1 are not clear.  The
+total number of particles N is fixed to 2G in the strong-scaling test,
+while N depends on the number of processes used in the weak-scaling
+test because the number of particles per process is set to be 1M in
+this case.  Equations (2) and (3) show the dependencies of the mass
+and radius of particles on N.  A constant 2G in these two equations is
+a just normalization constant.
+
+
+!-----------------------------------------------------------------------------
+!  Comment 2 ::
+!    There are a few places in the paper where optimizations have been
+!    applied, for example using the same interaction list for 64
+!    steps. Clearly, such optimizations represent a trade-off between
+!    simulation accuracy and execution speed. It would therefore be
+!    interesting to know how such numbers (64 in this example) where
+!    chosen. Were they based on a principled analysis based on the measured
+!    reduction in simulation accuracy?  Similarly, how were other constant
+!    values chosen, such as 0.5 for the coefficient of restitution?
+!-----------------------------------------------------------------------------
+
+At first, we'd like to answer the first question. As you pointed out,
+the accuracy of simulation degrades by reusing the same interaction
+list for multiple steps if we construct the list without any
+`redundancy'. More specifically, the following problems can occur:
+
+1) Particles which should interact with some particle by physical
+   inelastic collisions at some steps of the timesteps over which 
+   the list is reused (hereinafter the reuse steps) are registered
+   as tree nodes in the list for that particle when it is constructed.
+
+2) From a viewpoint of a given opening criterion \theta, particles that
+   should not be treated as tree nodes when calculating the gravity
+   acting on some particle may be registered as tree nodes
+   in the list for that particle when it is constructed.
+
+If these happen, some of particle collisions are ignored and the
+accuracy of gravitational force calculation decreases.
+
+
+We prevent these problems from occurring by constructing an
+interaction list for a group of particles so that all the particles
+whose distances from any of the particles in the group are less than a
+pre-specified search radius are unconditionally registered as
+particles to the list, not as tree nodes. Therefore, if we use a
+sufficiently large search radius, we can avoid the problems described
+in the previous paragraph. Clearly, an appropriate value of the search
+radius depends on the dynamical properties of a physical system
+simulated as well as on the number of the reuse steps. In this study,
+we determine it by performing (small-sized) simulations repeatedly. 64
+steps is chosen so that the time of the interaction calculation is
+dominant.
+
+In order to explain this in the manuscript, we newly added two paragraphs
+in Section 4.1 (the 2nd and 3rd paragraph in the revised version of the
+manuscript).
+
+
+
+The coefficient of restitution 0.5 is based on the results of
+laboratory experiments. For example, Hatzes et al. (1988)(#)
+investigated the impact properties of water ice and showed that the
+coefficient of restitution is in the range of 0.5-1.0 depending on the
+impact velocity and the physical conditions of the surface of ice.
+
+(#) Hatzes,A.P., Bridges,F.G., and Lin,D.N.C., 1988.
+    Monthly Notice of Royal Astronomical Society, 231, pp.1091-1115
+
+We have corrected the last sentence of the first paragraph in Section 5.2
+as follows.
+
+"We chose these parameters so that the coefficient of restitution in
+the radial direction is 0.5, which is close to the experimental values
+(e.g. Hatzes et al. [5])."
+
+
+#====================================
+#    Comments from reviewer 2
+#====================================
+!------------------------------------------------------------------------------
+!  Implementation and performance of the large-scale realistic simulation
+!  of planetary rings on a TainhuLight supercomputer have been
+!  investigated. The authors have provided decent description of the
+!  problem along with a number of algorithmic solutions that allows for
+!  its solving using a reasonable amount of computing power.
+!------------------------------------------------------------------------------
+
+We are grateful that you have read the manuscript carefully and have made
+a fair evaluation.
+
+
+
+#====================================
+#    Comments from reviewer 3
+#====================================
+!------------------------------------------------------------------------------
+!  This paper describes modifications made to the Barnes-Hut algorithm
+!  for modelling thin planetary rings on part of the Taihu Light
+!  computer. The authors have done a good job of improving the
+!  performance on this machine, but the research is incremental in nature
+!  with rather limited novelty. There are a large number of typos, and
+!  errors in the use of English, all of which are marked in the attached
+!  file. Also LET should be expanded on its first use. <This review
+!  contains an attachment, see the file review_3.pdf attached to this
+!  letter.>
+!------------------------------------------------------------------------------
+
+We'd like to apologize that there are a lot of typos and errors in the
+use of English in our manuscript. We are grateful that you have read
+the manuscript carefully and  have provided us a file where the typos
+and the errors are marked. We have corrected all of them according to
+this file.

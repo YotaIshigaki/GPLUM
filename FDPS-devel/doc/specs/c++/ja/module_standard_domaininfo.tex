@@ -1,0 +1,602 @@
+本節では、領域クラスについて記述する。このクラスは領域情報の保持や領域
+の分割を行うモジュールである。まずオブジェクトの生成方法を記述し、その
+後APIを記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{オブジェクトの生成}
+
+領域クラスは以下のように宣言されている。
+\begin{lstlisting}[caption=DomainInfo0]
+namespace ParticleSimulator {
+    class DomainInfo;
+}
+\end{lstlisting}
+
+領域クラスのオブジェクトの生成は以下のように行う。ここではdinfoという
+オブジェクトを生成している。
+\begin{screen}
+\begin{verbatim}
+PS::DomainInfo dinfo;
+\end{verbatim}
+\end{screen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{API}
+
+領域クラスには初期設定関連のAPI、領域分割関連のAPIがある。以下、各節に
+分けて記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{初期設定}
+
+初期設定関連のAPIの宣言は以下のようになっている。このあと各APIについて
+記述する。
+\begin{lstlisting}[caption=DomainInfo1]
+namespace ParticleSimulator {
+    class DomainInfo{
+    public:
+        DomainInfo();
+        void initialize(const F32 coef_ema=1.0);
+        void setNumberOfDomainMultiDimension(const S32 nx,
+                                             const S32 ny,
+                                             const S32 nz=1);
+        void setDomain(const S32 nx,
+                       const S32 ny,
+                       const S32 nz=1);
+        void setBoundaryCondition(enum BOUNDARY_CONDITION bc);
+        S32 getBoundaryCondition();
+        void setPosRootDomain(const F32vec & low,
+                              const F32vec & high);
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{コンストラクタ}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::DomainInfo();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+領域クラスのオブジェクトを生成する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::initialize}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::initialize(const PS::F32 coef_ema=1.0);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+coef\_ema: 入力。 const PS::F32型。指数移動平均の平滑化係数。デフォルト1.0
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+領域クラスのオブジェクトを初期化し、指数移動平均の平滑化係数を設定する。
+この係数の許される値は0から1である。それ以外の値を入れた場合はエラーメッ
+セージを送出しプログラムは終了する。大きくなるほど、最新の粒子分布の情
+報が領域分割に反映されやすい。1の場合、最新の粒子分布の情報のみ反映さ
+れる。0の場合、最初の粒子分布の情報のみ反映される。１度は呼ぶ必要があ
+る。過去の粒子分布の情報を領域分割に反映する必要がある理由については、
+Ishiyama, Fukushige \& Makino (2009, Publications of the Astronomical
+Society of Japan, 61, 1319)を参照のこと。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::setNumberOfDomainMultiDimension}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setNumberOfDomainMultiDimension
+                 (const PS::S32 nx,
+                  const PS::S32 ny,
+                  const PS::S32 nz=1);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+nx: 入力。 const PS::S32型。x軸方向のルートドメインの分割数。
+
+ny: 入力。 const PS::S32型。y軸方向のルートドメインの分割数。
+
+nz: 入力。 const PS::S32型。z軸方向のルートドメインの分割数。デフォル
+ト1。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+計算領域の分割する方法を設定する。nx, ny, nzはそれぞれx軸、y軸、z軸方
+向の計算領域の分割数である。呼ばなければ自動的にnx, ny, nzが決まる。呼
+んだ場合に入力するnx, ny, nzの総積がMPIプロセス数と等しくなければ、
+FDPSはエラーメッセージを送り、プログラムを止める。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::setDomain}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setDomain(const PS::S32 nx,
+                               const PS::S32 ny,
+                               const PS::S32 nz=1);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+nx: 入力。 const PS::S32型。x軸方向のルートドメインの分割数。
+
+ny: 入力。 const PS::S32型。y軸方向のルートドメインの分割数。
+
+nz: 入力。 const PS::S32型。z軸方向のルートドメインの分割数。デフォル
+ト1。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+PS::DomainInfo::setNumberOfDomainMultiDimension の別名であり、全く同じ動作をする。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::setBoundaryCondition}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setBoundaryCondition
+                 (enum PS::BOUNDARY_CONDITION bc);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+bc: 入力。 列挙型。境界条件。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+境界条件の設定をする。許される入力は、
+\ref{sec:datatype_enum_boundarycondition}で挙げた列挙型のみ(ただし
+BOUNDARY\_CONDITION\_SHEARING\_BOX, BOUNDARY\_CONDITION\_USER\_DEFINED
+は未実装)。呼ばない場合は、開放境界となる。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::getBoundaryCondition}
+
+\begin{screen}
+\begin{verbatim}
+S32 PS::DomainInfo::getBoundaryCondition();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし
+
+\item {\bf 返値}
+
+PS::S32型。
+
+\item {\bf 機能}
+
+設定されている境界条件に対応する整数を返す。
+取りうる値はPS::BOUNDARY\_CONDITION型の各列挙子に割り当てられている整数のいずれかである。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::setPosRootDomain}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setPosRootDomain
+                 (const PS::F32vec & low,
+                  const PS::F32vec & high);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+low: 入力。 PS::F32vec型。計算領域の下限(閉境界)。
+
+high: 入力。 PS::F32vec型。計算領域の上限(開境界)。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+計算領域の下限と上限を設定する。開放境界条件の場合は呼ぶ必要はない。そ
+れ以外の境界条件の場合は、呼ばなくても動作するが、その結果が正しいこと
+は保証できない。highの座標の各値はlowの対応する座標よりも大きくなけれ
+ばならない。そうでない場合は、FDPSはエラーメッセージを送出し、ユーザー
+プログラムを終了させる。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{領域分割}
+
+領域分割関連のAPIの宣言は以下のようになっている。このあと各APIについて
+記述する。
+\begin{lstlisting}[caption=DomainInfo2]
+namespace ParticleSimulator {
+    class DomainInfo{
+    public:
+        template<class Tpsys>
+        void collectSampleParticle(Tpsys & psys,
+                                   const bool clear,
+                                   const F32 weight);
+        template<class Tpsys>
+        void collectSampleParticle(Tpsys & psys,
+                                   const bool clear);
+        template<class Tpsys>
+        void collectSampleParticle(Tpsys & psys);
+        
+        void decomposeDomain();
+        
+        template<class Tpsys>
+        void decomposeDomainAll(Tpsys & psys,
+                                const F32 weight);
+        template<class Tpsys>
+        void decomposeDomainAll(Tpsys & psys);
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::collectSampleParticle}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::DomainInfo::collectSampleParticle
+                 (Tpsys & psys,
+                  const bool clear,
+                  const PS::F32 weight);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+psys: 入力。 ParticleSystem \&型。領域分割のためのサンプル粒子を提供する粒子群
+クラス。
+
+clear: 入力。 bool型。前にサンプルされた粒子情報をクリアするかどうかを
+決定するフラグ。trueでクリアする。
+
+weight: 入力。 const PS::F32型。領域分割のためのサンプル粒子数を決める
+ためのウェイト。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysから粒子をサンプルする。clearによってこ
+れより前にサンプルした粒子の情報を消すかどうか決める。weightによってそ
+のMPIプロセスからサンプルする粒子の量を調整する(weightが大きいほどサン
+プル粒子数が多い)。具体的には、プロセス$i$のweightを$w_{i}$、
+粒子群クラスのAPI \\
+\texttt{setAverateTargetNumberOfSampleParticlePerProcess}\\
+で設定された
+プロセスあたりのサンプル粒子数を$n_{\mathrm{smpl}}$、プロセス数を
+$n_{\mathrm{proc}}$とすると、プロセス$i$からは
+$n_{\mathrm{smpl}}n_{\mathrm{proc}}(w_{i}/\sum_{k}w_{k})$
+個の粒子数がサンプリングされる。通常、weightにはそのプロセスでの
+計算時間を反映する量を指定する。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::DomainInfo::collectSampleParticle
+                 (Tpsys & psys,
+                  const bool clear);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+psys: 入力。 ParticleSystem \&型。領域分割のためのサンプル粒子を提供する粒子群
+クラス。
+
+clear: 入力。 bool型。前にサンプルされた粒子情報をクリアするかどうかを
+決定するフラグ。trueでクリアする。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysから粒子をサンプルする。clearによってこ
+れより前にサンプルした粒子の情報を消すかどうか決める。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::DomainInfo::collectSampleParticle
+                 (Tpsys & psys);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+psys: 入力。 ParticleSystem \&型。領域分割のためのサンプル粒子を提供する粒子群
+クラス。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysから粒子をサンプルする。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::decomposeDomain}
+
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::decomposeDomain();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+計算領域の分割を実行する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::decomposeDomainAll}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::DomainInfo::decomposeDomainAll
+                 (Tpsys & psys,
+                  const PS::F32 weight);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+psys: 入力。 ParticleSystem \&型。領域分割のためのサンプル粒子を提供する粒子群
+クラス。
+
+weight: 入力。 const PS::F32型。領域分割のためのサンプル粒子数を決める
+ためのウェイト。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysから粒子をサンプルし、続けてルートドメイ
+ンの分割を行う。PS::DomainInfo::collectSampleParticleと
+PS::DomainInfo::decomposeDomainが行うことを一度に行う。weightの意味は
+PS::DomainInfo::collectSampleParticleと同じ。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::DomainInfo::decomposeDomainAll
+                 (Tpsys & psys);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+psys: 入力。 ParticleSystem \&型。領域分割のためのサンプル粒子を提供する粒子群
+クラスのオブジェクト。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysから粒子をサンプルし、続けてルートドメイ
+ンの分割を行う。PS::DomainInfo::collectSampleParticleと
+PS::DomainInfo::decomposeDomainが行うことを一度に行う。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{時間計測}
+
+クラス内の時間計測関連のAPIの宣言は以下のようになっている。自クラスの
+主要なメソッドを呼び出すとそれにかかった時間をプライベートメンバの
+time\_profile\_の該当メンバに書き込む。メソッドclearTimeProfile()を呼
+ばない限り時間は足しあわされていく。
+
+\begin{lstlisting}[caption=DomainInfo3]
+namespace ParticleSimulator {
+    class DomainInfo{
+    public:
+        TimeProfile getTimeProfile();
+        void clearTimeProfile();
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::getTimeProfile}
+\begin{screen}
+\begin{verbatim}
+PS::TimeProfile PS::DomainInfo::getTimeProfile();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::TimeProfile型。
+
+\item {\bf 機能}
+
+メンバ関数collectSampleParticleとdecomposeDomainにかかった時間（ミリ秒
+単位）をTimeProfile型のメンバ変数collect\_sample\_particles\_と
+decompose\_domain\_に格納する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::clearTimeProfile}
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::clearTimeProfile();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+なし。
+
+\item {\bf 機能}
+
+領域情報クラスのTimeProfile型のプライベートメンバ変数のメンバ変数
+collect\_sample\_particles\_とdecompose\_domain\_の値を０クリアする。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{情報取得}
+
+クラス内の情報取得関連のAPIの宣言は以下のようになっている。
+
+\begin{lstlisting}[caption=DomainInfo3]
+namespace ParticleSimulator {
+    class DomainInfo{
+    public:
+        TimeProfile getTimeProfile();
+        void clearTimeProfile();
+        S64 getUsedMemorySize();
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::DomainInfo::getUsedMemorySize}
+\begin{screen}
+\begin{verbatim}
+PS::S64 PS::DomainInfo::getUsedMemorySize();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::S64。
+
+\item {\bf 機能}
+
+対象のオブジェクトが使用しているメモリー量をByte単位で返す。
+
+\end{itemize}
+
+
+
+%%\subsubsubsubsubsubsection{getNumberofDomainOneAxis}
+
+%%\subsubsubsubsubsubsection{getDomain}

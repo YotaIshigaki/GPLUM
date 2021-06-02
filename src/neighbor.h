@@ -170,6 +170,8 @@ public:
     std::vector<PS::S32> recv_rank_list;
     std::vector<PS::S32> send_rank_list;
 
+    std::vector<std::vector<PS::S32> > ex_data_send;
+    std::vector<std::vector<PS::S32> > ex_data_recv;
 
     std::vector<PS::S32> & operator[](PS::S32 i){ return n_list[i]; }
     
@@ -186,6 +188,8 @@ public:
         ex_data_map.clear();
         recv_rank_list.clear();
         send_rank_list.clear();
+        ex_data_send.clear();
+        ex_data_recv.clear();
         
         ex_data.resize(n_proc);
         recv_list.resize(n_proc);
@@ -216,6 +220,8 @@ public:
         ex_data_map.clear();
         recv_rank_list.clear();
         send_rank_list.clear();
+        ex_data_send.clear();
+        ex_data_recv.clear();
             
 #pragma omp parallel for
         for ( PS::S32 i=0; i<n_proc; i++ ){
@@ -341,6 +347,18 @@ public:
                 connected_list.push_back(i);
                 assert( i != PS::Comm::getRank() );
             }
+        }
+    }
+
+    void resizeExDataBuffer() {
+        PS::S32 n_send = connected_list.size();
+        
+        ex_data_send.resize(n_send);
+        ex_data_recv.resize(n_send);
+        for ( PS::S32 i=0; i<n_send; i++ ) {
+            PS::S32 n_size = ex_data[connected_list.at(i)].size() * ExPair::getSize();
+            ex_data_send.at(i).resize(n_size);
+            ex_data_recv.at(i).resize(n_size);
         }
     }
 
@@ -481,9 +499,9 @@ public:
 
     template <class Tpsys>
     bool exchangeExData(Tpsys & pp,
-                        PS::S32 TAG,
-                        PS::S32** & ex_data_send,
-                        PS::S32** & ex_data_recv){
+                        PS::S32 TAG){
+        //PS::S32** & ex_data_send,
+        //PS::S32** & ex_data_recv){
         //const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         const PS::S32 n_send = connected_list.size();
         //PS::S32 ** ex_data_send = new PS::S32*[n_send];

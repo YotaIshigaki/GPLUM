@@ -1,0 +1,12 @@
+-- Method for this benchmark
+ -- Cold collapse of Plummer sphere
+ -- theta=0.5, monpole
+ -- single precision
+ -- rsqrt: 23-24bits
+ -- Xeon Phi 7110P (1074GFlops)
+ -- XC30 1node (998GFlops)
+
+-- Figures
+ -- wt_proc.png: wallclock time as a funciton of the number of processes
+ -- wt_nptcl.png: wallclock time as a funciton of the number of particles
+

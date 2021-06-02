@@ -1,0 +1,713 @@
+FDPS Fortran/C interface defines several data types including vector types, symmetric matrix types, superparticle types, time profile type, enum types. In addition, basic data types are also defined in C. These data types are required to be used in user-defined types and user-defined functions (Chap.~\ref{chap:user_defined}) or are used as returned values in some APIs (Chap.~\ref{chap:API_spec_list}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Basic data types {\small (C only)}}
+\label{sec:basic_types}
+FDPS C interface defines six basic data types: \path{fdps_s32}, \path{fdps_u32}, \path{fdps_f32}, \path{fdps_s64}, \path{fdps_u64}, \path{fdps_f64}. They are defined in the file \path{src/c_interface/headers/FDPS_basic.h} as follows (Listing~\ref{listing:basic_types}). These data types are used to defined other data types provided by FDPS.
+
+\begin{lstlisting}[language=C,caption=Basic data types (C only),label=listing:basic_types]
+#pragma once
+
+/* 32 bit data types */
+typedef int          fdps_s32;
+typedef unsigned int fdps_u32;
+#ifdef PARTICLE_SIMULATOR_ALL_64BIT_PRECISION
+typedef double       fdps_f32;
+#else
+typedef float        fdps_f32;
+#endif
+
+/* 64 bit data types */
+typedef long long int          fdps_s64;
+typedef unsigned long long int fdps_u64;
+typedef double                 fdps_f64;
+\end{lstlisting}
+
+\redtext{Note that the macro \texttt{PARTICLE\_SIMULATOR\_ALL\_64BIT\_PRECISION} is just introduced for future and C interface programs work correctly only if this macro is undefined.}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Vector types}
+\label{sec:vector_types}
+FDPS Fortran and C interface define two types of vector: \path{fdps_f32vec} and \path{fdps_f64vec}. They are defined in the files \path{src/fortran_interface/modules/FDPS_vector.F90} and \path{src/c_interface/headers/FDPS_vector.h} as follows (Listings~\ref{listing:vector_types} and \ref{listing:vector_types_in_C}). Each vector has 2 or 3 member variables depending on the spatial dimension of the simulation. By default, the spatial dimension of the simulation is assumed to be 3, but it is 2 if the macro \path{PARTICLE_SIMULATOR_TWO_DIMENSION} is defined at the compilation. The data type of the member variables is either 32-bit or 64-bit floating point numbers.
+
+\begin{lstlisting}[caption=Vector types (Fortran),label=listing:vector_types]
+module fdps_vector
+   use, intrinsic :: iso_c_binding
+   implicit none
+   
+   type, public, bind(c) :: fdps_f32vec
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION 
+      real(kind=c_float) :: x,y
+#else
+      real(kind=c_float) :: x,y,z
+#endif
+   end type fdps_f32vec
+
+   type, public, bind(c) :: fdps_f64vec
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION 
+      real(kind=c_double) :: x,y
+#else
+      real(kind=c_double) :: x,y,z
+#endif
+   end type fdps_f64vec
+
+end module fdps_vector
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption=Vector types (C), label=listing:vector_types_in_C]
+#pragma once
+#include "FDPS_basic.h"
+
+//**** PS::F32vec
+typedef struct  {
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+   fdps_f32 x,y;
+#else
+   fdps_f32 x,y,z;
+#endif
+} fdps_f32vec;
+
+//**** PS::F64vec
+typedef struct  {
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+   fdps_f64 x,y;
+#else
+   fdps_f64 x,y,z;
+#endif
+} fdps_f64vec;
+\end{lstlisting}
+
+In Fortran, for the vector types, the definitions of the assignment (\texttt{=}) and the arithmetic operators (\texttt{+},\texttt{-},\texttt{*},\texttt{/}) are extended as shown in Table.~\ref{tbl:op_ext:fdps_vector}. For more details, see \path{FDPS_vector.F90}.
+
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{|c|c|c|X|}
+\toprule
+\rowcolor{Snow2}
+Symbol & Left-hand side & Right-hand side & Definition \\
+\midrule
+% 代入記号(=)
+\multirow{3}{*}{\texttt{=}} & vector & scalar$^{\dagger}$ & \multirow{3}{\hsize}{\footnotesize Assign RHS to LHS$^{\sharp}$. When RHS is scalar, it is assigned to all the components of LHS. When RHS is an array, each component of LHS is assigned by array element according to the memory ordering.} \\[2pt]
+\cmidrule(r){2-3}
+ & vector & array of scalars$^{\ddagger}$ &  \\[2pt]
+\cmidrule(r){2-3}
+ & vector & vector &  \\[2pt]
+\midrule
+% + 演算子
+\multirow{4}{*}{\texttt{+}} & vector & array of scalars & \multirow{3}{\hsize}{\footnotesize Addition of LHS and RHS. When one of the operands is an array, it is assumed that each element of the array corresponds to the component of the vector according to the memory ordering.} \\[2pt]
+\cmidrule(r){2-3}
+ & array of scalars & vector & \\[2pt]
+\cmidrule(r){2-3}
+ & vector & vector & \\[2pt]
+\cmidrule(r){2-4}
+ & none & vector & Do nothing \\
+\midrule
+% - 演算子
+\multirow{4}{*}{\texttt{-}} & vector & array of scalars & \multirow{3}{\hsize}{\footnotesize Subtraction RHS from LHS. When one of the operands is an array, it is assumed that each element of the array corresponds to the component of the vector according to the memory ordering.} \\[2pt]
+\cmidrule(r){2-3}
+& array of scalars & vector &  \\[2pt]
+\cmidrule(r){2-3}
+& vector & vector & \\[2pt]
+\cmidrule(r){2-4}
+& none & vector & Inversion of the sign of the vector \\
+\midrule
+% * 演算子
+\multirow{5}{*}{\texttt{*}} & vector & scalar & \multirow{2}{*}{Scalar-vector product} \\
+\cmidrule(r){2-3}
+ & scalar & vector & \\
+\cmidrule(r){2-4}
+ & vector & array of scalars & \multirow{3}{\hsize}{\footnotesize Inner product. When one of the operands is an array, it is assumed that each element of the array corresponds to the component of the vector according to the memory ordering.} \\
+\cmidrule(r){2-3}
+ & array of scalars & vector &  \\
+\cmidrule(r){2-3}
+ & vector & vector &  \\
+\midrule
+\texttt{/} & vector & scalar & Division LHS by RHS. \\
+\bottomrule
+\end{tabularx}
+\begin{flushleft}
+$^{\dagger}$ The data type of scalar must be one of intrinsic data types in Fortran and be numeric. \\
+$^{\ddagger}$ The size of array must be 2 if the macro \path{PARTICLE_SIMULATOR_TWO_DIMENSION} is defined at the compilation. Otherwise, it must be 3. \\
+$^{\sharp}$ LHS and RHS stand for the left- and the right-hand sides, respectively.
+\end{flushleft}
+\caption{The definitions of the assignment and the arithmetic operators extended for the vector types}
+\label{tbl:op_ext:fdps_vector}
+\end{table}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Symmetric Matrix types}
+\label{sec:symmetric_matrix_types}
+There are two types of symmetric matrix: \path{fdps_f32mat} and \path{fdps_f64mat}. These are defined in the files \path{src/fortran_interface/modules/FDPS_matrix.F90} and \path{src/c_interface/headers/FDPS_matrix.h} as follows (Listings~\ref{listing:symmetric_matrix_types} and \ref{listing:symmetric_matrix_types_in_C}). Each symmetric matrix type has 3 or 6 member variables depending on the spatial dimension of the simulation. By default, the spatial dimension of the simulation is assumed to be 3, but it is 2 if the macro \path{PARTICLE_SIMULATOR_TWO_DIMENSION} is defined at the compilation. The data type of the member variables is either 32-bit or 64-bit floating point numbers.
+
+\begin{lstlisting}[caption=Symmetric Matrix types (Fortran),label=listing:symmetric_matrix_types]
+module fdps_matrix
+   use, intrinsic :: iso_c_binding
+   implicit none
+
+   !**** PS::F32mat
+   type, public, bind(c) :: fdps_f32mat
+#ifndef PARTICLE_SIMULATOR_TWO_DIMENSION
+      real(kind=c_float) :: xx,yy,zz,xy,xz,yz
+#else
+      real(kind=c_float) :: xx,yy,xy
+#endif
+   end type fdps_f32mat
+
+   !**** PS::F64mat
+   type, public, bind(c) :: fdps_f64mat
+#ifndef PARTICLE_SIMULATOR_TWO_DIMENSION
+      real(kind=c_double) :: xx,yy,zz,xy,xz,yz
+#else
+      real(kind=c_double) :: xx,yy,xy
+#endif
+   end type fdps_f64mat
+
+end module fdps_matrix  
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption=Symmetric Matrix types (C), label=listing:symmetric_matrix_types_in_C]
+#pragma once
+#include "FDPS_basic.h"
+
+//**** PS::F32mat
+typedef struct {
+#ifndef PARTICLE_SIMULATOR_TWO_DIMENSION
+   fdps_f32 xx,yy,zz,xy,xz,yz;
+#else
+   fdps_f32 xx,yy,xy;
+#endif
+} fdps_f32mat;
+
+//**** PS::F64mat
+typedef struct {
+#ifndef PARTICLE_SIMULATOR_TWO_DIMENSION
+   fdps_f64 xx,yy,zz,xy,xz,yz;
+#else
+   fdps_f64 xx,yy,xy;
+#endif
+} fdps_f64mat;
+\end{lstlisting}
+
+In Fortran, for the symmetric matrix types, the definitions of the assignment (\texttt{=}) and the arithmetic operators (\texttt{+},\texttt{-},\texttt{*},\texttt{-}) are extended as shown in Table.~\ref{tbl:op_ext:fdps_matrix}. For more details, see \path{FDPS_matrix.F90}.
+
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{|c|c|c|X|}
+\toprule
+\rowcolor{Snow2}
+Symbol & Left-hand side & Right-hand side & Definition \\
+\midrule
+% = 記号
+\multirow{2}{*}{\texttt{=}}& matrix & scalar$^{\dagger}$ & \multirow{2}{\hsize}{\footnotesize Assign RHS to LHS. When RHS is scalar, it is assigned to all the components of LHS.} \\
+\cmidrule(r){2-3}
+& matrix & matrix & \\
+\midrule
+% + 演算子
+\multirow{2}{*}{\texttt{+}} & matrix & matrix & Addition of LHS and RHS. \\
+\cmidrule(r){2-4}
+& none & matrix & Do nothing \\
+\midrule
+% - 演算子
+\multirow{2}{*}{\texttt{-}} & matrix & matrix & Subtraction RHS from LHS. \\
+\cmidrule(r){2-4}
+& none & matrix & {\footnotesize Sign inversion of all the components of the matrix} \\
+\midrule
+% * 演算子
+\multirow{3}{*}{\texttt{*}} & matrix & scalar & \multirow{2}{*}{Scalar-matrix product} \\
+\cmidrule(r){2-3}
+ & scalar & matrix &  \\
+\cmidrule(r){2-4}
+ & matrix & matrix & Matrix product \\
+\midrule
+% / 演算子
+\texttt{/} & matrix & scalar & Division LHS by RHS. \\
+\bottomrule
+\end{tabularx}
+\begin{flushleft}
+$^{\dagger}$ The data type of scalar must be one of intrinsic data types in Fortran and be numeric.
+\end{flushleft}
+\caption{The definitions of the assignment and the arithmetic operators extended for the symmetric matrix types}
+\label{tbl:op_ext:fdps_matrix}
+\end{table}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Superparticle types}
+\label{sec:super_particle_types}
+A superparticle is a virtual particle that represents a group of real particles, which are located far from the $i$-particle (a particle which we want to calculate the force acting on). Its properties are computed from the properties of these real particles via some way. Superparticle types are derived data types required to describe the interaction between a particle and a superparticle. They are used in user-defined functions to receive data of superparticles.
+
+The superparticle types include \path{fdps_spj_monopole},\path{fdps_spj_quadrupole},\path{fdps_spj_monopole_geomcen},\path{fdps_spj_dipole_geomcen},\path{fdps_spj_quadrupole_geomcen},\path{fdps_spj_monopole_scatter},\path{fdps_spj_quadrupole_scatter}, \path{fdps_spj_monopole_symmetry}, \path{fdps_spj_quadrupole_symmetry},  \path{fdps_spj_monopole_cutoff}. They are defined in the files \path{src/fortran_interface/modules/FDPS_super_particle.F90} and \path{src/c_interface/headers/FDPS_super_particle.h} as follows (Listings~\ref{listing:superparticle_types} and \ref{listing:superparticle_types_in_C}). Note that the vector types and the symmetric matrix types are used to define the superparticle types.
+
+\begin{lstlisting}[caption=Superparticle types (Fortran),label=listing:superparticle_types]
+module fdps_super_particle
+   use, intrinsic :: iso_c_binding
+   use fdps_vector
+   use fdps_matrix
+   implicit none
+
+   !**** PS::SPJMonopole
+   type, public, bind(c) :: fdps_spj_monopole
+      real(kind=c_double) :: mass
+      type(fdps_f64vec) :: pos
+   end type fdps_spj_monopole
+
+   !**** PS::SPJQuadrupole
+   type, public, bind(c) :: fdps_spj_quadrupole
+      real(kind=c_double) :: mass
+      type(fdps_f64vec)  :: pos
+      type(fdps_f64mat)  :: quad
+   end type fdps_spj_quadrupole
+
+   !**** PS::SPJMonopoleGeometricCenter
+   type, public, bind(c) :: fdps_spj_monopole_geomcen
+      integer(kind=c_long_long) :: n_ptcl
+      real(kind=c_double) :: charge
+      type(fdps_f64vec) :: pos
+   end type fdps_spj_monopole_geomcen
+
+   !**** PS::SPJDipoleGeometricCenter
+   type, public, bind(c) :: fdps_spj_dipole_geomcen
+      integer(kind=c_long_long) :: n_ptcl
+      real(kind=c_double) :: charge
+      type(fdps_f64vec) :: pos
+      type(fdps_f64vec) :: dipole
+   end type fdps_spj_dipole_geomcen
+
+   !**** PS::SPJQuadrupoleGeometricCenter
+   type, public, bind(c) :: fdps_spj_quadrupole_geomcen
+      integer(kind=c_long_long) :: n_ptcl
+      real(kind=c_double) :: charge
+      type(fdps_f64vec) :: pos
+      type(fdps_f64vec) :: dipole
+      type(fdps_f64mat) :: quadrupole
+   end type fdps_spj_quadrupole_geomcen
+
+   !**** PS::SPJMonopoleScatter
+   type, public, bind(c) :: fdps_spj_monopole_scatter
+      real(kind=c_double) :: mass
+      type(fdps_f64vec) :: pos
+   end type fdps_spj_monopole_scatter
+
+   !**** PS::SPJQuadrupoleScatter
+   type, public, bind(c) :: fdps_spj_quadrupole_scatter
+      real(kind=c_double) :: mass
+      type(fdps_f64vec)  :: pos
+      type(fdps_f64mat)  :: quad
+   end type fdps_spj_quadrupole_scatter
+
+   !**** PS::SPJMonopoleSymmetry
+   type, public, bind(c) :: fdps_spj_monopole_symmetry
+      real(kind=c_double) :: mass
+      type(fdps_f64vec) :: pos
+   end type fdps_spj_monopole_symmetry
+
+   !**** PS::SPJQuadrupoleSymmetry
+   type, public, bind(c) :: fdps_spj_quadrupole_symmetry
+      real(kind=c_double) :: mass
+      type(fdps_f64vec) :: pos
+      type(fdps_f64mat) :: quad
+   end type fdps_spj_quadrupole_symmetry
+
+   !**** PS::SPJMonopoleCutoff
+   type, public, bind(c) :: fdps_spj_monopole_cutoff
+      real(kind=c_double) :: mass
+      type(fdps_f64vec) :: pos
+   end type fdps_spj_monopole_cutoff
+   
+end module fdps_super_particle   
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption=Superparticle types (C),label=listing:superparticle_types_in_C]
+#pragma once
+#include "FDPS_basic.h"
+#include "FDPS_vector.h"
+#include "FDPS_matrix.h"
+
+#ifdef PARTICLE_SIMULATOR_SPMOM_F32
+typedef fdps_s32    fdps_sSP;
+typedef fdps_f32    fdps_fSP;
+typedef fdps_f32vec fdps_fSPvec;
+typedef fdps_f32mat fdps_fSPmat;
+#else
+typedef fdps_s64    fdps_sSP;
+typedef fdps_f64    fdps_fSP;
+typedef fdps_f64vec fdps_fSPvec;
+typedef fdps_f64mat fdps_fSPmat;
+#endif
+
+//**** PS::SPJMonopole
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+} fdps_spj_monopole;
+
+//**** PS::SPJQuadrupole
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+   fdps_fSPmat quad;
+} fdps_spj_quadrupole;
+
+//**** PS::SPJMonopoleGeometricCenter
+typedef struct {
+   fdps_sSP n_ptcl;
+   fdps_fSP charge;
+   fdps_fSPvec pos;
+} fdps_spj_monopole_geomcen;
+
+//**** PS::SPJDipoleGeometricCenter
+typedef struct {
+   fdps_sSP n_ptcl;
+   fdps_fSP charge;
+   fdps_fSPvec pos;
+   fdps_fSPvec dipole;
+} fdps_spj_dipole_geomcen;
+
+//**** PS::SPJQuadrupoleGeometricCenter
+typedef struct {
+   fdps_sSP n_ptcl;
+   fdps_fSP charge;
+   fdps_fSPvec pos;
+   fdps_fSPvec dipole;
+   fdps_fSPmat quadrupole;
+} fdps_spj_quadrupole_geomcen;
+
+//**** PS::SPJMonopoleScatter
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+} fdps_spj_monopole_scatter;
+
+//**** PS::SPJQuadrupoleScatter
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+   fdps_fSPmat quad;
+} fdps_spj_quadrupole_scatter;
+
+//**** PS::SPJMonopoleSymmetry
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+} fdps_spj_monopole_symmetry;
+
+//**** PS::SPJQuadrupoleSymmetry
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+   fdps_fSPmat quad;
+} fdps_spj_quadrupole_symmetry;
+
+//**** PS::SPJMonopoleCutoff
+typedef struct {
+   fdps_fSP mass;
+   fdps_fSPvec pos;
+} fdps_spj_monopole_cutoff;
+\end{lstlisting}
+
+There is an one-to-one correspondence between the superparticle types and the types of tree objects. Accordingly, users must use an appropriate superparticle type corresponding to the type of created tree object. The correspondence relationship between the types of tree objects and the superparticle types is shown in Table~\ref{tbl:tree_and_super_particle}. Note that the types of tree object for short-range force are not shown in this table, because superparticle is only used in the case of long-range force. For the other types of tree object and the way to create tree objects, see Chap.~\ref{chap:API_spec_list} \S~\ref{sec:tree_APIs}.
+
+\begin{landscape}
+\begin{table}[h]
+\begin{tabularx}{\hsize}{lp{5cm}Xl}
+\toprule
+\rowcolor{Snow2}
+Tree type & Highest-order of multipole moments$^{\dagger}$ & Range of interaction & Superparticle type \\
+\midrule
+Long-Monopole type & monopole(CoM) & Entire region & \path{fdps_spj_monopole} \\
+\midrule
+Long-Quadrupole type & quadrupole(CoM) & Entire region & \path{fdps_spj_quadrupole} \\
+\midrule
+Long-MonopoleGeometricCenter type & monopole(GC) & Entire region & \path{fdps_spj_monopole_geomcen} \\
+\midrule
+Long-DipoleGeometricCenter type & dipole(GC) & Entire region & \path{fdps_spj_dipole_geomcen} \\
+\midrule
+Long-QuadrupoleGeometricCenter type & quadrupole(GC) & Entire region & \path{fdps_spj_quadrupole_geomcen} \\
+\midrule
+Long-MonopoleWithScatterSearch type$^{\ddagger}$ & monopole(CoM) & Entire region & \path{fdps_spj_monopole_scatter} \\
+\midrule
+Long-QuadrupoleWithScatterSearch type$^{\ddagger}$ & quadrupole(CoM) & Entire region & \path{fdps_spj_quadrupole_scatter} \\
+\midrule
+Long-MonopoleWithSymmetrySearch type$^{\ddagger}$ & monopole(CoM) & Entire region & \path{fdps_spj_monopole_symmetry} \\
+\midrule
+Long-QuadrupoleWithSymmetrySearch type$^{\ddagger}$ & quadrupole(CoM) & Entire region & \path{fdps_spj_quadrupole_symmetry} \\
+\midrule
+Long-MonopoleWithCutoff type & monopole(CoM) & Within cutoff radius & \path{fdps_spj_monopole_cutoff} \\
+\bottomrule
+\end{tabularx}
+\begin{flushleft}
+$^{\dagger}$ CoM indicates that multipole moments are calculated assuming that the center-of-mass is the center of the expansion. GC indicates that multipole moments are calculated assuming that the geometric center is the center of the expansion. \\
+$^{\ddagger}$ Scatter- or Symmetry-mode neighbor search is possible. In the calculation of interaction, neighbor particles are forcibly treated as normal particles. In other words, superparticles do not have neighbor particles as members.
+\end{flushleft}
+\caption{The correspondence relationship between the types of tree for long-range force and the superparticle types}
+\label{tbl:tree_and_super_particle}
+\end{table}
+\end{landscape}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Time profile types}
+\label{sec:time_profile_types}
+Time profile types are used to obtain the elapsed times of various types of calculations performed in FDPS. At present, there is only one time profile type \path{fdps_time_profile}. It is defined in the files \path{src/fortran_interface/modules/FDPS_time_profile.F90} and \path{src/c_interface/headers/FDPS_time_profile.h} as follows (Listings~\ref{listing:time_profile_types} and \ref{listing:time_profile_types_in_C}). This data type is exclusively used by the APIs for time measurement (for detail, see Chap.~\ref{chap:API_spec_list}).
+
+\begin{lstlisting}[caption=Time profile types (Fortran),label=listing:time_profile_types]
+module fdps_time_profile
+   use, intrinsic :: iso_c_binding
+   implicit none
+
+   !**** PS::TimeProfile
+   type, public, bind(c) :: fdps_time_prof
+      real(kind=c_double) :: collect_sample_particle
+      real(kind=c_double) :: decompose_domain
+      real(kind=c_double) :: exchange_particle
+      real(kind=c_double) :: set_particle_local_tree
+      real(kind=c_double) :: set_particle_global_tree
+      real(kind=c_double) :: make_local_tree
+      real(kind=c_double) :: make_global_tree
+      real(kind=c_double) :: set_root_cell
+      real(kind=c_double) :: calc_force
+      real(kind=c_double) :: calc_moment_local_tree
+      real(kind=c_double) :: calc_moment_global_tree
+      real(kind=c_double) :: make_LET_1st
+      real(kind=c_double) :: make_LET_2nd
+      real(kind=c_double) :: exchange_LET_1st
+      real(kind=c_double) :: exchange_LET_2nd
+                                                                                                   
+      real(kind=c_double) :: morton_sort_local_tree                                                
+      real(kind=c_double) :: link_cell_local_tree                                                  
+      real(kind=c_double) :: morton_sort_global_tree                                               
+      real(kind=c_double) :: link_cell_global_tree                                                 
+                                                                                                   
+      real(kind=c_double) :: make_local_tree_tot                                                   
+      ! = make_local_tree + calc_moment_local_tree                                                 
+      real(kind=c_double) :: make_global_tree_tot                                                  
+      real(kind=c_double) :: exchange_LET_tot                                                      
+      ! = make_LET_1st + make_LET_2nd + exchange_LET_1st + exchange_LET_2nd                        
+                                                                                                   
+      real(kind=c_double) :: calc_force__core__walk_tree                                           
+                                                                                                   
+      real(kind=c_double) :: calc_force__make_ipgroup                                              
+      real(kind=c_double) :: calc_force__core                                                      
+      real(kind=c_double) :: calc_force__copy_original_order                                       
+                                                                                                   
+      real(kind=c_double) :: exchange_particle__find_particle                                       
+      real(kind=c_double) :: exchange_particle__exchange_particle
+
+      real(kind=c_double) :: decompose_domain__sort_particle_1st
+      real(kind=c_double) :: decompose_domain__sort_particle_2nd
+      real(kind=c_double) :: decompose_domain__sort_particle_3rd
+      real(kind=c_double) :: decompose_domain__gather_particle
+
+      real(kind=c_double) :: decompose_domain__setup
+      real(kind=c_double) :: decompose_domain__determine_coord_1st
+      real(kind=c_double) :: decompose_domain__migrae_particle_1st
+      real(kind=c_double) :: decompose_domain__determine_coord_2nd
+      real(kind=c_double) :: decompose_domain__determine_coord_3rd
+      real(kind=c_double) :: decompose_domain__exchange_pos_domain
+
+      real(kind=c_double) :: exchange_LET_1st__a2a_n
+      real(kind=c_double) :: exchange_LET_1st__icomm_sp
+      real(kind=c_double) :: exchange_LET_1st__a2a_sp
+      real(kind=c_double) :: exchange_LET_1st__icomm_ep
+      real(kind=c_double) :: exchange_LET_1st__a2a_ep
+   end type fdps_time_prof
+
+end module fdps_time_profile  
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption=Time profile types (C),label=listing:time_profile_types_in_C]
+//**** PS::TimeProfile
+typedef struct {
+   double collect_sample_particle;
+   double decompose_domain;
+   double exchange_particle;
+   double set_particle_local_tree;
+   double set_particle_global_tree;
+   double make_local_tree;
+   double make_global_tree;
+   double set_root_cell;
+   double calc_force;
+   double calc_moment_local_tree;
+   double calc_moment_global_tree;
+   double make_LET_1st;
+   double make_LET_2nd;
+   double exchange_LET_1st;
+   double exchange_LET_2nd;
+   double write_back;
+
+   double morton_sort_local_tree;
+   double link_cell_local_tree;
+   double morton_sort_global_tree;
+   double link_cell_global_tree;
+
+   double make_local_tree_tot; // = make_local_tree + calc_moment_local_tree
+   double make_global_tree_tot;
+   double exchange_LET_tot; // = make_LET_1st + make_LET_2nd + exchange_LET_1st + exchange_LET_2nd
+
+   double calc_force__core__walk_tree;
+   double calc_force__core__keep_list;
+   double calc_force__core__copy_ep;
+   double calc_force__core__dispatch;
+   double calc_force__core__retrieve;
+
+   double calc_force__make_ipgroup;
+   double calc_force__core;
+   double calc_force__copy_original_order;
+
+   double exchange_particle__find_particle;
+   double exchange_particle__exchange_particle;
+   
+   double decompose_domain__sort_particle_1st;
+   double decompose_domain__sort_particle_2nd;
+   double decompose_domain__sort_particle_3rd;
+   double decompose_domain__gather_particle;
+
+   double decompose_domain__setup;
+   double decompose_domain__determine_coord_1st;
+   double decompose_domain__migrae_particle_1st;
+   double decompose_domain__determine_coord_2nd;
+   double decompose_domain__determine_coord_3rd;
+   double decompose_domain__exchange_pos_domain;
+
+   double exchange_LET_1st__a2a_n;
+   double exchange_LET_1st__icomm_sp;
+   double exchange_LET_1st__a2a_sp;
+   double exchange_LET_1st__icomm_ep;
+   double exchange_LET_1st__a2a_ep;
+
+   double add_moment_as_sp_local;
+   double add_moment_as_sp_global;
+} fdps_time_prof;
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Enumerated types}
+\label{sec:enum_types}
+In this section, we describe enumerated types defined in FDPS Fortran/C interface.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Boundary condition types}
+\label{subsec:enum_bc}
+Boundary condition types are used in the APIs \path{set_boundary_condition} {\small (Fortran)} and \path{fdps_set_boundary_condition} {\small (C)} to specify the boundary condition of simulation (see \S~\ref{sec:dinfo_APIs} ``APIs for DomainInfo object" in Chap.~\ref{chap:API_spec_list}). It is defined in the files \path{FDPS_module.F90} and \path{src/c_interface/headers/FDPS_enum.h} as follows.
+
+\begin{lstlisting}[caption=Boundary condition types (Fortran)]
+module FDPS_module
+   use, intrinsic :: iso_c_binding
+   implicit none
+   
+   !* Enum types
+   !**** PS::BOUNDARY_CONDITION
+   enum, bind(c)
+      enumerator :: fdps_bc_open
+      enumerator :: fdps_bc_periodic_x
+      enumerator :: fdps_bc_periodic_y
+      enumerator :: fdps_bc_periodic_z
+      enumerator :: fdps_bc_periodic_xy
+      enumerator :: fdps_bc_periodic_xz
+      enumerator :: fdps_bc_periodic_yz
+      enumerator :: fdps_bc_periodic_xyz
+      enumerator :: fdps_bc_shearing_box
+      enumerator :: fdps_bc_user_defined
+   end enum
+   
+end module FDPS_module
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption=Boundary condition types (C)]
+typedef enum {
+   FDPS_BC_OPEN,
+   FDPS_BC_PERIODIC_X,
+   FDPS_BC_PERIODIC_Y,
+   FDPS_BC_PERIODIC_Z,
+   FDPS_BC_PERIODIC_XY,
+   FDPS_BC_PERIODIC_XZ,
+   FDPS_BC_PERIODIC_YZ,
+   FDPS_BC_PERIODIC_XYZ,
+   FDPS_BC_SHEARING_BOX,
+   FDPS_BC_USER_DEFINED,
+} FDPS_BOUNDARY_CONDITION;
+\end{lstlisting}
+
+
+Table~\ref{tbl:boundary_conditions} shows the relations between the enumerators of the boundary condition types in Fortran and boundary conditions. Users can obtain the same kind of the table for the boundary condition types in C if capitalizing the names of the enumerators in the table.
+
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{cX}
+\toprule
+\rowcolor{Snow2}
+Enumerator & Boundary condition \\
+\midrule
+\path{fdps_bc_open} &  The open boundary condition. \textbf{This is the default boundary condition in FDPS}. \\
+\midrule
+\path{fdps_bc_periodic_x} & The periodic boundary condition in the direction of $x$-axis, and the open boundary condition in other directions. FDPS assume that the lower and upper boundaries of the computational box (or the interval) along $x$-axis are closed and open, respectively (i.e. \texttt{[)}). This is assumed for all periodic boundary conditions. \\
+\midrule
+\path{fdps_bc_periodic_y} & The periodic boundary condition in the direction of $y$-axis, and the open boundary condition in other directions. \\
+\midrule
+\path{fdps_bc_periodic_z} & The periodic boundary condition in the direction of $z$-axis, and the open boundary condition in other directions. \\
+\midrule
+\path{fdps_bc_periodic_xy} & The periodic boundary condition in the directions of $x$- and $y$-axes, and the open boundary condition in the direction of $z$-axis. \\
+\midrule
+\path{fdps_bc_periodic_xz} & The periodic boundary condition in the directions of $x$- and $z$-axes, and the open boundary condition in the direction of $y$-axis. \\
+\midrule
+\path{fdps_bc_periodic_yz} & The periodic boundary condition in the directions of $y$- and $z$-axes, and the open boundary condition in the direction of $x$-axis. \\
+\midrule
+\path{fdps_bc_periodic_xyz} & The periodic boundary condition in all three directions. \\
+\midrule
+\path{fdps_bc_shearing_box} & The shearing-box boundary condition (\textcolor{red}{Not implemented yet}). \\
+\midrule
+\path{fdps_bc_user_defined} & User-defined boundary condition (\textcolor{red}{Not implemented yet}). \\
+\bottomrule
+\end{tabularx}
+\caption{The correspondence relation between the enumerator of the boundary condition types and the boundary conditions}
+\label{tbl:boundary_conditions}
+\end{table}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Interaction list mode types}
+\label{subsec:enum_list_mode}
+Interaction list mode types are used to determine whether we reuse interaction lists at interaction calculations. These types are used as an argument in the APIs \path{calc_force_all_and_write_back} and \path{calc_force_all} in Fortran or \path{fdps_calc_force_all_and_write_back} and \path{fdps_calc_force_all} in C (see \S~\ref{sec:tree_APIs} `APIs for Tree object`" in Chap.~\ref{chap:API_spec_list}) and are defined in the files \path{FDPS_module.F90} and \path{src/c_interface/headers/FDPS_enum.h} as follows.
+
+\begin{lstlisting}[caption=Interaction list mode types (Fortran)]
+module FDPS_module
+   use, intrinsic :: iso_c_binding
+   implicit none
+   
+   !* Enum types
+   !**** PS::INTERACTION_LIST_MODE
+   enum, bind(c)
+      enumerator :: fdps_make_list
+      enumerator :: fdps_make_list_for_reuse
+      enumerator :: fdps_reuse_list
+   end enum
+   
+end module FDPS_module
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption=Interaction list mode types (C)]
+typedef enum {
+   FDPS_MAKE_LIST,
+   FDPS_MAKE_LIST_FOR_REUSE,
+   FDPS_REUSE_LIST,
+} FDPS_INTERACTION_LIST_MODE;  
+\end{lstlisting}
+
+Table \ref{tbl:interaction_list_mode} shows the relations between the enumerators of the interaction list mode types in Fortran and operation mode of the APIs described above. Users can obtain the same kind of the table for the interaction list mode types in C if capitalizing the name of the enumerators in the table.
+
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cX}
+\toprule
+\rowcolor{Snow2}
+Enumerator & Operation mode \\
+\midrule
+\path{fdps_make_list} & FDPS (re)makes interaction lists for each interaction calculation (each call of the APIs described above). In this case, we cannot reuse interaction list in the next interaction calculation because FDPS does not store the information of interaction list. \textbf{This is the default operation mode in FDPS}.\\
+\midrule
+\path{fdps_make_list_for_reuse} & FDPS (re)makes interaction lists and stores them internally. Then, it performs interaction calculation. In this case, we can reuse these interaction lists in the next interaction calculation if we call the APIs with the flag \path{fdps_reuse_list}. The interaction lists memorized in FDPS are destroyed if we perform the interaction calculation with the flags \path{fdps_make_list_for_reuse} or \path{fdps_make_list}.\\
+\midrule
+\path{fdps_reuse_list} & FDPS performs interaction calculation using the previously-created interaction lists, which are the lists that are created at the previous call of the APIs with the flag \path{fdps_make_list_for_reuse}. In this case, moment information in superparticles are automatically updated using the latest particle information.\\
+\bottomrule
+\end{tabularx}
+\caption{The correspondence relation between the enumerator of the interaction list mode types and the operation modes}
+\label{tbl:interaction_list_mode}
+\end{table}
+
+
+

@@ -1,0 +1,343 @@
+\documentclass[12pt,a4paper]{jarticle}
+%
+\topmargin=-5mm
+\oddsidemargin=-5mm
+\evensidemargin=-5mm
+\textheight=235mm
+\textwidth=165mm
+%
+\title{FDPS: Framework for Developing Particle Simulator}
+\author{谷川衝、岩澤全規}
+\date{}
+%\pagestyle{empty}
+\usepackage{graphicx}
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{setspace}
+\usepackage{listings,jlisting}
+\usepackage{color}
+\usepackage{ascmac}
+\usepackage{here}
+
+\newcommand{\underbold}[1]{\underline{\bf #1}}
+\newcommand{\redtext}[1]{\textcolor{red}{#1}}
+
+
+%\setcounter{secnumdepth}{4}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\setcounter{secnumdepth}{5}
+\makeatletter
+\newcommand{\subsubsubsection}{\@startsection{paragraph}{4}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\bfseries}
+}
+\newcommand{\subsubsubsubsection}{\@startsection{subparagraph}{5}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\itshape}
+}
+\makeatother
+\setcounter{tocdepth}{5}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\twocolumn
+%\setstretch{1.5}
+
+\lstset{language = C,
+numbers = left,
+numbersep = 8pt,
+breaklines = true,
+breakindent = 40pt,
+frame = lines,
+basicstyle = \ttfamily,
+}
+
+\begin{document}
+\maketitle
+\tableofcontents
+
+\section{change log}
+\begin{itemize}
+\item 2014年5月xx日 名前変更
+\begin{itemize}
+\item GhostParticleからEssentialParticleに。
+\item BHParticleからTreeParticleに。
+\item BHParticleからTreeCellに。
+\item 型名は大文字始まりキャメルスタイルに。
+\item メンバ関数名は小文字始まりキャメルスタイルに。
+\item メンバ変数名は小文字でアンダースコアでつなぎアンダスコアで終わらす。
+\end{itemize}
+\item 2014年5月xx日 EP型をEPIとEPJに分離。
+\item 2014年5月xx日 ドキュメント、APIと実装を分離。
+\item 2014年5月xx日 領域の座標の表現を{\tt vector}クラス二つから{\tt rectangle}クラスに変更。
+\item 2014年5月xx日 Nbodyのサンプルコード、STDSPH、Nbody+SPHのサンプルコードを新しく。継続中。
+\item 2014年6月10日 {\tt Vector}型、{\tt Rectangle}型の記述を加える。
+\item 2014年6月11日 {\tt Rectangle}型から{\tt Orthotope}型へ。
+\item 2014年6月11日 マクロ{\tt PS\_DIM}から{\tt PARTICLE\_SIMULATOR\_DIMENSION}へ。
+\item 2014年6月11日 {\tt Vector}型の説明更新。
+\item 2014年6月11日 \ref{sec:includefile}更新。
+\item 2014年6月25日 {\tt TreeForForce}クラスのテンプレートパラメータに{\tt search\_mode}を追加。
+\item 2014年6月25日 {\tt TreeParticle}クラス、{\tt TreeCell}クラスを変更。
+\item 2014年8月15日 境界条件API追加。
+\item 2014年8月28日 境界条件の仕様拡張に伴う仕様変更(領域分割クラス、粒
+  子群クラス、相互作用クラスの節のみ変更)
+\item 2014年8月28日 周期境界条件などを用いる場合に現れる粒子のコピーを
+  「イメージ粒子」と定義\redtext{(定義を文中に)}
+\item 2014年8月28日 粒子の実体が存在しうる領域を「ルートドメイン」と定
+  義、イメージ粒子が存在する領域を「イメージドメイン」と定義、粒子の実
+  体に力を及ぼすイメージ粒子が存在する領域を「ホライゾン」と定義
+  \redtext{(定義を文中に)}
+\item 2014年8月28日 １プロセスが担当する領域を「領域」から「ドメイン」
+  に変更\redtext{(定義を文中に)}
+\item 2014年8月29日 境界条件指定方法を\ref{sec:includefile}に追加。
+\item 2014年8月29日 相互作用クラスの相互作用関数({\tt TreeForForce::calcForce()}等)をテンプレート関数に変更し、関数オブジェクトも使える様に仕様変更。
+\item 2014年10月6日 領域クラスのAPI変更。
+\item 2014年12月19日 treeforforceのテンプレート引数を変更。
+\item 2015年2月12日 File I/O周りのAPI変更。
+\end{itemize}
+
+\section{TO DO}
+\begin{itemize}
+\item イメージ粒子に対する粒子の実体の名前を決定する。
+\item ネイバーリスト検討。
+\end{itemize}
+
+\section{FDPSとは}
+\input{outline.tex}
+
+\section{PSL}
+\label{sec:algorithm}
+\input{algorithm.tex}
+
+\section{API}
+\label{sec:api}
+
+PSLは前節で示した手順0、1、2を実行するクラスを提供する。クラスは３つあ
+る。１つ目は手順0.1を実行する領域分割クラス{\tt DomainInfo}、２つ目は手
+順0.2を実行する粒子群クラス{\tt ParticleSystem}、３つ目は手順1、2を実行
+する相互作用クラス{\tt TreeforForce}である。まずこれらのクラスが属する
+名前空間について述べる。次に、初期化等の関数について触れる。次にシミュ
+レーションを行う上でコアとなる上記3つのクラスそれぞれについて記述する。
+これらのクラス内部では、MPI、OpenMP、SIMDなど様々な並列化手法が用いられ
+ている。最後にこれら並列化手法を最適化するためのパラメータ等を管理する
+コミュニケーションクラス{\tt Comm}についてを述べる。
+
+PSLでは計算や通信の効率化の為、粒子情報やツリーの情報をいくつかの小さい
+サブクラスに持たしている。これらの定義は付録
+\ref{sec:particle_subclass}節と\ref{sec:tree_subclass}節に記されている。
+
+\subsection{インクルードファイル}
+\label{sec:includefile}
+
+ユーザーはPSLを使う為に{\tt particle\_simulator.h}というヘッダーファイ
+ルをインクルードしなければならない。このファイルをインクルードする事で、
+以下に記述されるAPIを使うことが出来る。記述されているAPIはすべて{\tt
+ParticleSimulator}という名前空間に属する。これでは長いので、省略名{\tt
+PS}も使うことが出来る。ユーザーが{\tt ParticleSimulator}と{\tt PS}とい
+う名前の名前空間を定義する事は出来ない。
+
+ユーザはコンパイル時に{\tt PARTICLE\_SIMULATOR\_TWO\_DIMENSION}を定義す
+る事で、2次元用のPSLを使うことが出来る。何も定義しない場合は3次元用の
+PSLを使うことが出来る。
+
+{\tt particle\_simulator.h}は以下の様に記述される。
+
+\begin{lstlisting}[caption={\tt particle\_simulator.h}]
+namespace ParticleSimulator{
+#ifdef PARTICLE_SIMULATOR_TOW_DIMENSION
+    static const int DIMENSION = 2;
+#else
+    static const int DIMENSION = 3;
+#endif
+}
+
+#include<ps_defs.hpp>
+#include<domain_info.hpp>
+#include<particle_system.hpp>
+#include<tree_for_force.hpp>
+namespace PS = ParticleSimulator;
+\end{lstlisting}
+
+{\tt domain\_info.hpp}, {\tt particle\_system.hpp}, {\tt
+tree\_for\_force.hpp}はそれぞれ、領域クラス{\tt DomainInfo}、粒子群クラ
+ス{\tt ParticleSystem}、相互作用クラス{\tt TreeforForce}について記述さ
+れているヘッダーファイルである。
+
+すでにユーザー使っているライブラリなどで、これらの名前が使われている場
+合は、ユーザーは以下の様に{\tt PS}を包含する名前空間の中で{\tt
+particle\_simulator.h}をインクルードする事で{\tt PS}をネストさせ回避す
+ることが出来る。
+
+\begin{lstlisting}[caption=名前空間の衝突の回避方法]
+namespce hoge{
+    #include<particle_simulator.h>
+}
+\end{lstlisting}
+
+これにより、ユーザーは{\tt PSL}のAPIには{\tt hoge::PS::}という形で各種
+APIにアクセスできるようになる。
+
+\subsection{変数型の定義}
+\label{sec:def_variable}
+
+PSLでは以下のように変数型を提供する。以下に出てくる{\tt Vector2}、{\tt
+Vector3}型については次節で説明する。
+
+\begin{lstlisting}[caption=変数型]
+namespace ParticleSimulator{
+    enum SEARCH_MODE{
+        SEARCH_MODE_LONG,
+        SEARCH_MODE_LONG_CUTOFF,
+        SEARCH_MODE_GATHER,
+        SEARCH_MODE_SCATTER,
+        SEARCH_MODE_SYMMETRY,
+        SEARCH_MODE_FIXED_LENGTH,
+    };
+
+    enum BOUNDARY_CONDITION{
+        BOUNDARY_CONDITION_PRRIODIC____,
+        BOUNDARY_CONDITION_PRRIODIC_X__,
+        BOUNDARY_CONDITION_PRRIODIC__Y_,
+        BOUNDARY_CONDITION_PRRIODIC___Z,
+        BOUNDARY_CONDITION_PRRIODIC_XY_,
+        BOUNDARY_CONDITION_PRRIODIC_X_Z,
+        BOUNDARY_CONDITION_PRRIODIC__YZ,
+        BOUNDARY_CONDITION_PRRIODIC_XYZ,
+        BOUNDARY_CONDITION_SHEARING_BOX,
+        BOUNDARY_CONDITION_USER_DEFINED,
+    };
+
+    typedef int S32;
+    typedef unsigned int U32;
+    typedef float F32;
+    typedef long S64;
+    typedef unsigned long U64;
+    typedef double F64;
+    typedef Vector2<F32> F32vec2;
+    typedef Vector3<F32> F32vec3;
+    typedef Vector2<F64> F64vec2;
+    typedef Vector3<F64> F64vec3;
+#ifdef PARTICLE_SIMULATOR_TOW_DIMENSION
+    typedef F32vec2 F32vec;
+    typedef F64vec2 F64vec;
+    typedef F32ort2 F32ort;
+    typedef F64ort2 F64ort;
+    static const S32 N_CHILDREN = 4;
+#else
+    typedef F32vec3 F32vec;
+    typedef F64vec3 F64vec;
+    typedef F32ort3 F32ort;
+    typedef F64ort3 F64ort;
+    static const S32 N_CHILDREN = 8;
+#endif
+    MPI::Datatype MPI_F32VEC;
+    MPI::Datatype MPI_F64VEC;
+}
+\end{lstlisting}
+
+\subsection{{\tt Vector}型}
+
+\input{vector.tex}
+
+\subsection{PSL初期化、終了}
+
+\subsubsection{概要}
+
+PSLを初期化又は終了するために必要な関数。
+
+\subsubsection{API}
+
+\begin{screen}
+\begin{verbatim}
+void PS::Initialize(PS::S32 & argc, 
+                    char **& argv)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt argc}: コマンドライン引数の総数
+
+{\tt argv}: コマンドライン引数の文字列を指すポインタのポインタ
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+PSLの初期化を行う。PSLを使う前に読み出す必要がある。内部ではMPI::Initを
+呼び出すため、引数{\tt argc}と{\tt argv}が変わっている可能性がある。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::Finalize()
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+PSLの終了処理を行う。
+
+\end{itemize}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{領域クラス({\tt PS::DomainInfo})}
+\input{class_DomainInfo.tex}
+
+\subsection{粒子群クラス({\tt PS::ParticleSystem})}
+\input{class_ParticleSystem.tex}
+
+\subsection{相互作用クラス({\tt PS::TreeForForce})}
+\input{class_TreeforFORCE.tex}
+
+\subsection{通信クラス({\tt PS::Comm})}
+\label{sec:parameter}
+\input{class_Comm.tex}
+
+\section{使用例}
+\label{sec:sample}
+\input{sample_code.tex}
+
+\section{ロードマップ}
+\label{sec:roadmap}
+
+6月末にver0シリアルバージョン完成予定。
+12月末にmpiバージョン完成予定。
+
+\appendix
+
+\section{ユーザー定義粒子クラス、Forceクラス}
+\label{sec:particle_subclass}
+\input{appendix_subclass_definition.tex}
+
+\section{相互作用関数の定義方法}
+\input{appendix_force_function_definition.tex}
+
+\section{実装}
+\label{sec:implementation}
+\input{appendix_implementation.tex}
+
+\end{document}

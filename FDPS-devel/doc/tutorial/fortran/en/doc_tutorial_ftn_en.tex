@@ -1,0 +1,80 @@
+\documentclass[12pt,a4paper,dvipdfmx]{article} % pLaTeX
+%%% LaTeXパッケージのインクルード %%%
+\usepackage[ftn,en]{fdps-tutorial}
+\usepackage{udline}
+
+% タイトル、著者、作成日の情報
+\title{\docTitle}
+\author{Daisuke Namekata}
+\author{Masaki Iwasawa}
+\author{Keigo Nitadori}
+\author{Ataru Tanikawa}
+\author{Takayuki Muranushi}
+\author{Long Wang}
+\author{Natsuki Hosono}
+\author{Jun-ichiro Makino}
+\affil{\affiliation}
+\date{}
+
+% 文書の開始
+\begin{document}
+
+% タイトルと目次の出力
+\maketitle
+\tableofcontents
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Change Log}
+\label{sec:changelog}
+\input{changelog.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Overview}
+\label{sec:overivew}
+\input{../../c++/en/overview.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Getting Started}
+\label{sec:getting_started}
+\input{../../c++/en/getting_started.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{How to use}
+\label{sec:how_to_use}
+\input{../../c++/en/how_to_use.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Sample Codes}
+\label{sec:samplecode}
+\input{../../c++/en/samplecode.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Extentsions}
+\label{sec:extension}
+\input{../../c++/en/extension.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Practical Applications}
+\label{sec:applications}
+\input{../../c++/en/applications.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{User Supports}
+\label{sec:usersupport}
+\input{../../c++/en/usersupport.tex}
+\clearpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{License}
+\label{sec:license}
+\input{../../../specs/c++/en/license.tex}
+
+\end{document}

@@ -1,0 +1,36 @@
+#
+# Makefile for pfs machine.
+#
+
+#CC = /usr/local/mpich2-1.4.1p1-gnu64-4.4.7/bin/mpicc
+CC = mpicc
+LINKER = mpicxx
+
+OPTIMIZE = -std=c99
+OPTIMIZE += -O3 -finline-functions -ffast-math -funroll-loops -frerun-cse-after-loop -fexpensive-optimizations -fomit-frame-pointer -mfpmath=sse -fprefetch-loop-arrays
+OPTIMIZE += -march=native
+OPTIMIZE += -flto
+OPTIMIZE += -Winline -Wundef -Wmissing-noreturn -Wstrict-prototypes 
+#OPTIMIZE += -pg 
+#OPTIMIZE += -g3
+
+GRAPE="PHANTOM_GRAPE_SPAURH"
+INCLUDEPATH += -I/usr/include/gsl/include
+#INCLUDEPATH += -I/home/saitoh/lib/saitoh_phantom
+INCLUDEPATH += -I/home/saitoh/lib/avx_phantom
+INCLUDEPATH += -I/home/saitoh/lib/CloudyCooling
+#INCLUDEPATH += -I/home/saitoh/lib/CELibCorrectYields
+INCLUDEPATH += -I/home/saitoh/lib/CELib
+INCLUDEPATH += -I/home/saitoh/lib/asrflx
+INCLUDEPATH += -I/home/saitoh/lib/asrch
+#OPTIONS += -DHAVE_PHANTOM_GRAPE
+#LDFLAGS += -L/home/saitoh/lib/saitoh_phantom -lpg5pot
+OPTIONS += -DHAVE_AVX_PHANTOM_GRAPE
+LDFLAGS += -L/home/saitoh/lib/avx_phantom -lpg5
+LDFLAGS += -L/usr/lib64 -lgsl -lgslcblas
+LDFLAGS += -L/home/saitoh/lib/CloudyCooling -lCloudyCooling
+#LDFLAGS += -L/home/saitoh/lib/CELibCorrectYields -lCELib
+LDFLAGS += -L/home/saitoh/lib/CELib -lCELib
+LDFLAGS += -L/home/saitoh/lib/asrflx -lASRFLX
+LDFLAGS += -L/home/saitoh/lib/asrch -lASRCH
+#LDFLAGS += -lefence

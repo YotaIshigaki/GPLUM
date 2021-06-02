@@ -1,0 +1,133 @@
+%\subsection{概要}
+\subsection{Summary}
+
+%本節では、ユーザーが定義するクラスとファンクタについて記述する。ユーザー
+%定義クラスとなるのは、FullParticleクラス、EssentialParticleIクラス、
+%EssentialParticleJクラス、Momentクラス、SuperParticleJクラス、Forceクラ
+%ス、ヘッダクラスである。またユーザー定義の関数オブジェクトには、関数オブジェ
+%クトcalcForceEpEp、calcForceSpEpがある。
+In this section we provide details of user-defined classes and functors.
+The user-defined classes are \texttt{FullParticle}, \texttt{EssentialParticleI},
+\texttt{EssentialParticleJ}, \texttt{Moment}, \texttt{SuperParticleJ},
+\texttt{Force} and \texttt{Header} classes.
+The functors are \texttt{calcForceEpEp} and \texttt{calcForceSpEp}.
+
+%FullParticleクラスは、ある１粒子の情報すべてを持つクラスであり、粒子群
+%クラスにテンプレート引数として渡されるものである(節
+%\ref{sec:overview_action}の手順0)。
+A \texttt{FullParticle} class contains all informations of a particle and is
+a template argument of FDPS-defined classes (see step 0 in Sec. \ref{sec:overview_action}).
+
+%関数オブジェクトcalcForceEpEpとcalcForceSpEpは、それぞれj粒子からi粒子
+%への作用を計算する関数オブジェクトと超粒子からi粒子への作用を計算する
+%関数オブジェクトである。これらは相互作用ツリークラスのAPIの引数として
+%渡されるものである(節\ref{sec:overview_action}の手順0)。超粒子を必要と
+%するPS::SEARCH\_MODE型(PS::SEARCH\_MODE\_LONGか
+%PS::SEARCH\_MODE\_LONG\_CUTOFF)以外を使用する場合には、関数オブジェク
+%トcalcForceSpEpを定義する必要はない。
+Functors \texttt{calcForceEpEp} and \texttt{calcForceSpEp} define the interaction
+between two \texttt{EssentialParticle} classes and \texttt{SuperParticles}
+class and \texttt{EssentialParticle}, respectively.
+These functors are argument of FDPS-defined \texttt{TreeForForce}
+(see step 0 in Sec. \ref{sec:overview_action}).
+If neither \texttt{PS::SEARCH\_MODE\_LONG} nor
+\texttt{PS::SEARCH\_MODE\_LONG\_CUTOFF} are used,
+users do not need to define \texttt{calcForceSpEp}.
+
+%EssentialParticleIクラス、EssentialParticleJクラス、Momentクラス、
+%SuperParticleJクラス、Forceクラスは粒子間の相互作用の定義を補助するも
+%のである。これらのクラスのうちEssentialParticleIクラス、
+%EssentialParticleJクラス、Forceクラスはそれぞれ相互作用を計算する際にi
+%粒子に必要な情報、相互作用を計算する際にj粒子に必要な情報、相互作用の
+%結果の情報を持つ。これらはFullParticleクラスのサブセットであるため、こ
+%れらをFullParticleクラスで代用することも可能である。しかし、
+%FullParticleクラスは相互作用の定義に必要のないデータを多く含む場合も考
+%えられるため、計算コストを軽減したいならば、これらのクラスを使用するこ
+%とを検討するべきである。MomentクラスとSuperParticleJクラスは、それぞれ
+%ツリーセルのモーメント情報を持つクラスと超粒子に必要な情報を持つ
+%SuperParticleJクラスである。ユーザーが定義する必要があるのは、超粒子を
+%使う必要がある場合、すなわちPS::SEARCH\_MODE型にPS::SEARCH\_MODE\_LONG
+%かPS::SEARCH\_MODE\_LONG\_CUTOFFを選んだ場合のみである。
+%ヘッダクラスは入出力ファイルのヘッダ情報を持つ。
+Classes \texttt{EssentialParticleI}, \texttt{EssentialParticleJ}, \texttt{Moment},
+\texttt{SuperParticleJ} and \texttt{Force} are support classes for the
+interactions between two particles. Classes \texttt{EssentialParticleI} and
+\texttt{EssentialParticleJ} contain the quantities of $i-$ and $j-$ particles used
+for the calculation of interactions. A \texttt{Force} class contains the quantities
+of an $i-$ particle used to store the results of the calculations of interactions.
+Since these classes contain part of information of \texttt{FullParticle}, it is
+possible to use \texttt{FullParticle} in place of these classes. However,
+\texttt{FullParticle} may contain other values which are not used to evaluate
+the calculations of interactions. It is recommended to use these classes when
+high performance is desirable. Classes \texttt{Moment} and \texttt{SuperParticleJ}
+contain the information of moment and super particle, respectively. These
+classes are necessary if users require the super particle, \textit{i.e.}, when
+\texttt{PS::SEARCH\_MODE\_LONG} or \texttt{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+are used. A class \texttt{Header} contains the header informations of
+input/output file.
+
+%この節で記述するのは、これらのクラスや関数オブジェクトを定義する際の規
+%定である。ユーザーはこれらの間でのデータのやりとりや、関数オブジェクト
+%内でのデータの加工についてコードに書く必要がある。これらは上に挙げたク
+%ラスのメンバ関数と関数オブジェクト内で行われる。以下、必要なメンバ関数
+%とその規定について記述する。
+The rest of this chapter describes how these classes and functors should
+be implemented. Users must write data transfer functions between these
+classes and interaction calculation in functor, which are used in the above member
+functions and functors.
+
+\subsection{FullParticle}
+\label{sec:fullparticle}
+
+\input{userdefined_fullparticle.tex}
+
+\subsection{EssentialParticleI}
+\label{sec:essentialparticlei}
+
+\input{userdefined_essentialparticlei.tex}
+
+\subsection{EssentialParticleJ}
+\label{sec:essentialparticlej}
+
+\input{userdefined_essentialparticlej.tex}
+
+\subsection{Moment}
+\label{sec:moment}
+
+\input{userdefined_moment.tex}
+
+\subsection{SuperParticleJ}
+\label{sec:superparticlej}
+
+\input{userdefined_superparticlej.tex}
+
+\subsection{Force}
+\label{sec:force}
+
+\input{userdefined_force.tex}
+
+\subsection{Header}
+\label{sec:userdefined_header}
+
+\input{userdefined_header.tex}
+
+\subsection{Functor calcForceEpEp}
+\label{sec:userdefined_calcForceEpEp}
+
+\input{userdefined_calcforceepep.tex}
+
+\subsection{Functor calcForceSpEp}
+\label{sec:userdefined_calcForceSpEp}
+
+\input{userdefined_calcforcespep.tex}
+
+\subsection{Functor calcForceDispatch}
+\label{sec:userdefined_calcForceDispatch}
+
+\input{userdefined_calcforcedispatch.tex}
+
+\subsection{Functor calcForceRetrieve}
+\label{sec:userdefined_calcForceRetrieve}
+
+\input{userdefined_calcforceretrieve.tex}
+

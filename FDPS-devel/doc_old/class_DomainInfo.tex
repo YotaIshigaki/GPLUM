@@ -1,0 +1,517 @@
+
+\subsubsection{概要}
+
+ルートドメインの情報を持ち、その分割を行うクラス。クラス内に全ドメイン
+の境界と、ルートドメインの分割の際に使われるサンプル粒子の座標を持つ。
+ユーザー定義境界条件の場合、イメージドメインの情報も持つ。
+
+\subsubsubsection{ルートドメインの分割の方法}
+
+ルートドメインの分割を行う際、各ドメインから粒子の位置座標をサンプリン
+グし、サンプリングされた粒子が各ドメインで均等になるように、ドメインの
+境界を決める。この際、サンプル粒子が少ないとポアソンノイズによる影響を
+受ける。この影響を減らすため、境界に指数移動平均を用いる。具体的にドメ
+インの境界の決め方は以下の様になる。
+
+\begin{equation}
+X_{\rm EMA, t+\Delta t} = \alpha x_{t+\Delta t} + (1-\alpha)X_{\rm
+EMA, t} \quad (0 \le \alpha \le 1).
+\end{equation}
+
+ここで、$\alpha$は平滑化係数、$X_{\rm EMA, t}$は時刻tでの平均化された境
+界、$x_{t+\Delta t}$は時刻$t+\Delta t$での平均化する前の境界である。
+
+領域クラス({\tt DomainInfo})はルートドメインの分割の為に必要な平滑化係
+数と、サンプルする最大粒子数を内部のprivateメンバとして持つ。
+
+領域クラス({\tt DomainInfo})は以下のように記述される。
+\begin{lstlisting}[caption=領域クラス]
+namespace  ParticleSimulator{
+    class DomainInfo{
+    public:
+        void initialize(const S32 nsamplemax, const F32 alpha);
+        void initialize(std::string domainparam);
+        void setNProcMultiDim(const S32 nx, const S32 ny, const S32 nz);
+        void setBoundaryCondition(enum BOUNDARY\_CONDITION);
+        void setPosOfRootDomain(const F32vec & low,
+                                const F32vec & high);
+        void setNumberOfImageDomain(const S32 nimage);
+        void collectSample(const PS::ParticleSystem & psys, 
+                           const bool clear=true)
+        void decomposeDomain();
+
+    };
+}
+\end{lstlisting}
+
+\subsubsubsection{境界条件}
+
+ユーザーは領域クラスのメソッド{\tt setBoundarConditino(enum)}を使う事で、
+以下の境界条件のシミュレーションを行う事が出来る。具体的な引数について
+はAPIのセクションを参照。
+
+{\bf 直方体型の周期境界条件}
+
+ユーザーはx,y,z,の中の任意の軸を周期境界、もしくは開放境界に設定する事
+が出来る。
+
+{\bf シアリングボックス}
+
+ユーザーはx軸を動径方向、y軸を接戦方向とするシアリングボックスのシミュ
+レーションを扱う事が出来る(y軸方向は周期境界、x軸方向のボックスがずれて
+いく)。3次元の場合z軸方向は開放境界となる。ボックスはy軸方向にずれてい
+くので、ユーザーは{\tt TreeForForce::setShiftY(const PS::F32)}を使って
+y軸方向のシフト量を設定する。この境界条件を扱う場合は短距離力でなくては
+ならず、{\tt PSL}はカットオフ半径内にある粒子を全て見つける。
+
+{\bf ユーザー定義境界条件}
+
+ユーザーはイメージ粒子を定義する関数を定義し（イメージマップ関数）、
+{\tt PS::DomainInfo::SetNumberOfImage(const PS::S32)}を使って全イメージ
+数を設定する必要がある。その為、例えば、近距離力のシミュレーションでは、
+ユーザーは定義したイメージマップ関数が十分にシミュレーション領域を覆い
+尽くす様にしなければならない。もし、カットオフ半径内をユーザー定義イメー
+ジが十分に覆い尽くせていない場合もPSはエラーや、例外を送出する事はない。
+
+%下の例は、ケプラーポテンシャル中でのシアリングボックスのシミュレーショ
+%ンの場合である。
+
+%\begin{lstlisting}[caption=シアリングボックスでイメージ粒子を作る関数の例]
+%void MapImage(const PS::F32vec & pos_in, 
+%              const PS::F32 time,
+%              const PS::S32 id,
+%              PS::F32vec & pos_out){
+%    static PS::F32 lx = 0.001;
+%    static PS::F32 ly = 0.001;
+%    static PS::F32 omega = 1.0;
+%    pos_out.z = pos_in.z;
+%    if(id == 0){
+%        pos_out = pos_in;
+%    }
+%    else if(id == 1){
+%        pos_out.x = pos_in.x - lx;
+%        pos_out.y = pos_in.y + 1.5*lx*omega*time - ly;
+%    }
+%    else if(id == 2){
+%        pos_out.x = pos_in.x;
+%        pos_out.y = pos_in.y - ly;
+%    }
+%    else if(id == 3){
+%        pos_out.x = pos_in.x + lx;
+%        pos_out.y = pos_in.y - 1.5*lx*omega*time - ly;
+%    }
+%    else if(id == 4){
+%        pos_out.x = pos_in.x - lx;
+%        pos_out.y = pos_in.y + 1.5*lx*omega*time;
+%    }
+%    else if(id == 5){
+%        pos_out.x = pos_in.x + lx;
+%        pos_out.y = pos_in.y - 1.5*lx*omega*time;
+%    }
+%
+%    else if(id == 6){
+%        pos_out.x = pos_in.x - lx;
+%        pos_out.y = pos_in.y + 1.5*lx*omega*time +ly;
+%    }
+%    else if(id == 7){
+%        pos_out.x = pos_in.x;
+%        pos_out.y = pos_in.y + ly;
+%    }
+%    else if(id == 8){
+%        pos_out.x = pos_in.x + lx;
+%        pos_out.y = pos_in.y - 1.5*lx*omega*time + ly;
+%    }
+%}
+%\end{lstlisting}
+
+%第一引数{\tt pos\_in}は粒子の実体の座標。第二引数{\tt time}は時刻であり、
+%時間に依存するイメージ粒子を作ることが出来る。第三引数{\tt id}は１つの
+%粒子の実体から複数のイメージ粒子を作る場合にイメージ粒子を区別するため
+%の番号である。{\tt id}は0からイメージ粒子の数-1,までの整数にしなければ
+%ならない。また、ユーザーは{\tt
+%PS::DomainInfo::setNumberOfImageDomain(const PS::S32)を使って全イメージ
+%の数をPS側に設定する必要がある。}第四引数{\tt pos\_out}はイメージ粒子の
+%座標。
+
+\subsubsection{API}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%% format
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%  \begin{screen}
+%%%  \begin{verbatim}
+%%%  function()
+%%%  \end{verbatim}
+%%%  \end{screen}
+%%%
+%%%  \begin{itemize}
+%%%
+%%%  \item{{\bf 引数}}
+%%%
+%%%  \item{{\bf 返り値}}
+%%%
+%%%  \item{{\bf 機能}}
+%%%
+%%%  \end{itemize}
+%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{初期化}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::initialize(const PS::S32 nsamplemax,
+                                const PS::F32 alpha=1.0)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt nsamplemax}: 入力。{\tt const PS::S32}型。サンプル粒子数の最大値。
+
+{\tt alpha}: 入力。{\tt const PS::F32}型。指数移動平均の平滑化係数。デフォルト1.0。
+
+\item{{\bf 返り値}}
+なし。
+
+\item{{\bf 機能}}
+
+最大のサンプル粒子数と平滑化係数を設定し、サンプリングされる粒子の配列
+と全ドメインの境界の配列を確保する。実際にサンプルされる粒子数はここで
+設定した数と同じかわずかに小さくなる。最大のサンプル数が全粒子数より多
+い場合、もしくは全プロセス数より小さい場合は例外を送出する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::initialize(std::string domainparam);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt domainparam}: 入力。{\tt std::string}型。{\tt PS::DomainInfo}に関
+するパラメータファイル名。
+
+\item{{\bf 返り値}}
+なし。
+
+\item{{\bf 機能}}
+
+最大のサンプル粒子数と平滑化係数を設定し、サンプリングされる粒子の配列
+と全ドメインの境界の配列を確保する。実際にサンプルされる粒子数はここで
+設定した数と同じがわずかに小さくなる。最大のサンプル数が全粒子数より多
+い場合、もしくは全プロセス数より小さい場合は例外を送出する。
+
+パラメータファイルの記述方法は以下のとおりである。
+
+一行に設定する値は一つとし、第一カラムで設定する変数を指定し、第二カラ
+ムにその値をいれる。カラムの間は空白で区切る。サンプル粒子の最大値を設
+定する場合は第一カラムに{\tt NSAMPLEMAX}、平滑化係数を設定する場合は
+{\tt COEFFICIENT\_OF\_EMA}。\#で始まる行はコメントアウトされる。
+
+サンプル粒子の最大値が10000で、平滑化係数が0.5の時のファイルは以下の様に書く。
+\begin{lstlisting}
+NSAMPLEMAX 10000
+COEFFICIENT_OF_EMA  0.5
+\end{lstlisting}
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{ルートドメイン分割数の設定}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setNProcMultiDim(const PS::S32 nx, const PS::S32 ny, const PS::S32 nz);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt nx}: 入力。{\tt const PS::S32}型。x軸方向のドメインの分割数。
+
+{\tt ny}: 入力。{\tt const PS::S32}型。y軸方向のドメインの分割数。
+
+{\tt nz}: 入力。{\tt const PS::S32}型。z軸方向のドメインの分割数。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+ルートドメインの分割数を設定する。nx,ny,nz(2次元の場合はnx,ny)の積が全
+プロセス数にならない場合は例外を送出する。2次元の場合は{\tt nz}に任意の
+値を入れてよい。このメソッドを使わない場合は{\tt PSL}が自動的に
+nx,ny,nzを決定する。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{境界条件設定}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setBoundaryCondition(enum BOUNDARY\_CONDITION)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt BOUNDARY\_CONDITION}: 入力。{\tt enum}型。境界条件。
+
+\item{{\bf 返り値}}
+なし。
+
+\item{{\bf 機能}}
+
+引数に対応する、境界条件を設定する。
+このメソッドを呼ばない場合は自動的に開放境界条件となる。
+
+\mbox{}
+\begin{table}[h!]
+\begin{tabular}{llll}
+{\tt BOUNDARY\_CONDITION} &=& {\tt PS::BOUNDARY\_CONDITION\_OPEN} & 開放境界条件。デフォルト。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_X} & x軸方向周期境界。y,z軸開放境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_Y} & y軸方向周期境界。x,z軸開放境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_Z} & z軸方向周期境界。x,y軸開放境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_XY} & x,y軸方向周期境界。z軸開放境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_XZ} & x,z軸方向周期境界。y軸開放境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_YZ} & y,z軸方向周期境界。x軸開放境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_PERIODIC\_XYZ} & x,y,z軸方向周期境界。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_SHEARING\_BOX} & シアリングボックス。 \\
+     	          &=& {\tt PS::BOUNDARY\_CONDITION\_USER\_DEFINED} & ユーザー指定境界条件。
+\end{tabular}
+\end{table}
+\mbox{}
+
+\end{itemize}
+
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{非開放境界用ルートドメイン設定}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setPosOfRootDomain(const PS::F32vec & low,
+                                        const PS::F32vec & high)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt low}: 入力。{\tt const PS::F32vec}型。ルートドメインの座標値が小さ
+い側の頂点の座標。
+
+{\tt high}: 入力。{\tt const PS::F32vec}型。ルートドメインの座標値が大
+きい側の頂点の座標。
+
+\item{{\bf 返り値}}
+なし。
+
+\item{{\bf 機能}}
+
+ルートドメインを設定する。開放境界の場合、このメソッドを使う必要はなく、
+{\tt PS}がルートドメインの設定を自動で行う。また、軸方向に0を与えた場合
+も{\tt PS}がドメインの設定を行う。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%\paragraph{任意境界条件用イメージドメイン設定}
+%\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{screen}
+%\begin{verbatim}
+%void PS::DomainInfo::setImageDomainFunc(void (*pmap)(const PS::F32vec & pos_in,
+%                                                     const PS::F32 time,
+%                                                     const PS::S32 id,
+%                                                     const PS::F32vec & pos_out))
+%\end{verbatim}
+%\end{screen}
+
+%\begin{itemize}
+
+%\item{{\bf 引数}}
+
+%{\tt *pmap}: 入力。返り値がvoid型のイメージドメイン設定用関数ポインタ。
+%関数の引数は第一引数から順に{\tt const PS::F32vec型}、{\tt const
+%PS::F32型}、{\tt const PS::S32型}、{\tt const PS::F32vec型}。
+
+%\item{{\bf 返り値}}
+%なし。
+
+%\item{{\bf 機能}}
+
+%任意境界条件の場合のイメージドメインを設定する。任意境界条件以外の境界
+%条件の場合に呼び出されると、例外を送出する。
+
+%\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{ユーザー定義境界条件用イメージドメイン数の設定}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::setNumberOfImageDomain(const PS::S32 nimage)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt nimage}: 入力。{\tt const PS::S32}型。イメージドメインの数。
+
+\item{{\bf 返り値}}
+なし。
+
+\item{{\bf 機能}}
+
+ユーザー指定境界条件の場合のイメージドメインの数を設定する。ユーザー指
+定境界条件以外の境界条件の場合に呼び出されると、例外を送出する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{サンプル粒子回収}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::collectSample(const PS::ParticleSystem & psys,
+                                   const PS::F32 wgh = 1.0,
+                                   const bool clear=true)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{\tt psys}: 入力。{\tt const PS::ParticleSystem \&}型。
+
+{\tt wgh}: 入力。{\tt PS::F32}型。サンプル数調整用重み。
+
+{\tt clear}: 入力。{\tt const bool}型。クリアフラグ。デフォルトtrue。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+各プロセスが自分のドメインからいくつかの粒子の座標をサンプルし、そのサ
+ンプルをルートプロセスに送る。\verb|clear|でサンプルする前にサンプル粒
+子の位置データを保持したメモリをクリアするかどうか決める。\verb|wgh|で
+自分のドメインからサンプルする粒子の数を調整する。
+
+{\bf サンプル数の調整方法}
+
+各ドメインから供出されるサンプル粒子の数が、1/{\tt wgh}の比になるように、
+粒子サンプルを行う。例えば、計算時間でサンプル数の調整を行う場合、{\tt
+wgh}に各プロセスでかかった計算時間を設定することで、時間のかかったプロ
+セス程、担当するi粒子が少なくなり、ロードバランスがとりやすくなる。
+
+%1プロセス当たりの最大サンプル数は決まっており、ユーザーが指定する事も出
+%来る。\redtext{どの様に最大粒子数を与えるかはまだ決めていない。領域クラ
+%スメソッド？、粒子群クラメソッドス？}
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\paragraph{領域分割}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::DomainInfo::decomposeDomain()
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+全プロセスのドメインの境界を決定し、その座標を領域クラス内に格納する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{screen}
+%\begin{verbatim}
+%void PS::DomainInfo::decomposeDomainAll(const PS::ParticleSystem & psys, 
+%                                        const PS::F32 wgh=1.0)
+%\end{verbatim}
+%\end{screen}
+%
+%\begin{itemize}
+%
+%\item{{\bf 引数}}
+%
+%{\tt psys}: 入力。{\tt const PS::ParticleSystem \&}型。
+%
+%{\tt wgh}: 入力。{\tt const PS::F32}型。サンプリング重み。デフォルト1.0。
+%
+%\item{{\bf 返り値}}
+%
+%なし。
+%
+%\item{{\bf 機能}}
+%
+%関数{\tt PS::DomainInfo::sampleParticle}と{\tt
+%PS::DomainInfo::decomposeDomain}を順次実行する。これ以前に保持されてい
+%たサンプル粒子はクリアされ、その後にサンプルを行う。
+%
+%\end{itemize}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%

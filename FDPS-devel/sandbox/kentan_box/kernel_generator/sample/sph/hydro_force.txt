@@ -1,0 +1,85 @@
+EPI F64vec ri:pos
+EPI F32vec vi:vel
+EPI F32    mi:mass
+EPI F32    ui:eng
+EPI F32    hi:h
+EPI F32    rhoi:dens
+EPI F32    Pi:pres
+EPI F32    fi:gradh
+EPI F32    ci:snds
+EPI F32    BalSWi:BalSW
+EPI F32    ai:alpha
+EPI F32    padi:dummy
+EPI local F32vec xiloc
+EPJ F64vec rj:pos
+EPJ F32vec vj:vel
+EPJ F32    mj:mass
+EPJ F32    uj:eng
+EPJ F32    hj:h
+EPJ F32    rhoj:dens
+EPJ F32    Pj:pres
+EPJ F32    fj:gradh
+EPJ F32    cj:snds
+EPJ F32    BalSWj:BalSW
+EPJ F32    aj:alpha
+EPJ F32    padj:dummy
+EPJ local F32vec xjloc
+FORCE F32vec acc:acc
+FORCE F32    eng:eng_dot
+FORCE F32    dt:dt
+F32 gamma
+F32 cfl
+
+
+function gradW(r,h)
+  u = r*inv(h)
+  p1u = max(0.0f,1.0f - u)
+  h2 = h*h
+  h5 = h2*h2*h
+  coeff = 1155.0f * inv(12.5663706144f * h5)
+  p1u2 = p1u*p1u
+  p1u5 = p1u2*p1u2*p1u
+  return - coeff * p1u5 * (1.0f + 5.0f * u)
+end
+
+xiloc = ri - ri[0]
+xjloc = rj - ri[0]
+
+rij = xiloc - xjloc
+r2 = rij*rij
+if r2 > 0.0f
+r_inv = rsqrt(r2)
+endif
+r  = r2 * r_inv
+#pragma statement fission_point
+vij = vi - vj
+dvdr = rij*vij
+if dvdr >= 0.0f
+wij = 0.0f
+else
+wij = dvdr * r_inv
+endif
+#pragma statement fission_point
+v_sig = ci + cj - 3.0f * wij
+dt = max(dt,v_sig)
+aij = 0.5f * (ai + aj)
+AV = - 0.5f * aij * v_sig * wij * inv(rhoi + rhoj) * (BalSWi + BalSWj)
+#pragma statement fission_point
+gradWi = gradW(r,hi)*rij
+#pragma statement fission_point
+gradWj = gradW(r,hj)*rij
+#pragma statement fission_point
+gradWij = 0.5f*(gradWi + gradWj)
+g1u = gamma - 1.0f
+fij = 1.0f - fi*inv(g1u * mj * uj)
+fji = 1.0f - fj*inv(g1u * mi * ui)
+#pragma statement fission_point
+Pi_inv = inv(Pi)
+Pj_inv = inv(Pj)
+#pragma statement fission_point
+g1u2 = g1u*g1u
+tmp0 = g1u2 * mj * ui * uj
+tmp1 = mj * AV
+#pragma statement fission_point
+acc -= tmp0 * ( (fij * Pi_inv) * gradWi + (fji * Pj_inv) * gradWj) + mj * AV * gradWij
+eng += tmp0 * fij * (gradWi * vij) * Pi_inv +  0.5f * tmp1 * (gradWij * vij)

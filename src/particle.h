@@ -20,32 +20,28 @@ public:
 #define SAFTY_FACTOR 1.05
 
 class EPGrav{
-public:
+public:    
+    PS::S32 id;       // id number
+    PS::S32 id_local; // local id number
+    PS::S32 myrank;   // MPI rank number
+    PS::S32 neighbor; // the number of neighbors
+    
     PS::F64vec pos;   // position
     PS::F64vec vel;   // velocity
-    PS::F64vec acc;   // acceleration for soft part
-    PS::F64vec acc_s; // acceleration of sun for hard part
     PS::F64vec acc_d; // acceleration of planets for hard part
 
     PS::F64 mass;     // mass
     
-    PS::S32 id;       // id number
-    PS::S32 id_local; // local id number
-    PS::S32 myrank;   // MPI rank number
-
-    PS::S32 neighbor; // the number of neighbors
-
 #ifdef USE_INDIVIDUAL_CUTOFF
     PS::F64 r_out;
-    PS::F64 r_out_inv;
     PS::F64 r_search;
 #else //USE_INDIVIDUAL_CUTOFF
     static PS::F64 r_out;
-    static PS::F64 r_out_inv;
     static PS::F64 r_search;
 #endif //USE_INDIVIDUAL_CUTOFF
 
     static PS::F64 eps2;
+    static PS::F64 eps2_sun;
     static PS::F64 R_cut0;
     static PS::F64 R_cut1;
     static PS::F64 R_search0;
@@ -77,6 +73,7 @@ public:
     }
     PS::F64 getGamma() const{ return gamma; }
     PS::F64 getEps2() const{ return eps2;}
+    PS::F64 getEps2_sun() const{ return eps2_sun;}
     
     PS::F64 getROut() const {
 #ifdef TEST_PTCL
@@ -86,7 +83,6 @@ public:
         return r_out;
 #endif
     }
-    PS::F64 getROut_inv() const { return r_out_inv; }
     PS::F64 getRSearch() const { return SAFTY_FACTOR * r_search; }
     
     PS::F64vec getPos() const { return pos; }
@@ -101,21 +97,18 @@ public:
     PS::F64 getIdReal() const { return (PS::F64)id; }
     
     void copyFromFP(const EPGrav & fp){
-        pos   = fp.pos;
-        vel   = fp.vel;
-        acc   = fp.acc;
-        acc_s = fp.acc_s;
-        acc_d = fp.acc_d;
-    
-        mass = fp.mass;
-    
         id = fp.id;
         id_local = fp.id_local;
         myrank = fp.myrank;
+        
+        pos   = fp.pos;
+        vel   = fp.vel;
+        acc_d = fp.acc_d;
     
+        mass = fp.mass;
+        
 #ifdef USE_INDIVIDUAL_CUTOFF
         r_out     = fp.r_out;
-        r_out_inv = fp.r_out_inv;
         r_search  = fp.r_search;
 #endif
     }
@@ -209,6 +202,8 @@ inline PS::F64 calcDt6th(PS::F64 eta,
 
 class FPGrav : public EPGrav {
 public:
+    PS::F64vec acc;   // acceleration for soft part
+    PS::F64vec acc_s; // acceleration of sun for hard part
 #ifdef INTEGRATE_6TH_SUN
     PS::F64vec acc_;
     PS::F64vec snap_s;
@@ -242,6 +237,12 @@ public:
 #else
     static PS::F64 v_disp;
 #endif
+#endif
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+    PS::F64 r_out_inv;
+#else
+    static PS::F64 r_out_inv;
 #endif
     
     PS::F64 time;
@@ -280,6 +281,8 @@ public:
 #endif
 
     static PS::F64 getSolarMass() { return m_sun; }
+    
+    PS::F64 getROut_inv() const { return r_out_inv; }
 
 #ifndef WITHOUT_SUN
     PS::F64 getSemimajorAxis() const {

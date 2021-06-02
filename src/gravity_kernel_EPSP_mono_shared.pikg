@@ -1,13 +1,11 @@
-EPI F64vec xi:pos
-EPI F64vec vi:vel
-EPI F64vec ai:acc
-EPI F64vec ai_s:acc_s
-EPI F64vec ai_d:acc_d
-EPI F64    mi:mass
 EPI S32    idi:id
-EPI S32    idi_loc:id_local
+EPI S32    id_locali:id_local
 EPI S32    myranki:myrank
 EPI S32    ngbi:neighbor
+EPI F64vec xi:pos
+EPI F64vec vi:vel
+EPI F64vec ai_d:acc_d
+EPI F64    mi:mass
 F32 eps2
 
 EPJ F64    mj:mass

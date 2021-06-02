@@ -1,0 +1,234 @@
+\subsection{粒子サンプリング}
+
+以下は重み付けを使った粒子のサンプル方法のコードである。重みにはプロセ
+スの計算時間や相互作用数等が適切と考えられる。各プロセスで同じ粒子数に
+したい場合は、第三引数が各プロセスで同じ値を入れる（デフォルト引数を使
+えばよい）。
+
+\begin{lstlisting}
+    template<class Tpsys>
+    void DomainInfo::sampleParticle(const Tpsys & psys, const bool clear=true, const PS::F32 wgh=1.0){
+        static S32 n_sample_ = 0;
+        if(clear==true){ n_sample_ = 0; }
+        PS::F32 wgh_tot;
+        MPI::COMM_WORLD.Allreduce(&wgh, &wgh_tot, 1, MPI::FLOAT, MPI_SUM);
+        S32 n_sample_tmp = n_sample_max_ * (wgh / wgh_tot);
+        S32 interval = ( (this->getNumberOfParticleLocal()) - 1) / n_sample_tmp;
+        interval = (interval <= 0) ? 1 : interval;
+        for(S32 i=0; i<psys.getNumberOfParticleLocal(); i += interval){
+            pos_sample_[n_sample_] = psys[i].getPos();
+            n_sample_++;
+        }
+    }
+\end{lstlisting}
+
+\subsection{ルートドメインの分割}
+
+\subsubsection{ルートドメインの分割}
+
+\subsubsection{ドメイン、ツリーセルの番号付け}
+
+各プロセスの持つドメインやツリー構造は2、もしくは3次元構造をしているが
+1次元の番号を持っている。この番号付けのルールはz->y->x(2次元の場合は
+y->x)の順で付ける。例えば、直方体をx,y,zにnx,ny,nz個に分割し、それぞれ
+の箱に軸方向のID番号(idx,idy,idz)を小さい方から順につけていくとした場合。
+1次元のidは
+\begin{equation}
+id = idx \times ny \times nz + idy \times nz + idz.
+\end{equation}
+となる。
+ツリーセルの番号付けもこれと同じである。
+
+\subsubsection{ルートドメインの分割の順番}
+
+ルートドメインの分割の方法はMakino(2004)の方法に従う。切り方はx方向から
+先に切り、y、zと切っていく。
+
+\subsubsection{実装例}
+
+以下にルートドメインの分割のサンプルコードを記述する。ここでの方法はサ
+ンプルした粒子をルートノードに集めて全てのドメインの座標をルートノード
+で計算するようになっているが、下にそれを回避する方法も記しておく。
+
+サンプル粒子の少なさが原因となる境界のポアソンノイズを抑えるために、過
+去の境界を用いて移動平均を使う。ここでは記述の簡単さから指数移動平均を
+用いることとする(平滑化係数は\verb|alpha|とする)。
+
+\begin{lstlisting}[caption=ルートドメインの分割]
+void DomainInfo::decomposeDomain(){
+    PS::S32 n_proc = MPI::COMM_WORLD.Get_size();
+    std::vector<PS::S32> n_sample_array;
+    std::vector<PS::S32> n_sample_array_disp;
+    n_sample_array.reserve(n_proc);
+    n_sample_array_disp.reserve(n_proc+1);
+    MPI::COMM_WORLD.Gather(&n_sample_, 1, MPI::INT, 
+                           &n_sample_array[0], 1, MPI::INT, 0);
+    n_sample_array[0] = 0;
+    for(PS::S32 i=0; i<n_proc; i++){
+        n_sample_array_disp[i+1] = n_sample_array_disp[i] + n_sample_array[i];
+    }
+    MPI::COMM_WORLD.Gatherv(pos_sample_, n_sample_, MPI_F32VEC, 
+                            pos_sample_tot_, &n_sample_array[0], &n_sample_array_disp[0],
+                            MPI_F32VEC, 0);
+    PS::S32 rank = Comm::getRank();
+    PS::S32 np[PARTICLE_SIMULATOR_DIMENSION];
+    for(int k=0; k<PARTICLE_SIMULATOR_DIMENSION; k++){ np[k] = Comm::getNProcXD(k); }
+    if(rank == 0){
+        std::vector<PS::F32rec> domain_old;
+        domain_old.reserve(n_proc);
+        for(PS::S32 i=0; i<n_proc; i++) domain_old[i] = domain_rem_[i];
+        std::vector<PS::S32> istart, iend;
+        istart.reserve(n_proc);
+        iend.reserve(n_proc);
+        quickSort(pos_sample_tot_, 0, n_sample_-1, 0);
+        for(PS::S32 i=0; i<n_proc; i++){
+           istart[i] = (i*n_sample_)/n_proc;
+            if(i>0)
+                iend[i-1] = istart[i] - 1;
+        }
+        iend[n_proc-1] = n_sample_-1;
+
+        for(PS::S32 ix=0; ix<np[0]; ix++){
+            PS::F32 xlow = 0.0; 
+            PS::F32 xhigh = 0.0;
+            PS::S32 ix0 = ix*np[1]*np[2];
+            PS::S32 ix1 = (ix+1)*np[1]*np[2];
+            getBoxCoordinate(n_sample_, pos_sample_tot_, 0, istart[ix0], iend[ix1-1], half_length_root_, xlow, xhigh);
+            for(PS::S32 i=ix0; i<ix1; i++){
+                domain_rem_[i].low_[0] = alpha_*xlow + (1.0-alpha_)*domain_old[i].low_[0];
+                domain_rem_[i].high_[0] = alpha_*xhigh + (1.0-alpha_)*domain_old[i].high_[0];
+            }
+        }
+
+        for(PS::S32 ix=0; ix<np[0]; ix++){
+            PS::S32 ix0 = ix*np[1]*np[2];
+            PS::S32 ix1 = (ix+1)*np[1]*np[2];
+            PS::S32 nsample_y = iend[ix1-1] - istart[ix0] + 1;
+            quickSort(pos_sample_tot_, istart[ix0], iend[ix1-1], 1);
+            for(PS::S32 iy=0; iy<np[1]; iy++){
+                PS::F32 ylow = 0.0; 
+                PS::F32 yhigh = 0.0;
+                PS::S32 iy0 = ix0+iy*np[2];
+                PS::S32 iy1 = ix0+(iy+1)*np[2];
+                getBoxCoordinate(nsample_y, pos_sample_tot_+istart[ix0], 1, istart[iy0]-istart[ix0], 
+                                 iend[iy1-1]-istart[ix0], half_length_root_, ylow, yhigh);
+                for(int i=iy0; i<iy1; i++){
+                    domain_rem_[i].low_[1] = alpha_*ylow + (1.0-alpha_)*domain_old[i].low_[1];
+                    domain_rem_[i].high_[1] = alpha_*yhigh + (1.0-alpha_)*domain_old[i].high_[1];
+                }
+            }
+        }
+#if (PARTICLE_SIMULATOR_DIMENSION == 3)
+        for(PS::S32 ix=0; ix<np[0]; ix++){
+            PS::S32  ix0 = ix*np[1]*np[2];
+            for(PS::S32 iy=0; iy<np[1]; iy++){
+                PS::S32 iy0 = ix0 + iy*np[2];
+                PS::S32 iy1 = ix0 + (iy+1)*np[2];
+                PS::S32 nsample_z = iend[iy1-1] - istart[iy0] + 1;
+                quickSort(pos_sample_tot_, istart[iy0], iend[iy1-1], 2);
+                for(PS::S32 iz=0; iz<np[2]; iz++){
+                    PS::F32 zlow = 0.0; 
+                    PS::F32 zhigh = 0.0;
+                    int iz0 = iy0 + iz;
+                    getBoxCoordinate
+		    (nsample_z, pos_sample_tot_+istart[iy0], 2, istart[iz0]-istart[iy0], 
+                    iend[iz0]-istart[iy0], half_length_root_, zlow, zhigh);
+                    domain_rem_[iz0].low_[2] = alpha_*zlow 
+		                             + (1.0-alpha_)*domain_old[iz0].low_[2];
+                    domain_rem_[iz0].high_[2] = alpha_*zhigh 
+		                              + (1.0-alpha_)*domain_old[iz0].high_[2];
+                }
+            }
+        }
+#endif
+    }
+    MPI::COMM_WORLD.Bcast(domain_rem_, n_proc, MPI_F32VEC, 0);
+}
+\end{lstlisting}
+
+%%-------------------
+
+\paragraph{ルートノード以外も使う方法}
+
+上の場合だと、全ての計算をルートノードにやらせているため、サンプリング
+や一番最初のソートがやや重いと考えられる。なので、以下にルートノードに
+全ての粒子を集めない方法を記述する。
+
+\begin{enumerate}
+\item 同じxランクを持つ(y-z)スラブ内で粒子のサンプリングを行う。
+\item 前回求めたドメインのx座標のみを考えて、収まるべきスラブに粒子を移
+  動させる。
+\item プロセスの粒子数のprefix sumを求めておいて、スラブの分割点になり
+  そうな粒子をクイックセレクトで求める。この時平滑化係数を使っていれば、
+  スラブの境界と粒子が重なる事はあまりないと思われる。
+\item 新しく決まったスラブに収まるように粒子を移動させる。
+\item 各スラブ内で、y,zのドメインを決める。
+\end{enumerate}
+
+
+\subsection{粒子交換}
+
+粒子交換の実装について述べる。やり方は大きく分けて2通り考えられる。一つ
+はプロセス数でループを回し、さらに粒子方向にもループを回して、粒子の行
+き先のプロセスを探して、送信バッファに入れていく方法。もう一つは粒子方
+向でループを回し、各粒子がどのプロセスに行くかを探す方法である。後者で
+は粒子の行き先を探すのにルートドメインの分割のツリー構造が使えるため、
+高速であるが、各送信バッファに入る粒子数は最後までわからない。しかし、
+送信バッファのサイズは前回のサイズから推定する事も出来るし、そうでなく
+てもリンクトリストを使ったり、ループを二回回せば良い。
+
+以下にループを2回回した場合のサンプルコードを示す。
+\begin{lstlisting}[caption=粒子交換]
+PS::PS::S32 PS::ParticleSystem::whereToGo(const PS::F64vec & pos, const PS::DomainInfo & dinfo){
+    PS::S32 id_node = 0;
+#if (PARTICLE_SIMULATOR_DIMENSION == 3)
+    static const PS::S32 nz = Comm::getNProcXD[2];
+    static const PS::S32 ny = Comm::getNProcXD[1];
+    static const PS::S32 nynz = ny * nz;
+    PS::F32rec * dm_tmp = dinfo.domain_rem_;
+    while( dm_tmp[id_node].high_.x <= pos.x ) 
+        id_node += nynz;
+    while( dm_tmp[id_node].high_.y <= pos.y )
+        id_node += nz;
+    while( dm_tmp[id_node].high_.z <= pos.z )
+        id_node++;
+#elif (PARTICLE_SIMULATOR_DIMENSION == 2)
+    static const PS::S32 ny = Comm::getNProcXD[1];
+    while( dm_tmp[id_node].high_.x <= pos.x)
+        id_node += ny;
+    while( dm_tmp[id_node].high_.y <= pos.y)
+        id_ ++;
+#endif
+    return id_node;
+}
+
+void PS::ParticleSystem::exchangeParticle(const PS::DomainInfo & dinfo){
+    static const PS::S32 n_proc = Comm::getNProc();
+    static const PS::S32 rank = Comm::getRank();
+    std::vector<PS::S32> n_send;
+    n_send.reserve(n_proc);
+    std::vector<PS::S32> n_send_disp;
+    n_send_disp.reserve(n_proc+1);
+    for(PS::S32 i=0; i<n_proc; i++) n_send[i] = 0;
+    PS::S32 nsend_net = 0;
+    for(PS::S32 i=0; i<n_ptcl_loc_; i++){
+        PS::S32 id_send = whereToGo(ptcl_[i].pos, dinfo);
+        n_send[id_send]++;
+    }
+    n_send_disp[0] = 0;
+    for(PS::S32 i=0; i<n_proc; i++){
+        n_send_disp[i+1] = n_send_disp[i] + n_send[i];
+    }
+    std::vector<Tptcl> ptcl_send;
+    ptcl_send.reserve(n_send_disp[n_proc]);
+    for(PS::S32 i=0; i<n_ptcl_loc_; i++){
+        PS::S32 id_send = whereToGo(ptcl_[i].pos, dinfo);
+        ptcl_send[n_send_disp[id_send] + n_send[id_send]] = ptcl_[i];
+    }
+    std::vector<PS::S32> n_recv;
+    n_recv.reserve(n_proc);
+    MPI::COMM_WORLD.Alltoall(&n_send[0], 1, MPI::INT, &n_recv[0], 1, MPI::INT );
+    // do something to exchange particle
+}
+\end{lstlisting}
+

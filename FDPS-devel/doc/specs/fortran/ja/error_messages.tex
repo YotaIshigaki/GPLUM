@@ -1,0 +1,114 @@
+本章では、FDPS Fortran インターフェースを用いたプログラムを実行した際に出力されるエラーメッセージ(エラー検出)について記述する。Fortran インターフェースは FDPS 本体を使用しているため、まず FDPS 本体が検出するエラーについて記述する。その後、Fortran インターフェースに固有のエラー検出について記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS 本体}
+\label{sec:err_msg:FDPS}
+ここでは、FDPS 本体に関するエラーメッセージを記述するが、以下の点に関しては注意して頂きたい:
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item 簡単のため、FDPS 本体をFDPSと略して記述する。
+\item FDPS 本体で定義されたC++のデータ型、関数、API名を使用する。
+\item Fortran インターフェースを使用する限り発生しないエラーに関しても記述されている。
+\end{itemize}
+
+% C++仕様書の当該部分のインクルード
+\input{../../c++/ja/errormessage.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS Fortran/C言語 インターフェース}
+\label{sec:err_msg:FDPS_ftn_if}
+本節では、FDPS Fortran/C言語 インターフェース固有のエラーメッセージについて記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{コンパイル時のエラー検出}
+FDPS Fortran/C言語 インターフェースにコンパイルエラーを検出する機能はない。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{実行時のエラー検出}
+FDPS Fortran/C言語 インターフェースが実行時エラーを検出すると、標準出力に以下のような書式でメッセージを出力し、\path{PS_abort(-1)}によってプログラムを終了する。
+
+\begin{screen}
+\begin{Verbatim}[commandchars=\\\{\}]
+*** PS\_FTN\_IF\_ERROR ***
+message:  \vrbit{error_message}
+function: \vrbit{function_name}
+file:     \vrbit{file_name}
+\end{Verbatim} 
+\end{screen}
+ここで、
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{|c|X|}
+\toprule
+\rowcolor{Snow2}
+パラメータ名 & 定義 \\
+\midrule
+\textit{\texttt{error\_message}} & エラーメッセージ \\
+\textit{\texttt{function\_name}} & エラーを検出したサブルーチン、或いは、関数の名前 \\
+\textit{\texttt{file\_name}}     & 上記のサブルーチン、或いは、関数が定義されているファイルの名前 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+である。
+
+以下、本 Fortran/C言語 インターフェースで用意されている実行時エラーメッセージを列挙していく。
+
+%%%%%%%%
+\subsubsection{FullParticle `派生データ型名` does not exist}
+これは、粒子群オブジェクトを生成するAPI \path{create_psys} に、FullParticle型ではない派生データ型名が指定された場合に表示される。
+
+%%%%%%%%
+\subsubsection{An invalid ParticleSystem number is received}
+これは、不正な粒子群オブジェクト識別番号が指定された場合に表示される。
+
+%%%%%%%%
+\subsubsection{cannot create Tree `ツリーの種類`}
+これは、ツリーオブジェクトを生成するAPI \path{create_tree} に、不正なツリーの種類が指定された場合に表示される。このエラーは、例えば、探索半径を持たないEssentialParticleJ型で短距離力用ツリーを生成しようとしたとき等に起こる。
+
+%%%%%%%%
+\subsubsection{An invalid Tree number is received}
+これは、不正なツリーオブジェクト識別番号が指定された場合に表示される。
+
+%%%%%%%%
+\subsubsection{The combination psys\_num and tree\_num is invalid}
+これは、相互作用計算を行う次のAPI \path{calc_force_all_and_write_back},\path{calc_force_all}, \path{calc_force_and_write_back}において、次の条件が満たされた場合に表示される:
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item 粒子群オブジェクトとツリーオブジェクトの識別番号の組み合わせが不適切な場合
+\item 識別番号で指定された粒子群オブジェクトとツリーオブジェクトが存在しない場合
+\end{itemize}
+
+%%%%%%%%
+\subsubsection{tree\_num passed is invalid}
+これはAPIに不正なツリーオブジェクトの識別番号が渡された場合に表示される。
+
+%%%%%%%%
+\subsubsection{EssentialParticleJ specified does not have a member variable representing the search radius or Tree specified does not support neighbor search}
+これは近傍粒子リストを取得するAPI \path{get_neighbor_list} において、次の条件が満たされた場合に表示される:
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item 識別番号で指定されたツリーオブジェクトを生成する際に、探索半径を持たないEssentialParticleJ型が指定されている場合
+\item 識別番号で指定されたツリーオブジェクトが近傍粒子探索をサポートしないタイプのツリーの場合
+\end{itemize}
+エラーメッセージの後に、以下の情報も標準出力に表示される：
+\begin{screen}
+\begin{Verbatim}[commandchars=\\\{\}]
+Please check the definitions of EssentialParticleJ
+and tree object:
+ - EssentialParticleJ: \vrbit{EPJ_name}
+ - TreeInfo: \vrbit{tree_info}
+\end{Verbatim}
+\end{screen}
+ここで、
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{|c|X|}
+\toprule
+\rowcolor{Snow2}
+パラメータ名 & 定義 \\
+\midrule
+\textit{\texttt{EPJ\_name}} & ツリーオブジェクト生成時に指定したEssentialParticleJ型として指定した派生データ型名 \\
+\textit{\texttt{tree\_info}} & ツリーオブジェクト生成時に指定したツリーの種類を示す文字列(第\ref{chap:API_spec_list}章\ref{sec:tree_APIs}節参照) \\
+\bottomrule
+\end{tabularx}
+\end{table}
+である。
+
+%%%%%%%%
+\subsubsection{Unknown boundary condition is specified}
+これは境界条件を指定するAPI \path{set_boundary_condition} に、不正な列挙型が渡された場合に表示される。

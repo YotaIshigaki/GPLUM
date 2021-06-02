@@ -227,6 +227,10 @@ PS::S32 readParameter(const char * param_file,
         } else if ( name == "eps" ){
             PS::F64 eps = getvalue(value, L_MKS, L_CGS);
             EPGrav::eps2 = eps*eps;
+
+        } else if ( name == "eps_sun" ){
+            PS::F64 eps_sun = getvalue(value, L_MKS, L_CGS);
+            EPGrav::eps2_sun = eps_sun*eps_sun;
             
         } else if ( name == "R_cut0" ){
             EPGrav::R_cut0 = getvalue(value, 1., 1.);
@@ -465,6 +469,7 @@ void showParameter(char * init_file,
                   << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
                   << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
                   << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
+                  << "eps_sun       = " << sqrt(EPGrav::eps2_sun) << "\t(" << sqrt(EPGrav::eps2_sun)*L << " cm)"<< std::endl
                   << std::fixed << std::setprecision(5)
                   << "R_cut0        = " << EPGrav::R_cut0 << std::endl
                   << "R_cut1        = " << EPGrav::R_cut1 << std::endl
@@ -588,6 +593,7 @@ void showParameter(char * init_file,
                    << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
                    << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
                    << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
+                   << "eps_sun       = " << sqrt(EPGrav::eps2_sun) << "\t(" << sqrt(EPGrav::eps2_sun)*L << " cm)"<< std::endl
                    << std::fixed << std::setprecision(5)
                    << "R_cut0        = " << EPGrav::R_cut0 << std::endl
                    << "R_cut1        = " << EPGrav::R_cut1 << std::endl

@@ -1,27 +1,23 @@
-EPI F64vec xi:pos
-EPI F64vec vi:vel
-EPI F64vec ai:acc
-EPI F64vec ai_s:acc_s
-EPI F64vec ai_d:acc_d
-EPI F64    mi:mass
 EPI S32    idi:id
-EPI S32    idi_loc:id_local
+EPI S32    id_locali:id_local
 EPI S32    myranki:myrank
 EPI S32    ngbi:neighbor
+EPI F64vec xi:pos
+EPI F64vec vi:vel
+EPI F64vec ai_d:acc_d
+EPI F64    mi:mass
 F32 eps2
 F32 rout
 F32 rsearch
 
-EPJ F64vec xj:pos
-EPJ F64vec vj:vel
-EPJ F64vec aj:acc
-EPJ F64vec aj_s:acc_s
-EPJ F64vec aj_d:acc_d
-EPJ F64    mj:mass
 EPJ S32    idj:id
-EPJ S32    idj_loc:id_local
+EPJ S32    id_localj:id_local
 EPJ S32    myrankj:myrank
 EPJ S32    ngbj:neighbor
+EPJ F64vec xj:pos
+EPJ F64vec vj:vel
+EPJ F64vec aj_d:acc_d
+EPJ F64    mj:mass
 
 FORCE F32vec af:acc
 FORCE F32    pf:phi

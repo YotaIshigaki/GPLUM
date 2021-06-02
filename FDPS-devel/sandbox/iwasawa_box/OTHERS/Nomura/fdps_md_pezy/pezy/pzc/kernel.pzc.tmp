@@ -1,0 +1,257 @@
+#include<pzc_builtin.h>
+#include"../class_device.hpp"
+
+#include "perf.h"
+
+void pzc_ForceKernel(const int * j_disp,
+                     const EpiDev * epi,
+                     const EpjDev * epj,
+                     ForceDev * force,
+                     const int n_total,
+		     ForceDev *buf){
+    const float cut_off2 = 4.5f*4.5f;
+
+    double *lmd = (double*)0x2000; // stack size must be 0x4000
+
+    const int tid = get_tid();
+    const int pid = get_pid();
+    const int gid = get_maxtid()*pid + tid;
+    const int nthread = get_maxpid()*get_maxtid();
+
+    const int nlane  = 8;
+    const int nwarp  = nthread / nlane;
+    const int warpid = gid / nlane;
+    const int laneid = gid % nlane;
+    //const int np_in_warp  = nlane / get_maxtid();
+    //const int pid_in_warp = laneid / get_maxtid();
+
+    const int index_offset = warpid;
+    const int index_base   = nwarp;
+
+    const int jbase   = 8*nlane;
+
+    PZCPerformance stc, etc;
+    if(pid == 0 && tid == 0) stc.Update();
+    sync();
+    for(int index=index_offset; index<n_total; index += index_base){
+      ForceDev f;
+      f.ax = f.ay = f.az = f.pot = 0.0;
+      sync_L1();
+      EpiDev ip   = epi[index];
+      int id_walk = ip.id_walk;
+      int j_head  = j_disp[id_walk];
+      int j_tail  = j_disp[id_walk+1];
+      chgthread();
+      int j=j_head+laneid;
+      for(; j<j_head+((j_tail-j_head)/jbase)*jbase;j+=jbase){
+	EpjDev jp = epj[j];
+	chgthread();
+	float dx = ip.px - jp.px;
+	float dy = ip.py - jp.py;
+	float dz = ip.pz - jp.pz;
+	float r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+2*nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+3*nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+4*nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+5*nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+6*nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+      	jp = epj[j+7*nlane];
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+	dx = ip.px - jp.px;
+	dy = ip.py - jp.py;
+	dz = ip.pz - jp.pz;
+	r2 = (dx*dx + dy*dy) + dz*dz;
+	chgthread();
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+      }
+      for(; j<j_tail; j+=nlane){
+	const EpjDev jp = epj[j];
+	chgthread();
+	const float dx = ip.px - jp.px;
+	const float dy = ip.py - jp.py;
+	const float dz = ip.pz - jp.pz;
+	const float r2 = (dx*dx + dy*dy) + dz*dz;
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  f.ax  += (double)(dphi * dx);
+	  f.ay  += (double)(dphi * dy);
+	  f.az  += (double)(dphi * dz);
+	  f.pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+      }
+#if 1
+      // assuming maxtid == 8
+      lmd[4*tid+0] = f.ax;
+      lmd[4*tid+1] = f.ay;
+      lmd[4*tid+2] = f.az;
+      lmd[4*tid+3] = f.pot;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<get_maxtid();i++){
+	  lmd[0] += lmd[4*i+0];
+	  lmd[1] += lmd[4*i+1];
+	  lmd[2] += lmd[4*i+2];
+	  lmd[3] += lmd[4*i+3];
+	}
+      }
+      if(tid==0){
+  	  force[index].ax  = lmd[0];
+	  force[index].ay  = lmd[1];
+	  force[index].az  = lmd[2];
+	  force[index].pot = lmd[3];
+      }
+      sync_L1();
+#else
+#if 1
+      buf[get_maxtid()*pid + tid] = f;
+      sync();
+      if(laneid==0){
+	ForceDev sum = buf[get_maxtid()*pid];
+	for(int i=1;i<nlane;i++){
+	  sum.ax  += buf[get_maxtid()*pid + i].ax;
+	  sum.ay  += buf[get_maxtid()*pid + i].ay;
+	  sum.az  += buf[get_maxtid()*pid + i].az;
+	  sum.pot += buf[get_maxtid()*pid + i].pot;
+	}
+	force[index] = sum;
+      }
+      sync();
+#else
+      if(laneid==0){
+	force[index].ax  = warpid;
+	force[index].ay  = laneid;
+	force[index].az  = nlane;
+	force[index].pot = nwarp;
+      }
+#endif
+#endif
+    }
+    sync();
+    if(pid == 0 && tid == 0){
+      etc.Update();
+      gPerf[0] = etc - stc;
+    }
+    flush();
+}

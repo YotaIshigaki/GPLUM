@@ -1,0 +1,14 @@
+n_proc= 128 size(B)= 2 time_allgather.getAvg()= 4.36608e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 5.76284e-05 time_allgather.getMin()= 3.85186e-05
+n_proc= 128 size(B)= 4 time_allgather.getAvg()= 4.69849e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 6.29323e-05 time_allgather.getMin()= 4.10201e-05
+n_proc= 128 size(B)= 8 time_allgather.getAvg()= 4.97365e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 5.63292e-05 time_allgather.getMin()= 4.50229e-05
+n_proc= 128 size(B)= 16 time_allgather.getAvg()= 5.14314e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 7.35363e-05 time_allgather.getMin()= 4.48227e-05
+n_proc= 128 size(B)= 32 time_allgather.getAvg()= 5.34494e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 6.44317e-05 time_allgather.getMin()= 4.60232e-05
+n_proc= 128 size(B)= 64 time_allgather.getAvg()= 5.60727e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 6.91349e-05 time_allgather.getMin()= 4.98248e-05
+n_proc= 128 size(B)= 128 time_allgather.getAvg()= 6.26927e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000115559 time_allgather.getMin()= 5.59278e-05
+n_proc= 128 size(B)= 256 time_allgather.getAvg()= 7.92399e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000100851 time_allgather.getMin()= 7.22362e-05
+n_proc= 128 size(B)= 512 time_allgather.getAvg()= 9.26802e-05 time_allgather.getNCnt()= 20 time_allgather.getMax()= 9.96515e-05 time_allgather.getMin()= 8.85446e-05
+n_proc= 128 size(B)= 1024 time_allgather.getAvg()= 0.000120305 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000135369 time_allgather.getMin()= 0.000113158
+n_proc= 128 size(B)= 2048 time_allgather.getAvg()= 0.000161882 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000201201 time_allgather.getMin()= 0.000156279
+n_proc= 128 size(B)= 4096 time_allgather.getAvg()= 0.000181008 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000184093 time_allgather.getMin()= 0.000179591
+n_proc= 128 size(B)= 8192 time_allgather.getAvg()= 0.000282075 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000311557 time_allgather.getMin()= 0.00027894
+n_proc= 128 size(B)= 16384 time_allgather.getAvg()= 0.000334741 time_allgather.getNCnt()= 20 time_allgather.getMax()= 0.000339171 time_allgather.getMin()= 0.000332467
