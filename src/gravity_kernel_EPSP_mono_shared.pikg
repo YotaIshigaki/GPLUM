@@ -1,0 +1,45 @@
+EPI F64vec xi:pos
+EPI F64vec vi:vel
+EPI F64vec ai:acc
+EPI F64vec ai_s:acc_s
+EPI F64vec ai_d:acc_d
+EPI F64    mi:mass
+EPI S32    idi:id
+EPI S32    idi_loc:id_local
+EPI S32    myranki:myrank
+EPI S32    ngbi:neighbor
+F32 eps2
+
+EPJ F64    mj:mass
+EPJ F64vec xj:pos
+
+FORCE F32vec af:acc
+FORCE F32    pf:phi
+FORCE S32    nngb:neighbor
+FORCE S32    idngb:id_neighbor
+
+EPI local F32vec xiloc
+EPI local F32    rsearchiloc
+EPI local F32    routiloc
+
+EPJ local F32vec xjloc
+EPJ local F32    mjloc
+EPJ local F32    rsearchjloc
+EPJ local F32    routjloc
+
+xiloc = xi - xi[0]
+
+xjloc = xj - xi[0]
+mjloc = mj
+
+rij = xjloc - xiloc
+r2  = rij * rij + eps2
+
+r_inv  = rsqrt(r2)
+tmp    = 3.0f - r2*(r_inv*r_inv)
+r_inv *= (tmp * 0.5f)
+m_r    = mjloc * r_inv
+m_r3   = m_r * r_inv * r_inv
+
+af += m_r3 * rij 
+pf -= m_r

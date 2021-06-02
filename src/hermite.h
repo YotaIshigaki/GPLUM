@@ -799,3 +799,25 @@ void timeIntegrateKepler_isolated(Tp & pi,
     pi.calcDeltatInitial();
     assert ( pi.time == time_end );
 }
+
+template <class Tp>
+void freeMotion(Tp & pi,
+                PS::F64 time_start,
+                PS::F64 time_end)
+{
+    pi.pos  += pi.vel * (time_end - time_start);
+    pi.time += (time_end - time_start);
+    
+    pi.phi_d  = 0.;
+    pi.acc_d  = 0.;
+    pi.jerk_d = 0.;
+#ifndef INTEGRATE_6TH_SUN
+    calcStarGravity(pi);
+#else
+    calcStarAccJerk(pi);
+    pi.setAcc_();
+    calcStarSnap(pi);
+#endif
+    pi.calcDeltatInitial();
+    assert ( pi.time == time_end );
+}

@@ -585,7 +585,7 @@ void correctForceLong(Tpsys & pp,
         PS::S32    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
-        PS::S32    neighbor = pp[i].neighbor;
+        PS::S32    neighbor = pp[i].neighbor - 1;
         PS::F64vec posi = pp[i].getPos();
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
@@ -599,7 +599,20 @@ void correctForceLong(Tpsys & pp,
             PS::S32 nei_loc = 0;
             EPGrav* next = NULL;
             nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
-            assert( nei_loc == 1 );
+            //assert( nei_loc == 1 );
+	    for (PS::S32 j=0; j<nei_loc; j++) {
+                PS::F64vec posj = (next+j)->pos;
+                PS::F64vec dr   = posj - posi;
+                PS::F64 dr2 = dr * dr;
+                dr2 += eps2;
+                PS::F64 rij  = sqrt(dr2);
+                PS::F64 r_search = std::max(pp[i].r_search, (next+j)->r_search);
+                if ( rij < r_search && pp[i].id != (next+j)->id ) {
+                    std::cerr << "Particle " << pp[i].id << " has the neighbor " << (next+j)->id << std::endl;
+	            std::cerr << "Search radii: " << pp[i].r_search << " " << (next+j)->r_search << std::endl;
+                    std::cerr << "Distance: " << rij << std::endl;
+                }
+            }
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = pp[i].r_out_inv;
@@ -619,7 +632,20 @@ void correctForceLong(Tpsys & pp,
                 PS::S32 nei_loc = 0;
                 EPGrav* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
-                assert( nei_loc < 3 );
+                //assert( nei_loc < 3 );
+                for (PS::S32 j=0; j<nei_loc; j++) {
+                    PS::F64vec posj = (next+j)->pos;
+                    PS::F64vec dr   = posj - posi;
+                    PS::F64 dr2 = dr * dr;
+                    dr2 += eps2;
+                    PS::F64 rij  = sqrt(dr2);
+                    PS::F64 r_search = std::max(pp[i].r_search, (next+j)->r_search);
+                    if ( rij < r_search && pp[i].id != (next+j)->id && j_id != (next+j)->id ) {
+                        std::cerr << "Particle " << pp[i].id << " has the neighbor " << (next+j)->id << std::endl;
+                        std::cerr << "Search radii: " << pp[i].r_search << " " << (next+j)->r_search << std::endl;
+                        std::cerr << "Distance: " << rij << std::endl;
+                    }
+                }
 #endif
                 j_id_local = iter->second;
                 j_rank     = pp[j_id_local].myrank;
@@ -660,8 +686,8 @@ void correctForceLong(Tpsys & pp,
                 PS::F64    dv2     = dv * dv;
                 PS::F64    da2     = da * da;
                 PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
-                assert( dr2 >= dr2_min );
+                PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
+                //assert( dr2 >= dr2_min );
                 
                 PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                 PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
@@ -740,8 +766,8 @@ void correctForceLong(Tpsys & pp,
                     PS::F64    dv2     = dv * dv;
                     PS::F64    da2     = da * da;
                     PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                    PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
-                    assert( dr2 >= dr2_min );
+                    PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
+                    //assert( dr2 >= dr2_min );
 
                     PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                     PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
@@ -858,17 +884,31 @@ void correctForceLongInitial(Tpsys & pp,
         PS::S32    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
-        PS::S32    neighbor = pp[i].neighbor;
+        PS::S32    neighbor = pp[i].neighbor - 1;
         PS::F64vec posi = pp[i].getPos();
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
+        
 
         if ( neighbor == 0 ) {      
 #ifdef CHECK_NEIGHBOR
             PS::S32 nei_loc = 0;
             EPGrav* next = NULL;
             nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
-            assert( nei_loc == 1 );
+            //assert( nei_loc == 1 );
+            for (PS::S32 j=0; j<nei_loc; j++) {
+                PS::F64vec posj = (next+j)->pos;
+                PS::F64vec dr   = posj - posi;
+                PS::F64 dr2 = dr * dr;
+                dr2 += eps2;
+                PS::F64 rij  = sqrt(dr2);
+                PS::F64 r_search = std::max(pp[i].r_search, (next+j)->r_search);
+                if ( rij < r_search && pp[i].id != (next+j)->id ) {
+                    std::cerr << "Particle " << pp[i].id << " has the neighbor " << (next+j)->id << std::endl;
+                    std::cerr << "Search radii: " << pp[i].r_search << " " << (next+j)->r_search << std::endl;
+                    std::cerr << "Distance: " << rij << std::endl;
+                }
+            }
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = pp[i].r_out_inv;
@@ -888,7 +928,20 @@ void correctForceLongInitial(Tpsys & pp,
                 PS::S32 nei_loc = 0;
                 EPGrav* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
-                assert( nei_loc < 3 );
+                //assert( nei_loc < 3 );
+                for (PS::S32 j=0; j<nei_loc; j++) {
+                    PS::F64vec posj = (next+j)->pos;
+                    PS::F64vec dr   = posj - posi;
+                    PS::F64 dr2 = dr * dr;
+                    dr2 += eps2;
+                    PS::F64 rij  = sqrt(dr2);
+                    PS::F64 r_search = std::max(pp[i].r_search, (next+j)->r_search);
+                    if ( rij < r_search && pp[i].id != (next+j)->id && j_id != (next+j)->id ) {
+                        std::cerr << "Particle " << pp[i].id << " has the neighbor " << (next+j)->id << std::endl;
+                        std::cerr << "Search radii: " << pp[i].r_search << " " << (next+j)->r_search << std::endl;
+                        std::cerr << "Distance: " << rij << std::endl;
+                    }
+                }
 #endif
                 j_id_local = iter->second;
                 j_rank     = pp[j_id_local].myrank;
@@ -929,8 +982,8 @@ void correctForceLongInitial(Tpsys & pp,
                 PS::F64    dv2     = dv * dv;
                 PS::F64    da2     = da * da;
                 PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
-                assert( dr2 >= dr2_min );
+                PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
+                //assert( dr2 >= dr2_min );
                 
                 PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                 PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
@@ -1013,8 +1066,8 @@ void correctForceLongInitial(Tpsys & pp,
                     PS::F64    dv2     = dv * dv;
                     PS::F64    da2     = da * da;
                     PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                    PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
-                    assert( dr2 >= dr2_min );
+                    PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
+                    //assert( dr2 >= dr2_min );
                     
                     PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                     PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;

@@ -1,5 +1,141 @@
 #pragma once
 
+class ForceGrav{
+public:
+    PS::F32vec acc;
+    PS::F32    phi;
+    PS::S32 neighbor;
+
+    PS::S32 id_neighbor;
+    
+    void clear(){
+        acc = 0.;
+        phi = 0.;
+        neighbor = 0;
+
+        id_neighbor = -1;
+    }
+};
+
+#define SAFTY_FACTOR 1.05
+
+class EPGrav{
+public:
+    PS::F64vec pos;   // position
+    PS::F64vec vel;   // velocity
+    PS::F64vec acc;   // acceleration for soft part
+    PS::F64vec acc_s; // acceleration of sun for hard part
+    PS::F64vec acc_d; // acceleration of planets for hard part
+
+    PS::F64 mass;     // mass
+    
+    PS::S32 id;       // id number
+    PS::S32 id_local; // local id number
+    PS::S32 myrank;   // MPI rank number
+
+    PS::S32 neighbor; // the number of neighbors
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+    PS::F64 r_out;
+    PS::F64 r_out_inv;
+    PS::F64 r_search;
+#else //USE_INDIVIDUAL_CUTOFF
+    static PS::F64 r_out;
+    static PS::F64 r_out_inv;
+    static PS::F64 r_search;
+#endif //USE_INDIVIDUAL_CUTOFF
+
+    static PS::F64 eps2;
+    static PS::F64 R_cut0;
+    static PS::F64 R_cut1;
+    static PS::F64 R_search0;
+    static PS::F64 R_search1;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+    static PS::F64 R_search2;
+    static PS::F64 R_search3;
+#endif
+    static PS::F64 gamma;
+    static PS::F64 g_1_inv;  // 1/(g-1)
+    static PS::F64 g_1_inv7; // 1/(g-1)^7
+    static PS::F64 w_y;      // dW/dy if  y<g
+    static PS::F64 f1;       // f(1;g)
+    
+    static void setGamma(PS::F64 g){
+        gamma  = g;
+        g_1_inv  = 1./(g - 1.);
+
+        PS::F64 g2 = g*g;
+        PS::F64 g_1_inv3 = g_1_inv * g_1_inv * g_1_inv;
+        
+        g_1_inv7 = g_1_inv3 * g_1_inv3 * g_1_inv;
+        w_y = 7./3. * ((((((g- 9.)*g +45.)*g -60.*log(g))*g -45.)*g +9.)*g -1.) * g_1_inv7;
+        f1 = (-10./3. + 14.*(g+1.) - 21.*((g+3.)*g+1.)
+              + 35./3.*(((g+9.)*g+9.)*g+1.)
+              - 70.*((g+3.)*g+1.)*g
+              + 210.*(g+1.)*g2
+              + (((g-7.)*g+21.)*g-35.)*g2*g2 ) * g_1_inv7;
+    }
+    PS::F64 getGamma() const{ return gamma; }
+    PS::F64 getEps2() const{ return eps2;}
+    
+    PS::F64 getROut() const {
+#ifdef TEST_PTCL
+        static PS::F64 R_OUT_MIN = sqrt((PS::F64)std::numeric_limits<PS::F32>::min());
+        return ( r_out == 0. ) ? R_OUT_MIN : r_out;    
+#else
+        return r_out;
+#endif
+    }
+    PS::F64 getROut_inv() const { return r_out_inv; }
+    PS::F64 getRSearch() const { return SAFTY_FACTOR * r_search; }
+    
+    PS::F64vec getPos() const { return pos; }
+    PS::F64 getCharge() const {
+#ifdef TEST_PTCL
+        static PS::F64 MASS_MIN = (PS::F64)std::numeric_limits<PS::F32>::min();
+        return ( mass == 0. ) ? MASS_MIN : mass;      
+#else
+        return mass;
+#endif
+    }
+    PS::F64 getIdReal() const { return (PS::F64)id; }
+    
+    void copyFromFP(const EPGrav & fp){
+        pos   = fp.pos;
+        vel   = fp.vel;
+        acc   = fp.acc;
+        acc_s = fp.acc_s;
+        acc_d = fp.acc_d;
+    
+        mass = fp.mass;
+    
+        id = fp.id;
+        id_local = fp.id_local;
+        myrank = fp.myrank;
+    
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = fp.r_out;
+        r_out_inv = fp.r_out_inv;
+        r_search  = fp.r_search;
+#endif
+    }
+};
+
+#ifdef USE_QUAD
+#ifdef USE_INDIVIDUAL_CUTOFF
+typedef PS::SPJQuadrupoleInAndOut SPGrav;
+#else
+typedef PS::SPJQuadrupoleScatter SPGrav;
+#endif
+#else //USE_QUAD  
+#ifdef USE_INDIVIDUAL_CUTOFF
+typedef PS::SPJMonopoleInAndOut SPGrav;
+#else
+typedef PS::SPJMonopoleScatter SPGrav;
+#endif
+#endif //USE_QUAD
+
+
 #define SECONDORDER  5.e-1
 #define THIRDORDER   1.6666666666666667e-1
 #define FOURTHORDER  4.1666666666666667e-2
@@ -101,7 +237,11 @@ public:
 #endif
 
 #ifdef USE_INDIVIDUAL_CUTOFF
+#ifndef CONSTANT_RANDOM_VELOCITY
     PS::F64 v_disp;
+#else
+    static PS::F64 v_disp;
+#endif
 #endif
     
     PS::F64 time;
@@ -140,7 +280,8 @@ public:
 #endif
 
     static PS::F64 getSolarMass() { return m_sun; }
-    
+
+#ifndef WITHOUT_SUN
     PS::F64 getSemimajorAxis() const {
 #ifndef INDIRECT_TERM
         return 1.0 / (2.0/sqrt(pos*pos) - vel*vel/m_sun);
@@ -186,16 +327,13 @@ public:
     }
     PS::F64 getRHill() const {
         PS::F64 ax = getSemimajorAxis2();
-#ifndef WITHOUT_SUN
         return pow(mass/(3.*m_sun), 1./3.) * ax;
-#else
-        return pow(mass, 1./3.) * ax;
-#endif
     }
     PS::F64 getKeplerVelocity() const {
         PS::F64 r = sqrt(pos.x * pos.x + pos.y * pos.y);
         return sqrt(m_sun/r);
     }
+#endif // WITHOUT_SUN
 
 #ifdef INTEGRATE_6TH_SUN
     void setAcc_() { acc_ = acc_s + acc_d; }
@@ -213,10 +351,14 @@ public:
 #ifdef USE_INDIVIDUAL_CUTOFF
     
     PS::F64 setROutRSearch(){
+#ifndef WITHOUT_SUN
         PS::F64 rHill = getRHill();
         PS::F64 ax    = getSemimajorAxis2();
 
         PS::F64 r_out_i = std::max(R_cut0*pow(ax,-p_cut)*rHill, R_cut1*v_disp*dt_tree);
+#else
+        PS::F64 r_out_i = std::max(R_cut0*pow(mass * dt_tree * dt_tree, 1./3.), R_cut1*v_disp*dt_tree);
+#endif
         
         if ( r_cut_max <= 0. ) {
             r_out = std::max(r_out_i, r_cut_min);
@@ -244,16 +386,24 @@ public:
 #else    
         assert ( r_out > 0. && r_search > 0. && r_search > r_out );
 #endif
-        
+
+#ifndef WITHOUT_SUN
         return rHill;
+#else
+        return 0.;
+#endif
     }
     
 #else //USE_INDIVIDUAL_CUTOFF
     
     static void setROutRSearch(PS::F64 rHill_a_glb,
                                PS::F64 v_disp_glb){
-
+      
+#ifndef WITHOUT_SUN
         PS::F64 r_out_i = std::max(R_cut0*rHill_a_glb, R_cut1*v_disp_glb*dt_tree);
+#else
+        PS::F64 r_out_i = std::max(R_cut0*pow(rHill_a_glb * dt_tree * dt_tree, 1./3.), R_cut1*v_disp_glb*dt_tree);
+#endif
         
         if ( r_cut_max <= 0 ) {
             r_out = std::max(r_out_i, r_cut_min);
@@ -620,7 +770,8 @@ public:
         PS::F64 Dt_inv  = 1./Dt;
         PS::F64 Dt_inv2 = Dt_inv *Dt_inv;
         PS::F64 Dt_inv3 = Dt_inv2*Dt_inv;
-        
+
+#ifndef WITHOUT_SUN
         PS::F64vec Am_s = acc_s - a0_s;
         PS::F64vec J0_s = Dt*j0_s;
         PS::F64vec J1_s = Dt*jerk_s;
@@ -644,6 +795,18 @@ public:
         a4_s =  24.*Dt_inv4*(A4_s + 5.*A5_s);
         a5_s = 120.*Dt_inv5*A5_s;
 #endif
+#else //WITHOUT_SUN
+#ifndef INTEGRATE_6TH_SUN
+        PS::F64vec A2_s = 0.;
+        PS::F64vec A3_s = 0.;
+        a2_s = a3_s = 0.;
+#else
+        PS::F64vec A3_s = 0.;
+        PS::F64vec A4_s = 0.;
+        PS::F64vec A5_s = 0.;
+        a3_s = a4_s = a5_s = 0.;
+#endif  
+#endif //WITHOUT_SUN
         
         PS::F64vec Am_d = acc_d - a0_d;
         PS::F64vec J0_d = j0_d   * Dt;
@@ -674,16 +837,28 @@ public:
         PS::F64 dt_next = std::min(2.*dt, 0.5*dt_tree);
 
 #ifndef INTEGRATE_6TH_SUN
+#ifndef WITHOUT_SUN
         PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d, a3_d),
                                 calcDt4th(eta_sun, alpha2,   0., acc_s, jerk_s, a2_s, a3_s));
         //PS::F64 dt_1 = calcDt4th(eta, alpha2, acc0, acc_d, jerk_d, a2_d+a3_d*dt, a3_d);
 #else
+        PS::F64 dt_1 = calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d, a3_d);
+#endif
+#else
 #ifdef AARSETH
+#ifndef WITHOUT_SUN
         PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d),
                                 calcDt4th(eta_sun, alpha2,   0., acc_s, jerk_s, snap_s, a3_s));
 #else
+        PS::F64 dt_1 = calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d);
+#endif
+#else
+#ifndef WITHOUT_SUN
         PS::F64 dt_1 = std::min(calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d),
                                 calcDt6th(eta_sun, alpha2,   0., acc_s, jerk_s, snap_s, a3_s, a4_s, a5_s));
+#else
+        PS::F64 dt_1 = calcDt4th(eta,     alpha2, acc0, acc_d, jerk_d, a2_d,   a3_d);
+#endif
 #endif
 #endif
         PS::F64 rem = fmod(time, dt_next);
@@ -740,7 +915,7 @@ void calcRandomVel(Tpsys & pp,
         v_sq_loc[i] = 0.;
         n_ptcl_loc[i] = 0;
     }
-#pragma omp parallel for reduction (+:v_ave_loc[:N], v_sq_loc[:N], n_ptcl_loc[:N])
+    //#pragma omp parallel for reduction (+:v_ave_loc[:N], v_sq_loc[:N], n_ptcl_loc[:N])
     for(PS::S32 i=0; i<n_loc; i++){
         PS::F64vec pos = pp[i].pos;
         PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
@@ -767,7 +942,9 @@ void calcRandomVel(Tpsys & pp,
 
     PS::S32 n_tot0 = 0;
     for(PS::S32 i=0; i<N; i++) {
-        v_disp_glb[i] = (n_ptcl_glb[i] > 0) ? sqrt(v_sq_glb[i] / n_ptcl_glb[i] - v_ave_glb*v_ave_glb) : 0.;
+	v_disp_glb[i] = (n_ptcl_glb[i] > 1) ?
+	    sqrt(v_sq_glb[i] / n_ptcl_glb[i]
+		 - v_ave_glb[i]*v_ave_glb[i]/( n_ptcl_glb[i]* n_ptcl_glb[i]) ) : 0.;
         n_tot0 += n_ptcl_glb[i];
     }
     assert ( n_tot == n_tot0 ); 
@@ -777,7 +954,7 @@ void calcRandomVel(Tpsys & pp,
         v_disp_loc[i] = 0.;
         n_ptcl_loc[i] = 0;
     }
-#pragma omp parallel for reduction (+:v_disp_loc[:N], n_ptcl_loc[:N])
+    #pragma omp parallel for reduction (+:v_disp_loc[:N], n_ptcl_loc[:N])
     for(PS::S32 i=0; i<n_loc; i++){
         PS::F64vec pos = pp[i].pos;
         PS::F64    r2  = pos.x*pos.x + pos.y*pos.y;
@@ -856,7 +1033,7 @@ PS::F64 calcRandomVelAll(Tpsys & pp,
     PS::S32 n_ptcl_glb = 0;
 
 #ifdef ISOTROPIC
-#pragma omp parallel for reduction (+:v_ave_loc, v_aq_loc, n_ptcl_loc)
+#pragma omp parallel for reduction (+:v_ave_loc, v_sq_loc, n_ptcl_loc)
     for(PS::S32 i=0; i<n_loc; i++){
         PS::F64vec vec = pp[i].vel;
         v_ave_loc += vec;
@@ -913,12 +1090,14 @@ void setCutoffRadii(Tpsys & pp)
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
     const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
 
+#ifndef CONSTANT_RANDOM_VELOCITY
     calcRandomVel(pp, n_tot, n_loc);
+#endif
     
 #pragma omp parallel for
     for(PS::S32 i=0; i<n_loc; i++){
         pp[i].setROutRSearch();
-        pp[i].setRPlanet();
+        //pp[i].setRPlanet();
     }
 }
 
@@ -930,15 +1109,23 @@ void setCutoffRadii(Tpsys & pp)
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
     const PS::S32 n_tot = pp.getNumberOfParticleGlobal();
 
+#ifndef CONSTANT_RANDOM_VELOCITY
     PS::F64 v_disp_glb = calcRandomVelAll(pp, n_tot, n_loc);
+#else
+    PS::F64 v_disp_glb = v_disp;
+#endif
     
     PS::F64 rHill_a_loc = 0.;
 #pragma omp parallel for reduction (max: rHill_a_loc)
     for(PS::S32 i=0; i<n_loc; i++){
+#ifndef WITHOUT_SUN
         PS::F64 ax      = pp[i].getSemimajorAxis2();
         PS::F64 rHill_a = pp[i].getRHill() * pow(ax,-FPGrav::p_cut);
         
         rHill_a_loc = std::max(rHill_a, rHill_a_loc);
+#else
+        rHill_a_loc = std::max(pp[i].mass, rHill_a_loc);
+#endif
         
         //pp[i].setRPlanet();
     }
