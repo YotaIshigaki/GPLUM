@@ -250,11 +250,7 @@ PS::S32 readParameter(const char * param_file,
 #ifdef MERGE_BINARY
         } else if ( name == "R_merge" ){
             FPGrav::R_merge = getvalue(value, 1., 1.);
-#endif
-#ifdef CONSTANT_RANDOM_VELOCITY
-        } else if ( name == "v_disp" ){
-            FPGrav::v_disp = getvalue(value, L_MKS/T, L_CGS/T);
-#endif
+#endif      
         } else if ( name == "gamma" ){
             EPGrav::setGamma(getvalue(value, 1., 1.));
 
@@ -352,6 +348,11 @@ PS::S32 readParameter(const char * param_file,
                      "(r_max = "+ std::to_string(r_max)
                      + ", r_min = " + std::to_string(r_min) + ").");
         return 1;
+    } else if ( getNIMAX() < n_group_limit ){
+        errorMessage("n_group_limit has NOT been set to satisfy n_group_limit < NIMAX",
+                     "(n_group_limit = " + std::to_string(n_group_limit)
+                     + ", NIMAX = " + std::to_string(getNIMAX()) + ").");
+        return 1;
     }
 #ifdef TEST_PTCL
     EPGrav::eps2 = std::max(EPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
@@ -380,7 +381,7 @@ void showParameter(char * init_file,
 {
     const PS::F64 L = 14959787070000;
     const PS::F64 M = 1.9884e33;
-    const PS::F64 T = 365.25*24.*60.*60./(2.*M_PI);
+    //const PS::F64 T = 365.25*24.*60.*60./(2.*M_PI);
     
     if ( PS::Comm::getRank() == 0 ){
         std::cout << "Number Of Processes:\t" << PS::Comm::getNumberOfProc() << std::endl;
@@ -448,9 +449,6 @@ void showParameter(char * init_file,
 #ifdef MERGE_BINARY
                   << "R_merge       = " << FPGrav::R_merge << std::endl
 #endif
-#ifdef CONSTANT_RANDOM_VELOCITY
-                  << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
-#endif
                   << "gamma         = " << EPGrav::gamma << std::endl
                   << std::scientific << std::setprecision(15)
                   << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
@@ -483,12 +481,8 @@ void showParameter(char * init_file,
 #else
         fout_param << "Use Monopole For Tree" << std::endl;
 #endif
-
-#ifdef __AVX512DQ__
-        fout_param << "Use AVX512DQ" << std::endl;
-#elif defined(__AVX2__)
-        fout_param << "Use AVX2" << std::endl;
-#endif
+        char avx_var[128];
+        if ( getAVXVersion(avx_var) ) fout_param << "Use " << avx_var << std::endl;
         
 #ifdef USE_INDIVIDUAL_CUTOFF
         fout_param << "Use Individual CutOff" << std::endl;
@@ -571,9 +565,6 @@ void showParameter(char * init_file,
 #ifdef MERGE_BINARY
                    << "R_merge       = " << FPGrav::R_merge << std::endl
 #endif
-#ifdef CONSTANT_RANDOM_VELOCITY
-                   << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
-#endif
                    << "gamma         = " << EPGrav::gamma << std::endl
                    << std::scientific << std::setprecision(15)
                    << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
@@ -642,10 +633,9 @@ PS::S32 getLastSnap(char * dir_name,
             if ( strcmp(head,"snap") == 0 ){
                 char  number[16];
                 strncpy(number, filename+4, 6);
-		lastnumber = std::max(lastnumber, std::atoi(number));
-                if ( lastnumber == std::atoi(number) ) {
-		  //lastnumber = std::atoi(number);
-                    sprintf(lastsnap_name, "%s/%s", dir_name, filename);
+                if ( lastnumber < std::atof(number) ) {
+                    lastnumber = std::atof(number);
+                    sprintf(lastsnap_name, "%s/%s", dir_name, entry->d_name);
                 }
             }
         }

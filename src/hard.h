@@ -351,7 +351,6 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             PS::S32 i = ii - list_multi.size();
             //#pragma omp parallel for reduction(+:n_ptcl_loc)
             //for ( PS::S32 i=0; i<list_iso.size(); i++ ){
-#ifndef WITHOUT_SUN
             if ( pp[list_iso[i]].getEccentricity() < 0.8 && FPGrav::eps2 == 0. ){
                 timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
             } else {
@@ -360,9 +359,6 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 pi.resetTime();
                 pp[list_iso[i]] = FPGrav(pi);
             }
-#else
-            freeMotion(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
-#endif
             n_ptcl_loc ++;
 
             pp[list_iso[i]].n_cluster = 1;
@@ -562,7 +558,6 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             
         } else {
             PS::S32 i = ii - n_small;
-#ifndef WITHOUT_SUN
             if ( pp[list_iso[i]].getEccentricity() < 0.8 && FPGrav::eps2 == 0. ){
                 timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
             } else {
@@ -572,9 +567,6 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 pi.resetTime();
                 pp[list_iso[i]] = FPGrav(pi);
             }
-#else
-            freeMotion(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
-#endif
             n_ptcl_loc ++;
 
             pp[list_iso[i]].n_cluster = 1;

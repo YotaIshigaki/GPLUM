@@ -1,5 +1,0 @@
-# nprocs  wtime
-# (Note that these are not used in the papers.)
-32768    0.760546
-65536    0.842196
-131072   0.824026

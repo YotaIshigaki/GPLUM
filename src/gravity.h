@@ -585,7 +585,7 @@ void correctForceLong(Tpsys & pp,
         PS::S32    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
-        PS::S32    neighbor = pp[i].neighbor - 1;
+        PS::S32    neighbor = pp[i].neighbor;
         PS::F64vec posi = pp[i].getPos();
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
@@ -660,8 +660,8 @@ void correctForceLong(Tpsys & pp,
                 PS::F64    dv2     = dv * dv;
                 PS::F64    da2     = da * da;
                 PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
-                //assert( dr2 >= dr2_min );
+                PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                assert( dr2 >= dr2_min );
                 
                 PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                 PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
@@ -740,8 +740,8 @@ void correctForceLong(Tpsys & pp,
                     PS::F64    dv2     = dv * dv;
                     PS::F64    da2     = da * da;
                     PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                    PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
-                    //assert( dr2 >= dr2_min );
+                    PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                    assert( dr2 >= dr2_min );
 
                     PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                     PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
@@ -858,11 +858,10 @@ void correctForceLongInitial(Tpsys & pp,
         PS::S32    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
-        PS::S32    neighbor = pp[i].neighbor - 1;
+        PS::S32    neighbor = pp[i].neighbor;
         PS::F64vec posi = pp[i].getPos();
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
-        
 
         if ( neighbor == 0 ) {      
 #ifdef CHECK_NEIGHBOR
@@ -930,8 +929,8 @@ void correctForceLongInitial(Tpsys & pp,
                 PS::F64    dv2     = dv * dv;
                 PS::F64    da2     = da * da;
                 PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
-                //assert( dr2 >= dr2_min );
+                PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                assert( dr2 >= dr2_min );
                 
                 PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                 PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
@@ -1014,8 +1013,8 @@ void correctForceLongInitial(Tpsys & pp,
                     PS::F64    dv2     = dv * dv;
                     PS::F64    da2     = da * da;
                     PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
-                    PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
-                    //assert( dr2 >= dr2_min );
+                    PS::F64    dr2_min = dr2 + 2.*drdv*t_min + dv2*t_min*t_min;
+                    assert( dr2 >= dr2_min );
                     
                     PS::F64    r_crit   = FPGrav::R_search2 * r_out;
                     PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;

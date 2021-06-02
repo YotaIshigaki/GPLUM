@@ -452,21 +452,12 @@ public:
     template <class Tpsys>
     void inputExData(Tpsys & pp){
         const PS::S32 n_out = ex_list.size();
-
-#pragma omp parallel for
         for ( PS::S32 j=0; j<n_out; j++ ){
             std::pair<PS::S32,PS::S32> pair = ex_list.at(j);
             std::pair<PS::S32,PS::S32> ex_adr = ex_adr_list.at(j);
+
             assert( getExData(ex_adr).getId() == pair.first );
             getExData(ex_adr).setIdCluster(pp[id_map.at(pair.first)].id_cluster);
-        }
-        
-        for ( PS::S32 j=0; j<n_out; j++ ){
-            //std::pair<PS::S32,PS::S32> pair = ex_list.at(j);
-            std::pair<PS::S32,PS::S32> ex_adr = ex_adr_list.at(j);
-
-            //assert( getExData(ex_adr).getId() == pair.first );
-            //getExData(ex_adr).setIdCluster(pp[id_map.at(pair.first)].id_cluster);
 
             for ( PS::S32 k=0; k<n_out; k++ ){
                 if ( k == j ) continue;

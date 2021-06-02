@@ -1,4 +1,0 @@
-#--- GDB command file
-
-b main
-r

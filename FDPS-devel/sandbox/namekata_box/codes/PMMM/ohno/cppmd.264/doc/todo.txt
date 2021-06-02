@@ -1,4 +1,0 @@
-Simplify PME
-  BSpline calc only f for calcQ
-
-Correct velocity offset caused by volume change of NPT.

@@ -14,23 +14,20 @@
 
 #include <particle_simulator.hpp>
 
-#define GPLUMVERSION "2.2 (2020/10)"
+#define GPLUMVERSION "2.1 (2020/02)"
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
 
-#define USE_ALLGATHER_EXLET
-#define USE_RE_SEARCH_NEIGHBOR
-#define PIKG_USE_FDPS_VECTOR
-
 #include "mathfunc.h"
 #include "kepler.h"
 #include "energy.h"
-#include "particle.h"
+#include "particle_ep.h"
+#include "particle_fp.h"
 #include "neighbor.h"
 #include "disk.h"
 #include "gravity.h"
-
+#include "gravity_kernel.hpp"
 #include "collisionA.h"
 #include "collisionB.h"
 #include "hermite.h"
@@ -38,9 +35,6 @@
 #include "read.h"
 #include "time.h"
 #include "func.h"
-
-#include "gravity_kernel_EPEP.hpp"
-#include "gravity_kernel_EPSP.hpp"
 
 PS::F64 EPGrav::eps2   = 0.;
 #ifndef USE_INDIVIDUAL_CUTOFF
@@ -83,9 +77,6 @@ PS::F64 FPGrav::p_cut     = 0.;
 PS::F64 FPGrav::increase_factor = 1.;
 #ifdef MERGE_BINARY
 PS::F64 FPGrav::R_merge   = 0.2;
-#endif
-#ifdef CONSTANT_RANDOM_VELOCITY
-PS::F64 FPGrav::v_disp    = 0.;
 #endif
 
 //PS::F64 HardSystem::f = 1.;
@@ -356,13 +347,20 @@ int main(int argc, char *argv[])
 #ifdef USE_RE_SEARCH_NEIGHBOR
     for (PS::S32 i=0; i<2; i++) {
 #endif
-        tree_grav.calcForceAllAndWriteBack(
+        tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(EPGrav::eps2),
+#ifdef USE_QUAD
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                           CalcForceLongEPEP(EPGrav::eps2, EPGrav::r_out, EPGrav::r_search),
-#endif
-                                           CalcForceLongEPSP(EPGrav::eps2),
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
+#endif //USE_QUAD
+#else
+#ifdef USE_QUAD
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
+#else
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
+#endif //USE_QUAD
+#endif //USE_INDIVIDUAL_CUTOFF
                                            system_grav,
                                            dinfo);
         //NList.initializeList(system_grav);
@@ -610,13 +608,20 @@ int main(int argc, char *argv[])
         ////////////////////////
         system_grav.exchangeParticle(dinfo);
         inputIDLocalAndMyrank(system_grav, NList);
-        tree_grav.calcForceAllAndWriteBack(
+        tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav,ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(EPGrav::eps2),
+#ifdef USE_QUAD
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                           CalcForceLongEPEP(EPGrav::eps2, EPGrav::r_out, EPGrav::r_search),
-#endif
-                                           CalcForceLongEPSP(EPGrav::eps2),
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
+#endif //USE_QUAD
+#else
+#ifdef USE_QUAD
+                                           CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
+#else
+                                           CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
+#endif //USE_QUAD
+#endif //USE_INDIVIDUAL_CUTOFF
                                            system_grav,
                                            dinfo);
 #ifdef CALC_WTIME
@@ -700,13 +705,20 @@ int main(int argc, char *argv[])
 #endif
             inputIDLocalAndMyrank(system_grav, NList);
             setCutoffRadii(system_grav);
-            tree_grav.calcForceAllAndWriteBack(
+            tree_grav.calcForceAllAndWriteBack(CalcForceLongEPEP<EPGrav,EPGrav, ForceGrav>(),
 #ifdef USE_INDIVIDUAL_CUTOFF
-                                               CalcForceLongEPEP(EPGrav::eps2),
+#ifdef USE_QUAD
+                                               CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleInAndOut,ForceGrav>(),
 #else
-                                               CalcForceLongEPEP(EPGrav::eps2, EPGrav::r_out, EPGrav::r_search),
-#endif
-                                               CalcForceLongEPSP(EPGrav::eps2),
+                                               CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleInAndOut,ForceGrav>(),
+#endif //USE_QUAD
+#else
+#ifdef USE_QUAD
+                                               CalcForceLongEPSPQuad<EPGrav,PS::SPJQuadrupoleScatter,ForceGrav>(),
+#else
+                                               CalcForceLongEPSPMono<EPGrav,PS::SPJMonopoleScatter,ForceGrav>(),
+#endif //USE_QUAD
+#endif //USE_INDIVIDUAL_CUTOFF
                                                system_grav,
                                                dinfo);
 #ifdef CALC_WTIME

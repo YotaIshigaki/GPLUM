@@ -1,0 +1,91 @@
+################################
+###   PARAMETERS FOR GPLUM   ###
+################################
+# LENGTH UNIT   AU
+# MASS UNIT     m_sun
+# TIME UNIT     year/2*pi
+
+# RANDOM SEED   
+seed            = 0                     # random seed
+
+# FOR INPUT & OUTPUT
+init_file       = INIT3000.dat          # initial condition file name
+Header          = 1                     # flag as to whether header exists in InitFile
+output_dir      = TEST                  # output directory name
+Restart         = 0
+
+# FOR INITIAL CONDITION OF SOLID DISK
+makeInit        = 1                     # flag as to whether initial condition is created in program
+n_init          = 10000                 # number of initial particle
+m_init          = 2.e22CGS              # mass of initial particle
+p               = 1.5                   # power of column density distribution of solid disk
+f_dust          = 0.71                  # scaling factor of column density distribution
+eta_ice         = 30./7.1               # ice boundary factor of column density distribution at a > a_ice
+a_in            = 0.9                   # maximun semimajor axis of particle
+a_out           = 1.1                   # minimum semimajor axis of particle
+a_ice           = 2.0                   # semimajor axis of ice line
+ecc_hill        = 2.0                   # eccentrisity dispersion to reduced Hill radius
+inc_hill        = 1.0                   # inclination dispersion to reduced Hill radius
+
+# FOR GAS DISK
+alpha_gas       = 11./4.                # power of density of gas disk
+beta_gas        = 0.5                   # power of temperature of gas disk
+f_gas           = 0.71                  # scaling factor of column density distribution
+tau_gas         = 0.                    # timescale of gas dissipation (no dissipation if tau_gas=0)
+C_d             = 1.                    # non-dimensional drag coefficient.
+mu              = 2.34                  # mean molecular weight
+
+# FOR DOMAIN
+coef_ema        = 0.3                   # coefficient of exponential moving average
+#nx             = 1                     # number of domain along x-direction
+#ny             = 1                     # number of domain along y-direction
+reset_step      = 1024                  # interval of step for domain to reset
+                  
+# FOR TREE         
+theta           = 0.5                   # opening angle
+n_leaf_limit    = 8                     # maximum number of particle in leaf
+n_group_limit   = 64                    # maximun number of particle sharing interaction list
+n_smp_ave       = 100                   # average target number of sample particle per process
+
+# FOR TIMESTEP
+t_end           = 10                    # time to finish initegration
+dt_tree         = 2^-6                  # timestep of tree (soft)
+dt_snap         = 1                     # time interval to output snapshot
+dt_min          = 2^-30                 # minimum timestep (hard)
+eta             = 0.02                  # parameter eta to determine timestep (hard)
+eta_sun         = 0.02                  # parameter eta to determine timestep (hard)
+eta_0           = 0.002                 # parameter eta to determine initial timestep (hard)
+eta_sun0        = 0.002                 # parameter eta to determine initial timestep (hard)
+alpha           = 1.                    # parameter alpha to determinetimestep (hard)
+
+# FOR GRAVITATONAL INTERACTION
+m_sun           = 1.                    # mass of central star
+dens            = 2.CGS                 # density of particles  
+eps             = 0.                    # softening parameter                   
+R_cut0          = 2.0                   # parameter to determine cut-off radius
+R_cut1          = 4.0                   # parameter to determine cut-off radius
+R_search0       = 1.1                   # parameter to determine search radius
+R_search1       = 6.0                   # parameter to determine search radius
+R_search2       = 1.1                   # parameter to determine search radius
+R_search3       = 2.0                   # parameter to determine search radius
+gamma           = 0.5                   # inner / outer cut-off radius ratio
+r_cut_max       = 0.                    # maximum cut-off radius
+r_cut_min       = 0.                    # minimum cut-off radius
+p_cut           = 0.                    # power of semi-major axis of cut-off radius
+r_max           = 20.                   # maximum distance of particle from central star 
+r_min           = 0.1                   # minimum distance of particle from central star
+
+# FOR COLLISION
+f               = 1.                    # enhancement factor of particle radius
+m_min           = 2.e22/10.CGS          # minimum mass of fragment particle
+a_frag          = 0.0                   # ratio of total fragments mass to impactor mass
+N_frag          = 10                    # maximum number of fragments for a collision
+dens_imp        = 1.CGS                 # parameter for Chamnbers model
+c_s             = 1.8                   # parameter for Chamnbers model
+mu_             = 1./3.                 # parameter for Chamnbers model
+eta_            = -3./2.                # parameter for Chamnbers model
+eps_n           = 1.                    # normal coefficient of restitution
+eps_t           = 1.                    # tangential coefficient of restitution
+
+
+
