@@ -220,7 +220,6 @@ inline void Collision0::setParticle(Tpsys & pp,
     /*   Accretion   */
     ///////////////////
     //Mass & Radius
-    pp[id_c_imp].mass -= mass_frag;
     //if ( HitAndRun ) {
     if ( !flag_merge ) {
         assert ( pp[id_c_tar].r_planet == r_planet_tar );
@@ -237,6 +236,8 @@ inline void Collision0::setParticle(Tpsys & pp,
             pp[id_c_tar].r_planet = r_planet_tar_new;
         }
     }
+    pp[id_c_imp].mass -= mass_frag;
+    
     pp[id_c_imp].f = f_imp_new;
     pp[id_c_tar].f = f_tar_new;
 #ifdef MERGE_BINARY

@@ -290,6 +290,33 @@ PS::S32 readParameter(const char * param_file,
     }
     ifs.close();
 
+#ifdef TEST_PTCL
+    EPGrav::eps2 = std::max(EPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
+#endif
+
+    return 0;
+}
+
+
+PS::S32 checkParameter(char * init_file,
+                       bool bHeader,
+                       char * output_dir,
+                       bool bRestert,
+                       bool makeInit,
+                       PS::F64 coef_ema,
+                       PS::S32 nx,
+                       PS::S32 ny,
+                       PS::F64 theta,
+                       PS::S32 n_leaf_limit,
+                       PS::S32 n_group_limit,
+                       PS::S32 n_smp_ave,
+                       PS::F64 t_end,
+                       PS::F64 dt_snap,
+                       PS::F64 r_max,
+                       PS::F64 r_min,
+                       PS::S32 seed,
+                       PS::S32 reset_step)
+{
     if ( !isPowerOf2(FPGrav::dt_tree) ){
         errorMessage("dt_tree has NOT been set to be power of 2",
                      "(dt_tree =" + std::to_string(FPGrav::dt_tree ) + ")." );
@@ -352,11 +379,13 @@ PS::S32 readParameter(const char * param_file,
                      "(r_max = "+ std::to_string(r_max)
                      + ", r_min = " + std::to_string(r_min) + ").");
         return 1;
+    } else if ( nx * ny != PS::Comm::getNumberOfProc() ) {
+        errorMessage("nx & ny have NOT been set to satisfy nx * ny have been equal to the number of process",
+                     "(nx = "+ std::to_string(nx)
+                     + ", ny = " + std::to_string(ny) + ").");
+        return 1;
     }
-#ifdef TEST_PTCL
-    EPGrav::eps2 = std::max(EPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
-#endif
-    
+
     return 0;
 }
 
