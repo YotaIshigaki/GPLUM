@@ -1,6 +1,6 @@
-PS_PATH_FDPS = ../FDPS-devel/src/
-#PS_PATH_PIKG = ../PIKG/inc/
-PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
+PS_PATH_FDPS = ../FDPS-6.0b2/src/
+PS_PATH_PIKG = ../PIKG/inc/
+#PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 
 ####################
@@ -52,6 +52,7 @@ CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
 ifeq ($(use_OpenMP),yes)
+#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
 CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
 endif
 ifeq ($(use_MPI),yes)

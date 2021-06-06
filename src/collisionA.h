@@ -224,14 +224,16 @@ inline void Collision0::setParticle(Tpsys & pp,
     if ( !flag_merge ) {
         assert ( pp[id_c_tar].r_planet == r_planet_tar );
         if ( r_planet_imp_new < 0. ) {
-            pp[id_c_imp].setRPlanet(mass_imp - mass_frag);
+            pp[id_c_imp].r_planet *= pow((mass_imp - mass_frag)/mass_imp, 1./3.);
+            //pp[id_c_imp].setRPlanet(mass_imp - mass_frag);
         } else {
             pp[id_c_imp].r_planet = r_planet_imp_new;
         }
     } else {
         pp[id_c_imp].r_planet = 0.;
         if ( r_planet_tar_new < 0. ) {
-            pp[id_c_tar].setRPlanet(mass_rem);
+            pp[id_c_tar].r_planet *= pow(mass_rem/mass_tar, 1./3.);
+            //pp[id_c_tar].setRPlanet(mass_rem);
         } else {
             pp[id_c_tar].r_planet = r_planet_tar_new;
         }
@@ -260,7 +262,7 @@ inline void Collision0::setParticle(Tpsys & pp,
     
     //Add Fragments
     id_c_frag = n_frag ? pp.size() : 0;
-    id_frag   = n_frag ? ( - (100*pp[id_c_imp].id_cluster+id_next+1) ) : 0;
+    id_frag   = n_frag ? ( - (128*pp[id_c_imp].id_cluster+id_next+1) ) : 0;
     for ( PS::S32 i=0; i<n_frag; i++ ){
 
         std::cerr << std::scientific << std::setprecision(15)

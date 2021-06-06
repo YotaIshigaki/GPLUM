@@ -1,7 +1,5 @@
 #pragma once
 
-#define NMAX_HARD 65536
-
 class ParticleCluster{
 public:
     static std::vector<FPHard> ptcl_hard;   
@@ -48,7 +46,7 @@ public:
         }
         PS::S32 j = id_list.size();
         id_list.resize(n);
-        for (PS::S32 k=j; k<n; k++) id_list.at(k) = i + k;
+        for (PS::U32 k=j; k<n; k++) id_list.at(k) = i + k;
     }
     void reserve (const PS::U32 n) { id_list.reserve(n); }
 
@@ -85,6 +83,15 @@ public:
     PS::F64 edisp_d;
 
     //static PS::F64 f;
+
+    std::vector<PS::S32>   n_col_list;
+    std::vector<PS::S32>   n_frag_list;
+    std::vector<Collision> col_list_tot;
+    std::vector<PS::S32>   id_frag_list;
+    std::vector<PS::S32>   id_frag_loc;
+    std::vector<PS::S32>   col_recv;
+    std::vector<PS::S32>   frag_recv;
+    
 
     PS::S32 getNumberOfClusterLocal() const { return ptcl_multi.size(); }
     PS::S32 getNumberOfClusterGlobal() const {
@@ -213,8 +220,8 @@ public:
                           NL2 & ex_NList,
                           const PS::S32 istep);
 
-    static void rewriteFragmentID(PS::S32 * & id_frag_list,
-                                  Collision * & col_list,
+    static void rewriteFragmentID(std::vector<PS::S32> & id_frag_list,
+                                  std::vector<Collision> & col_list,
                                   PS::S32 n_col_tot,
                                   PS::S32 n_frag_tot,
                                   PS::S32 & id_next);
@@ -606,8 +613,8 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
 }
 #endif
 
-inline void HardSystem::rewriteFragmentID(PS::S32 * & id_frag_list,
-                                          Collision * & col_list,
+inline void HardSystem::rewriteFragmentID(std::vector<PS::S32> & id_frag_list,
+                                          std::vector<Collision> & col_list,
                                           PS::S32 n_col_tot,
                                           PS::S32 n_frag_tot,
                                           PS::S32 & id_next)
@@ -638,31 +645,36 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
                                                       std::ofstream & fp)
 {
     const PS::S32 n_proc = PS::Comm::getNumberOfProc();
-    PS::S32 * n_col_list     = nullptr;
-    PS::S32 * n_frag_list    = nullptr;
-    Collision * col_list_tot = nullptr;
-    PS::S32 * id_frag_list   = nullptr;
-    PS::S32 * id_frag_loc    = nullptr;
-    PS::S32 * col_recv  = nullptr;
-    PS::S32 * frag_recv = nullptr;
+    //PS::S32 * n_col_list     = nullptr;
+    //PS::S32 * n_frag_list    = nullptr;
+    //Collision * col_list_tot = nullptr;
+    //PS::S32 * id_frag_list   = nullptr;
+    //PS::S32 * id_frag_loc    = nullptr;
+    //PS::S32 * col_recv  = nullptr;
+    //PS::S32 * frag_recv = nullptr;
 
-    id_frag_loc = new PS::S32[n_frag];
+    //id_frag_loc = new PS::S32[n_frag];
+    id_frag_loc.resize(n_frag);
     for ( PS::S32 i=0; i<n_frag; i++ ){
         std::pair<PS::S32, PS::S32> adr = frag_list.at(i);
         id_frag_loc[i] = ptcl_multi[adr.first][adr.second].id;
     }
     if ( PS::Comm::getRank() == 0 ){
-        n_col_list  = new PS::S32[n_proc];
-        n_frag_list = new PS::S32[n_proc];
-        col_recv    = new PS::S32[n_proc];
-        frag_recv   = new PS::S32[n_proc];
+        //n_col_list  = new PS::S32[n_proc];
+        //n_frag_list = new PS::S32[n_proc];
+        //col_recv    = new PS::S32[n_proc];
+        //frag_recv   = new PS::S32[n_proc];
+        n_col_list.resize(n_proc);
+        n_frag_list.resize(n_proc);
+        col_recv.resize(n_proc);
+        frag_recv.resize(n_proc);
     }
     // Send Number of Collision & Fragments
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
     MPI_Gather(&n_col,      1, PS::GetDataType(n_col),
-               n_col_list,  1, PS::GetDataType(*n_col_list),  0, MPI_COMM_WORLD);
+               &n_col_list[0],  1, PS::GetDataType(n_col_list[0]),  0, MPI_COMM_WORLD);
     MPI_Gather(&n_frag,     1, PS::GetDataType(n_frag),
-               n_frag_list, 1, PS::GetDataType(*n_frag_list), 0, MPI_COMM_WORLD);
+               &n_frag_list[0], 1, PS::GetDataType(n_frag_list[0]), 0, MPI_COMM_WORLD);
 #else
     n_col_list[0]  = n_col;
     n_frag_list[0] = n_frag;
@@ -685,15 +697,17 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
         //frag_recv[n_proc] = tmp_frag;
         n_col_tot = tmp_col;
         n_frag_tot = tmp_frag;
-        col_list_tot = new Collision[n_col_tot];
-        id_frag_list = new PS::S32[n_frag_tot];
+        //col_list_tot = new Collision[n_col_tot];
+        //id_frag_list = new PS::S32[n_frag_tot];
+        col_list_tot.resize(n_col_tot);
+        id_frag_list.resize(n_frag_tot);
     }
     // Send Collision Information & Fragments ID
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-    MPI_Gatherv(&collision_list[0], n_col,                  PS::GetDataType(collision_list[0]),
-                col_list_tot,       n_col_list,  col_recv,  PS::GetDataType(*col_list_tot),     0, MPI_COMM_WORLD);
-    MPI_Gatherv(id_frag_loc,        n_frag,                 PS::GetDataType(*id_frag_loc),
-                id_frag_list,       n_frag_list, frag_recv, PS::GetDataType(*id_frag_list),     0, MPI_COMM_WORLD);
+    MPI_Gatherv(&collision_list[0],  n_col,                         PS::GetDataType(collision_list[0]),
+                &col_list_tot[0],   &n_col_list[0],  &col_recv[0],  PS::GetDataType(col_list_tot[0]),   0, MPI_COMM_WORLD);
+    MPI_Gatherv(&id_frag_loc[0],     n_frag,                        PS::GetDataType(id_frag_loc[0]),
+                &id_frag_list[0],   &n_frag_list[0], &frag_recv[0], PS::GetDataType(id_frag_list[0]),   0, MPI_COMM_WORLD);
 #else
     for(PS::S32 i=0; i<n_col; i++)  col_list_tot[i] = collision_list[i];
     for(PS::S32 i=0; i<n_frag; i++) id_frag_list[i] = id_frag_loc[i];
@@ -708,8 +722,8 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
     
     // Return Fragments ID
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-    MPI_Scatterv(id_frag_list, n_frag_list, frag_recv, PS::GetDataType(*id_frag_list),
-                 id_frag_loc,  n_frag,                 PS::GetDataType(*id_frag_loc),  0, MPI_COMM_WORLD);
+    MPI_Scatterv(&id_frag_list[0], &n_frag_list[0], &frag_recv[0], PS::GetDataType(id_frag_list[0]),
+                 &id_frag_loc[0],   n_frag,                        PS::GetDataType(id_frag_loc[0]),  0, MPI_COMM_WORLD);
 #else
     for(int i=0; i<n_frag_list[0]; i++) id_frag_loc[i] = id_frag_list[i];
 #endif
@@ -747,14 +761,14 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
         // Output Collision Information
         for ( PS::S32 i=0; i<n_col_tot; i++ ) col_list_tot[i].write2File(fp);
             
-        delete [] n_col_list;
-        delete [] n_frag_list;
-        delete [] col_list_tot;
-        delete [] id_frag_list;
-        delete [] col_recv;
-        delete [] frag_recv;
+        //delete [] n_col_list;
+        //delete [] n_frag_list;
+        //delete [] col_list_tot;
+        //delete [] id_frag_list;
+        //delete [] col_recv;
+        //delete [] frag_recv;
     }
-    delete [] id_frag_loc;
+    //delete [] id_frag_loc;
 
     return n_frag_tot;
 }

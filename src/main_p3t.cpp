@@ -193,7 +193,7 @@ int main(int argc, char *argv[])
         default:
             std::cout << "Usage: "
                       <<  argv[0]
-                      << " [-p argment] [-r] [-i argment] [-s argment] [-e argment] [-o argment] [-D argment] [-R argment] arg1 ..."
+                      << " [-p argment] [-r] [-i argment] [-s argment] [-e argment] [-o argment] [-D argment] [-R argment] [-S argment] [-x argment] [-y argment] "
                       << std::endl;
             break;
         }
