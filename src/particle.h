@@ -435,11 +435,11 @@ public:
     
 #endif //USE_INDIVIDUAL_CUTOFF
     
-    void setRPlanet(PS::F64 m) {
-        //r_planet = pow(0.75*m/(M_PI*dens), 1./3.);
-        PS::F64 pi_dens = 0.75*mass/(r_planet*r_planet*r_planet);
-        r_planet = pow(0.75*m/pi_dens, 1./3.);
-    }
+    //void setRPlanet(PS::F64 m) {
+    //    //r_planet = pow(0.75*m/(M_PI*dens), 1./3.);
+    //    PS::F64 pi_dens = 0.75*mass/(r_planet*r_planet*r_planet);
+    //    r_planet = pow(0.75*m/pi_dens, 1./3.);
+    //}
     void setRPlanet() {
         r_planet = pow(0.75*mass/(M_PI*dens), 1./3.);
     }
