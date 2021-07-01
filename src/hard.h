@@ -87,8 +87,8 @@ public:
     std::vector<PS::S32>   n_col_list;
     std::vector<PS::S32>   n_frag_list;
     std::vector<Collision> col_list_tot;
-    std::vector<PS::S32>   id_frag_list;
-    std::vector<PS::S32>   id_frag_loc;
+    std::vector<PS::S64>   id_frag_list;
+    std::vector<PS::S64>   id_frag_loc;
     std::vector<PS::S32>   col_recv;
     std::vector<PS::S32>   frag_recv;
     
@@ -220,15 +220,15 @@ public:
                           NL2 & ex_NList,
                           const PS::S32 istep);
 
-    static void rewriteFragmentID(std::vector<PS::S32> & id_frag_list,
+    static void rewriteFragmentID(std::vector<PS::S64> & id_frag_list,
                                   std::vector<Collision> & col_list,
                                   PS::S32 n_col_tot,
                                   PS::S32 n_frag_tot,
-                                  PS::S32 & id_next);
+                                  PS::S64 & id_next);
     template <class Tpsys, class Tpsys2>
     PS::S32 addFragment2ParticleSystem(Tpsys & pp,
                                        Tpsys2 & ex_pp,
-                                       PS::S32 & id_next,
+                                       PS::S64 & id_next,
                                        std::ofstream & fp); 
 };
 
@@ -305,7 +305,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             //for ( PS::S32 i=0; i<size; i++ ){
             PS::S32 n_p = list_multi.at(i).size();
             PS::S32 id_cluster = 0;
-            std::map<PS::S32, PS::S32> id_map;
+            std::map<PS::S64, PS::S32> id_map;
             ptcl_multi[i].clear();
             id_map.clear();
             
@@ -432,7 +432,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
         PS::S32 i = large_cluster.at(ii);
         PS::S32 n_p = list_multi.at(i).size();
         PS::S32 id_cluster = 0;
-        std::map<PS::S32, PS::S32> id_map;
+        std::map<PS::S64, PS::S32> id_map;
         ptcl_multi[i].clear();
         id_map.clear();
         assert( large_cluster_size <= n_p );
@@ -514,7 +514,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             PS::S32 i = small_cluster.at(ii);
             PS::S32 n_p = list_multi.at(i).size();
             PS::S32 id_cluster = 0;
-            std::map<PS::S32, PS::S32> id_map;
+            std::map<PS::S64, PS::S32> id_map;
             ptcl_multi[i].clear();
             id_map.clear();
             assert( large_cluster_size > n_p );
@@ -613,18 +613,18 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
 }
 #endif
 
-inline void HardSystem::rewriteFragmentID(std::vector<PS::S32> & id_frag_list,
+inline void HardSystem::rewriteFragmentID(std::vector<PS::S64> & id_frag_list,
                                           std::vector<Collision> & col_list,
                                           PS::S32 n_col_tot,
                                           PS::S32 n_frag_tot,
-                                          PS::S32 & id_next)
+                                          PS::S64 & id_next)
 {
-    std::map<PS::S32, PS::S32> id_old2new;
+    std::map<PS::S64, PS::S64> id_old2new;
     id_old2new.clear();
         
     for ( PS::S32 i=0; i<n_col_tot; i++ ){
         PS::S32 n_fragi  = col_list[i].getNumberOfFragment();
-        PS::S32 id_fragi = col_list[i].getFragmentID();
+        PS::S64 id_fragi = col_list[i].getFragmentID();
         if ( n_fragi == 0 ) continue;
         for ( PS::S32 j=0; j<n_fragi; j++ ){
             id_old2new[id_fragi - j] = id_next;
@@ -641,19 +641,19 @@ inline void HardSystem::rewriteFragmentID(std::vector<PS::S32> & id_frag_list,
 template <class Tpsys, class Tpsys2>
 inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
                                                       Tpsys2 & ex_pp,
-                                                      PS::S32 & id_next,
+                                                      PS::S64 & id_next,
                                                       std::ofstream & fp)
 {
     const PS::S32 n_proc = PS::Comm::getNumberOfProc();
     //PS::S32 * n_col_list     = nullptr;
     //PS::S32 * n_frag_list    = nullptr;
     //Collision * col_list_tot = nullptr;
-    //PS::S32 * id_frag_list   = nullptr;
-    //PS::S32 * id_frag_loc    = nullptr;
+    //PS::S64 * id_frag_list   = nullptr;
+    //PS::S64 * id_frag_loc    = nullptr;
     //PS::S32 * col_recv  = nullptr;
     //PS::S32 * frag_recv = nullptr;
 
-    //id_frag_loc = new PS::S32[n_frag];
+    //id_frag_loc = new PS::S64[n_frag];
     id_frag_loc.resize(n_frag);
     for ( PS::S32 i=0; i<n_frag; i++ ){
         std::pair<PS::S32, PS::S32> adr = frag_list.at(i);
@@ -698,7 +698,7 @@ inline PS::S32 HardSystem::addFragment2ParticleSystem(Tpsys & pp,
         n_col_tot = tmp_col;
         n_frag_tot = tmp_frag;
         //col_list_tot = new Collision[n_col_tot];
-        //id_frag_list = new PS::S32[n_frag_tot];
+        //id_frag_list = new PS::S64[n_frag_tot];
         col_list_tot.resize(n_col_tot);
         id_frag_list.resize(n_frag_tot);
     }

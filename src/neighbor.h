@@ -2,9 +2,9 @@
 
 class ExPair{
 public:
-    PS::S32 id_in;
-    PS::S32 id_out;
-    PS::S32 id_cluster;
+    PS::S64 id_in;
+    PS::S64 id_out;
+    PS::S64 id_cluster;
     
     PS::S32 * rank_list;
     
@@ -29,9 +29,9 @@ public:
         for ( PS::S32 i=0; i<size; i++ ) rank_list[i] = 0;
         //setFlag(myrank);
     }
-    ExPair(PS::S32 id_in0,
-           PS::S32 id_out0,
-           PS::S32 id_cluster0){
+    ExPair(PS::S64 id_in0,
+           PS::S64 id_out0,
+           PS::S64 id_cluster0){
         //PS::S32 myrank = PS::Comm::getRank();
         id_in  = id_in0;
         id_out = id_out0;
@@ -64,16 +64,16 @@ public:
         delete [] rank_list;
     }
 
-    PS::S32 getId() const {
+    PS::S64 getId() const {
         return id_in;
     }
-    std::pair<PS::S32,PS::S32> getPair() const {
+    std::pair<PS::S64,PS::S64> getPair() const {
         return std::make_pair(id_in, id_out);
     }
-    PS::S32 getIdCluster() const {
+    PS::S64 getIdCluster() const {
         return id_cluster;
     }
-    PS::S32 setIdCluster(PS::S32 id_cluster0) {
+    PS::S64 setIdCluster(PS::S64 id_cluster0) {
         return id_cluster = id_cluster0;
     }
 
@@ -153,13 +153,13 @@ PS::S32 ExPair::n_bit;
 
 class NeighborList{
 public:
-    std::vector<std::vector<PS::S32> > n_list;
-    std::map<PS::S32, PS::S32> id_map;
+    std::vector<std::vector<PS::S64> > n_list;
+    std::map<PS::S64, PS::S32> id_map;
 
     std::vector<PS::S32> with_neighbor_list;
     std::vector<std::pair<PS::S32, PS::S32> > pair_list;
     
-    std::vector<std::pair<PS::S32,PS::S32> > ex_list;
+    std::vector<std::pair<PS::S64,PS::S64> > ex_list;
     std::vector<std::pair<PS::S32,PS::S32> > ex_adr_list;
     std::vector<PS::S32> connected_list;
     std::vector<std::vector<ExPair> > ex_data;
@@ -173,7 +173,7 @@ public:
     std::vector<std::vector<PS::S32> > ex_data_send;
     std::vector<std::vector<PS::S32> > ex_data_recv;
 
-    std::vector<PS::S32> & operator[](PS::S32 i){ return n_list[i]; }
+    std::vector<PS::S64> & operator[](PS::S32 i){ return n_list[i]; }
     
     NeighborList() {
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
@@ -250,7 +250,7 @@ public:
     template <class Tpsys>
     void addNeighbor(Tpsys & pp,
                      PS::S32 i,
-                     PS::S32 j_id,
+                     PS::S64 j_id,
                      PS::S32 j_rank,
                      PS::S32 j_id_local=-1) {
         n_list[i].push_back(j_id);
@@ -421,14 +421,14 @@ public:
     void createNeighborCluster(Tpsys & pp){
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
 
-        PS::S32 j_id_cluster = 0;
-        PS::S32 id_cluster[n_loc];
+        PS::S64 j_id_cluster = 0;
+        PS::S64 id_cluster[n_loc];
         bool check = true;
         while( check ){
             check = false;
 #pragma omp parallel for
             for(PS::S32 i=0; i<n_loc; i++){
-                PS::S32 j_id = 0;
+                PS::S64 j_id = 0;
                 PS::S32 nei = 0;
                 nei = pp[i].neighbor;
                 id_cluster[i] = pp[i].id_cluster;
@@ -473,7 +473,7 @@ public:
 
 #pragma omp parallel for
         for ( PS::S32 j=0; j<n_out; j++ ){
-            std::pair<PS::S32,PS::S32> pair = ex_list.at(j);
+            std::pair<PS::S64,PS::S64> pair = ex_list.at(j);
             std::pair<PS::S32,PS::S32> ex_adr = ex_adr_list.at(j);
             assert( getExData(ex_adr).getId() == pair.first );
             getExData(ex_adr).setIdCluster(pp[id_map.at(pair.first)].id_cluster);
@@ -584,7 +584,7 @@ public:
         const PS::S32 myrank = PS::Comm::getRank();
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         const PS::S32 n_ptcl = ex_list.size();
-        std::vector<PS::S32> ex_cluster;
+        std::vector<PS::S64> ex_cluster;
         std::vector<std::pair<PS::S32,PS::S32> > ex_cluster_adr;
         ex_cluster.clear();
         ex_cluster_adr.clear();
@@ -592,7 +592,7 @@ public:
         for ( PS::S32 ii=0; ii<n_ptcl; ii++ ) {
             //std::pair<PS::S32,PS::S32> pair = ex_list.at(ii);
             std::pair<PS::S32,PS::S32> adr =  ex_adr_list.at(ii);
-            PS::S32 id_cluster = getExData(adr).id_cluster;
+            PS::S64 id_cluster = getExData(adr).id_cluster;
 
             PS::S32 n_l = ex_cluster.size();
             std::pair<PS::S32,PS::S32> adr2 = std::make_pair(-1,-1);
@@ -647,12 +647,12 @@ class ExParticleSystem {
     PS::S32 n_ex_nei_recv_tot;
 
     std::vector<Tp>      ex_ptcl_send;
-    std::vector<PS::S32> ex_nei_send;
+    std::vector<PS::S64> ex_nei_send;
     std::vector<Tp>      ex_ptcl_recv;
-    std::vector<PS::S32> ex_nei_recv;
+    std::vector<PS::S64> ex_nei_recv;
 
     std::vector<std::vector<PS::S32> > ex_ptcl_send_list;
-    std::vector<PS::S32*> n_list;
+    std::vector<PS::S64*> n_list;
 
     std::vector<PS::S32> n_ex_ptcl_send;
     std::vector<PS::S32> n_ex_nei_send;

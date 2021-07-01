@@ -10,7 +10,7 @@ void correctForceLong(Tpsys & pp,
                       PS::S32 & n_with_ngb)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::F64 eps2 = EPGrav::eps2;
+    const PS::F64 eps2 = FPGrav::eps2;
     NList.initializeList(pp);
 
 #ifdef CORRECT_NEIGHBOR
@@ -30,11 +30,11 @@ void correctForceLong(Tpsys & pp,
         PS::F64vec acci = 0.;
         PS::F64    phii = 0.;
         PS::F64    acc0i = 0.;
-        PS::S32    j_id = 0;
+        PS::S64    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
         PS::S32    neighbor = pp[i].neighbor - 1;
-        PS::F64vec posi = pp[i].getPos();
+        PS::F64vec posi = pp[i].pos;
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
 #if defined(CORRECT_NEIGHBOR) || defined(CHECK_NEIGHBOR)
@@ -45,7 +45,7 @@ void correctForceLong(Tpsys & pp,
         if ( neighbor == 0 ) {
 #ifdef CHECK_NEIGHBOR
             PS::S32 nei_loc = 0;
-            EPGrav* next = NULL;
+            EPJGrav* next = NULL;
             nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
             //assert( nei_loc == 1 );
 	    for (PS::S32 j=0; j<nei_loc; j++) {
@@ -78,7 +78,7 @@ void correctForceLong(Tpsys & pp,
             if ( !( neighbor > 1 || isMerged ) ) {
 #ifdef CHECK_NEIGHBOR
                 PS::S32 nei_loc = 0;
-                EPGrav* next = NULL;
+                EPJGrav* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 //assert( nei_loc < 3 );
                 for (PS::S32 j=0; j<nei_loc; j++) {
@@ -106,7 +106,7 @@ void correctForceLong(Tpsys & pp,
                 PS::F64 r_out     = pp[i].r_out;
 #else
                 PS::F64 r_out_inv = FPGrav::r_out_inv;
-                PS::F64 r_out     = EPGrav::r_out;
+                PS::F64 r_out     = FPGrav::r_out;
 #endif
                 phii += pp[i].mass * r_out_inv;
                 
@@ -116,10 +116,10 @@ void correctForceLong(Tpsys & pp,
                 r_out     = std::max(pp[i].r_out,     pp[j_id_local].r_out);
                 PS::F64 r_search = std::max(pp[i].r_search, pp[j_id_local].r_search);
 #else
-                PS::F64 r_search = EPGrav::r_search;
+                PS::F64 r_search = FPGrav::r_search;
 #endif
                 
-                PS::F64vec posj = pp[j_id_local].getPos();
+                PS::F64vec posj = pp[j_id_local].pos;
                 PS::F64vec dr   = posj - posi;
                 PS::F64 dr2 = dr * dr;
                 assert( dr2 != 0.0 );
@@ -176,13 +176,14 @@ void correctForceLong(Tpsys & pp,
                 
             } else { // neighbor > 2 || j_id is not in map
                 PS::S32 nei_loc = 0;
-                EPGrav* next = NULL;
+                EPJGrav* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 
                 for(PS::S32 j=0; j<nei_loc; j++){
                     j_id       = (next+j)->id;
                     j_id_local = (next+j)->id_local;
                     j_rank     = (next+j)->myrank;
+                    //j_id_local = ( pp[i].myrank == j_rank ) ? NList.id_map.at(j_id) : -1;
                 
                     PS::F64 massj  = (next+j)->mass;
 #ifdef USE_INDIVIDUAL_CUTOFF
@@ -192,8 +193,8 @@ void correctForceLong(Tpsys & pp,
                     PS::F64 r_search  = std::max(pp[i].r_search,  (next+j)->r_search);
 #else
                     PS::F64 r_out_inv = FPGrav::r_out_inv;
-                    PS::F64 r_out     = EPGrav::r_out;
-                    PS::F64 r_search  = EPGrav::r_search;
+                    PS::F64 r_out     = FPGrav::r_out;
+                    PS::F64 r_search  = FPGrav::r_search;
 #endif
                     
                     if ( j_id == pp[i].id ) {
@@ -201,7 +202,7 @@ void correctForceLong(Tpsys & pp,
                         continue;
                     }
             
-                    PS::F64vec posj = (next+j)->getPos();
+                    PS::F64vec posj = (next+j)->pos;
                     PS::F64vec dr   = posj - posi;
                     PS::F64 dr2 = dr * dr;              
                     assert( dr2 != 0.0 );
@@ -298,7 +299,7 @@ void correctForceLongInitial(Tpsys & pp,
                              PS::S32 & n_with_ngb)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::F64 eps2 = EPGrav::eps2;
+    const PS::F64 eps2 = FPGrav::eps2;
     NList.initializeList(pp);
 
     PS::F64vec acc_s[n_loc];
@@ -332,11 +333,11 @@ void correctForceLongInitial(Tpsys & pp,
         PS::F64    acc0i  = 0.;
         PS::F64    phii   = 0.;
         PS::F64    phi_di = 0.;
-        PS::S32    j_id = 0;
+        PS::S64    j_id = 0;
         PS::S32    j_id_local = 0;
         PS::S32    j_rank = 0;
         PS::S32    neighbor = pp[i].neighbor - 1;
-        PS::F64vec posi = pp[i].getPos();
+        PS::F64vec posi = pp[i].pos;
         pp[i].neighbor = 0.;
         pp[i].id_cluster = pp[i].id;
         
@@ -344,7 +345,7 @@ void correctForceLongInitial(Tpsys & pp,
         if ( neighbor == 0 ) {      
 #ifdef CHECK_NEIGHBOR
             PS::S32 nei_loc = 0;
-            EPGrav* next = NULL;
+            EPJGrav* next = NULL;
             nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
             //assert( nei_loc == 1 );
             for (PS::S32 j=0; j<nei_loc; j++) {
@@ -377,7 +378,7 @@ void correctForceLongInitial(Tpsys & pp,
             if ( !( neighbor > 1 || isMerged ) ) {          
 #ifdef CHECK_NEIGHBOR
                 PS::S32 nei_loc = 0;
-                EPGrav* next = NULL;
+                EPJGrav* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 //assert( nei_loc < 3 );
                 for (PS::S32 j=0; j<nei_loc; j++) {
@@ -405,7 +406,7 @@ void correctForceLongInitial(Tpsys & pp,
                 PS::F64 r_out     = pp[i].r_out;
 #else
                 PS::F64 r_out_inv = FPGrav::r_out_inv;
-                PS::F64 r_out     = EPGrav::r_out;
+                PS::F64 r_out     = FPGrav::r_out;
 #endif
                 phii += pp[i].mass * r_out_inv;
                 
@@ -415,10 +416,10 @@ void correctForceLongInitial(Tpsys & pp,
                 r_out     = std::max(pp[i].r_out,     pp[j_id_local].r_out);
                 PS::F64 r_search = std::max(pp[i].r_search, pp[j_id_local].r_search);
 #else
-                PS::F64 r_search = EPGrav::r_search;
+                PS::F64 r_search = FPGrav::r_search;
 #endif
                 
-                PS::F64vec posj = pp[j_id_local].getPos();
+                PS::F64vec posj = pp[j_id_local].pos;
                 PS::F64vec dr   = posj - posi;
                 PS::F64 dr2 = dr * dr;
                 assert( dr2 != 0.0 );
@@ -479,13 +480,14 @@ void correctForceLongInitial(Tpsys & pp,
 
             } else { // neighbor > 2 || j_id is not in map
                 PS::S32 nei_loc = 0;
-                EPGrav* next = NULL;
+                EPJGrav* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 
                 for(PS::S32 j=0; j<nei_loc; j++){
                     j_id       = (next+j)->id;
                     j_id_local = (next+j)->id_local;
                     j_rank     = (next+j)->myrank;
+                    //j_id_local = ( pp[i].myrank == j_rank ) ? NList.id_map.at(j_id) : -1;
                 
                     PS::F64 massj  = (next+j)->mass;
 #ifdef USE_INDIVIDUAL_CUTOFF
@@ -495,8 +497,8 @@ void correctForceLongInitial(Tpsys & pp,
                     PS::F64 r_search  = std::max(pp[i].r_search,  (next+j)->r_search);
 #else
                     PS::F64 r_out_inv = FPGrav::r_out_inv;
-                    PS::F64 r_out     = EPGrav::r_out;
-                    PS::F64 r_search  = EPGrav::r_search;
+                    PS::F64 r_out     = FPGrav::r_out;
+                    PS::F64 r_search  = FPGrav::r_search;
 #endif
 
                     if ( j_id == pp[i].id ) {
@@ -504,7 +506,7 @@ void correctForceLongInitial(Tpsys & pp,
                         continue;
                     }
             
-                    PS::F64vec posj = (next+j)->getPos();
+                    PS::F64vec posj = (next+j)->pos;
                     PS::F64vec dr   = posj - posi;
                     PS::F64 dr2 = dr * dr;              
                     assert( dr2 != 0.0 );
@@ -604,7 +606,7 @@ template <class Tpsys>
 void calcIndirectTerm(Tpsys & pp)
 {
     PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    PS::F64 eps2 = EPGrav::eps2;
+    PS::F64 eps2 = FPGrav::eps2;
     
     PS::F64vec acc_loc = 0;
     PS::F64vec pos_grav_loc = 0;
@@ -614,7 +616,7 @@ void calcIndirectTerm(Tpsys & pp)
 #pragma omp parallel for reduction (+:acc_loc, pos_grav_loc, vel_grav_loc, mass_tot_loc)
     for(PS::S32 i=0; i<n_loc; i++){
         
-        PS::F64vec posi  = pp[i].getPos();
+        PS::F64vec posi  = pp[i].pos;
         PS::F64vec veli  = pp[i].vel;
         PS::F64    massi = pp[i].mass;
         
@@ -641,7 +643,7 @@ template <class Tpsys>
 PS::F64 calcIndirectEnergy(Tpsys & pp)
 {
     PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    PS::F64 eps2 = EPGrav::eps2;
+    PS::F64 eps2 = FPGrav::eps2;
     
     PS::F64vec vel_grav_loc = 0;
     PS::F64vec vel_grav_glb = 0;
@@ -649,7 +651,7 @@ PS::F64 calcIndirectEnergy(Tpsys & pp)
     PS::F64    mass_tot_glb = 0;
 #pragma omp parallel for reduction (+:pos_grav_loc, vel_grav_loc, mass_tot_loc)
     for(PS::S32 i=0; i<n_loc; i++){
-        PS::F64vec posi  = pp[i].getPos();
+        PS::F64vec posi  = pp[i].pos;
         PS::F64vec veli  = pp[i].vel;
         PS::F64    massi = pp[i].mass;
         pos_grav_loc += massi * posi;

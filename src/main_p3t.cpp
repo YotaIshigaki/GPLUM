@@ -12,16 +12,15 @@
 #include <mpi.h>
 #endif
 
+#define USE_RE_SEARCH_NEIGHBOR
+#define PIKG_USE_FDPS_VECTOR
+
 #include <particle_simulator.hpp>
 
-#define GPLUMVERSION "2.3 (2021/04)"
+#define GPLUMVERSION "2.4 (2021/06)"
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
-
-#define USE_ALLGATHER_EXLET
-#define USE_RE_SEARCH_NEIGHBOR
-#define PIKG_USE_FDPS_VECTOR
 
 #include "mathfunc.h"
 #include "kepler.h"
@@ -38,59 +37,8 @@
 #include "read.h"
 #include "time.h"
 #include "func.h"
-#include "gravity_kernel_EPEP.hpp"
-#include "gravity_kernel_EPSP.hpp"
-
-PS::F64 EPGrav::eps2     = 0.;
-PS::F64 EPGrav::eps2_sun = 0.;
-#ifndef USE_INDIVIDUAL_CUTOFF
-PS::F64 EPGrav::r_out;
-PS::F64 FPGrav::r_out_inv;
-PS::F64 EPGrav::r_search;
-#endif
-PS::F64 EPGrav::R_cut0    = 2.;
-PS::F64 EPGrav::R_cut1    = 4.;
-PS::F64 EPGrav::R_search0 = 1.;
-PS::F64 EPGrav::R_search1 = 4.;
-#ifdef USE_RE_SEARCH_NEIGHBOR
-PS::F64 EPGrav::R_search2 = 1.;
-PS::F64 EPGrav::R_search3 = 4.;
-#endif
-PS::F64 EPGrav::gamma     = 0.5;
-PS::F64 EPGrav::g_1_inv   = -2.;    // 1/(g-1)
-PS::F64 EPGrav::g_1_inv7  = -128.; // 1/(g-1)^7
-PS::F64 EPGrav::w_y;      // dW/dy if  y<g
-PS::F64 EPGrav::f1;       // f(1;g)
-
-#ifdef INDIRECT_TERM
-PS::F64vec FPGrav::acc_indirect = 0.;
-PS::F64vec FPGrav::pos_g        = 0.;
-PS::F64vec FPGrav::vel_g        = 0.;
-PS::F64    FPGrav::mass_tot     = 0.;
-#endif
-PS::F64 FPGrav::m_sun     = 1.;
-PS::F64 FPGrav::dens      = 5.049667e6;
-PS::F64 FPGrav::dt_tree   = pow2(-5);
-PS::F64 FPGrav::dt_min    = pow2(-13);
-PS::F64 FPGrav::eta       = 0.01;
-PS::F64 FPGrav::eta_0     = 0.001;
-PS::F64 FPGrav::eta_sun   = 0.01;
-PS::F64 FPGrav::eta_sun0  = 0.001;
-PS::F64 FPGrav::alpha2    = 1.;
-PS::F64 FPGrav::r_cut_min = 0.;
-PS::F64 FPGrav::r_cut_max = 0.;
-PS::F64 FPGrav::p_cut     = 0.;
-PS::F64 FPGrav::increase_factor = 1.;
-#ifdef MERGE_BINARY
-PS::F64 FPGrav::R_merge   = 0.2;
-#endif
-#ifdef CONSTANT_RANDOM_VELOCITY
-PS::F64 FPGrav::v_disp    = 0.;
-#endif
-
-//PS::F64 HardSystem::f = 1.;
-//PS::F64 Collision0::f = 1.;
-PS::F64 Collision0::m_min = 9.426627927538057e-12;
+#include "gravity_kernel_epep.hpp"
+#include "gravity_kernel_epsp.hpp"
 
 
 int main(int argc, char *argv[])
@@ -134,7 +82,7 @@ int main(int argc, char *argv[])
 
     PS::S32 reset_step = 1024;
 
-    //EPGrav::setGamma(EPGrav::gamma);
+    //FPGrav::setGamma(FPGrav::gamma);
     
     // Read Parameter File
     opterr = 0;
@@ -216,8 +164,8 @@ int main(int argc, char *argv[])
     if (opt_s) seed = seed_opt;
     if (opt_o) sprintf(output_dir,"%s",output_dir_opt);
     if (opt_D) FPGrav::dt_tree = dt_opt;
-    if (opt_R) EPGrav::R_cut0 = Rcut0_opt;
-    if (opt_S) EPGrav::R_cut1 = Rcut1_opt;
+    if (opt_R) FPGrav::R_cut0 = Rcut0_opt;
+    if (opt_S) FPGrav::R_cut1 = Rcut1_opt;
     if (opt_x) nx = nx_opt;
     if (opt_y) ny = ny_opt;
 
@@ -232,7 +180,7 @@ int main(int argc, char *argv[])
         return 0;
     }
 
-    EPGrav::setGamma(EPGrav::gamma);
+    FPGrav::setGamma(FPGrav::gamma);
     
     char dir_name[256];
     //sprintf(dir_name,"./%s",output_dir);
@@ -279,7 +227,7 @@ int main(int argc, char *argv[])
 #ifdef OUTPUT_DETAIL
     PS::F64 ekin_before = 0., ekin_after = 0., edisp_d = 0.;
 #endif
-    PS::S32 id_next = 0;
+    PS::S64 id_next = 0;
     
     NeighborList NList;
     //ExPair::initialize();
@@ -341,8 +289,8 @@ int main(int argc, char *argv[])
     ExParticleSystem<FPGrav> system_ex;
     system_hard.clear();
     system_ex.initialize();
-    PS::S32 n_ngb_tot         = 0;
-    PS::S32 n_with_ngb      = 0;
+    PS::S32 n_ngb_tot        = 0;
+    PS::S32 n_with_ngb       = 0;
     PS::S32 n_largestcluster = 0;
     PS::S32 n_cluster        = 0;
     PS::S32 n_isoparticle    = 0;
@@ -354,6 +302,10 @@ int main(int argc, char *argv[])
     PS::DomainInfo dinfo;
     dinfo.initialize(coef_ema);
     dinfo.setNumberOfDomainMultiDimension(nx,ny,1);
+    dinfo.setBoundaryCondition(PS::BOUNDARY_CONDITION_OPEN);
+#ifdef USE_POLAR_COORDINATE
+    dinfo.setPosRootDomainX(-M_PI, M_PI);
+#endif
     dinfo.collectSampleParticle(system_grav, true);
     dinfo.decomposeDomain();
     system_grav.exchangeParticle(dinfo);
@@ -364,31 +316,34 @@ int main(int argc, char *argv[])
     /////////////////////
     /*   Create Tree   */
     /////////////////////
+#ifdef USE_POLAR_COORDINATE
 #ifdef USE_INDIVIDUAL_CUTOFF
-#ifdef USE_QUAD
-    PS::TreeForForceLong<ForceGrav, EPGrav, EPGrav>::QuadrupoleWithSymmetrySearch tree_grav;
+    PS::TreeForForce<PS::SEARCH_MODE_LONG_SYMMETRY, ForceGrav, EPIGrav, EPJGrav, MomGrav, MomGrav, SPGrav, PS::CALC_DISTANCE_TYPE_NEAREST_X> tree_grav;
 #else
-    PS::TreeForForceLong<ForceGrav, EPGrav, EPGrav>::MonopoleWithSymmetrySearch tree_grav;
+    PS::TreeForForce<PS::SEARCH_MODE_LONG_SCATTER, ForceGrav, EPIGrav, EPJGrav, MomGrav, MomGrav, SPGrav, PS::CALC_DISTANCE_TYPE_NEAREST_X> tree_grav;
 #endif
 #else
-#ifdef USE_QUAD
-    PS::TreeForForceLong<ForceGrav, EPGrav, EPGrav>::QuadrupoleWithScatterSearch tree_grav;
+#ifdef USE_INDIVIDUAL_CUTOFF
+    PS::TreeForForceLong<ForceGrav, EPIGrav, EPJGrav, MomGrav, SPGrav>::WithSymmetrySearch tree_grav;
 #else
-    PS::TreeForForceLong<ForceGrav, EPGrav, EPGrav>::MonopoleWithScatterSearch tree_grav;
+    PS::TreeForForceLong<ForceGrav, EPIGrav, EPJGrav, MomGrav, SPGrav>::WithScatterSearch tree_grav;
 #endif
 #endif
     tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
-
+#ifdef USE_P2P_FAST
+    tree_grav.setExchagneLETMode(PS::EXCHANGE_LET_P2P_FAST);
+#endif
+    
 #ifdef USE_RE_SEARCH_NEIGHBOR
     for (PS::S32 i=0; i<2; i++) {
 #endif
         tree_grav.calcForceAllAndWriteBack(
 #ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(EPGrav::eps2),
+                                           CalcForceLongEPEP(FPGrav::eps2),
 #else
-                                           CalcForceLongEPEP(EPGrav::eps2, EPGrav::r_out, EPGrav::r_search),
+                                           CalcForceLongEPEP(FPGrav::eps2, FPGrav::r_out, FPGrav::r_search),
 #endif
-                                           CalcForceLongEPSP(EPGrav::eps2),
+                                           CalcForceLongEPSP(FPGrav::eps2),
                                            system_grav,
                                            dinfo);
         //NList.initializeList(system_grav);
@@ -639,11 +594,11 @@ int main(int argc, char *argv[])
         inputIDLocalAndMyrank(system_grav, NList);
         tree_grav.calcForceAllAndWriteBack(
 #ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(EPGrav::eps2),
+                                           CalcForceLongEPEP(FPGrav::eps2),
 #else
-                                           CalcForceLongEPEP(EPGrav::eps2, EPGrav::r_out, EPGrav::r_search),
+                                           CalcForceLongEPEP(FPGrav::eps2, FPGrav::r_out, FPGrav::r_search),
 #endif
-                                           CalcForceLongEPSP(EPGrav::eps2),
+                                           CalcForceLongEPSP(FPGrav::eps2),
                                            system_grav,
                                            dinfo);
 #ifdef CALC_WTIME
@@ -703,7 +658,7 @@ int main(int argc, char *argv[])
         }
 
         // Remove Particle Out Of Boundary
-        n_remove = removeOutOfBoundaryParticle(system_grav, e_now.edisp, r_max, r_min, fout_rem);
+        n_remove = removeParticlesOutOfBoundary(system_grav, e_now.edisp, r_max, r_min, fout_rem);
 
         ///////////////////////////
         /*   Re-Calculate Soft   */
@@ -714,7 +669,7 @@ int main(int argc, char *argv[])
                 system_grav.exchangeParticle(dinfo);
  
                 // Remove Particle Out Of Boundary
-                //removeOutOfBoundaryParticle(system_grav, e_now.edisp, r_max, r_min, fout_rem);
+                //removeParticlesOutOfBoundary(system_grav, e_now.edisp, r_max, r_min, fout_rem);
             }
                 
             // Reset Number Of Particles
@@ -729,11 +684,11 @@ int main(int argc, char *argv[])
             setCutoffRadii(system_grav);
             tree_grav.calcForceAllAndWriteBack(
 #ifdef USE_INDIVIDUAL_CUTOFF
-                                               CalcForceLongEPEP(EPGrav::eps2),
+                                               CalcForceLongEPEP(FPGrav::eps2),
 #else
-                                               CalcForceLongEPEP(EPGrav::eps2, EPGrav::r_out, EPGrav::r_search),
+                                               CalcForceLongEPEP(FPGrav::eps2, FPGrav::r_out, FPGrav::r_search),
 #endif
-                                               CalcForceLongEPSP(EPGrav::eps2),
+                                               CalcForceLongEPSP(FPGrav::eps2),
                                                system_grav,
                                                dinfo);
 #ifdef CALC_WTIME

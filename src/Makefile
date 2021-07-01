@@ -1,6 +1,6 @@
-PS_PATH_FDPS = ../FDPS-6.0b2/src/
-PS_PATH_PIKG = ../PIKG/inc/
-#PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
+PS_PATH_FDPS = ../FDPS-devel/src/
+#PS_PATH_PIKG = ../PIKG/inc/
+PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 
 ####################
@@ -28,7 +28,8 @@ use_AVX2 = yes
 ###   Other Options   ###
 #########################
 individual_cutoff = yes
-quad = yes
+quadrupole = yes
+#polar_coordinate = yes
 #isotropic = yes
 #gas_drag = yes
 #integrate_6th = yes
@@ -43,8 +44,10 @@ collision = yes
 #without_sun = yes
 #constant_random_velocity = yes
 
-#output_detail = yes
+output_detail = yes
 #calc_time = yes
+
+#p2p_fast = yes
 
 
 CFLAGS = -O2
@@ -59,8 +62,8 @@ ifeq ($(use_MPI),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 endif
 
-CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPGrav --epj-name EPGrav --force-name ForceGrav
-CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPGrav --epj-name SPGrav --force-name ForceGrav
+CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPIGrav --epj-name EPJGrav --force-name ForceGrav
+CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPIGrav --epj-name SPGrav --force-name ForceGrav
 
 ifeq ($(use_AVX2),yes)
 #CFLAGS += -march=core-avx2
@@ -84,32 +87,14 @@ endif
 
 
 ifeq ($(individual_cutoff),yes)
-
 CFLAGS += -DUSE_INDIVIDUAL_CUTOFF
-KERNEL_EPEP = gravity_kernel_EPEP_individual.pikg
-ifeq ($(quad),yes)
+endif
+ifeq ($(quadrupole),yes)
 CFLAGS += -DUSE_QUAD
-KERNEL_EPSP = gravity_kernel_EPSP_quad_individual.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleInAndOut
-else
-KERNEL_EPSP = gravity_kernel_EPSP_mono_individual.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJMonopoleInAndOut
 endif
-
-else
-
-KERNEL_EPEP = gravity_kernel_EPEP_shared.pikg
-ifeq ($(quad),yes)
-CFLAGS += -DUSE_QUAD
-KERNEL_EPSP = gravity_kernel_EPSP_quad_shared.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleScatter
-else
-KERNEL_EPSP = gravity_kernel_EPSP_mono_shared.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJMonopoleScatter
+ifeq ($(polar_coordinate),yes)
+CFLAGS += -DUSE_POLAR_COORDINATE
 endif
-
-endif
-
 ifeq ($(isotropic),yes)
 CFLAGS += -DISOTROPIC
 endif
@@ -153,6 +138,10 @@ ifeq ($(calc_time),yes)
 CFLAGS += -DCALC_WTIME
 endif
 
+ifeq ($(p2p_fast),yes)
+CFLAGS += -DUSE_P2P_FAST
+endif
+
 CFLAGS += -DMONAR
 #CFLAGS += -pg
 
@@ -161,23 +150,25 @@ PROGRAM = gplum.out
 HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
 
-$(PROGRAM): $(SRC) gravity_kernel_EPEP.hpp gravity_kernel_EPSP.hpp
+$(PROGRAM): $(SRC) gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
 	$(CC) -MMD $(INC) $(CFLAGS) -o $@ $(SRC)
 
-gravity_kernel_EPEP.hpp: $(KERNEL_EPEP)
-	../PIKG/bin/pikg -i $(KERNEL_EPEP) -o gravity_kernel_EPEP.hpp $(CFLAGS_KERNEL_EPEP)
-	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_EPEP.hpp
-	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_EPEP.hpp	
+gravity_kernel_epep.hpp: gravity_kernel_epep.pikg
+	./removeif.sh gravity_kernel_epep.pikg gravity_kernel_epep_noif.pikg $(CFLAGS)
+	../PIKG/bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
+	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
+	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
 
-gravity_kernel_EPSP.hpp: $(KERNEL_EPSP)
-	../PIKG/bin/pikg -i $(KERNEL_EPSP) -o gravity_kernel_EPSP.hpp $(CFLAGS_KERNEL_EPSP)
-	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_EPSP.hpp
-	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_EPSP.hpp
-	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_EPSP.hpp	
+gravity_kernel_epsp.hpp: gravity_kernel_epsp.pikg
+	./removeif.sh gravity_kernel_epsp.pikg gravity_kernel_epsp_noif.pikg $(CFLAGS)
+	../PIKG/bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
+	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_epsp.hpp
+	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
+	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
 
 all: clean $(PROGRAM)
 
 clean:
 	rm -f *.out *.o *.d *~
-	rm -f gravity_kernel*.hpp*
+	rm -f gravity_kernel*.hpp* gravity_kernel*_noif.pikg*
 

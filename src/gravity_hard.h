@@ -26,7 +26,7 @@ void velKick2nd(Tpsys & pp){
 template <class Tpsys>
 void calcStarGravity(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
     
    PS::F64vec posi = pp.pos;
@@ -62,7 +62,7 @@ void calcStarGravity(Tpsys & pp)
 template <class Tpsys>
 void calcStarGravity_p(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
 
     PS::F64vec posi = pp.xp;
@@ -98,7 +98,7 @@ void calcStarGravity_p(Tpsys & pp)
 template <class Tpsys>
 void calcStarGravity_c(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
 
     PS::F64vec posi = pp.pos;
@@ -134,7 +134,7 @@ void calcStarGravity_c(Tpsys & pp)
 template <class Tpsys>
 void calcStarAccJerk(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
     
     PS::F64vec posi = pp.pos;
@@ -158,7 +158,7 @@ void calcStarAccJerk(Tpsys & pp)
 template <class Tpsys>
 void calcStarSnap(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
     
     PS::F64vec posi = pp.pos;
@@ -184,7 +184,7 @@ void calcStarSnap(Tpsys & pp)
 template <class Tpsys>
 void calcStarAcc(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
 
     PS::F64vec posi = pp.pos;
@@ -202,7 +202,7 @@ void calcStarAcc(Tpsys & pp)
 template <class Tpsys>
 void calcStarJerk(Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2_sun;
+    const PS::F64 eps2  = FPGrav::eps2_sun;
     const PS::F64 m_sun = FPGrav::m_sun;
 
     PS::F64vec posi = pp.pos;
@@ -225,7 +225,7 @@ template <class Tp, class Tpsys>
 void calcGravity(Tp & pi,
                  Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = FPGrav::eps2;
     
     //#ifndef INTEGRATE_6TH_SUN
     calcStarGravity(pi);
@@ -297,7 +297,7 @@ template <class Tp, class Tpsys>
 void calcGravity_p(Tp & pi,
                    Tpsys & pp)
 {
-    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = FPGrav::eps2;
     
     calcStarGravity_p(pi);
 
@@ -364,7 +364,7 @@ void calcGravity_c(Tp & pi,
 {
     //assert( pi.neighbor != 0 );
     
-    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = FPGrav::eps2;
     
     calcStarGravity_c(pi);
     
@@ -428,7 +428,7 @@ template <class Tp, class Tpsys>
 void calcJerk(Tp & pi,
               Tpsys & pp)
 {   
-    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = FPGrav::eps2;
     
     calcStarJerk(pi);
 
@@ -491,7 +491,7 @@ void calcAccJerk(Tp & pi,
 {
     //assert( pi.neighbor != 0 );
     
-    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = FPGrav::eps2;
     
     calcStarAccJerk(pi);
 

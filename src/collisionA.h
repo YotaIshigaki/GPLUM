@@ -4,8 +4,8 @@ class Collision0{
  public:
     PS::F64 time;
 
-    PS::S32 id_imp;
-    PS::S32 id_tar;
+    PS::S64 id_imp;
+    PS::S64 id_tar;
     PS::S32 id_c_imp;
     PS::S32 id_c_tar;
 
@@ -45,10 +45,10 @@ class Collision0{
     
     PS::F64 edisp;
     PS::F64 edisp_d;
-    
-    PS::S32 n_frag;
-    PS::S32 id_frag;
+
+    PS::S64 id_frag;
     PS::S32 id_c_frag;
+    PS::S32 n_frag;
 
     //PS::S32 HitAndRun;
     PS::S32 flag_merge;
@@ -57,7 +57,7 @@ class Collision0{
     static PS::F64 m_min;
 
     PS::S32 getNumberOfFragment() const { return n_frag; }
-    PS::S32 getFragmentID() const { return id_frag; }
+    PS::S64 getFragmentID() const { return id_frag; }
     PS::S32 getFragmentIDCluster() const { return id_c_frag; }
     PS::F64 getEnergyDissipation() const { return edisp; }
     PS::F64 getHardEnergyDissipation() const { return edisp_d; }
@@ -83,7 +83,8 @@ class Collision0{
         pos_imp_new = pos_tar_new = (mass_imp*pos_imp + mass_tar*pos_tar)/(mass_imp+mass_tar);
         vel_imp_new = vel_tar_new = (mass_imp*vel_imp + mass_tar*vel_tar)/(mass_imp+mass_tar);
         
-        n_frag = id_frag = id_c_frag = 0;
+        n_frag = id_c_frag = 0;
+        id_frag = 0;
         //HitAndRun = 0;
         flag_merge = 1;
         return n_frag;
@@ -92,7 +93,7 @@ class Collision0{
     void setParticle(Tpsys & pp,
                      std::vector<Tp> & pfrag,
                      std::multimap<PS::S32,PS::S32> & merge_list,
-                     PS::S32 & id_next);
+                     PS::S64 & id_next);
     
     template <class Tpsys>
     PS::F64 calcEnergyDissipation(Tpsys & pp,
@@ -100,7 +101,7 @@ class Collision0{
     template <class Tpsys>
     void setNeighbors(Tpsys & pp);
     
-    void setNewFragmentID( std::map<PS::S32, PS::S32> id_old2new ){
+    void setNewFragmentID( std::map<PS::S64, PS::S64> id_old2new ){
         if ( id_imp < 0 ) id_imp = id_old2new.at(id_imp);
         if ( id_tar < 0 ) id_tar = id_old2new.at(id_tar);
         if ( id_frag < 0 ) id_frag = id_old2new.at(id_frag);
@@ -134,6 +135,8 @@ class Collision0{
     static void showParameter() {}
     static void showParameter(std::ofstream & fout) {}
 };
+
+PS::F64 Collision0::m_min = 9.426627927538057e-12;
 
 
 template <class Tpsys>
@@ -205,7 +208,7 @@ template <class Tpsys, class Tp>
 inline void Collision0::setParticle(Tpsys & pp,
                                     std::vector<Tp> & pfrag,
                                     std::multimap<PS::S32,PS::S32> & merge_list,
-                                    PS::S32 & id_next)
+                                    PS::S64 & id_next)
 {
     using iterator = std::multimap<PS::S32,PS::S32>::iterator;
     std::pair<iterator, iterator> imp_range = merge_list.equal_range(id_c_imp);
@@ -348,7 +351,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
     std::pair<iterator, iterator> tar_range = merge_list.equal_range(id_c_tar);
     PS::F64 mass_i = pp[id_c_imp].mass + mass_frag;
     
-    const PS::F64 eps2  = EPGrav::eps2;
+    const PS::F64 eps2  = FPGrav::eps2;
     const PS::F64 m_sun = FPGrav::m_sun;
     
     ///////////////////////////

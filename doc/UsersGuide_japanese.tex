@@ -38,8 +38,7 @@
 }
 
 \newcommand{\ourcode}{GPLUM\xspace}
-\newcommand{\ourcodeR}{GPLUM-2.3\xspace}
-\newcommand{\Paper}{Ishigaki et al. (in prep., accepted in PASJ)\xspace}
+\newcommand{\ourcodeR}{GPLUM-2.4\xspace}
 %\pagestyle{empty}
 \begin{document}
 %\maketitle
@@ -134,8 +133,6 @@ FDPSに関するファイルは，ディレクトリ\texttt{FDPS-5.0g}，\texttt
 
 \subsubsection{オプション}
 \texttt{src/Makefile}の\texttt{CFLAGS}でオプションを指定します．
-\texttt{main\_p3t.cpp}のコンパイルにのみ使用するオプションは\texttt{CFLAGS\_M}で，
-\texttt{gravity\_kernel.cpp}のコンパイルにのみ使用するオプションは\texttt{CFLAGS\_G}で指定します．
 以下で，指定できるオプションを説明します．
 
 \begin{description}
@@ -183,7 +180,7 @@ SIMD命令に関するオプションについて，詳しくは，使用する�
 %\Paper で説明するように2段階にする場合は，\texttt{-DUSE\_RE\_SEARCH\_NEIGHBOR}を有効にしてください.
 
 \item[ランダム速度]
-粒子のランダム速度は，デフォルトでは全ての粒子が準Kepler運動をしているものとして計算されます．
+粒子のランダム速度は，デフォルトではKepler速度との差として定義されます．
 粒子が等方的に運動している系を扱う場合は，%\texttt{-DISOTROPIC}を有効にしてください．
 \texttt{isotropic}をyesにしてください．
 ランダム速度の計算方法については，Section \ref{paramg}を参照してください．
@@ -199,8 +196,8 @@ SIMD命令に関するオプションについて，詳しくは，使用する�
 %indirect 項の効果を反映する場合は，\texttt{-DINDIRECT\_TERM}を有効にしてください．
 
 \item[Hermite法の精度]
-デフォルトではHard partの中心星相互作用，粒子間相互作用は4次Hermite法で積分されます．
-中心星相互作用を6次Hermite法で積分する場合は，%\texttt{-DINTEGRATE\_6TH\_SUN}を有効にしてください．
+デフォルトではHard partの中心星相互作用，粒子間重力相互作用は4次Hermite法で積分されます．
+中心星重力相互作用を6次Hermite法で積分する場合は，%\texttt{-DINTEGRATE\_6TH\_SUN}を有効にしてください．
 \texttt{integrate\_6th}をyesにしてください．
 
 \item[衝突判定]
@@ -258,13 +255,13 @@ $ make
 \subsection{実行}
 
 計算を実行するディレクトリに実行ファイル\texttt{gplum.out}とパラメータファイルを移動し，以下のように実行してください．
+MPI並列化を行う場合は，使用する環境のマニュアルを参照してください．
 \begin{verbatim}
 $ ./gplum.out
 \end{verbatim}
-MPI並列化を行う場合は，以下のように実行してください．
-\begin{verbatim}
-$ mpirun -n (プロセス数) gplum.out
-\end{verbatim}
+%\begin{verbatim}
+%$ mpirun -n (プロセス数) gplum.out
+%\end{verbatim}
 カレントディレクトリに出力ディレクトリが作成され，出力ディレクトリに結果が出力されます．出力の形式については，Section \ref{output}を参照してください．
 
 以下で，実行時に指定できるオプションを説明します．
@@ -293,6 +290,13 @@ $ mpirun -n (プロセス数) gplum.out
 %ここで$\tilde{R}_{\rm cut}$を指定すると，探索半径を決めるパラメータ$\tilde{R}_{\rm search0}$が1に設定されます．
 
 $\tilde{R}_{\rm cut,0},\ \tilde{R}_{\rm cut,1}$について，詳しくはSection \ref{paramg}を参照してください．
+\item[\texttt{-x}:]
+$x$方向のルートドメインの分割数を指定します．
+\item[\texttt{-y}:]
+$y$方向のルートドメインの分割数を指定します．
+
+領域分割については，FDPSのマニュアルも参照してください．
+
 
 \end{description}
 
@@ -403,8 +407,9 @@ $\Sigma_{\rm g}$のスケーリングファクター$f_{\rm g}$\ (0.71)．
 \item[\texttt{coef\_ema}:]
 領域分割の指数移動平均の平滑化係数(0.3)．
 \item[\texttt{nx},\texttt{ny}:]
-$x,y$方向のルートドメインの分割数$n_{x},n_{y}$\ (MPIプロセス数を$n_{\rm proc}$として，
-$n_{x}=\sqrt{n_{\rm proc}}$に最も近い$n_{\rm proc}=n_{x}n_{y}$となる整数)．
+$x,y$方向のルートドメインの分割数$n_{x},\ n_{y}$\ ($n_{x}n_{y}$がMPIプロセス数となる整数)．
+
+領域分割については，FDPSのマニュアルも参照してください．
 \item[\texttt{reset\_step}:]
 領域分割をやり直すステップの間隔(1024)．%粒子の削除や
 カットオフ半径の再設定もこの間隔で行われます．
@@ -466,7 +471,8 @@ $a_{0}$は近接粒子との相互作用によるカットオフされない加�
 中心星質量$m_{\rm Sun}$\ (1.0)．
 \item[\texttt{dens}:]
 粒子平均密度$\rho_{\rm planet}$\ ($5.049667\times 10^{6}$)．
-初期条件ファイルから初期条件を読み込まない場合，初期条件ファイルの$r_{\rm planet}$が0に設定されている場合に，平均密度を用いて粒子半径を設定します．
+初期条件ファイルから初期条件を読み込まない場合，または初期条件ファイルの$r_{\rm planet}$が0に設定されている場合に，平均密度を用いて粒子半径を設定します．
+初期条件ファイルにおいて$r_{\rm planet}$が0以上の値で設定されている場合は使用されません．
 \item[\texttt{eps}:]
 重力のソフトニングパラメータ$\epsilon$\ ($0.0$)．
 \item[\texttt{r\_cut\_max},\ \texttt{r\_cut\_min}:]
@@ -485,7 +491,7 @@ $\tilde{R}_{\rm search0}\geq 1$でなければなりません．
 \item[\texttt{R\_search2},\ \texttt{R\_search3}:]
 粒子の探索半径を決めるパラメータ$\tilde{R}_{\rm search,2},\tilde{R}_{\rm search,3}$\ (1.0,4.0)．
 $\tilde{R}_{\rm search,2}\geq 1$でなければなりません．
-コンパイルオプションで\texttt{-DUSE\_RE\_SEARCH\_NEIGHBOR}が有効になっていない場合には使用されません．
+%コンパイルオプションで\texttt{-DUSE\_RE\_SEARCH\_NEIGHBOR}が有効になっていない場合には使用されません．
 
 %\item[\texttt{rHill\_min}:]
 %カットオフ半径，探索半径の設定に用いられるHill半径$r_{\rm Hill}$の最小値$r_{\rm Hill,min}$\ (0.0)．
@@ -536,7 +542,8 @@ r_{{\rm search},i}=\tilde{R}_{\rm search,0}r_{{\rm out},i}+\tilde{R}_{\rm search
 \end{equation}
 と設定されます．
 粒子$i,j$の相互作用についての探索半径$r_{{\rm search},ij}$は，$r_{{\rm search},i}$を用いて式(\ref{rout1}),(\ref{rout2})と同様に設定されます．
-コンパイルオプションで\texttt{-DUSE\_RE\_SEARCH\_NEIGHBOR}が有効になっている場合は，(\ref{rsearch})の探索半径を用いてネイバー粒子を探索した後，
+%コンパイルオプションで\texttt{-DUSE\_RE\_SEARCH\_NEIGHBOR}が有効になっている場合は，
+(\ref{rsearch})の探索半径を用いてネイバー粒子を探索した後，
 \begin{eqnarray}
 &&\tilde{R}_{\rm  search,2}{r_{{\rm out},ij}} < \left| \bm{r}_{ij}+\bm{v}_{ij}t_{\rm min} \right|,\\
 &&t_{\rm min}=
@@ -561,7 +568,7 @@ v^{*}_{{\rm ran},j}=\left|\bm{v}_{j}-\bm{v}_{{\rm Kep},j}\right|\label{vran}
 \end{equation}
 を基準に，中心星からの距離が粒子$i$と近い粒子についての$v*_{{\rm ran},i}$の平均を設定します．
 $\bm{v}_{{\rm Kep},j}$は$j$粒子のいる位置でのKepler速度です．
-コンパイルオプションで\texttt{-DISOTROPIC}が有効になっている場合は，(\ref{vran})の代わりに，
+コンパイルオプションで\texttt{isotropic}がyesになっている場合は，(\ref{vran})の代わりに，
 \begin{equation}
 v^{*}_{{\rm ran},j}=\sqrt{\langle |\bm{v}_{j}|^{2}\rangle-|\langle \bm{v}\rangle|^{2}}
 \end{equation}
@@ -774,9 +781,9 @@ PS::S32型．衝突により生じる破片粒子数．
 
 \texttt{f\_tar\_new}${}^{*}$:\ PS::F64型．衝突直後のターゲット粒子の半径の膨らまし係数．設定されない場合は，衝突直前の値が代入されます．
 
-\texttt{imp\_will\_be\_binary}${}^{*}$:\ bool型．衝突直後にインパクターが連微惑星をまとめた超粒子であるかどうかの真偽．コンパイルオプションで\texttt{-DMERGE\_BINARY}が有効になっていない場合は定義されません．設定されない場合は，衝突直前の値が代入されます．
+\texttt{imp\_will\_be\_binary}${}^{*}$:\ bool型．衝突直後にインパクターが連微惑星をまとめた超粒子であるかどうかの真偽．コンパイルオプションで\texttt{merge\_binary}がyesになっていない場合は定義されません．設定されない場合は，衝突直前の値が代入されます．
 
-\texttt{imp\_will\_be\_binary}${}^{*}$:\ bool型．衝突直後にインパクターが連微惑星をまとめた超粒子であるかどうかの真偽．コンパイルオプションで\texttt{-DMERGE\_BINARY}が有効になっていない場合は定義されません．設定されない場合は，衝突直前の値が代入されます．
+\texttt{imp\_will\_be\_binary}${}^{*}$:\ bool型．衝突直後にインパクターが連微惑星をまとめた超粒子であるかどうかの真偽．コンパイルオプションで\texttt{merge\_binary}がyesになっていない場合は定義されません．設定されない場合は，衝突直前の値が代入されます．
 \\
 
 \end{itemize}
@@ -787,7 +794,7 @@ PS::S32型．衝突により生じる破片粒子数．
 
 インパクター粒子とターゲット粒子が合体しない場合(${\rm flag}=0$の場合)，破片は全てインパクター粒子から生じたものとなります．
 インパクター粒子とターゲット粒子が合体する場合(${\rm flag}=1$の場合)，\texttt{pos\_imp\_new}と\texttt{pos\_tar\_new}，\texttt{vel\_imp\_new}と\texttt{vel\_tar\_new}は等しくなければなりません．
-インパクター粒子とターゲット粒子が合体する場合は，インパクター粒子は消滅するため，\texttt{r\_planet\_imp\_new}や\texttt{r\_planet\_imp\_new}，\texttt{imp\_wii\_be\_binary}の値は後では使われません．
+インパクター粒子とターゲット粒子が合体する場合は，インパクター粒子は消滅するため，\texttt{r\_planet\_imp\_new}や\texttt{r\_planet\_imp\_new}，\texttt{imp\_will\_be\_binary}の値は後では使われません．
 
 破片粒子数\texttt{n\_frag}を返します．
 \end{description}
@@ -867,7 +874,8 @@ static void readParameter(std::ofstream & fout)
 \section{ライセンス}
 
 MITライセンスに準じます．
-\ourcode を使用した結果を発表する場合は，以下の文献の引用をお願いします\footnote{発表する直前に最新の情報を確認してください}．
+\ourcode を使用した結果を発表する場合は，以下の文献の引用をお願いします．
+%\footnote{発表する直前に最新の情報を確認してください}．
 %\begin{itemize}
 %\item[1)] Iwasawa et al. (2016, PASJ, 68, 59)
 %\item[2)] Ishigaki (2019, M. Thesis, University of Tokyo) 
@@ -879,10 +887,10 @@ MITライセンスに準じます．
 \item[1)]
 %Ishigaki, Y., 2019. Development of N-body simulation code for planetary system formation with particle-particle particle-tree scheme. M. thesis, University of Tokyo.
 Ishigaki, Y., Kominami, J., Makino, J., Fujimoto, M., Iwasawa, M., 2021. 
-Particle- particle Particle-tree Code for Planetary System Formation with Individual Cut-off Method: GPLUM. Accepted in PASJ.
+Particle--particle Particle--tree Code for Planetary System Formation with Individual Cut-off Method: GPLUM. Publications of the Astronomical Society of Japan, 73 (3), 660--676.
 
 \item[2)]
-Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T., Makino, J., 2016. Implementation and performance of FDPS: A framework for developing parallel particle simulation codes. Publications of the Astronomical Society of Japan, 68 (4), 54\UTF{2013}75.
+Iwasawa, M., Tanikawa, A., Hosono, N., Nitadori, K., Muranushi, T., Makino, J., 2016. Implementation and performance of FDPS: A framework for developing parallel particle simulation codes. Publications of the Astronomical Society of Japan, 68 (4), 54--75.
 \end{itemize}
 
 %\begin{quote}

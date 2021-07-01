@@ -1,64 +1,86 @@
-EPI S32    idi:id
-EPI S32    id_locali:id_local
-EPI S32    myranki:myrank
-EPI S32    ngbi:neighbor
 EPI F64vec xi:pos
-EPI F64vec vi:vel
-EPI F64vec ai_d:acc_d
-EPI F64    mi:mass
+#ifdef USE_POLAR_COORDINATE
+EPI F64vec xi_pol:pos_pol
+#endif
+EPI S64    idi:id
+#ifdef USE_INDIVIDUAL_CUTOFF
 EPI F64    routi:r_out
 EPI F64    rsearchi:r_search
+#endif
 F32 eps2
+#ifndef USE_INDIVIDUAL_CUTOFF
+F32 rout
+F32 rsearch
+#endif
 
-EPJ S32    idj:id
-EPJ S32    id_localj:id_local
-EPJ S32    myrankj:myrank
-EPJ S32    ngbj:neighbor
 EPJ F64vec xj:pos
-EPJ F64vec vj:vel
-EPJ F64vec aj_d:acc_d
-EPJ F64    mj:mass
+#ifdef USE_POLAR_COORDINATE
+EPJ F64vec xj_pol:pos_pol
+#endif
+EPJ S64    idj:id
+#ifdef USE_INDIVIDUAL_CUTOFF
 EPJ F64    routj:r_out
 EPJ F64    rsearchj:r_search
+#endif
+EPJ F64    mj:mass
+EPJ F64vec vj:vel
+EPJ F64vec aj_d:acc_d
+EPJ S32    id_locj:id_local
+EPJ S32    myrankj:myrank
 
 FORCE F32vec af:acc
 FORCE F32    pf:phi
 FORCE S32    nngb:neighbor
-FORCE S32    idngb:id_neighbor
+FORCE S32    DUMMY_:DUMMY_
+FORCE S64    idngb:id_neighbor
+
 
 EPI local F32vec xiloc
+#ifdef USE_INDIVIDUAL_CUTOFF
 EPI local F32    rsearchiloc
 EPI local F32    routiloc
+#endif
 
 EPJ local F32vec xjloc
 EPJ local F32    mjloc
+#ifdef USE_INDIVIDUAL_CUTOFF
 EPJ local F32    rsearchjloc
 EPJ local F32    routjloc
+#endif
 
 xiloc = xi - xi[0]
+#ifdef USE_INDIVIDUAL_CUTOFF
 rsearchiloc = rsearchi
 routiloc = routi
+#endif
 
 xjloc = xj - xi[0]
+mjloc = mj
+#ifdef USE_INDIVIDUAL_CUTOFF
 rsearchjloc = rsearchj
 routjloc = routj
-mjloc = mj
+#endif
 
+#ifdef USE_INDIVIDUAL_CUTOFF
 rout     = max(routjloc, routiloc)
 rsearch  = max(rsearchjloc, rsearchiloc)
 rout2    = rout * rout
 rsearch2 = rsearch * rsearch * 1.1025f
+#endif
 
 rij     = xjloc - xiloc
 r2_real = rij*rij + eps2
 r2      = r2_real
-r2 = max(r2_real, rout2)
+r2      = max(r2_real, rout2)
 
 if r2_real < rsearch2
-   nngb = nngb + 1
-   if r2_real > eps2
-      idngb = max(idngb, idj)
-   endif
+   nngb  = nngb + 1
+   idngb = idngb + idj
+   //if r2_real > eps2
+   //if idi != idj
+   //   idngb = max(idngb, idj)
+   //   idngb = idj
+   //endif
 endif
 
 r_inv   = rsqrt(r2)

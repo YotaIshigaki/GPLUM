@@ -226,30 +226,30 @@ PS::S32 readParameter(const char * param_file,
             
         } else if ( name == "eps" ){
             PS::F64 eps = getvalue(value, L_MKS, L_CGS);
-            EPGrav::eps2 = eps*eps;
+            FPGrav::eps2 = eps*eps;
 
         } else if ( name == "eps_sun" ){
             PS::F64 eps_sun = getvalue(value, L_MKS, L_CGS);
-            EPGrav::eps2_sun = eps_sun*eps_sun;
+            FPGrav::eps2_sun = eps_sun*eps_sun;
             
         } else if ( name == "R_cut0" ){
-            EPGrav::R_cut0 = getvalue(value, 1., 1.);
+            FPGrav::R_cut0 = getvalue(value, 1., 1.);
 
         } else if ( name == "R_cut1" ){
-            EPGrav::R_cut1 = getvalue(value, 1., 1.);
+            FPGrav::R_cut1 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search0" ){
-            EPGrav::R_search0 = getvalue(value, 1., 1.);
+            FPGrav::R_search0 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search1" ){
-            EPGrav::R_search1 = getvalue(value, 1., 1.);
+            FPGrav::R_search1 = getvalue(value, 1., 1.);
             
 #ifdef USE_RE_SEARCH_NEIGHBOR
         } else if ( name == "R_search2" ){
-            EPGrav::R_search2 = getvalue(value, 1., 1.);
+            FPGrav::R_search2 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search3" ){
-            EPGrav::R_search3 = getvalue(value, 1., 1.);
+            FPGrav::R_search3 = getvalue(value, 1., 1.);
 #endif
 #ifdef MERGE_BINARY
         } else if ( name == "R_merge" ){
@@ -260,7 +260,7 @@ PS::S32 readParameter(const char * param_file,
             FPGrav::v_disp = getvalue(value, L_MKS/T, L_CGS/T);
 #endif
         } else if ( name == "gamma" ){
-            EPGrav::setGamma(getvalue(value, 1., 1.));
+            FPGrav::setGamma(getvalue(value, 1., 1.));
 
         } else if ( name == "r_cut_min" ){
             FPGrav::r_cut_min = getvalue(value, L_MKS, L_CGS);
@@ -295,7 +295,7 @@ PS::S32 readParameter(const char * param_file,
     ifs.close();
 
 #ifdef TEST_PTCL
-    EPGrav::eps2 = std::max(EPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
+    FPGrav::eps2 = std::max(FPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
 #endif
 
     return 0;
@@ -352,30 +352,30 @@ PS::S32 checkParameter(char * init_file,
                      "(r_cut_max = " + std::to_string(FPGrav::r_cut_max)
                      + ", r_cut_min = " + std::to_string(FPGrav::r_cut_min) + ").");
         return 1;
-    } else if ( EPGrav::R_cut0 < 0. ){
+    } else if ( FPGrav::R_cut0 < 0. ){
         errorMessage("R_cut0 has NOT been set to satisfy R_cut0 >= 0",
-                     "(R_cut0 = " + std::to_string(EPGrav::R_cut0) + ").");
+                     "(R_cut0 = " + std::to_string(FPGrav::R_cut0) + ").");
         return 1;
-    } else if ( EPGrav::R_cut1 < 0. ){
+    } else if ( FPGrav::R_cut1 < 0. ){
         errorMessage("R_cut1 has NOT been set to satisfy R_cut1 >= 0",
-                     "(R_cut1 = " + std::to_string(EPGrav::R_cut1) + ").");
+                     "(R_cut1 = " + std::to_string(FPGrav::R_cut1) + ").");
         return 1;
-    } else if ( EPGrav::R_search0 < 1. ){
+    } else if ( FPGrav::R_search0 < 1. ){
         errorMessage("R_search0 has NOT been set to satisfy R_search0 >= 1",
-                     "(R_search0 = " + std::to_string(EPGrav::R_search0) + ").");
+                     "(R_search0 = " + std::to_string(FPGrav::R_search0) + ").");
         return 1;
-    } else if ( EPGrav::R_search1 < 0. ){
+    } else if ( FPGrav::R_search1 < 0. ){
         errorMessage("R_search1 has NOT been set to satisfy R_search1 >= 0",
-                     "(R_search1 = " + std::to_string(EPGrav::R_search1) + ").");
+                     "(R_search1 = " + std::to_string(FPGrav::R_search1) + ").");
         return 1;
 #ifdef USE_RE_SEARCH_NEIGHBOR
-    } else if ( EPGrav::R_search2 < 1. ){
+    } else if ( FPGrav::R_search2 < 1. ){
         errorMessage("R_search2 has NOT been set to satisfy R_search2 >= 1",
-                     "(R_search2 = " + std::to_string(EPGrav::R_search2) + ").");
+                     "(R_search2 = " + std::to_string(FPGrav::R_search2) + ").");
         return 1;
-    } else if ( EPGrav::R_search3 < 0. ){
+    } else if ( FPGrav::R_search3 < 0. ){
         errorMessage("R_search3 has NOT been set to satisfy R_search0 >= 0",
-                     "(R_search3 = " + std::to_string(EPGrav::R_search3) + ").");
+                     "(R_search3 = " + std::to_string(FPGrav::R_search3) + ").");
         return 1;
 #endif
     } else if ( r_max < r_min ){
@@ -468,16 +468,16 @@ void showParameter(char * init_file,
                   << "alpha         = " << sqrt(FPGrav::alpha2) << std::endl
                   << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
                   << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
-                  << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
-                  << "eps_sun       = " << sqrt(EPGrav::eps2_sun) << "\t(" << sqrt(EPGrav::eps2_sun)*L << " cm)"<< std::endl
+                  << "eps           = " << sqrt(FPGrav::eps2) << "\t(" << sqrt(FPGrav::eps2)*L << " cm)"<< std::endl
+                  << "eps_sun       = " << sqrt(FPGrav::eps2_sun) << "\t(" << sqrt(FPGrav::eps2_sun)*L << " cm)"<< std::endl
                   << std::fixed << std::setprecision(5)
-                  << "R_cut0        = " << EPGrav::R_cut0 << std::endl
-                  << "R_cut1        = " << EPGrav::R_cut1 << std::endl
-                  << "R_search0     = " << EPGrav::R_search0 << std::endl
-                  << "R_search1     = " << EPGrav::R_search1 << std::endl
+                  << "R_cut0        = " << FPGrav::R_cut0 << std::endl
+                  << "R_cut1        = " << FPGrav::R_cut1 << std::endl
+                  << "R_search0     = " << FPGrav::R_search0 << std::endl
+                  << "R_search1     = " << FPGrav::R_search1 << std::endl
 #ifdef USE_RE_SEARCH_NEIGHBOR
-                  << "R_search2     = " << EPGrav::R_search2 << std::endl
-                  << "R_search3     = " << EPGrav::R_search3 << std::endl
+                  << "R_search2     = " << FPGrav::R_search2 << std::endl
+                  << "R_search3     = " << FPGrav::R_search3 << std::endl
 #endif
 #ifdef MERGE_BINARY
                   << "R_merge       = " << FPGrav::R_merge << std::endl
@@ -485,7 +485,7 @@ void showParameter(char * init_file,
 #ifdef CONSTANT_RANDOM_VELOCITY
                   << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
 #endif
-                  << "gamma         = " << EPGrav::gamma << std::endl
+                  << "gamma         = " << FPGrav::gamma << std::endl
                   << std::scientific << std::setprecision(15)
                   << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
                   << "r_cut_min     = " << FPGrav::r_cut_min << "\t(" << FPGrav::r_cut_min*L << " cm)"<< std::endl
@@ -592,16 +592,16 @@ void showParameter(char * init_file,
                    << "alpha         = " << sqrt(FPGrav::alpha2) << std::endl
                    << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
                    << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
-                   << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
-                   << "eps_sun       = " << sqrt(EPGrav::eps2_sun) << "\t(" << sqrt(EPGrav::eps2_sun)*L << " cm)"<< std::endl
+                   << "eps           = " << sqrt(FPGrav::eps2) << "\t(" << sqrt(FPGrav::eps2)*L << " cm)"<< std::endl
+                   << "eps_sun       = " << sqrt(FPGrav::eps2_sun) << "\t(" << sqrt(FPGrav::eps2_sun)*L << " cm)"<< std::endl
                    << std::fixed << std::setprecision(5)
-                   << "R_cut0        = " << EPGrav::R_cut0 << std::endl
-                   << "R_cut1        = " << EPGrav::R_cut1 << std::endl
-                   << "R_search0     = " << EPGrav::R_search0 << std::endl
-                   << "R_search1     = " << EPGrav::R_search1 << std::endl
+                   << "R_cut0        = " << FPGrav::R_cut0 << std::endl
+                   << "R_cut1        = " << FPGrav::R_cut1 << std::endl
+                   << "R_search0     = " << FPGrav::R_search0 << std::endl
+                   << "R_search1     = " << FPGrav::R_search1 << std::endl
 #ifdef USE_RE_SEARCH_NEIGHBOR
-                   << "R_search2     = " << EPGrav::R_search2 << std::endl
-                   << "R_search3     = " << EPGrav::R_search3 << std::endl
+                   << "R_search2     = " << FPGrav::R_search2 << std::endl
+                   << "R_search3     = " << FPGrav::R_search3 << std::endl
 #endif
 #ifdef MERGE_BINARY
                    << "R_merge       = " << FPGrav::R_merge << std::endl
@@ -609,7 +609,7 @@ void showParameter(char * init_file,
 #ifdef CONSTANT_RANDOM_VELOCITY
                    << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
 #endif
-                   << "gamma         = " << EPGrav::gamma << std::endl
+                   << "gamma         = " << FPGrav::gamma << std::endl
                    << std::scientific << std::setprecision(15)
                    << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
                    << "r_cut_min     = " << FPGrav::r_cut_min << "\t(" << FPGrav::r_cut_min*L << " cm)"<< std::endl

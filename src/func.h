@@ -57,7 +57,7 @@ void makeSnap(Tpsys & pp,
               Energy e_now,
               const char * dir_name,
               const PS::S32 isnap,
-              const PS::S32 id_next)
+              const PS::S64 id_next)
 {
     FileHeader header(pp.getNumberOfParticleGlobal(), id_next, time_sys, e_init, e_now);
     char filename[256];
@@ -75,7 +75,7 @@ void outputStep(Tpsys & pp,
                 PS::S32 n_frag_tot,
                 const char * dir_name,
                 const PS::S32 isnap,
-                const PS::S32 id_next,
+                const PS::S64 id_next,
                 std::ofstream & fout_eng,
                 Wtime wtime,
                 PS::S32 n_largestcluster,
@@ -129,6 +129,10 @@ void inputIDLocalAndMyrank(Tpsys & pp,
         pp[i].myrank = myrank;
         pp[i].inDomain = true;
         pp[i].isSent = false;
+
+#ifdef USE_POLAR_COORDINATE
+        pp[i].setPosPolar();
+#endif
     }
 
     NList.makeIdMap(pp);
@@ -184,11 +188,11 @@ void MergeParticle(Tpsys & pp,
 }
 
 template <class Tpsys>
-PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
-                                    PS::F64 & edisp,
-                                    const PS::F64 r_max,
-                                    const PS::F64 r_min,
-                                    std::ofstream & fout_rem)
+PS::S32 removeParticlesOutOfBoundary(Tpsys & pp,
+                                     PS::F64 & edisp,
+                                     const PS::F64 r_max,
+                                     const PS::F64 r_min,
+                                     std::ofstream & fout_rem)
 {
     const PS::F64 rmax2 = r_max*r_max;
     const PS::F64 rmin2 = r_min*r_min;
@@ -301,7 +305,7 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
                         PS::F64    massj = remove_list_glb[j].mass;
                         PS::F64vec posi  = remove_list_glb[i].pos;
                         PS::F64vec posj  = remove_list_glb[j].pos;
-                        PS::F64    eps2   = EPGrav::eps2;
+                        PS::F64    eps2   = FPGrav::eps2;
                         
                         PS::F64vec dr = posi - posj;
                         PS::F64    rinv = 1./sqrt(dr*dr + eps2);

@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.14159265-p3.8.3-191112-2.6 (utf8.euc) (TeX Live 2020) (preloaded format=platex 2020.12.15)  2 JUN 2021 13:04
+This is e-pTeX, Version 3.14159265-p3.8.3-191112-2.6 (utf8.euc) (TeX Live 2020) (preloaded format=platex 2020.12.15)  18 JUN 2021 14:57
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -724,9 +724,9 @@ Package pdfcol Info: pdfTeX's color stacks are not available.
 \tcb@totallowerbox=\box104
 )
 LaTeX Font Info:    Font shape `JT1/hmc/m/n' will be
-(Font)              scaled to size 9.24683pt on input line 44.
+(Font)              scaled to size 9.24683pt on input line 43.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 9.24683pt on input line 44.
+(Font)              scaled to size 9.24683pt on input line 43.
 
 (/usr/local/texlive/2020/texmf-dist/tex/latex/l3backend/l3backend-dvipdfmx.def
 File: l3backend-dvipdfmx.def 2020-09-24 L3 backend support: dvipdfmx
@@ -737,24 +737,24 @@ File: l3backend-dvipdfmx.def 2020-09-24 L3 backend support: dvipdfmx
 ) (./UsersGuide_japanese.aux)
 \openout1 = `UsersGuide_japanese.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for JY1/mc/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
-LaTeX Font Info:    Checking defaults for JT1/mc/m/n on input line 44.
-LaTeX Font Info:    ... okay on input line 44.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for JY1/mc/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
+LaTeX Font Info:    Checking defaults for JT1/mc/m/n on input line 43.
+LaTeX Font Info:    ... okay on input line 43.
 \c@mv@tabular=\count312
 \c@mv@boldtabular=\count313
 
@@ -792,42 +792,42 @@ LaTeX Font Info:    ... okay on input line 44.
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
 LaTeX Font Info:    Font shape `JT1/hmc/m/n' will be
-(Font)              scaled to size 19.17792pt on input line 50.
+(Font)              scaled to size 19.17792pt on input line 49.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 19.17792pt on input line 50.
+(Font)              scaled to size 19.17792pt on input line 49.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 20.74pt on input line 50.
+(Font)              scaled to size 20.74pt on input line 49.
 LaTeX Font Info:    Font shape `JT1/hmc/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 54.
+(Font)              scaled to size 11.09619pt on input line 53.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 54.
+(Font)              scaled to size 11.09619pt on input line 53.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 12.0pt on input line 54.
+(Font)              scaled to size 12.0pt on input line 53.
 File: GPLUM_logo.pdf Graphic file (type pdf)
 <GPLUM_logo.pdf>
 LaTeX Font Info:    Font shape `JT1/hgt/m/n' will be
-(Font)              scaled to size 9.24683pt on input line 65.
+(Font)              scaled to size 9.24683pt on input line 64.
 LaTeX Font Info:    Font shape `JY1/hgt/m/n' will be
-(Font)              scaled to size 9.24683pt on input line 65.
-LaTeX Font Info:    Trying to load font information for T1+qhv on input line 65
+(Font)              scaled to size 9.24683pt on input line 64.
+LaTeX Font Info:    Trying to load font information for T1+qhv on input line 64
 .
 (/usr/local/texlive/2020/texmf-dist/tex/latex/tex-gyre/t1qhv.fd
 File: t1qhv.fd 2009/09/25 v1.2 font definition file for T1/qhv
 )
 LaTeX Font Info:    Font shape `T1/qhv/m/n' will be
-(Font)              scaled to size 8.99994pt on input line 65.
+(Font)              scaled to size 8.99994pt on input line 64.
 LaTeX Font Info:    Font shape `JT1/hmc/m/n' will be
-(Font)              scaled to size 13.31541pt on input line 65.
+(Font)              scaled to size 13.31541pt on input line 64.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 13.31541pt on input line 65.
+(Font)              scaled to size 13.31541pt on input line 64.
 LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 14.4pt on input line 65.
+(Font)              scaled to size 14.4pt on input line 64.
 LaTeX Font Info:    Font shape `JT1/hgt/m/n' will be
-(Font)              scaled to size 13.31541pt on input line 65.
+(Font)              scaled to size 13.31541pt on input line 64.
 LaTeX Font Info:    Font shape `JY1/hgt/m/n' will be
-(Font)              scaled to size 13.31541pt on input line 65.
+(Font)              scaled to size 13.31541pt on input line 64.
 LaTeX Font Info:    Font shape `T1/qhv/m/n' will be
-(Font)              scaled to size 12.9599pt on input line 65.
+(Font)              scaled to size 12.9599pt on input line 64.
 
 (./UsersGuide_japanese.toc
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
@@ -866,14 +866,14 @@ LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
 
  [2]
 LaTeX Font Info:    Font shape `JT1/hgt/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 94.
+(Font)              scaled to size 11.09619pt on input line 93.
 LaTeX Font Info:    Font shape `JY1/hgt/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 94.
+(Font)              scaled to size 11.09619pt on input line 93.
 LaTeX Font Info:    Font shape `T1/qhv/m/n' will be
-(Font)              scaled to size 10.79993pt on input line 94.
+(Font)              scaled to size 10.79993pt on input line 93.
 
 [3] [4] [5] [6] [7] [8]
-Overfull \hbox (2.2632pt too wide) in paragraph at lines 584--587
+Overfull \hbox (2.2632pt too wide) in paragraph at lines 591--594
 []\JY1/hmc/m/n/10 連微惑星の形成の判定のためのパラメ ータ $[]$ \T1/ntxtlf/m/n/1
 0 (0.2)\JY1/hmc/m/n/10 ． コンパイルオプシ ョンで\T1/ntxtt/m/n/10 -DMERGE_BINAR
 Y
@@ -881,84 +881,64 @@ Y
 
 [9]
 LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
-(Font)              scaled to size 12.0pt on input line 604.
+(Font)              scaled to size 12.0pt on input line 611.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 7.39746pt on input line 604.
+(Font)              scaled to size 7.39746pt on input line 611.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 5.5481pt on input line 604.
+(Font)              scaled to size 5.5481pt on input line 611.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 11.09619pt on input line 604.
+(Font)              scaled to size 11.09619pt on input line 611.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 7.39746pt on input line 604.
+(Font)              scaled to size 7.39746pt on input line 611.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 5.5481pt on input line 604.
+(Font)              scaled to size 5.5481pt on input line 611.
 
-Overfull \hbox (59.73792pt too wide) detected at line 611
+Overfull \hbox (59.73792pt too wide) detected at line 618
 \OML/cmm/m/it/10 t n [][] E[] E[] E[] E[] \OT1/cmr/m/n/10 ^^A\OML/cmm/m/it/10 E
 [] E[] E[] E[] E[] \OT1/cmr/m/n/10 ^^A\OML/cmm/m/it/10 E[]
  []
 
 [10] [11]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 721.
+e 728.
  (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 721.
+(Font)              scaled to size 10.0pt on input line 728.
 
-[12] [13] (I search kanjifont definition file: . . )
-(I search font definition file: . . . . . . . )
-LaTeX Font Info:    Trying to load font information for T1+ntxsups on input lin
-e 870.
-
-(/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/t1ntxsups.fd
-File: t1ntxsups.fd 2015/01/17 v1.0
-)
-LaTeX Font Info:    Font shape `T1/ntxsups/m/n' will be
-(Font)              scaled to size 10.0pt on input line 870.
-LaTeX Font Info:    Font shape `JT1/hmc/m/n' will be
-(Font)              scaled to size 7.39746pt on input line 870.
-LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
-(Font)              scaled to size 8.0pt on input line 870.
-LaTeX Font Info:    Font shape `T1/ntxsups/m/n' will be
-(Font)              scaled to size 8.0pt on input line 870.
-LaTeX Font Info:    Font shape `JT1/utfj/m/2' will be
-(Font)              scaled to size 9.24683pt on input line 885.
-LaTeX Font Info:    Font shape `JY1/utfj/m/2' will be
-(Font)              scaled to size 9.24683pt on input line 885.
-
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 905--905
+[12] [13]
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 913--913
  []\T1/ntxtt/m/n/10 gplum.out: ../FDPS-5.0d2/src/memory_pool.hpp:185: static vo
 id ParticleSimulator::Me 
  []
 
 
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 906--906
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 914--914
  []\T1/ntxtt/m/n/10 moryPool::alloc(size_t, int&, void*, void*&): Assertion `N_
 SEGMENT_LIMIT > getInsta[] 
  []
 
 
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 908--908
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 916--916
  []\T1/ntxtt/m/n/10 ===========================================================
 ========================[] 
  []
 
-[14]
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 914--914
+
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 922--922
  []\T1/ntxtt/m/n/10 ===========================================================
 ========================[] 
  []
 
-[15] (./UsersGuide_japanese.aux) ) 
+[14] [15] (./UsersGuide_japanese.aux) ) 
 Here is how much of TeX's memory you used:
- 21482 strings out of 479854
- 418764 string characters out of 5881695
- 720630 words of memory out of 5000000
- 38394 multiletter control sequences out of 15000+600000
- 448486 words of font info for 134 fonts, out of 8000000 for 9000
+ 21423 strings out of 479854
+ 417802 string characters out of 5881695
+ 720583 words of memory out of 5000000
+ 38349 multiletter control sequences out of 15000+600000
+ 443590 words of font info for 128 fonts, out of 8000000 for 9000
  934 hyphenation exceptions out of 8191
  79i,15n,85p,504b,1029s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on UsersGuide_japanese.dvi (15 pages, 82396 bytes).
+Output written on UsersGuide_japanese.dvi (15 pages, 81844 bytes).

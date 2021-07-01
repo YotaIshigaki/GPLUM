@@ -225,7 +225,7 @@ void timeIntegrate_multi(Tpsys & pp,
     PS::F64 time = time_start;
     PS::F64 time_s = 0.;
     PS::S32 loop = 0;
-    PS::S32 id_next = 0;
+    PS::S64 id_next = 0;
     PS::S32 flag_col = 0;
     n_col = n_frag = 0;
     edisp = edisp_d = 0.;
@@ -482,7 +482,7 @@ void timeIntegrate_multi_omp(Tpsys & pp,
     PS::F64 time = time_start;
     PS::F64 time_s = 0.;
     PS::S32 loop = 0;
-    PS::S32 id_next = 0;
+    PS::S64 id_next = 0;
     PS::S32 flag_col = 0;
     n_col = n_frag = 0;
     edisp = edisp_d = 0.;
