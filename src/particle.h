@@ -81,8 +81,8 @@ public:
 };
 
 #ifndef USE_INDIVIDUAL_CUTOFF
-PS::F64 EPGrav::r_out;
-PS::F64 EPGrav::r_search;
+PS::F64 EPIGrav::r_out;
+PS::F64 EPIGrav::r_search;
 #endif
 
 
@@ -304,7 +304,7 @@ public:
     void setPosPolar() {
         PS::F64 r = sqrt(pos*pos);
         pos_pol.x = atan2(pos.y, pos.x);
-        pos_pol.y = r;
+        pos_pol.y = log(r);
         pos_pol.z = asin(pos.z / r);
     }
 #endif
@@ -435,7 +435,7 @@ public:
                       this->vel.x, this->vel.y, this->vel.z,
                       this->neighbor, Flag) ) {
             //this->r_out, this->r_search) ){
-            errorMessage("The particle data has NOT been correctly written.");
+            errorMessage("The particle data have NOT been correctly written.");
             PS::Abort();
         }   
     }
@@ -447,7 +447,7 @@ public:
                      &this->vel.x, &this->vel.y, &this->vel.z,
                      &this->neighbor,  &Flag) ) {
             //&this->r_out, &this->r_search) ) {
-            errorMessage("The particle data has NOT been correctly read.");
+            errorMessage("The particle data have NOT been correctly read.");
             PS::Abort();
         }
 #ifdef MERGE_BINARY
@@ -904,8 +904,8 @@ void calcRandomVel(Tpsys & pp,
         r_max = std::max(r_max, r2);
         r_min = std::max(r_min, -r2);
     }
-    r_max = sqrt(r_max);
-    r_min = sqrt(-r_min);
+    r_max = sqrt(r_max)  * 1.01;
+    r_min = sqrt(-r_min) * 0.99;
     r_max = PS::Comm::getMaxValue(r_max);
     r_min = PS::Comm::getMinValue(r_min);
 
@@ -1158,6 +1158,7 @@ void setCutoffRadii(Tpsys & pp)
 
 class MyMomentMonopole : public PS::MomentMonopole {
 public:
+#ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_car;
     
     MyMomentMonopole() {
@@ -1177,10 +1178,6 @@ public:
     }
     template<class Tepj>
     void accumulateAtLeaf2(const Tepj & epj){}
-    void set(){
-        pos     = (mass != 0.) ? pos / mass : 0.;
-        pos_car = (mass != 0.) ? pos_car / mass : 0.;
-    }
     void accumulate(const MyMomentMonopole & mom){
         PS::MomentMonopole::accumulate(mom);
         pos_car += mom.mass * mom.pos_car;
@@ -1192,11 +1189,19 @@ public:
         fout<<"pos="<<pos<<std::endl;
         fout<<"pos_car="<<pos_car<<std::endl;
     }
+#endif
+    void set(){
+        pos     = (mass != 0.) ? pos / mass : 0.;
+#ifdef USE_POLAR_COORDINATE
+        pos_car = (mass != 0.) ? pos_car / mass : 0.;
+#endif
+    }
 };
 
 
 class MySPJMonopole : public PS::SPJMonopole {
 public:
+#ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_car;
     
     template<class Tmom>
@@ -1212,10 +1217,12 @@ public:
     MyMomentMonopole convertToMoment() const {
         return MyMomentMonopole(mass, pos, pos_car);
     }
+#endif
 };
 
 class MyMomentQuadrupole : public PS::MomentQuadrupole {
 public:
+#ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_car;
     
     MyMomentQuadrupole(){
@@ -1226,7 +1233,7 @@ public:
     }
     void init(){
         PS::MomentQuadrupole::init();
-        pos_car = 0.0;
+        pos_car = 0.;
     }
     template<class Tepj>
     void accumulateAtLeaf(const Tepj & epj){
@@ -1247,10 +1254,6 @@ public:
         this->quad.xy += cx * ptmp.y;
         this->quad.xz += cx * ptmp.z;
         this->quad.yz += cy * ptmp.z;
-    }
-    void set(){
-        pos     = (mass != 0.) ? pos / mass : 0.;
-        pos_car = (mass != 0.) ? pos_car / mass : 0.;
     }
     void accumulate(const MyMomentQuadrupole & mom){
         PS::MomentQuadrupole::accumulate(mom);
@@ -1276,10 +1279,18 @@ public:
         fout<<"pos_car="<<pos_car<<std::endl;
         fout<<"quad= "<<quad<<std::endl;
     }
+#endif
+    void set(){
+        pos     = (mass != 0.) ? pos / mass : 0.;
+#ifdef USE_POLAR_COORDINATE
+        pos_car = (mass != 0.) ? pos_car / mass : 0.;
+#endif
+    }
 };
 
 class MySPJQuadrupole : public PS::SPJQuadrupole {
 public:
+#ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_car;
     
     PS::F64 getCharge() const { return mass; }
@@ -1296,22 +1307,13 @@ public:
         PS::SPJQuadrupole::clear();
         pos_car = 0.0;
     }
+#endif
 };
 
-#ifdef USE_POLAR_COORDINATE
 #ifdef USE_QUAD
 typedef MySPJQuadrupole SPGrav;
 typedef MyMomentQuadrupole MomGrav;
 #else
 typedef MySPJMonopole SPGrav;
 typedef MyMomentMonopole MomGrav;
-#endif
-#else
-#ifdef USE_QUAD
-typedef PS::SPJQuadrupole SPGrav;
-typedef PS::MomentQuadrupole MomGrav;
-#else
-typedef PS::SPJMonopole SPGrav;
-typedef PS::MomentMonopole MomGrav;
-#endif
 #endif

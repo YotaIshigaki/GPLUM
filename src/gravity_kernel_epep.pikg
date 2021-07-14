@@ -64,9 +64,9 @@ routjloc = routj
 #ifdef USE_INDIVIDUAL_CUTOFF
 rout     = max(routjloc, routiloc)
 rsearch  = max(rsearchjloc, rsearchiloc)
+#endif
 rout2    = rout * rout
 rsearch2 = rsearch * rsearch * 1.1025f
-#endif
 
 rij     = xjloc - xiloc
 r2_real = rij*rij + eps2

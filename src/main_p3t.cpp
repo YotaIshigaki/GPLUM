@@ -345,7 +345,8 @@ int main(int argc, char *argv[])
 #endif
                                            CalcForceLongEPSP(FPGrav::eps2),
                                            system_grav,
-                                           dinfo);
+                                           dinfo,
+                                           true, PS::MAKE_LIST_FOR_REUSE, false);
         //NList.initializeList(system_grav);
         correctForceLongInitial(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
 #ifdef USE_RE_SEARCH_NEIGHBOR
@@ -600,7 +601,8 @@ int main(int argc, char *argv[])
 #endif
                                            CalcForceLongEPSP(FPGrav::eps2),
                                            system_grav,
-                                           dinfo);
+                                           dinfo,
+                                           true, PS::MAKE_LIST_FOR_REUSE, false);
 #ifdef CALC_WTIME
         PS::Comm::barrier();
         wtime.calc_soft_force += wtime.calc_soft_force_step = wtime.lap(PS::GetWtime());
@@ -690,7 +692,8 @@ int main(int argc, char *argv[])
 #endif
                                                CalcForceLongEPSP(FPGrav::eps2),
                                                system_grav,
-                                               dinfo);
+                                               dinfo,
+                                               true, PS::MAKE_LIST_FOR_REUSE, false);
 #ifdef CALC_WTIME
             PS::Comm::barrier();
             PS::F64 time_tmp = wtime.lap(PS::GetWtime());

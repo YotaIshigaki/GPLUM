@@ -20,7 +20,7 @@ CC = clang++ -std=c++11
 ################
 ###   SIMD   ###
 ################
-use_AVX2 = yes
+#use_AVX2 = yes
 #use_AVX512 = yes
 #use_SVE = yes
 
@@ -29,7 +29,7 @@ use_AVX2 = yes
 #########################
 individual_cutoff = yes
 quadrupole = yes
-#polar_coordinate = yes
+polar_coordinate = yes
 #isotropic = yes
 #gas_drag = yes
 #integrate_6th = yes
