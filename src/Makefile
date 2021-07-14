@@ -14,7 +14,7 @@ CC = clang++ -std=c++11
 ########################
 ###   MPI & OpenMP   ###
 ########################
-use_OpenMP = yes
+#use_OpenMP = yes
 #use_MPI = yes
 
 ################
@@ -52,8 +52,7 @@ CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
 ifeq ($(use_OpenMP),yes)
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
-CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
 endif
 ifeq ($(use_MPI),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
