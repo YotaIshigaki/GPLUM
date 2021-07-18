@@ -20,7 +20,7 @@ CC = clang++ -std=c++11
 ################
 ###   SIMD   ###
 ################
-use_AVX2 = yes
+#use_AVX2 = yes
 #use_AVX512 = yes
 #use_SVE = yes
 
