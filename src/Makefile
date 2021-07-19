@@ -1,6 +1,6 @@
 PS_PATH_FDPS = ../FDPS-devel/src/
-#PS_PATH_PIKG = ../PIKG/inc/
-PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
+PS_PATH_PIKG = ../PIKG/inc/
+#PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 
 ####################
@@ -29,7 +29,7 @@ CC = clang++ -std=c++11
 #########################
 individual_cutoff = yes
 quadrupole = yes
-polar_coordinate = yes
+#polar_coordinate = yes
 #isotropic = yes
 #gas_drag = yes
 #integrate_6th = yes

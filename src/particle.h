@@ -23,7 +23,7 @@ public:
         phi         = 0.;
         neighbor    = 0;
 
-        id_neighbor = 0;
+        id_neighbor = -1;
     }
 };
 
@@ -420,8 +420,7 @@ public:
         acc = force.acc;
         phi = force.phi;
         neighbor = force.neighbor;
-        //id_neighbor = force.id_neighbor;
-        id_neighbor = force.id_neighbor - id;
+        id_neighbor = force.id_neighbor;
     }
 
     void writeAscii(FILE* fp) const {
