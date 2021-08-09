@@ -71,8 +71,9 @@ int main(int argc, char *argv[])
     PS::S32 n_group_limit = 256;
     PS::S32 n_smp_ave     = 100;
     
-    PS::F64 t_end   = 1.;
-    PS::F64 dt_snap = pow2(-5);
+    PS::F64 t_end       = 1.;
+    PS::F64 dt_snap     = pow2(-5);
+    PS::F64 dt_snap_tmp = pow2(-5);
 
     PS::F64 r_max = 40.;
     PS::F64 r_min = 0.1;
@@ -150,7 +151,7 @@ int main(int argc, char *argv[])
     if ( readParameter(param_file, init_file, bHeader, output_dir, bRestart,  makeInit,
                        coef_ema, nx, ny,
                        theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                       t_end, dt_snap, r_max, r_min, seed, reset_step) ){
+                       t_end, dt_snap, dt_snap_tmp, r_max, r_min, seed, reset_step) ){
         PS::Comm::barrier();
         PS::Abort();
         PS::Comm::barrier();
@@ -172,7 +173,7 @@ int main(int argc, char *argv[])
     if ( checkParameter(init_file, bHeader, output_dir, bRestart,  makeInit,
                         coef_ema, nx, ny,
                         theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                        t_end, dt_snap, r_max, r_min, seed, reset_step) ){
+                        t_end, dt_snap, dt_snap_tmp, r_max, r_min, seed, reset_step) ){
         PS::Comm::barrier();
         PS::Abort();
         PS::Comm::barrier();
@@ -193,25 +194,26 @@ int main(int argc, char *argv[])
         return 0;
     }
     if ( bRestart ) {
-        if ( getLastSnap(dir_name, init_file) ) {
-            PS::Comm::barrier();
-            PS::Abort();
-            PS::Comm::barrier();
-            PS::Finalize();
-            return 0;
-        }
-        bHeader = true;
-        makeInit = false;
-   }
-
+        sprintf(init_file, "%s/snap_tmp.dat", output_dir);
+        //if ( getLastSnap(dir_name, init_file) ) {
+        //    PS::Comm::barrier();
+        //    PS::Abort();
+        //    PS::Comm::barrier();
+        //    PS::Finalize();
+        //    return 0;
+        //}
+        //bHeader = true;
+        //makeInit = false;
+    }
+    
     srand48( seed + PS::Comm::getRank() );
 
     PS::F64 time_sys = 0.;
     PS::S32 n_tot  = 0;
     PS::F64 de_max = 0.;
     PS::F64 de_d_cum = 0.;
-    PS::S32 istep = 0;
-    PS::S32 isnap = 0;
+    PS::S32 istep     = 0;
+    PS::S32 isnap     = 0;
     PS::S32 n_col_tot  = 0;
     PS::S32 n_frag_tot = 0;
     
@@ -232,38 +234,56 @@ int main(int argc, char *argv[])
     NeighborList NList;
     //ExPair::initialize();
 
-    if ( makeInit && !bRestart ){
-        //Make Initial Condition
-        SolidDisk::createInitialCondition(system_grav);
-        istep = 0;
-        isnap = 0;
-        time_sys = 0.;
-        sprintf(init_file, "NONE");
-        bHeader = false;
-    } else {
-        // Read Initial File
-        if ( bHeader ) {
-            FileHeader header;
-            PS::F64 dt_tree = FPGrav::dt_tree;
-            system_grav.readParticleAscii(init_file, header);
-            if ( PS::Comm::getRank() == 0 ){
-                istep = (PS::S32)round(header.time/dt_tree);
-                isnap = (PS::S32)round(header.time/dt_snap);
-                e_init = header.e_init;
-                e_now = header.e_now;
-            }
-            PS::Comm::barrier();
-            PS::Comm::broadcast(&istep, 1);
-            PS::Comm::broadcast(&isnap, 1);
-            PS::Comm::broadcast(&e_init, 1);
-            time_sys = istep*dt_tree;
-            id_next = header.id_next-1;
-        } else {
-            system_grav.readParticleAscii(init_file);
+    if ( !bRestart ) {
+        if ( makeInit ){
+            //Make Initial Condition
+            SolidDisk::createInitialCondition(system_grav);
             istep = 0;
             isnap = 0;
             time_sys = 0.;
+            sprintf(init_file, "NONE");
+            bHeader = false;
+        } else {
+            // Read Initial File
+            if ( bHeader ) {
+                FileHeader header;
+                PS::F64 dt_tree = FPGrav::dt_tree;
+                system_grav.readParticleAscii(init_file, header);
+                if ( PS::Comm::getRank() == 0 ){
+                    istep = (PS::S32)round(header.time/dt_tree);
+                    isnap = (PS::S32)round(header.time/dt_snap);
+                    e_init = header.e_init;
+                    e_now = header.e_now;
+                }
+                PS::Comm::barrier();
+                PS::Comm::broadcast(&istep, 1);
+                PS::Comm::broadcast(&isnap, 1);
+                PS::Comm::broadcast(&e_init, 1);
+                time_sys = istep*dt_tree;
+                id_next = header.id_next-1;
+            } else {
+                system_grav.readParticleAscii(init_file);
+                istep = 0;
+                isnap = 0;
+                time_sys = 0.;
+            }
         }
+    } else {
+        FileHeader header;
+        PS::F64 dt_tree = FPGrav::dt_tree;
+        system_grav.readParticleBinary(init_file, header);
+        if ( PS::Comm::getRank() == 0 ){
+            istep = (PS::S32)round(header.time/dt_tree);
+            isnap = (PS::S32)round(header.time/dt_snap);
+            e_init = header.e_init;
+                e_now = header.e_now;
+                }
+                PS::Comm::barrier();
+                PS::Comm::broadcast(&istep, 1);
+                PS::Comm::broadcast(&isnap, 1);
+                PS::Comm::broadcast(&e_init, 1);
+                time_sys = istep*dt_tree;
+                id_next = header.id_next-1;
     }
     n_loc = system_grav.getNumberOfParticleLocal();
     n_tot = system_grav.getNumberOfParticleGlobal();
@@ -348,7 +368,11 @@ int main(int argc, char *argv[])
                                            dinfo,
                                            true, PS::MAKE_LIST_FOR_REUSE, false);
         //NList.initializeList(system_grav);
-        correctForceLongInitial(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
+        if ( bRestart ) {
+            correctForceLong(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
+        } else {
+            correctForceLongInitial(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
+        }
 #ifdef USE_RE_SEARCH_NEIGHBOR
     }
 #endif
@@ -396,7 +420,7 @@ int main(int argc, char *argv[])
                   time_sys,
                   coef_ema, nx, ny,
                   theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                  t_end, dt_snap, r_max, r_min, seed, reset_step);
+                  t_end, dt_snap, dt_snap_tmp, r_max, r_min, seed, reset_step);
 
     ////////////////////////////////
     /*  Preparation Before Loop   */
@@ -756,6 +780,10 @@ int main(int argc, char *argv[])
             //std::cerr << std::scientific<<std::setprecision(15);
             //PRC(etot1); PRL(ekin);
             //PRC(ephi); PRC(ephi_s); PRL(ephi_d);
+        }
+
+        if( fmod(time_sys, dt_snap_tmp) == 0. ){
+            makeSnapTmp(system_grav, time_sys, e_init, e_now, dir_name, id_next);
         }
         
         if( time_sys  == dt_snap*isnap ){

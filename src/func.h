@@ -66,6 +66,20 @@ void makeSnap(Tpsys & pp,
 }
 
 template <class Tpsys>
+void makeSnapTmp(Tpsys & pp,
+                  PS::F64 time_sys,
+                  Energy e_init,
+                  Energy e_now,
+                  const char * dir_name,
+                  const PS::S64 id_next)
+{
+    FileHeader header(pp.getNumberOfParticleGlobal(), id_next, time_sys, e_init, e_now);
+    char filename[256];
+    sprintf(filename, "%s/snap_tmp.dat", dir_name);
+    pp.writeParticleBinary(filename, header);
+}
+
+template <class Tpsys>
 void outputStep(Tpsys & pp,
                 PS::F64 time_sys,
                 Energy e_init,

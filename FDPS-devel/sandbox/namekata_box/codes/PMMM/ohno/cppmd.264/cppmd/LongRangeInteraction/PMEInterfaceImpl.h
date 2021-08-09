@@ -1,3 +1,0 @@
-#ifndef PMEINTERFACEIMPL_H
-#define PMEINTERFACEIMPL_H
-#endif

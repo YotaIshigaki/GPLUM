@@ -51,6 +51,7 @@ n_smp_ave       = 100                   # average target number of sample partic
 t_end           = 10                    # time to finish initegration
 dt_tree         = 2^-6                  # timestep of tree (soft)
 dt_snap         = 1                     # time interval to output snapshot
+dt_snap_tmp     = 1                     # time interval to output temporarysnapshot
 dt_min          = 2^-30                 # minimum timestep (hard)
 eta             = 0.02                  # parameter eta to determine timestep (hard)
 eta_sun         = 0.02                  # parameter eta to determine timestep (hard)

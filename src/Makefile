@@ -1,4 +1,4 @@
-PS_PATH_FDPS = ../FDPS-devel/src/
+PS_PATH_FDPS = ../FDPS-7.0/src/
 PS_PATH_PIKG = ../PIKG/inc/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
@@ -22,7 +22,7 @@ CC = clang++ -std=c++11
 ################
 #use_AVX2 = yes
 #use_AVX512 = yes
-#use_SVE = yes
+use_SVE = yes
 
 #########################
 ###   Other Options   ###

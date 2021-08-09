@@ -1,10 +1,0 @@
-\subsubsection{概要}ヘッダクラスは入出力ファイルのヘッダの形式を決めるクラスである。ヘッダクラスはFDPSが提供する粒子群クラスのファイル入出力APIを使用し、かつ入出力ファイルにヘッダを含ませたい場合に必要となるクラスである。粒子群クラスのファイル入出力APIとは、ParticleSystem::readParticleAscii, ParticleSystem::writeParticleAscii, ParticleSystem::readParticleBinary, ParticleSystem::writeParticleBinaryである。以下、この節における前提と、これらのAPIを使用する際に必要となるメンバ関数とその記述の規定を述べる。この節において、常に必要なメンバ関数というものは存在しない。\subsubsection{前提}この節では、ヘッダクラスのクラス名をHdrとする。このクラス名は変更可能である。\subsubsection{場合によっては必要なメンバ関数}\subsubsubsection{Hdr::readAscii}
-\label{sec:Hdr_readAscii}\begin{screen}\begin{verbatim}class Hdr {public:    PS::S32 readAscii(FILE *fp);};\end{verbatim}\end{screen}\begin{itemize}\item {\bf 引数}  fp: 入力。FILE *型。粒子データの入力ファイルを指すファイルポインタ。  \item {\bf 返値}  PS::S32型。粒子数の情報を返す。ヘッダに粒子数の情報がない場合は-1を  返す。  \item {\bf 機能}  粒子データの入力ファイルからヘッダ情報を読みこむ。  \end{itemize}\subsubsubsection{Hdr::writeAscii}
-\label{sec:Hdr_writeAscii}  
-
-\begin{screen}\begin{verbatim}class Hdr {public:    void writeAscii(FILE *fp);};\end{verbatim}\end{screen}\begin{itemize}\item {\bf 引数}  fp: 入力。FILE *型。粒子データの出力ファイルを指すファイルポインタ。  \item {\bf 返値}  なし。  \item {\bf 機能}  粒子データの出力ファイルへヘッダ情報を書き込む。  \end{itemize}
-  
-\subsubsubsection{Hdr::readBinary}
-\label{sec:Hdr_readBinary}
-\begin{screen}\begin{verbatim}class Hdr {public:    PS::S32 readBinary(FILE *fp);};\end{verbatim}\end{screen}\begin{itemize}\item {\bf 引数}  fp: 入力。FILE *型。粒子データの入力ファイルを指すファイルポインタ。  \item {\bf 返値}  PS::S32型。粒子数の情報を返す。ヘッダに粒子数の情報がない場合は-1を  返す。  \item {\bf 機能}  粒子データの入力ファイルからヘッダ情報を読みこむ。  \end{itemize}\subsubsubsection{Hdr::writeBinary}
-\label{sec:Hdr_writeBinary}\begin{screen}\begin{verbatim}class Hdr {public:    void writeBinary(FILE *fp);};\end{verbatim}\end{screen}\begin{itemize}\item {\bf 引数}  fp: 入力。FILE *型。粒子データの出力ファイルを指すファイルポインタ。  \item {\bf 返値}  なし。  \item {\bf 機能}  粒子データの出力ファイルへヘッダ情報を書き込む。  \end{itemize}

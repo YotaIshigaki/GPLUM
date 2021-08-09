@@ -64,7 +64,7 @@ public:
         return SAFTY_FACTOR * r_search;
 #endif
     }
-
+    
     void copyFromFP(const EPIGrav & fp){
         pos      = fp.pos;
 #ifdef USE_POLAR_COORDINATE
@@ -277,7 +277,6 @@ public:
     static PS::F64 R_merge;
 #endif
 
-
     static void setGamma(PS::F64 g){
         gamma  = g;
         g_1_inv  = 1./(g - 1.);
@@ -423,6 +422,67 @@ public:
         id_neighbor = force.id_neighbor;
     }
 
+    void copy(const FPGrav & fp){
+        EPJGrav::copyFromFP(fp);
+        acc       = fp.acc;
+        acc_s     = fp.acc_s;
+        jerk_d    = fp.jerk_d;
+        jerk_s    = fp.jerk_s;
+#ifdef INTEGRATE_6TH_SUN
+        acc_      = fp.acc_;
+        snap_s    = fp.snap_s;
+#endif
+        acc_gd    = fp.acc_gd;
+        
+        phi       = fp.phi;
+        phi_d     = fp.phi_d;
+        phi_s     = fp.phi_s;
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+#ifndef CONSTANT_RANDOM_VELOCITY
+        v_disp    = fp.v_disp;
+#endif
+#endif
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out_inv = fp.r_out_inv;
+#endif
+
+        time      = fp.time;
+        dt        = fp.dt;
+        acc0      = fp.acc0;
+        r_planet  = fp.r_planet;
+        f         = fp.f;
+
+        id_neighbor = fp.id_neighbor;
+        id_cluster  = fp.id_cluster;
+        n_cluster   = fp.n_cluster;
+        neighbor    = fp.neighbor;
+    
+        inDomain    = fp.inDomain;
+        isSent      = fp.isSent;
+        isDead      = fp.isDead;
+        isMerged    = fp.isMerged;
+#ifdef MERGE_BINARY
+        isBinary    = fp.isBinary;
+#endif
+    }
+
+    void readAscii(FILE* fp) {
+        PS::S32 Flag;
+        if ( !fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\n",
+                     &this->id, &this->mass, &this->r_planet, &this->f, 
+                     &this->pos.x, &this->pos.y, &this->pos.z,
+                     &this->vel.x, &this->vel.y, &this->vel.z,
+                     &this->neighbor,  &Flag) ) {
+            //&this->r_out, &this->r_search) ) {
+            errorMessage("The particle data have NOT been correctly read.");
+            PS::Abort();
+        }
+#ifdef MERGE_BINARY
+        isBinary = (bool)(Flag & (1<<0));
+#endif
+    }
     void writeAscii(FILE* fp) const {
         PS::S32 Flag = 0;
 #ifdef MERGE_BINARY
@@ -438,20 +498,21 @@ public:
             PS::Abort();
         }   
     }
-    void readAscii(FILE* fp) {
-        PS::S32 Flag;
-        if ( !fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\n",
-                     &this->id, &this->mass, &this->r_planet, &this->f, 
-                     &this->pos.x, &this->pos.y, &this->pos.z,
-                     &this->vel.x, &this->vel.y, &this->vel.z,
-                     &this->neighbor,  &Flag) ) {
-            //&this->r_out, &this->r_search) ) {
+    void readBinary(FILE* fp) {
+        FPGrav buf;
+        if ( !fread(&buf, sizeof(buf), 1, fp) ) {
             errorMessage("The particle data have NOT been correctly read.");
             PS::Abort();
         }
-#ifdef MERGE_BINARY
-        isBinary = (bool)(Flag & (1<<0));
-#endif
+        copy(buf);
+    }
+    void writeBinary(FILE* fp) const {
+        FPGrav buf;
+        buf.copy(*this);
+        if ( !fwrite(&buf, sizeof(buf), 1, fp) ) {
+            errorMessage("The particle data have NOT been correctly written.");
+            PS::Abort();
+        }
     }
 
     void velKick(){

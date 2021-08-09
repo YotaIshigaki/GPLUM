@@ -68,6 +68,7 @@ PS::S32 readParameter(const char * param_file,
                       PS::S32 & n_smp_ave,
                       PS::F64 & t_end,
                       PS::F64 & dt_snap,
+                      PS::F64 & dt_snap_tmp,
                       PS::F64 & r_max,
                       PS::F64 & r_min,
                       PS::S32 & seed,
@@ -195,6 +196,9 @@ PS::S32 readParameter(const char * param_file,
             
         } else if ( name == "dt_snap" ){
             dt_snap = getvalue(value, T, T);
+
+        } else if ( name == "dt_snap_tmp" ){
+            dt_snap_tmp = getvalue(value, T, T);
             
         } else if ( name == "dt_tree" ){
             FPGrav::dt_tree = getvalue(value, T, T);
@@ -316,6 +320,7 @@ PS::S32 checkParameter(char * init_file,
                        PS::S32 n_smp_ave,
                        PS::F64 t_end,
                        PS::F64 dt_snap,
+                       PS::F64 dt_snap_tmp,
                        PS::F64 r_max,
                        PS::F64 r_min,
                        PS::S32 seed,
@@ -339,9 +344,15 @@ PS::S32 checkParameter(char * init_file,
                      "(dt_snap = " + std::to_string(dt_snap)
                      + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
         return 1;
+
+    } else if ( fmod(dt_snap_tmp, FPGrav::dt_tree) != 0 ){
+        errorMessage("dt_snap_tmp has NOT been set to be multiples of dt_tree",
+                     "(dt_snap_tmp = " + std::to_string(dt_snap)
+                     + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
+        return 1;
     } else if ( FPGrav::dt_tree > FPGrav::dt_min * pow2(51) ){
         errorMessage("dt_min has NOT been set to satisfy dt_tree * 2^-51 <= dt_min",
-                     "(dt_snap = " + std::to_string(dt_snap)
+                     "(dt_min = " + std::to_string(FPGrav::dt_min)
                      + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
         return 1;
     } else if ( makeInit && SolidDisk::n_init == 0 && SolidDisk::m_init == 0. ){
@@ -406,6 +417,7 @@ void showParameter(char * init_file,
                    PS::S32 n_smp_ave,
                    PS::F64 t_end,
                    PS::F64 dt_snap,
+                   PS::F64 dt_snap_tmp,
                    PS::F64 r_max,
                    PS::F64 r_min,
                    PS::S32 seed,
@@ -459,6 +471,7 @@ void showParameter(char * init_file,
                   << "t_begin       = " << time_sys << "\t(" << time_sys/(2.*M_PI) << " year)" << std::endl
                   << "t_end         = " << t_end << "\t(" << t_end/(2.*M_PI) << " year)" << std::endl
                   << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*M_PI) << " year)" << std::endl
+                  << "dt_snap_tmp   = " << dt_snap_tmp << "\t(" << dt_snap_tmp/(2.*M_PI) << " year)" << std::endl
                   << "dt_tree       = " << FPGrav::dt_tree << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_tree) << ", " << FPGrav::dt_tree/(2.*M_PI) << " year)" << std::endl
                   << "dt_min        = " << FPGrav::dt_min << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_min) << ", " << FPGrav::dt_min/(2.*M_PI) << " year)" << std::endl
                   << "eta           = " << FPGrav::eta  << std::endl
@@ -583,6 +596,7 @@ void showParameter(char * init_file,
                    << "t_begin       = " << time_sys << "\t(" << time_sys/(2.*M_PI) << " year)" << std::endl
                    << "t_end         = " << t_end << "\t(" << t_end/(2.*M_PI) << " year)" << std::endl
                    << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*M_PI) << " year)" << std::endl
+                   << "dt_snap_tmp   = " << dt_snap_tmp << "\t(" << dt_snap_tmp/(2.*M_PI) << " year)" << std::endl
                    << "dt_tree       = " << FPGrav::dt_tree << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_tree) << ", " << FPGrav::dt_tree/(2.*M_PI) << " year)" << std::endl
                    << "dt_min        = " << FPGrav::dt_min << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_min) << ", " << FPGrav::dt_min/(2.*M_PI) << " year)" << std::endl
                    << "eta           = " << FPGrav::eta << std::endl
