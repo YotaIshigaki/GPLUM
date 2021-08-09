@@ -889,8 +889,8 @@ void calcRandomVel(Tpsys & pp,
         r_max = std::max(r_max, r2);
         r_min = std::max(r_min, -r2);
     }
-    r_max = sqrt(r_max);
-    r_min = sqrt(-r_min);
+    r_max = sqrt(r_max)  * 1.01;
+    r_min = sqrt(-r_min) * 0.99;
     r_max = PS::Comm::getMaxValue(r_max);
     r_min = PS::Comm::getMinValue(r_min);
 
