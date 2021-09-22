@@ -367,7 +367,8 @@ void calcGravity_c(Tp & pi,
     const PS::F64 eps2  = FPGrav::eps2;
     
     calcStarGravity_c(pi);
-    
+
+#ifdef CORRECT_INTERACTION_GRAVITY
     pi.acc_d  = 0.;
     pi.jerk_d = 0.;
     
@@ -422,6 +423,7 @@ void calcGravity_c(Tp & pi,
             pi.acc_d  += mj_rij3 *   _K * dr;
             pi.jerk_d += mj_rij3 * ( _K * dv - (3.*alpha_c + dKdt) * dr );
         }
+#endif
 }
 
 template <class Tp, class Tpsys>

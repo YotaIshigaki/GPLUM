@@ -2,7 +2,12 @@ EPI F64vec xi:pos
 #ifdef USE_POLAR_COORDINATE
 EPI F64vec xi_pol:pos_pol
 #endif
+#ifdef FOR_PIKG01
+EPI S32    idi:id
+EPI S32    idi_dmmy:id_dmmy
+#else
 EPI S64    idi:id
+#endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPI F64    routi:r_out
 EPI F64    rsearchi:r_search
@@ -17,7 +22,12 @@ EPJ F64vec xj:pos
 #ifdef USE_POLAR_COORDINATE
 EPJ F64vec xj_pol:pos_pol
 #endif
+#ifdef FOR_PIKG01
+EPJ S32    idj:id
+EPJ S32    idj_dmmy:id_dmmy
+#else
 EPJ S64    idj:id
+#endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPJ F64    routj:r_out
 EPJ F64    rsearchj:r_search
@@ -32,7 +42,12 @@ FORCE F32vec af:acc
 FORCE F32    pf:phi
 FORCE S32    nngb:neighbor
 FORCE S32    DUMMY_:DUMMY_
+#ifdef FOR_PIKG01
+FORCE S32    idngb:id_neighbor
+FORCE S32    idngb_dmmy:id_neighbor_dmmy
+#else
 FORCE S64    idngb:id_neighbor
+#endif
 
 
 EPI local F32vec xiloc
@@ -75,12 +90,10 @@ r2      = max(r2_real, rout2)
 
 if r2_real < rsearch2
    nngb  = nngb + 1
-   idngb = idngb + idj
-   //if r2_real > eps2
-   //if idi != idj
-   //   idngb = max(idngb, idj)
-   //   idngb = idj
-   //endif
+   if idi != idj
+      idngb = max(idngb, idj)
+      //idngb = idj
+   endif
 endif
 
 r_inv   = rsqrt(r2)

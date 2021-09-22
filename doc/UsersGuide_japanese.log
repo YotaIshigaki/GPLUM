@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.14159265-p3.8.3-191112-2.6 (utf8.euc) (TeX Live 2020) (preloaded format=platex 2020.12.15)  18 JUN 2021 14:57
+This is e-pTeX, Version 3.14159265-p3.8.3-191112-2.6 (utf8.euc) (TeX Live 2020) (preloaded format=platex 2020.12.15)  10 AUG 2021 17:29
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -866,14 +866,14 @@ LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
 
  [2]
 LaTeX Font Info:    Font shape `JT1/hgt/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 93.
+(Font)              scaled to size 11.09619pt on input line 99.
 LaTeX Font Info:    Font shape `JY1/hgt/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 93.
+(Font)              scaled to size 11.09619pt on input line 99.
 LaTeX Font Info:    Font shape `T1/qhv/m/n' will be
-(Font)              scaled to size 10.79993pt on input line 93.
+(Font)              scaled to size 10.79993pt on input line 99.
 
 [3] [4] [5] [6] [7] [8]
-Overfull \hbox (2.2632pt too wide) in paragraph at lines 591--594
+Overfull \hbox (2.2632pt too wide) in paragraph at lines 597--600
 []\JY1/hmc/m/n/10 連微惑星の形成の判定のためのパラメ ータ $[]$ \T1/ntxtlf/m/n/1
 0 (0.2)\JY1/hmc/m/n/10 ． コンパイルオプシ ョンで\T1/ntxtt/m/n/10 -DMERGE_BINAR
 Y
@@ -881,64 +881,64 @@ Y
 
 [9]
 LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
-(Font)              scaled to size 12.0pt on input line 611.
+(Font)              scaled to size 12.0pt on input line 617.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 7.39746pt on input line 611.
+(Font)              scaled to size 7.39746pt on input line 617.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 5.5481pt on input line 611.
+(Font)              scaled to size 5.5481pt on input line 617.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 11.09619pt on input line 611.
+(Font)              scaled to size 11.09619pt on input line 617.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 7.39746pt on input line 611.
+(Font)              scaled to size 7.39746pt on input line 617.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 5.5481pt on input line 611.
+(Font)              scaled to size 5.5481pt on input line 617.
 
-Overfull \hbox (59.73792pt too wide) detected at line 618
+Overfull \hbox (59.73792pt too wide) detected at line 624
 \OML/cmm/m/it/10 t n [][] E[] E[] E[] E[] \OT1/cmr/m/n/10 ^^A\OML/cmm/m/it/10 E
 [] E[] E[] E[] E[] \OT1/cmr/m/n/10 ^^A\OML/cmm/m/it/10 E[]
  []
 
 [10] [11]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 728.
+e 734.
  (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 728.
+(Font)              scaled to size 10.0pt on input line 734.
 
 [12] [13]
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 913--913
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 919--919
  []\T1/ntxtt/m/n/10 gplum.out: ../FDPS-5.0d2/src/memory_pool.hpp:185: static vo
 id ParticleSimulator::Me 
  []
 
 
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 914--914
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 920--920
  []\T1/ntxtt/m/n/10 moryPool::alloc(size_t, int&, void*, void*&): Assertion `N_
 SEGMENT_LIMIT > getInsta[] 
  []
 
-
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 916--916
- []\T1/ntxtt/m/n/10 ===========================================================
-========================[] 
- []
-
-
+[14]
 Overfull \hbox (8.24524pt too wide) in paragraph at lines 922--922
  []\T1/ntxtt/m/n/10 ===========================================================
 ========================[] 
  []
 
-[14] [15] (./UsersGuide_japanese.aux) ) 
+
+Overfull \hbox (8.24524pt too wide) in paragraph at lines 928--928
+ []\T1/ntxtt/m/n/10 ===========================================================
+========================[] 
+ []
+
+[15] (./UsersGuide_japanese.aux) ) 
 Here is how much of TeX's memory you used:
  21423 strings out of 479854
  417802 string characters out of 5881695
- 720583 words of memory out of 5000000
+ 721583 words of memory out of 5000000
  38349 multiletter control sequences out of 15000+600000
  443590 words of font info for 128 fonts, out of 8000000 for 9000
  934 hyphenation exceptions out of 8191
  79i,15n,85p,504b,1029s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on UsersGuide_japanese.dvi (15 pages, 81844 bytes).
+Output written on UsersGuide_japanese.dvi (15 pages, 82184 bytes).

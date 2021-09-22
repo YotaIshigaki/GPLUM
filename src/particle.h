@@ -16,7 +16,12 @@ public:
     PS::S32    neighbor;
     PS::S32    DUMMY_;
 
-    PS::S64    id_neighbor;
+#ifdef FOR_PIKG01
+    PS::S32    id_neighbor; 
+    PS::S32    id_neighbor_dmmy; 
+#else
+    PS::S64    id_neighbor;        
+#endif
     
     void clear(){
         acc         = 0.;
@@ -38,8 +43,13 @@ public:
 #ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_pol; // position in polar
 #endif
-    
+
+#ifdef FOR_PIKG01
+    PS::S32 id;
+    PS::S32 id_dmmy;
+#else
     PS::S64 id;           // id number
+#endif
 
 #ifdef USE_INDIVIDUAL_CUTOFF
     PS::F64 r_out;        // cut-off radius

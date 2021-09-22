@@ -2,7 +2,12 @@ EPI F64vec xi:pos
 #ifdef USE_POLAR_COORDINATE
 EPI F64vec xi_pol:pos_pol
 #endif
+#ifdef FOR_PIKG01
+EPI S32    idi:id
+EPI S32    idi_dmmy:id_dmmy
+#else
 EPI S64    idi:id
+#endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPI F64    routi:r_out
 EPI F64    rsearchi:r_search
@@ -27,7 +32,12 @@ FORCE F32vec af:acc
 FORCE F32    pf:phi
 FORCE S32    ngb:neighbor
 FORCE S32    DUMMY_:DUMMY_
+#ifdef FOR_PIKG01
+FORCE S32    idngb:id_neighbor
+FORCE S32    idngb_dmmy:id_neighbor_dmmy
+#else
 FORCE S64    idngb:id_neighbor
+#endif
 
 
 EPI local F32vec xiloc

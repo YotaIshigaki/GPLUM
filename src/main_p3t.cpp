@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 {
     PS::Initialize(argc, argv); 
     showGplumVersion(GPLUMVERSION);
-    PS::Comm::barrier();
+    //PS::Comm::barrier();
     time_t wtime_start_program = time(NULL);
     
     ////////////////////////
@@ -351,7 +351,7 @@ int main(int argc, char *argv[])
 #endif
     tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
 #ifdef USE_P2P_FAST
-    tree_grav.setExchagneLETMode(PS::EXCHANGE_LET_P2P_FAST);
+    tree_grav.setExchangeLETMode(PS::EXCHANGE_LET_P2P_FAST);
 #endif
     
 #ifdef USE_RE_SEARCH_NEIGHBOR
@@ -781,15 +781,12 @@ int main(int argc, char *argv[])
             //PRC(etot1); PRL(ekin);
             //PRC(ephi); PRC(ephi_s); PRL(ephi_d);
         }
-
-        if( fmod(time_sys, dt_snap_tmp) == 0. ){
-            makeSnapTmp(system_grav, time_sys, e_init, e_now, dir_name, id_next);
-        }
-        
+                
         if( time_sys  == dt_snap*isnap ){
             outputStep(system_grav, time_sys, e_init, e_now, de,
                        n_col_tot, n_frag_tot, dir_name, isnap, id_next, fout_eng,
                        wtime, n_largestcluster, n_cluster, n_isoparticle);
+            makeSnapTmp(system_grav, time_sys, e_init, e_now, dir_name, id_next);
             isnap ++;
 
             if ( time_sys >= t_end || 
@@ -803,6 +800,12 @@ int main(int argc, char *argv[])
                 fout_col.open(sout_col, std::ios::out);
                 fout_rem.open(sout_rem, std::ios::out);
             }
+        }
+
+        if( fmod(time_sys, dt_snap_tmp) == 0. ){
+            makeSnapTmp(system_grav, time_sys, e_init, e_now, dir_name, id_next);
+            
+            if ( wtime_max > 0. && wtime_max < difftime(time(NULL), wtime_start_program) ) break;
         }
 #ifdef CALC_WTIME
         PS::Comm::barrier();

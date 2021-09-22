@@ -1,4 +1,5 @@
-PS_PATH_FDPS = ../FDPS-7.0/src/
+#PS_PATH_FDPS = ../FDPS-7.0/src/
+PS_PATH_FDPS = ../fdps-devel/src/
 PS_PATH_PIKG = ../PIKG/inc/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
@@ -20,9 +21,9 @@ CC = clang++ -std=c++11
 ################
 ###   SIMD   ###
 ################
-#use_AVX2 = yes
+use_AVX2 = yes
 #use_AVX512 = yes
-use_SVE = yes
+#use_SVE = yes
 
 #########################
 ###   Other Options   ###
@@ -39,20 +40,25 @@ quadrupole = yes
 collision = yes
 #Kominami = yes
 #Chembers = yes
+#Shibata = yes
 #merge_binary = yes
 
 #without_sun = yes
 #constant_random_velocity = yes
+#correct_interaction_gravity = yes
 
 output_detail = yes
 #calc_time = yes
 
-#p2p_fast = yes
+p2p_fast = yes
 
 
 CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
+
+CFLAGS += -DFOR_PIKG01
+CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
 
 ifeq ($(use_OpenMP),yes)
 #CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
@@ -119,6 +125,10 @@ CFLAGS += -DKOMINAMI
 else
 ifeq ($(Chambers),yes)
 CFLAGS += -DCHAMBERS
+else
+ifeq ($(Shibata),yes)
+CFLAGS += -DSHIBATA
+endif
 endif
 endif
 ifeq ($(merge_binary),yes)
@@ -129,6 +139,9 @@ CFLAGS += -DWITHOUT_SUN
 endif
 ifeq ($(constant_random_velocity),yes)
 CFLAGS += -DCONSTANT_RANDOM_VELOCITY
+endif
+ifeq ($(correct_interaction_gravity),yes)
+CFLAGS += -DCORRECT_INTERACTION_GRAVITY
 endif
 
 ifeq ($(output_detail),yes)

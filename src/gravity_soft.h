@@ -144,14 +144,8 @@ void correctForceLong(Tpsys & pp,
                     //if ( dr2_min < r_crit * r_crit ) {
 #endif
                     if ( rij < r_search ) {
-#ifdef TEST_PTCL
-                        if ( r_out > 0. ){
-#endif
-                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                            acc0i += r_out * r_out / massj;
-#ifdef TEST_PTCL
-                        }
-#endif
+                        NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                        acc0i += r_out * r_out / massj;
                     }
 #ifdef USE_RE_SEARCH_NEIGHBOR
                 }
@@ -227,14 +221,8 @@ void correctForceLong(Tpsys & pp,
                         //if ( dr2_min < r_crit * r_crit ){
 #endif
                         if ( rij < r_search ) {
-#ifdef TEST_PTCL
-                            if ( r_out > 0. ){
-#endif
-                                NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                                acc0i += r_out * r_out / massj;
-#ifdef TEST_PTCL
-                            }
-#endif
+                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                            acc0i += r_out * r_out / massj;
                         }
 #ifdef USE_RE_SEARCH_NEIGHBOR
                     }
@@ -444,14 +432,8 @@ void correctForceLongInitial(Tpsys & pp,
                 //if ( dr2_min < r_crit * r_crit ){
 #endif
                     if ( rij < r_search ) {
-#ifdef TEST_PTCL
-                        if ( r_out > 0. ){
-#endif
-                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                            acc0i += r_out * r_out / massj;
-#ifdef TEST_PTCL
-                        }
-#endif
+                        NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                        acc0i += r_out * r_out / massj;
                     }
 #ifdef USE_RE_SEARCH_NEIGHBOR
                 }
@@ -531,14 +513,8 @@ void correctForceLongInitial(Tpsys & pp,
                     //if ( dr2_min < r_crit * r_crit ){
 #endif
                         if ( rij < r_search ) {
-#ifdef TEST_PTCL
-                            if ( r_out > 0. ){
-#endif
-                                NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
-                                acc0i += r_out * r_out / massj;
-#ifdef TEST_PTCL
-                            }
-#endif
+                            NList.addNeighbor(pp, i, j_id, j_rank, j_id_local);
+                            acc0i += r_out * r_out / massj;
                         }
 #ifdef USE_RE_SEARCH_NEIGHBOR
                     }
