@@ -291,7 +291,7 @@ PS::S32 removeParticlesOutOfBoundary(Tpsys & pp,
         
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Gather(&n_remove_loc, 1, PS::GetDataType(n_remove_loc),
-                   &n_remove_list[0], 1, PS::GetDataType(*n_remove_list),  0, MPI_COMM_WORLD);
+                   &n_remove_list[0], 1, PS::GetDataType(n_remove_list[0]),  0, MPI_COMM_WORLD);
 #else
         n_remove_list[0]  = n_remove_loc;
 #endif
@@ -311,8 +311,8 @@ PS::S32 removeParticlesOutOfBoundary(Tpsys & pp,
         }
 
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-        MPI_Gatherv(&remove_list_loc[0], n_remove_loc,                    PS::GetDataType(*remove_list_loc),
-                    &remove_list_glb[0], &n_remove_list[0], n_remove_adr, PS::GetDataType(*remove_list_glb), 0, MPI_COMM_WORLD);
+        MPI_Gatherv(&remove_list_loc[0], n_remove_loc,                        PS::GetDataType(remove_list_loc[0]),
+                    &remove_list_glb[0], &n_remove_list[0], &n_remove_adr[0], PS::GetDataType(remove_list_glb[0]), 0, MPI_COMM_WORLD);
 #else
         for(PS::S32 i=0; i<n_remove_loc; i++) remove_list_glb[i] = remove_list_loc[i];
 #endif

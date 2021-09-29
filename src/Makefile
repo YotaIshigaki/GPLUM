@@ -57,7 +57,7 @@ CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
-CFLAGS += -DFOR_PIKG01
+#CFLAGS += -DFOR_PIKG01
 CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
 
 ifeq ($(use_OpenMP),yes)
