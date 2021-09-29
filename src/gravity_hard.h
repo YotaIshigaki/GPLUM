@@ -26,8 +26,8 @@ void velKick2nd(Tpsys & pp){
 template <class Tpsys>
 void calcStarGravity(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
     
    PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
@@ -62,8 +62,8 @@ void calcStarGravity(Tpsys & pp)
 template <class Tpsys>
 void calcStarGravity_p(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
 
     PS::F64vec posi = pp.xp;
     PS::F64vec veli = pp.vp;
@@ -98,8 +98,8 @@ void calcStarGravity_p(Tpsys & pp)
 template <class Tpsys>
 void calcStarGravity_c(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
 
     PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
@@ -134,8 +134,8 @@ void calcStarGravity_c(Tpsys & pp)
 template <class Tpsys>
 void calcStarAccJerk(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
     
     PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
@@ -158,8 +158,8 @@ void calcStarAccJerk(Tpsys & pp)
 template <class Tpsys>
 void calcStarSnap(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
     
     PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
@@ -184,8 +184,8 @@ void calcStarSnap(Tpsys & pp)
 template <class Tpsys>
 void calcStarAcc(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
 
     PS::F64vec posi = pp.pos;
 
@@ -202,8 +202,8 @@ void calcStarAcc(Tpsys & pp)
 template <class Tpsys>
 void calcStarJerk(Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2_sun;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
 
     PS::F64vec posi = pp.pos;
     PS::F64vec veli = pp.vel;
@@ -225,7 +225,7 @@ template <class Tp, class Tpsys>
 void calcGravity(Tp & pi,
                  Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 eps2  = FP_t::eps2;
     
     //#ifndef INTEGRATE_6TH_SUN
     calcStarGravity(pi);
@@ -276,7 +276,7 @@ void calcGravity(Tp & pi,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
 
             PS::F64 mj_rij3 = massj * r3inv;
@@ -297,7 +297,7 @@ template <class Tp, class Tpsys>
 void calcGravity_p(Tp & pi,
                    Tpsys & pp)
 {
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 eps2  = FP_t::eps2;
     
     calcStarGravity_p(pi);
 
@@ -341,7 +341,7 @@ void calcGravity_p(Tp & pi,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
             
             PS::F64 mj_rij3 = massj * r3inv;
@@ -364,7 +364,7 @@ void calcGravity_c(Tp & pi,
 {
     //assert( pi.neighbor != 0 );
     
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 eps2  = FP_t::eps2;
     
     calcStarGravity_c(pi);
 
@@ -408,7 +408,7 @@ void calcGravity_c(Tp & pi,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
 
             PS::F64 mj_rij3 = massj * r3inv;
@@ -430,7 +430,7 @@ template <class Tp, class Tpsys>
 void calcJerk(Tp & pi,
               Tpsys & pp)
 {   
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 eps2  = FP_t::eps2;
     
     calcStarJerk(pi);
 
@@ -472,7 +472,7 @@ void calcJerk(Tp & pi,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
 
             PS::F64 mj_rij3 = massj * r3inv;
@@ -493,7 +493,7 @@ void calcAccJerk(Tp & pi,
 {
     //assert( pi.neighbor != 0 );
     
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 eps2  = FP_t::eps2;
     
     calcStarAccJerk(pi);
 
@@ -538,7 +538,7 @@ void calcAccJerk(Tp & pi,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = std::min(pi.r_out_inv, pp[pj_id].r_out_inv);
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
 
             PS::F64 mj_rij3 = massj * r3inv;

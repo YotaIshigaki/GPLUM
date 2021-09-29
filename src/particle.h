@@ -1,7 +1,5 @@
 #pragma once
 
-#pragma once
-
 #define SAFTY_FACTOR 1.05
 
 
@@ -422,7 +420,7 @@ public:
 #endif //USE_INDIVIDUAL_CUTOFF
     
     void setRPlanet() {
-        r_planet = pow(0.75*mass/(M_PI*dens), 1./3.);
+        r_planet = pow(0.75*mass/(MY_PI*dens), 1./3.);
     }
     
     void copyFromForce(const ForceGrav & force){
@@ -476,6 +474,18 @@ public:
 #ifdef MERGE_BINARY
         isBinary    = fp.isBinary;
 #endif
+    }
+
+    void dump(std::ostream & fout = std::cout) const {
+        fout<<"id= "<<id<<std::endl;
+        fout<<"mass= "<<mass<<std::endl;
+        fout<<"pos= "<<pos<<std::endl;
+#ifdef USE_POLAR_COORDINATE
+        fout<<"pos_pol="<<pos_pol<<std::endl;
+#endif
+        fout<<"vel= "<<vel<<std::endl;
+        fout<<"acc="<<acc<<std::endl;
+        fout<<"phi="<<phi<<std::endl;
     }
 
     void readAscii(FILE* fp) {
@@ -1362,7 +1372,7 @@ class MySPJQuadrupole : public PS::SPJQuadrupole {
 public:
 #ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_car;
-    
+
     PS::F64 getCharge() const { return mass; }
     PS::F64vec getPos() const { return pos; }
     PS::F64vec getPosCar() const { return pos_car; }
@@ -1380,10 +1390,3 @@ public:
 #endif
 };
 
-#ifdef USE_QUAD
-typedef MySPJQuadrupole SPGrav;
-typedef MyMomentQuadrupole MomGrav;
-#else
-typedef MySPJMonopole SPGrav;
-typedef MyMomentMonopole MomGrav;
-#endif

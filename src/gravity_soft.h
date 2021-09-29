@@ -10,7 +10,7 @@ void correctForceLong(Tpsys & pp,
                       PS::S32 & n_with_ngb)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::F64 eps2 = FPGrav::eps2;
+    const PS::F64 eps2 = FP_t::eps2;
     NList.initializeList(pp);
 
 #ifdef CORRECT_NEIGHBOR
@@ -45,7 +45,7 @@ void correctForceLong(Tpsys & pp,
         if ( neighbor == 0 ) {
 #ifdef CHECK_NEIGHBOR
             PS::S32 nei_loc = 0;
-            EPJGrav* next = NULL;
+            EPJ_t* next = NULL;
             nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
             //assert( nei_loc == 1 );
 	    for (PS::S32 j=0; j<nei_loc; j++) {
@@ -65,7 +65,7 @@ void correctForceLong(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = pp[i].r_out_inv;
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
             phii += pp[i].mass * r_out_inv;
             
@@ -78,7 +78,7 @@ void correctForceLong(Tpsys & pp,
             if ( !( neighbor > 1 || isMerged ) ) {
 #ifdef CHECK_NEIGHBOR
                 PS::S32 nei_loc = 0;
-                EPJGrav* next = NULL;
+                EPJ_t* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 //assert( nei_loc < 3 );
                 for (PS::S32 j=0; j<nei_loc; j++) {
@@ -105,8 +105,8 @@ void correctForceLong(Tpsys & pp,
                 PS::F64 r_out_inv = pp[i].r_out_inv;
                 PS::F64 r_out     = pp[i].r_out;
 #else
-                PS::F64 r_out_inv = FPGrav::r_out_inv;
-                PS::F64 r_out     = FPGrav::r_out;
+                PS::F64 r_out_inv = FP_t::r_out_inv;
+                PS::F64 r_out     = FP_t::r_out;
 #endif
                 phii += pp[i].mass * r_out_inv;
                 
@@ -116,7 +116,7 @@ void correctForceLong(Tpsys & pp,
                 r_out     = std::max(pp[i].r_out,     pp[j_id_local].r_out);
                 PS::F64 r_search = std::max(pp[i].r_search, pp[j_id_local].r_search);
 #else
-                PS::F64 r_search = FPGrav::r_search;
+                PS::F64 r_search = FP_t::r_search;
 #endif
                 
                 PS::F64vec posj = pp[j_id_local].pos;
@@ -134,12 +134,12 @@ void correctForceLong(Tpsys & pp,
                 PS::F64    drdv    = dr * dv;
                 PS::F64    dv2     = dv * dv;
                 PS::F64    da2     = da * da;
-                PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FP_t::dt_tree);
                 PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
                 //assert( dr2 >= dr2_min );
                 
-                PS::F64    r_crit   = FPGrav::R_search2 * r_out;
-                PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                PS::F64    r_crit   = FP_t::R_search2 * r_out;
+                PS::F64    v_crit_a = FP_t::R_search3*0.5*FP_t::dt_tree;
                 if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 ) {
                     //if ( dr2_min < r_crit * r_crit ) {
 #endif
@@ -170,7 +170,7 @@ void correctForceLong(Tpsys & pp,
                 
             } else { // neighbor > 2 || j_id is not in map
                 PS::S32 nei_loc = 0;
-                EPJGrav* next = NULL;
+                EPJ_t* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 
                 for(PS::S32 j=0; j<nei_loc; j++){
@@ -186,9 +186,9 @@ void correctForceLong(Tpsys & pp,
                     PS::F64 r_out_inv = 1. / r_out;
                     PS::F64 r_search  = std::max(pp[i].r_search,  (next+j)->r_search);
 #else
-                    PS::F64 r_out_inv = FPGrav::r_out_inv;
-                    PS::F64 r_out     = FPGrav::r_out;
-                    PS::F64 r_search  = FPGrav::r_search;
+                    PS::F64 r_out_inv = FP_t::r_out_inv;
+                    PS::F64 r_out     = FP_t::r_out;
+                    PS::F64 r_search  = FP_t::r_search;
 #endif
                     
                     if ( j_id == pp[i].id ) {
@@ -211,12 +211,12 @@ void correctForceLong(Tpsys & pp,
                     PS::F64    drdv    = dr * dv;
                     PS::F64    dv2     = dv * dv;
                     PS::F64    da2     = da * da;
-                    PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                    PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FP_t::dt_tree);
                     PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
                     //assert( dr2 >= dr2_min );
 
-                    PS::F64    r_crit   = FPGrav::R_search2 * r_out;
-                    PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                    PS::F64    r_crit   = FP_t::R_search2 * r_out;
+                    PS::F64    v_crit_a = FP_t::R_search3*0.5*FP_t::dt_tree;
                     if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 ){
                         //if ( dr2_min < r_crit * r_crit ){
 #endif
@@ -287,7 +287,7 @@ void correctForceLongInitial(Tpsys & pp,
                              PS::S32 & n_with_ngb)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::F64 eps2 = FPGrav::eps2;
+    const PS::F64 eps2 = FP_t::eps2;
     NList.initializeList(pp);
 
     PS::F64vec acc_s[n_loc];
@@ -333,7 +333,7 @@ void correctForceLongInitial(Tpsys & pp,
         if ( neighbor == 0 ) {      
 #ifdef CHECK_NEIGHBOR
             PS::S32 nei_loc = 0;
-            EPJGrav* next = NULL;
+            EPJ_t* next = NULL;
             nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
             //assert( nei_loc == 1 );
             for (PS::S32 j=0; j<nei_loc; j++) {
@@ -353,7 +353,7 @@ void correctForceLongInitial(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = pp[i].r_out_inv;
 #else
-            PS::F64 r_out_inv = FPGrav::r_out_inv;
+            PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
             phii += pp[i].mass * r_out_inv;
             
@@ -366,7 +366,7 @@ void correctForceLongInitial(Tpsys & pp,
             if ( !( neighbor > 1 || isMerged ) ) {          
 #ifdef CHECK_NEIGHBOR
                 PS::S32 nei_loc = 0;
-                EPJGrav* next = NULL;
+                EPJ_t* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 //assert( nei_loc < 3 );
                 for (PS::S32 j=0; j<nei_loc; j++) {
@@ -393,8 +393,8 @@ void correctForceLongInitial(Tpsys & pp,
                 PS::F64 r_out_inv = pp[i].r_out_inv;
                 PS::F64 r_out     = pp[i].r_out;
 #else
-                PS::F64 r_out_inv = FPGrav::r_out_inv;
-                PS::F64 r_out     = FPGrav::r_out;
+                PS::F64 r_out_inv = FP_t::r_out_inv;
+                PS::F64 r_out     = FP_t::r_out;
 #endif
                 phii += pp[i].mass * r_out_inv;
                 
@@ -404,7 +404,7 @@ void correctForceLongInitial(Tpsys & pp,
                 r_out     = std::max(pp[i].r_out,     pp[j_id_local].r_out);
                 PS::F64 r_search = std::max(pp[i].r_search, pp[j_id_local].r_search);
 #else
-                PS::F64 r_search = FPGrav::r_search;
+                PS::F64 r_search = FP_t::r_search;
 #endif
                 
                 PS::F64vec posj = pp[j_id_local].pos;
@@ -422,12 +422,12 @@ void correctForceLongInitial(Tpsys & pp,
                 PS::F64vec da      = acc_d[j_id_local] - acc_d[i];
                 PS::F64    dv2     = dv * dv;
                 PS::F64    da2     = da * da;
-                PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FP_t::dt_tree);
                 PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
                 //assert( dr2 >= dr2_min );
                 
-                PS::F64    r_crit   = FPGrav::R_search2 * r_out;
-                PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                PS::F64    r_crit   = FP_t::R_search2 * r_out;
+                PS::F64    v_crit_a = FP_t::R_search3*0.5*FP_t::dt_tree;
                 if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 || da2 == 0. ){
                 //if ( dr2_min < r_crit * r_crit ){
 #endif
@@ -462,7 +462,7 @@ void correctForceLongInitial(Tpsys & pp,
 
             } else { // neighbor > 2 || j_id is not in map
                 PS::S32 nei_loc = 0;
-                EPJGrav* next = NULL;
+                EPJ_t* next = NULL;
                 nei_loc = tree_grav.getNeighborListOneParticle(pp[i], next);
                 
                 for(PS::S32 j=0; j<nei_loc; j++){
@@ -478,9 +478,9 @@ void correctForceLongInitial(Tpsys & pp,
                     PS::F64 r_out_inv = 1. / r_out;
                     PS::F64 r_search  = std::max(pp[i].r_search,  (next+j)->r_search);
 #else
-                    PS::F64 r_out_inv = FPGrav::r_out_inv;
-                    PS::F64 r_out     = FPGrav::r_out;
-                    PS::F64 r_search  = FPGrav::r_search;
+                    PS::F64 r_out_inv = FP_t::r_out_inv;
+                    PS::F64 r_out     = FP_t::r_out;
+                    PS::F64 r_search  = FP_t::r_search;
 #endif
 
                     if ( j_id == pp[i].id ) {
@@ -503,12 +503,12 @@ void correctForceLongInitial(Tpsys & pp,
                     PS::F64vec da      = (next+j)->acc_d - acc_d[i];
                     PS::F64    dv2     = dv * dv;
                     PS::F64    da2     = da * da;
-                    PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FPGrav::dt_tree);
+                    PS::F64    t_min   = std::min(std::max(-drdv/sqrt(dv2), 0.), FP_t::dt_tree);
                     PS::F64    dr2_min = std::min(dr2, dr2 + 2.*drdv*t_min + dv2*t_min*t_min);
                     //assert( dr2 >= dr2_min );
                     
-                    PS::F64    r_crit   = FPGrav::R_search2 * r_out;
-                    PS::F64    v_crit_a = FPGrav::R_search3*0.5*FPGrav::dt_tree;
+                    PS::F64    r_crit   = FP_t::R_search2 * r_out;
+                    PS::F64    v_crit_a = FP_t::R_search3*0.5*FP_t::dt_tree;
                     if ( dr2_min < r_crit * r_crit || dv2 < v_crit_a * v_crit_a * da2 || da2 == 0. ){
                     //if ( dr2_min < r_crit * r_crit ){
 #endif
@@ -582,7 +582,7 @@ template <class Tpsys>
 void calcIndirectTerm(Tpsys & pp)
 {
     PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    PS::F64 eps2 = FPGrav::eps2;
+    PS::F64 eps2 = FP_t::eps2;
     
     PS::F64vec acc_loc = 0;
     PS::F64vec pos_grav_loc = 0;
@@ -608,18 +608,18 @@ void calcIndirectTerm(Tpsys & pp)
         mass_tot_loc += massi;
     }
     
-    FPGrav::acc_indirect = PS::Comm::getSum(acc_loc);
+    FP_t::acc_indirect = PS::Comm::getSum(acc_loc);
     
-    FPGrav::mass_tot = mass_tot_glb = PS::Comm::getSum(mass_tot_loc) + FPGrav::m_sun;
-    FPGrav::pos_g = PS::Comm::getSum(pos_grav_loc) / mass_tot_glb;
-    FPGrav::vel_g = PS::Comm::getSum(vel_grav_loc) / mass_tot_glb;
+    FP_t::mass_tot = mass_tot_glb = PS::Comm::getSum(mass_tot_loc) + FP_t::m_sun;
+    FP_t::pos_g = PS::Comm::getSum(pos_grav_loc) / mass_tot_glb;
+    FP_t::vel_g = PS::Comm::getSum(vel_grav_loc) / mass_tot_glb;
 }
 
 template <class Tpsys>
 PS::F64 calcIndirectEnergy(Tpsys & pp)
 {
     PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    PS::F64 eps2 = FPGrav::eps2;
+    PS::F64 eps2 = FP_t::eps2;
     
     PS::F64vec vel_grav_loc = 0;
     PS::F64vec vel_grav_glb = 0;
@@ -634,16 +634,16 @@ PS::F64 calcIndirectEnergy(Tpsys & pp)
         vel_grav_loc += massi * veli;
         mass_tot_loc += massi;
     }
-    mass_tot_glb = PS::Comm::getSum(mass_tot_loc) + FPGrav::m_sun;
+    mass_tot_glb = PS::Comm::getSum(mass_tot_loc) + FP_t::m_sun;
     vel_grav_glb = PS::Comm::getSum(vel_grav_loc) / mass_tot_glb;
     
-    return -0.5*(mass_tot_glb + FPGrav::m_sun) * vel_grav_glb*vel_grav_glb;
+    return -0.5*(mass_tot_glb + FP_t::m_sun) * vel_grav_glb*vel_grav_glb;
 }
 
 template <class Tpsys>
 PS::F64 getIndirectEnergy(Tpsys & pp)
 {
-    return -0.5 * (FPGrav::mass_tot + FPGrav::m_sun) * FPGrav::vel_g * FPGrav::vel_g;
+    return -0.5 * (FP_t::mass_tot + FP_t::m_sun) * FP_t::vel_g * FP_t::vel_g;
 }
 #endif
 

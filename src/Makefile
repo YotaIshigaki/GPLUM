@@ -68,8 +68,8 @@ ifeq ($(use_MPI),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 endif
 
-CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPIGrav --epj-name EPJGrav --force-name ForceGrav
-CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPIGrav --epj-name SPGrav --force-name ForceGrav
+CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPI_t --epj-name EPJ_t --force-name Force_t
+CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPI_t --epj-name SPJ_t --force-name Force_t
 
 ifeq ($(use_AVX2),yes)
 #CFLAGS += -march=core-avx2
@@ -169,15 +169,15 @@ $(PROGRAM): $(SRC) gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
 gravity_kernel_epep.hpp: gravity_kernel_epep.pikg
 	./removeif.sh gravity_kernel_epep.pikg gravity_kernel_epep_noif.pikg $(CFLAGS)
 	../PIKG/bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
-	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
-	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
+#	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
+#	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
 
 gravity_kernel_epsp.hpp: gravity_kernel_epsp.pikg
 	./removeif.sh gravity_kernel_epsp.pikg gravity_kernel_epsp_noif.pikg $(CFLAGS)
 	../PIKG/bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
 	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_epsp.hpp
-	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
-	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
+#	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
+#	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
 
 all: clean $(PROGRAM)
 

@@ -48,7 +48,7 @@ public:
     template <class Tpsys>
     static void createInitialCondition(Tpsys & pp){
         if ( PS::Comm::getRank() == 0 ){
-            const PS::F64 m_sun = FPGrav::m_sun;
+            const PS::F64 m_sun = FP_t::m_sun;
             PS::F64 m_in  = 0.;
             PS::F64 m_out = 0.;
             PS::S32 n_in  = 0;
@@ -166,7 +166,7 @@ public:
         const PS::F64 N_A = 6.022140857e23;
         const PS::F64 m_H = 1./N_A /M_CGS;
         PS::F64 coef_cs = sqrt(k_B * 280 / (mu * m_H));
-        PS::F64 coef_vk = sqrt(FPGrav::m_sun);
+        PS::F64 coef_vk = sqrt(FP_t::m_sun);
         coef_cs_vk = coef_cs / coef_vk;
 
         coef_acc_gd = 0.5*C_d*M_PI;
@@ -196,13 +196,13 @@ public:
             PS::F64 cs_vk = coef_cs_vk * sqrt(sqrt(r)) * pow(L, 1./8.);
 
             PS::F64vec ev(-pp[i].pos.y*r_inv, pp[i].pos.x*r_inv, 0.0);
-            PS::F64vec vkep = sqrt(FPGrav::m_sun * r_inv) * ev;
+            PS::F64vec vkep = sqrt(FP_t::m_sun * r_inv) * ev;
             PS::F64 eta = 0.5 * (alpha_gas + beta_gas) * cs_vk * cs_vk;
             PS::F64vec vgas = (1.0 - eta)*vkep;
             PS::F64vec u = pp[i].vel - vgas;
             //PRL(eta);
 
-            //PS::F64 rplanet = cbrt(0.75*pp[i].mass/(M_PI*FPGrav::dens));
+            //PS::F64 rplanet = cbrt(0.75*pp[i].mass/(M_PI*FP_t::dens));
             if (clear) pp[i].acc_gd = 0.;
             if ( pp[i].mass != 0. ) {
                 //pp[i].acc_gd += -coef_acc_gd * rplanet * rplanet * rho_gas * sqrt(u*u) * u / pp[i].mass;

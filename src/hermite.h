@@ -146,7 +146,7 @@ PS::S32 collisionDetermination(Tpsys & pp,
                 PS::F64 mi  = pp[i].mass;
                 PS::F64 mj  = pp[pj_id].mass;
                 PS::F64 ax_mut = ( axi > 0. && axj > 0.) ? 0.5*(axi + axj) : 0.;
-                PS::F64 r_Hill_mut = pow((mi+mj)/(3.*FPGrav::m_sun), 1./3.) * ax_mut;
+                PS::F64 r_Hill_mut = pow((mi+mj)/(3.*FP_t::m_sun), 1./3.) * ax_mut;
                 PS::F64 R_merge = std::min(pp[i].R_merge, pp[pj_id].R_merge);  
                 R = r1 / ( R_merge * r_Hill_mut );
                 if ( R < 1. ){
@@ -774,7 +774,7 @@ void timeIntegrateKepler_isolated(Tp & pi,
                                   PS::F64 time_start,
                                   PS::F64 time_end)
 {
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 m_sun = FP_t::m_sun;
     PS::F64 ax, ecc, n;
     PS::F64 u, l;
     PS::F64vec P, Q;

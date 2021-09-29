@@ -43,8 +43,8 @@ PS::S32 Collision::N_frag = 10;
 template <class Tp>
 inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 {
-    const PS::F64 dens  = FPGrav::dens;
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 dens  = FP_t::dens;
+    const PS::F64 eps2  = FP_t::eps2;
     
     //Number of Fragments
     n_frag = (PS::S32)floor(a_frag * mass_imp / m_min);
@@ -63,9 +63,9 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         PS::F64vec ximp = pos_imp - pos_tar;
         PS::F64vec vimp = vel_imp - vel_tar;
         PS::F64    f_frag        = f_imp;
-        PS::F64    r_planet_frag = pow(0.75*mass_frag/n_frag/(M_PI*dens), 1./3.);
+        PS::F64    r_planet_frag = pow(0.75*mass_frag/n_frag/(MY_PI*dens), 1./3.);
         PS::F64    r_planet_rem  = pow(mass_rem/mass_tar, 1./3.) * r_planet_tar;
-        //PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(M_PI*dens), 1./3.);
+        //PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(MY_PI*dens), 1./3.);
         PS::F64 r_frag = 2. * std::max(f_tar, f_frag) * (r_planet_frag + r_planet_rem);
         PS::F64 r2_frag = r_frag*r_frag + eps2;
         PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
@@ -170,7 +170,7 @@ PS::F64 Collision::eps_t  = 1.;
 template <class Tp>
 inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 {
-    const PS::F64 eps2  = FPGrav::eps2;    
+    const PS::F64 eps2  = FP_t::eps2;    
     const PS::F64 c1 = 2.43;
     const PS::F64 c2 = -0.0408;
     const PS::F64 c3 = 1.86;
@@ -178,11 +178,11 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
     const PS::F64vec ximp = pos_imp - pos_tar;
     const PS::F64vec vimp = vel_imp - vel_tar;
 
-    //PS::F64 R_tar = pow(0.75*mass_tar/(M_PI*FPGrav::dens), 1./3.);
-    //PS::F64 R_imp = pow(0.75*mass_imp/(M_PI*FPGrav::dens), 1./3.);
+    //PS::F64 R_tar = pow(0.75*mass_tar/(MY_PI*FP_t::dens), 1./3.);
+    //PS::F64 R_imp = pow(0.75*mass_imp/(MY_PI*FP_t::dens), 1./3.);
     PS::F64 R_tar = r_planet_tar;
     PS::F64 R_imp = r_planet_imp;
-    PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(M_PI*dens), 1./3.);
+    PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(MY_PI*dens), 1./3.);
     PS::F64 b0 = sin(col_angle);
     PS::F64 b  = b0;
     PS::F64 vel_impact = sqrt(vimp*vimp); // impact velocity corrected for enhancement factor
@@ -206,14 +206,14 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 #endif
 
     PS::F64 dens_mean = 0.75 * (mass_imp + mass_tar)
-        /(M_PI * (r_planet_imp*r_planet_imp*r_planet_imp + r_planet_tar*r_planet_tar*r_planet_tar));
+        /(MY_PI * (r_planet_imp*r_planet_imp*r_planet_imp + r_planet_tar*r_planet_tar*r_planet_tar));
     
     PS::F64 gamma = mass_imp / mass_tar;
     PS::F64 Gamma = (1.-gamma)*(1.-gamma)/((1.+gamma)*(1.+gamma));
 
     PS::F64 mu = mass_imp * mass_tar / ( mass_imp + mass_tar );
     PS::F64 Q = mu * vel_impact*vel_impact / (2.*(mass_imp+mass_tar));
-    PS::F64 Q_0 = c_s * 0.8 * M_PI * dens * R*R;
+    PS::F64 Q_0 = c_s * 0.8 * MY_PI * dens * R*R;
 
     PS::F64 l = (R_tar + R_imp)*(1.-b);
     PS::F64 alpha = ( l < 2.*R_imp ) ? (3.*R_imp*l*l-l*l*l)/(4.*R_imp*R_imp*R_imp) : 1.;
@@ -247,7 +247,7 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         if ( n_frag ) {
             PS::F64vec ximp = pos_imp - pos_tar;
             PS::F64vec vimp = vel_imp - vel_tar;
-            PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(M_PI*dens_mean), 1./3.);
+            PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(MY_PI*dens_mean), 1./3.);
             PS::F64 r2_frag = r_frag*r_frag + eps2;
             PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
             PS::F64 v_frag = 1.05 * sqrt( 2. * mass_rem * r_frag_inv );
@@ -282,8 +282,8 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         PRC(l/R_imp);PRL(beta);
         //assert ( 0. <= beta && beta <= 1. );
         gamma = beta * mass_tar / mass_imp;
-        R = pow(0.75*(mass_imp + beta*mass_tar)/(M_PI*dens_mean), 1./3.);
-        Q_0 = c_s * 0.8 * M_PI * dens * R*R;
+        R = pow(0.75*(mass_imp + beta*mass_tar)/(MY_PI*dens_mean), 1./3.);
+        Q_0 = c_s * 0.8 * MY_PI * dens * R*R;
         Q_s = pow(0.25*(gamma+1.)*(gamma+1.)/gamma, 2./(3.*mu_)-1.) * Q_0;
 
         mu = mass_imp * beta*mass_tar / ( mass_imp + beta*mass_tar );
@@ -313,7 +313,7 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         if ( n_frag ) {
             PS::F64vec ximp = pos_imp - pos_tar;
             PS::F64vec vimp = vel_imp - vel_tar;
-            PS::F64 r_frag = 2. * f * pow(0.75*(mass_tar+mass_rem)/(M_PI*dens_mean), 1./3.);
+            PS::F64 r_frag = 2. * f * pow(0.75*(mass_tar+mass_rem)/(MY_PI*dens_mean), 1./3.);
             PS::F64 r2_frag = r_frag*r_frag + eps2;
             PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
             PS::F64 v_frag = 1.05 * sqrt( 2. * mass_rem * r_frag_inv );
@@ -417,7 +417,7 @@ PS::F64 Collision::eps_t  = 1.;
 template <class Tp>
 inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 {
-    const PS::F64 eps2  = FPGrav::eps2;    
+    const PS::F64 eps2  = FP_t::eps2;    
     //const PS::F64 c1 = 2.43;
     //const PS::F64 c2 = -0.0408;
     //const PS::F64 c3 = 1.86;
@@ -432,7 +432,7 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 
     PS::F64 R_tar = r_planet_tar;
     PS::F64 R_imp = r_planet_imp;
-    //PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(M_PI*dens), 1./3.);
+    //PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(MY_PI*dens), 1./3.);
     PS::F64 b0 = sin(col_angle);
     PS::F64 b  = b0;
     PS::F64 vel_impact = sqrt(vimp*vimp); // impact velocity corrected for enhancement factor

@@ -351,8 +351,8 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
     std::pair<iterator, iterator> tar_range = merge_list.equal_range(id_c_tar);
     PS::F64 mass_i = pp[id_c_imp].mass + mass_frag;
     
-    const PS::F64 eps2  = FPGrav::eps2;
-    const PS::F64 m_sun = FPGrav::m_sun;
+    const PS::F64 eps2  = FP_t::eps2;
+    const PS::F64 m_sun = FP_t::m_sun;
     
     ///////////////////////////
     /*   Energy Dissipation  */
@@ -398,7 +398,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
         * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
-        * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+        * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
     for (iterator it2 = tar_range.first; it2 != tar_range.second; ++it2){
         PS::S32 id_j = it2->second;
@@ -407,7 +407,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_j].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
     }
         
@@ -419,7 +419,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         for (iterator it2 = tar_range.first; it2 != tar_range.second; ++it2){
             PS::S32 id_j = it2->second;
@@ -428,7 +428,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_j].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
     }
@@ -444,7 +444,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         for (iterator it2 = tar_range.first; it2 != tar_range.second; ++it2){
             PS::S32 id_j = it2->second;
@@ -453,7 +453,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_j].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
         
@@ -465,7 +465,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_c_tar].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
             for (iterator it2 = tar_range.first; it2 != tar_range.second; ++it2){
                 PS::S32 id_j = it2->second;
@@ -474,7 +474,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                     * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_j].r_out_inv));
 #else
-                    * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                    * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
             }
         }
@@ -493,7 +493,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_f0].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         for (iterator it = imp_range.first; it != imp_range.second; ++it){
             PS::S32 id_i = it->second;
@@ -502,7 +502,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_f0].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
 
@@ -515,7 +515,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[id_f0].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         for (iterator it = tar_range.first; it != tar_range.second; ++it){
             PS::S32 id_j = it->second;
@@ -524,7 +524,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[id_f0].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }      
         for ( PS::S32 j=0; j<i; j++ ){
@@ -538,7 +538,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_f0].r_out_inv, pp[id_f1].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
     }
@@ -561,7 +561,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_nei].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         for (iterator it = imp_range.first; it != imp_range.second; ++it){
             PS::S32 id_i = it->second;
@@ -570,7 +570,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_nei].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
         for ( PS::S32 j=0; j<n_frag; j++ ){
@@ -584,7 +584,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_f].r_out_inv, pp[id_nei].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
     }
@@ -605,7 +605,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
             * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[id_nei].r_out_inv));
 #else
-            * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+            * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         for (iterator it = tar_range.first; it != tar_range.second; ++it){
             PS::S32 id_j = it->second;
@@ -614,7 +614,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
                 * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[id_nei].r_out_inv));
 #else
-                * (1.-cutoff_W2(dr2, FPGrav::r_out_inv));
+                * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
     }

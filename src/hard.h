@@ -2,21 +2,21 @@
 
 class ParticleCluster{
 public:
-    static std::vector<FPHard> ptcl_hard;   
+    static std::vector<FPH_t> ptcl_hard;   
     std::vector<PS::S32> id_list;
 
     static void resize_hard(PS::S32 n) { ptcl_hard.resize(n); }
     static void reserve_hard(PS::S32 n) { ptcl_hard.reserve(n); }
     static void clear_hard() { ptcl_hard.clear(); }
     
-    FPHard & operator [](PS::S32 i) { return ptcl_hard[id_list[i]]; }
-    FPHard const & operator [](PS::S32 i) const { return ptcl_hard[id_list[i]]; }
-    FPHard & at(PS::S32 i) { return ptcl_hard.at(id_list.at(i)); }
-    FPHard const & at(PS::S32 i) const { return ptcl_hard.at(id_list.at(i)); }
+    FPH_t & operator [](PS::S32 i) { return ptcl_hard[id_list[i]]; }
+    FPH_t const & operator [](PS::S32 i) const { return ptcl_hard[id_list[i]]; }
+    FPH_t & at(PS::S32 i) { return ptcl_hard.at(id_list.at(i)); }
+    FPH_t const & at(PS::S32 i) const { return ptcl_hard.at(id_list.at(i)); }
 
     void clear() { id_list.clear(); }
     
-    void push_back(const FPHard & pi) {
+    void push_back(const FPH_t & pi) {
         PS::S32 i = 0;
 #pragma omp critical
         {
@@ -25,7 +25,7 @@ public:
         }
         id_list.push_back(i);
     }
-    void push_back(FPHard && pi) {
+    void push_back(FPH_t && pi) {
         PS::S32 i = 0;
 #pragma omp critical
         {
@@ -54,7 +54,7 @@ public:
     PS::U32 capacity() const { return id_list.capacity(); }
 };
 
-std::vector<FPHard> ParticleCluster::ptcl_hard;
+std::vector<FPH_t> ParticleCluster::ptcl_hard;
 
 class ClusterSystem : public std::vector<ParticleCluster> {
 public:
@@ -70,7 +70,7 @@ class HardSystem{
 public:
     std::vector<PS::S32> list_iso;
     std::vector<std::vector<std::pair<bool,PS::S32> > > list_multi;
-    //std::vector<std::vector<FPHard> > ptcl_multi;
+    //std::vector<std::vector<FPH_t> > ptcl_multi;
     ClusterSystem ptcl_multi;
     std::map<PS::S32,PS::S32> mp_cluster;  // cluster ID -> cluster adress in HardSystem
 
@@ -315,10 +315,10 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
                 PS::S32 id_loc = adr.second;
                 if ( adr.first ) {
-                    ptcl_multi[i].push_back(FPHard(pp[id_loc]));
+                    ptcl_multi[i].push_back(FPH_t(pp[id_loc]));
                     ptcl_multi[i][j].copyList(NList[id_loc]);
                 } else {
-                    ptcl_multi[i].push_back(FPHard(ex_pp[id_loc]));
+                    ptcl_multi[i].push_back(FPH_t(ex_pp[id_loc]));
                     ptcl_multi[i][j].copyList(ex_NList[id_loc]);
                 }
                 if ( j==0 ) id_cluster = ptcl_multi[i][j].id_cluster;
@@ -337,7 +337,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             PS::S32 n_frag_tmp = 0;
             PS::F64 edisp_tmp   = 0.;
             PS::F64 edisp_d_tmp = 0.;
-            timeIntegrate_multi(ptcl_multi[i], 0., FPGrav::dt_tree,
+            timeIntegrate_multi(ptcl_multi[i], 0., FP_t::dt_tree,
                                 n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
             if ( n_col_tmp > 0 ){
 #pragma omp critical
@@ -364,11 +364,11 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 PS::S32 id_loc = adr.second;
                 if ( adr.first ) {
                     if ( !ptcl_multi[i][j].isDead ) assert ( pp[id_loc].id == ptcl_multi[i][j].id );
-                    pp[id_loc] = FPGrav(ptcl_multi[i][j]);
+                    pp[id_loc] = FP_t(ptcl_multi[i][j]);
                     pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
                 } else {
                     if ( !ptcl_multi[i][j].isDead ) assert ( ex_pp[id_loc].id == ptcl_multi[i][j].id );
-                    ex_pp[id_loc] = FPGrav(ptcl_multi[i][j]);
+                    ex_pp[id_loc] = FP_t(ptcl_multi[i][j]);
                     ex_pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
                 }
                 n_ptcl_loc ++;
@@ -380,16 +380,16 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             //#pragma omp parallel for reduction(+:n_ptcl_loc)
             //for ( PS::S32 i=0; i<list_iso.size(); i++ ){
 #ifndef WITHOUT_SUN
-            if ( pp[list_iso[i]].getEccentricity() < 0.8 && FPGrav::eps2 == 0. ){
-                timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+            if ( pp[list_iso[i]].getEccentricity() < 0.8 && FP_t::eps2 == 0. ){
+                timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
             } else {
-                FPHard pi = FPHard(pp[list_iso[i]]);
-                timeIntegrate_isolated(pi, 0., FPGrav::dt_tree);
+                FPH_t pi = FPH_t(pp[list_iso[i]]);
+                timeIntegrate_isolated(pi, 0., FP_t::dt_tree);
                 pi.resetTime();
-                pp[list_iso[i]] = FPGrav(pi);
+                pp[list_iso[i]] = FP_t(pi);
             }
 #else
-            freeMotion(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+            freeMotion(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
 #endif
             n_ptcl_loc ++;
 
@@ -443,10 +443,10 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
             PS::S32 id_loc = adr.second;
             if ( adr.first ) {
-                ptcl_multi[i].push_back(FPHard(pp[id_loc]));
+                ptcl_multi[i].push_back(FPH_t(pp[id_loc]));
                 ptcl_multi[i][j].copyList(NList[id_loc]);
             } else {
-                ptcl_multi[i].push_back(FPHard(ex_pp[id_loc]));
+                ptcl_multi[i].push_back(FPH_t(ex_pp[id_loc]));
                 ptcl_multi[i][j].copyList(ex_NList[id_loc]);
             }
             if ( j==0 ) id_cluster = ptcl_multi[i][j].id_cluster;
@@ -468,7 +468,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
         PS::F64 edisp_tmp   = 0.;
         PS::F64 edisp_d_tmp = 0.;
         std::vector<Collision> collision_list_tmp;
-        timeIntegrate_multi_omp(ptcl_multi[i], 0., FPGrav::dt_tree,
+        timeIntegrate_multi_omp(ptcl_multi[i], 0., FP_t::dt_tree,
                                 n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
         if ( n_col_tmp > 0 ){
             n_col  += n_col_tmp;
@@ -494,11 +494,11 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             PS::S32 id_loc = adr.second;
             if ( adr.first ) {
                 if ( !ptcl_multi[i][j].isDead ) assert ( pp[id_loc].id == ptcl_multi[i][j].id );
-                pp[id_loc] = FPGrav(ptcl_multi[i][j]);
+                pp[id_loc] = FP_t(ptcl_multi[i][j]);
                 pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
             } else {
                 if ( !ptcl_multi[i][j].isDead ) assert ( ex_pp[id_loc].id == ptcl_multi[i][j].id );
-                ex_pp[id_loc] = FPGrav(ptcl_multi[i][j]);
+                ex_pp[id_loc] = FP_t(ptcl_multi[i][j]);
                 ex_pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
             }
             n_ptcl_loc ++;
@@ -525,10 +525,10 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
                 PS::S32 id_loc = adr.second;
                 if ( adr.first ) {
-                    ptcl_multi[i].push_back(FPHard(pp[id_loc]));
+                    ptcl_multi[i].push_back(FPH_t(pp[id_loc]));
                     ptcl_multi[i][j].copyList(NList[id_loc]);
                 } else {
-                    ptcl_multi[i].push_back(FPHard(ex_pp[id_loc]));
+                    ptcl_multi[i].push_back(FPH_t(ex_pp[id_loc]));
                     ptcl_multi[i][j].copyList(ex_NList[id_loc]);
                 }
                 if ( j==0 ) id_cluster = ptcl_multi[i][j].id_cluster;
@@ -548,9 +548,9 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             PS::F64 edisp_tmp   = 0.;
             PS::F64 edisp_d_tmp = 0.;
             std::vector<Collision> collision_list_tmp;
-            //timeIntegrate_multi(ptcl_multi[i], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree, f,
+            //timeIntegrate_multi(ptcl_multi[i], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree, f,
             //                    n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
-            timeIntegrate_multi(ptcl_multi[i], 0., FPGrav::dt_tree,
+            timeIntegrate_multi(ptcl_multi[i], 0., FP_t::dt_tree,
                                 n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
             if ( n_col_tmp > 0 ){
 #pragma omp critical
@@ -577,11 +577,11 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                 PS::S32 id_loc = adr.second;
                 if ( adr.first ) {
                     if ( !ptcl_multi[i][j].isDead ) assert ( pp[id_loc].id == ptcl_multi[i][j].id );
-                    pp[id_loc] = FPGrav(ptcl_multi[i][j]);
+                    pp[id_loc] = FP_t(ptcl_multi[i][j]);
                     pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
                 } else {
                     if ( !ptcl_multi[i][j].isDead ) assert ( ex_pp[id_loc].id == ptcl_multi[i][j].id );
-                    ex_pp[id_loc] = FPGrav(ptcl_multi[i][j]);
+                    ex_pp[id_loc] = FP_t(ptcl_multi[i][j]);
                     ex_pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
                 }
                 n_ptcl_loc ++;
@@ -591,17 +591,17 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
         } else {
             PS::S32 i = ii - n_small;
 #ifndef WITHOUT_SUN
-            if ( pp[list_iso[i]].getEccentricity() < 0.8 && FPGrav::eps2 == 0. ){
-                timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+            if ( pp[list_iso[i]].getEccentricity() < 0.8 && FP_t::eps2 == 0. ){
+                timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
             } else {
-                FPHard pi = FPHard(pp[list_iso[i]]);
-                timeIntegrate_isolated(pi, 0., FPGrav::dt_tree);
-                //timeIntegrate_isolated(pi, (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+                FPH_t pi = FPH_t(pp[list_iso[i]]);
+                timeIntegrate_isolated(pi, 0., FP_t::dt_tree);
+                //timeIntegrate_isolated(pi, (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
                 pi.resetTime();
-                pp[list_iso[i]] = FPGrav(pi);
+                pp[list_iso[i]] = FP_t(pi);
             }
 #else
-            freeMotion(pp[list_iso[i]], (istep-1)*FPGrav::dt_tree, istep*FPGrav::dt_tree);
+            freeMotion(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
 #endif
             n_ptcl_loc ++;
 
