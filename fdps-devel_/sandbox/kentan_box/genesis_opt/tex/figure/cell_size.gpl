@@ -1,0 +1,11 @@
+set term post enh color eps 24
+
+set ylabel "Cumulative distribution function"
+set xlabel "# of particle in cell"
+set output "cell_size.eps"
+p "./data/cell_size.dat" u 1:($0/1960) not
+
+set xlabel "# of particle in cell"
+set ylabel "probabilitity distribution"
+set output "cell_size_dist.eps"
+p "./data/cell_size_dist.dat" u 1:($2/1960 ) not

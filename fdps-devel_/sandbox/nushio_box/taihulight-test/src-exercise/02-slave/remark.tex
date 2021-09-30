@@ -1,0 +1,45 @@
+The use of the CPE
+
+The most of the computational power of Sunway TaihuLight resides in the
+CPE(Computing Processing Element)s in the
+CG(core group)s.
+
+
+The MPE programs and the CPE programs must be compiled with
+the \verb`-host` flag and
+the \verb`-slave` flag, respectively.
+
+A
+\verb`-hybrid`
+flag is required when linking.
+
+We use the following syntax
+to declare a
+CPE function in the
+MPE program:
+
+
+\begin{code}
+extern SLAVE_FUN(func)();
+\end{code}
+
+And call it via
+\verb`athread_spawn`
+
+\begin{code}
+athread_spawn(func,0);
+athread_join();
+\end{code}
+
+The second argument, \verb`void *arg` of the
+\verb`athread_spawn` is the functional argument to \verb`func`.
+
+
+Use \verb`athread_get` and \verb`athread_put` to communicate data between the MPE and the CPE.
+
+
+
+
+%%%%
+
+We have created a program that uses both the MPE and the CPEs.

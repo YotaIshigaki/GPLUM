@@ -1,0 +1,31 @@
+// variable definition
+// F64vec, F32vec, ..., F64, F32, ..., S32, U32, ...,
+// F64mat, ..., 
+EPI F32vec xi:r
+EPI F32    si:sigma, ei:epsilon
+
+EPJ F32vec xj:r
+EPJ F32    sj:sigma, ej:epsilon
+static EPJ F32 eps:eps
+
+FORCE F32vec f //f:f
+FORCE F32    u //u:u
+
+F32 eps:eps
+
+// c++ syle function definition
+function F32vec dist(F32vec x){
+  return sqrt(x*x);
+}
+
+// ident without function is variable
+kernel:LJ
+dr  = xi - xj
+r2  = dr * dr
+eps = sqrt(ei * ej)
+sig = 0.5*(si + sj)
+tmp = sig^6 / r2^3
+if(r2 < 16.f && dr != 0.0){
+ f += 24 * eps * tmp * (2 * tmp - 1) * dr
+ u += 4 * eps * tmp * (tmp - 1)
+}

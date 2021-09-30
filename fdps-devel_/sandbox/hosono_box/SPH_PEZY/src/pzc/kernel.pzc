@@ -1,0 +1,155 @@
+#include <pzc_builtin.h>
+#include "../class_device.hpp"
+
+void pzc_DensityKernel(const int* const j_disp, const Dens::EpiDev* const epi, const Dens::EpjDev* const epj, Dens::ForceDev* force, const int n_total){
+	const int tid = get_tid();
+	const int pid = get_pid();
+	const int index_offset = pid * get_maxtid() + tid;
+	const int index_base   = get_maxtid() * get_maxpid();
+	const kernel_t kernel;
+
+	for(int i = index_offset ; i < n_total ; i += index_base){
+		double dens = 0.0;
+		const Dens::EpiDev& ith = epi[i];
+		const int id_walk = ith.id_walk;
+		const int j_head = j_disp[id_walk];
+		const int j_tail = j_disp[id_walk + 1];
+		for(int j = j_head ; j < j_tail ; ++ j){
+			const Dens::EpjDev& jth = epj[j];
+			const real drx = jth.rx - ith.rx;
+			const real dry = jth.ry - ith.ry;
+			const real drz = jth.rz - ith.rz;
+			const real r   = sqrt(drx * drx + dry * dry + drz * drz);
+			dens += jth.mass * kernel.W(r, ith.smth);
+		}
+		force[i].dens = dens;
+	}
+	flush();
+}
+
+void pzc_DerivativeKernel(const int* const j_disp, const Drvt::EpiDev* const epi, const Drvt::EpjDev* const epj, Drvt::ForceDev* force, const int n_total){
+	const int tid = get_tid();
+	const int pid = get_pid();
+	const int index_offset = pid * get_maxtid() + tid;
+	const int index_base   = get_maxtid() * get_maxpid();
+	const kernel_t kernel;
+
+	for(int i = index_offset ; i < n_total ; i += index_base){
+		force[i].div_v  = 0;
+		force[i].rot_vx = 0;
+		force[i].rot_vy = 0;
+		force[i].rot_vz = 0;
+		const Drvt::EpiDev& ith = epi[i];
+		const int id_walk = ith.id_walk;
+		const int j_head = j_disp[id_walk];
+		const int j_tail = j_disp[id_walk + 1];
+		for(int j = j_head ; j < j_tail ; ++ j){
+			const Drvt::EpjDev& jth = epj[j];
+			const real drx = jth.rx - ith.rx;
+			const real dry = jth.ry - ith.ry;
+			const real drz = jth.rz - ith.rz;
+			const real r   = sqrt(drx * drx + dry * dry + drz * drz);
+			const real dvx   = jth.vx - ith.vx;
+			const real dvy   = jth.vy - ith.vy;
+			const real dvz   = jth.vz - ith.vz;
+			if(r <= 0.0) continue;
+			const real drdv  = drx * dvx + dry * dvy + drz * dvz;
+			const real ith_abs_gradW = kernel.gradW(r, ith.smth);
+			force[i].div_v  += - jth.mass * drdv * ith_abs_gradW / r;
+			force[i].rot_vx += - jth.mass * (dry * dvz - drz * dvy) * ith_abs_gradW / r;
+			force[i].rot_vy += - jth.mass * (drz * dvx - drx * dvz) * ith_abs_gradW / r;
+			force[i].rot_vz += - jth.mass * (drx * dvy - dry * dvx) * ith_abs_gradW / r;
+		}
+		force[i].div_v  /= ith.dens;
+		force[i].rot_vx /= ith.dens;
+		force[i].rot_vy /= ith.dens;
+		force[i].rot_vz /= ith.dens;
+	}
+	flush();
+}
+
+
+void pzc_HydroKernel(const int* const j_disp, const Hydr::EpiDev* const epi, const Hydr::EpjDev* const epj, Hydr::ForceDev* force, const int n_total){
+	const int tid = get_tid();
+	const int pid = get_pid();
+	const int index_offset = pid * get_maxtid() + tid;
+	const int index_base   = get_maxtid() * get_maxpid();
+	const kernel_t kernel;
+
+	for(int i = index_offset ; i < n_total ; i += index_base){
+		force[i].ax = 0;
+		force[i].ay = 0;
+		force[i].az = 0;
+		force[i].eng_dot = 0;
+		force[i].dt = 1.0e+30;
+
+		const Hydr::EpiDev& ith = epi[i];
+		const int id_walk = ith.id_walk;
+		const int j_head = j_disp[id_walk];
+		const int j_tail = j_disp[id_walk + 1];
+		for(int j = j_head ; j < j_tail ; ++ j){
+			const Hydr::EpjDev& jth = epj[j];
+			const real drx   = jth.rx - ith.rx;
+			const real dry   = jth.ry - ith.ry;
+			const real drz   = jth.rz - ith.rz;
+			const real dvx   = jth.vx - ith.vx;
+			const real dvy   = jth.vy - ith.vy;
+			const real dvz   = jth.vz - ith.vz;
+			const real r     = sqrt(drx * drx + dry * dry + drz * drz);
+			if(r <= 0.0f) continue;
+			const real drdv  = drx * dvx + dry * dvy + drz * dvz;
+			const real w_ij  = (drdv < 0.0f) ? drdv / r : 0.0f;
+			const real v_sig = ith.snds + jth.snds - 3.0f * w_ij;
+			const real AV    = - 0.5f * v_sig * w_ij / (0.5f * (ith.dens + jth.dens)) * 0.5f * (ith.Bal + jth.Bal);
+			const real ith_abs_gradW = kernel.gradW(r, ith.smth);
+			const real jth_abs_gradW = kernel.gradW(r, jth.smth);
+			const real abs_gradW     = 0.5f * (ith_abs_gradW + jth_abs_gradW);
+			const real acc           = jth.mass * (ith.pres / (ith.dens * ith.dens) + jth.pres / (jth.dens * jth.dens) + AV);
+			force[i].ax += acc * abs_gradW * drx / r;
+			force[i].ay += acc * abs_gradW * dry / r;
+			force[i].az += acc * abs_gradW * drz / r;
+			force[i].eng_dot += jth.mass * (ith.pres / (ith.dens * ith.dens) + 0.5f * AV) * drdv * abs_gradW / r;
+			//force[i].dt = fmin(0.3 * 2.0 * ith.smth / v_sig, force[i].dt);
+			const double dt_loc = 0.3f * 2.0f * ith.smth / v_sig;
+			force[i].dt = (dt_loc < force[i].dt) ? dt_loc : force[i].dt;
+		}
+	}
+	flush();
+}
+
+void pzc_GravityKernel(const int* const j_disp, const Grav::EpiDev* const epi, const Grav::EpjDev* const epj, Grav::ForceDev* force, const int n_total){
+	const int tid = get_tid();
+	const int pid = get_pid();
+	const int index_offset = pid * get_maxtid() + tid;
+	const int index_base   = get_maxtid() * get_maxpid();
+	//typedef double vec4 __attribute__((ext_vector_type(4)));
+	for(int i = index_offset ; i < n_total ; i += index_base){
+		real ax, ay, az, pot;
+		ax = ay = az = pot = 0.0;
+		const Grav::EpiDev& ith = epi[i];
+		const int id_walk = ith.id_walk;
+		const int j_head = j_disp[id_walk];
+		const int j_tail = j_disp[id_walk + 1];
+		for(int j = j_head ; j < j_tail ; ++ j){
+			const Grav::EpjDev& jth = epj[j];
+			const real drx = jth.rx - ith.rx;
+			const real dry = jth.ry - ith.ry;
+			const real drz = jth.rz - ith.rz;
+			const real r2       = drx * drx + dry * dry + drz * drz + ith.eps2;
+			const real r_inv    = rsqrt(r2);
+			const real m_r_inv  = jth.mass * r_inv;
+			const real r2_inv   = r_inv * r_inv; 
+			const real m_r3_inv = m_r_inv * r2_inv; 
+			pot -= m_r_inv;
+			ax  += m_r3_inv * drx;
+			ay  += m_r3_inv * dry; 
+			az  += m_r3_inv * drz;
+		}
+		force[i].pot = pot;
+		force[i].ax  = ax;
+		force[i].ay  = ay;
+		force[i].az  = az;
+	}
+	flush();
+}
+

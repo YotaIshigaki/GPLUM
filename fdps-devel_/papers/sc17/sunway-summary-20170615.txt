@@ -1,0 +1,165 @@
+Summary of the current status of FDPS on TaihuLight
+
+                2016/06/16
+
+                 Jun Makino
+		 
+
+1. Background.
+
+The basic idea is to implement Barnes-Hut tree algorithm for
+gravitational N-body simulation. The parallelization method is the
+same as what was used for Ishiyama et al. (2012, Gordon Bell Prize
+winner), but the target problem is planetary ring, not cosmological
+dark matter halos.
+
+Domain decomposition is 3-D multisection (divide first in x, then y,
+and finally in z direction. In each division operation, domain size is
+chosen so that calculation time is balanced). Since the ring is very
+thin, we actually use 2D decomposition, not 3D.
+
+Essentially the same idea has been used for GPU-accelerated tree code
+(Hamada, Nitadori and others, 2009 Gordon Bell winner). In their code,
+the use of GPU is limited to interaction calculation, and all other
+operations, like
+
+--- tree construction
+--- handling of communication
+--- construction of "interaction list"
+
+are done on general-purpose host cpu.
+
+2. Our initial plan and status as of April
+
+In the case of GPU-accelerated clusters, it is sufficient to move
+only the interaction calculation kernel to GPU, but with TaihuLight,
+since the performance difference between MPE and CPEs is *much* larger
+than typical performance difference between CPU and GPU, we need new
+way to reduce the work of MPE. Our target problem is planetary
+ring. This means the timestep is relatively short, to resolve the
+physical collisions between ring particles, and particles do not move
+large distances in one timestep. (In the case of dark matter simulation,
+particles do move large distances.) Thus, it is not really necessary
+to construct the tree structure at each timestep, and with some
+safety/accuracy consideration, we can use same tree structure for
+32-64 timestep. In standard treecode, one timestep consists of
+
+1) domain decomposition
+2) particle exchange
+3) local tree construction
+4) LET (tree info for other processes) construction
+5) LET exchange
+6) global tree construction
+7) construction of interaction list
+8) force calculation using the interaction list
+9) integration of orbits of particles
+
+(steps 7 and 8 are usually combined)
+
+In our new method, 1-7 are done only in once in 32-64 steps. In steps
+where tree is reused, we do
+
+3') local tree physical quantities update
+4) LET exchange
+5') global tree physical quantities update
+8) force calculation using the interaction list
+9) integration of orbits of particles
+
+In steps 3' and 5', we calculate multipole moments of tree cells from
+those of their children. In step 4, updated physical data of LET are
+exchanged.
+
+The force kernel itself have achieved around 30% efficiency.
+
+Table 1 shows the total time and breakdown of calculation time per
+one timestep (averaged over both tree-constructing and reusing steps),
+for 65536 processes (1M particles per process)
+
+   Table 1 breakdown
+
+                    Apr   June
+total 	           0.869  0.474
+tree construction  0.142  0.0605
+list construction  0.0414 0.0308
+tree physic update 0.0709 0.0408 
+LET exchange       0.156  0.0485
+data copy          0.0320 0.0271
+misc               0.0517 0.004 
+interaction calc   0.375  0.256
+
+Let us look at the second column, the value as of Apr 15.
+Interaction calculation takes 0.375 sec, or around 40% of the total
+time. Tree construction and interaction list construction (done only
+once in every 32 timesteps) consumes 0.18 sec, still a fair fraction
+of time. 
+
+Table 2 shows the weak scaling result. We can see the weak scaling
+result is not ideal. Total time increases significantly as we increase
+the process count. The dominant reason for this bad scaling turned out
+to be LET exchange communication, whose time nearly tripled when we
+change process count from 32k to 128k
+
+  Table 2 performance scaling
+
+Apr result
+processes        32768   65536  131072
+time(sec)/step   0.722   0.869  0.876
+
+June result
+processes        32768   65536  96000
+time(sec)/step   0.450   0.474  0.475
+
+3. Problems identified and solutions.
+
+After some more detailed analysis of the timing breakdown of Apr 15
+result. we have identified quite a few problems:
+
+a) CPE kernel performance (around 30%) can still be improved
+b) there was relatively large load imbalance between CPEs
+c) there was also large  load imbalance between nodes. (Not quite
+   visible in the above summary)
+d) communication time, in particular for large processes, is very large
+e) performance of many simple operations like tree physics update can
+   be improved
+
+For (a), we reorder the interaction lists assigned to CPEs so that the
+load balance is improved (around 15% reduction of force calculation
+time)
+
+For (b), we (mainly Keigo and Long) rewrote the kernel and improved
+the performance. Currently performance is around 40% of the peak,
+around 30% improvement from Apr version.
+
+(a) and (b) combined gives the reduction from 0.375 to 0.256 sec
+
+For (c), some of the data moving procedure (using CPE) show very large
+time variation. We have changed the loop structure to fix the problem.
+
+For (d), this is the largest change we implemented. For ring
+simulation, domain decomposition in Cartesian coordinate is not ideal,
+and the domain geometry can be very bad (large aspect ratio). 
+
+We implemented domain decomposition not in Cartesian coordinate but in
+cylindrical coordinate. tree construction is also in 
+cylindrical coordinate, but actual interaction calculation is done in
+Cartesian. In this new algorithm, domains have all near square shape
+and communication performance become much more stable. Also, we added
+higher-level tree structure to further reduce global communication.
+(communication time reduced from 0.156 to 0.0485 sec)
+
+For (e), we moved many small operations to CPE and carefully
+studied what is the best possible way.
+
+4. Possibility of further improvement.
+
+We identify at least four more rooms for improvement
+
+a) CPE interaction kernel efficiency: another 20% or so
+b) tree construction: sorting should be moved to parallel sort on CPE.
+c) LET exchange communication: Current implementation turned out to be
+   sub-optimal. Maybe another factor of two or three?
+d) data copy (from LET exchange result to global tree): Already done
+   on  CPE but the use of DMA is not optimal.
+
+So we hope to achieve, in the best case,  0.05+0.03+0.03+0.02=0.13 sec
+reduction, from 0.47 sec to 0.34 sec, or efficiency of around 35%.

@@ -1,0 +1,221 @@
+\subsubsection{概要}
+
+本節ではFDPSで定義されている列挙型について記述する。列挙型には
+BOUNDARY\_CONDITION型とINTERACTION\_LIST\_MODE型が存在する。以下、各列
+挙型について記述する。
+
+\subsubsection{PS::BOUNDARY\_CONDITION型}
+\label{sec:datatype_enum_boundarycondition}
+
+\subsubsubsection{概要}
+
+BOUNDARY\_CONDITION型は境界条件を指定するためのデータ型である。これは
+以下のように定義されている。
+\begin{lstlisting}[caption=boundarycondition]
+namespace ParticleSimulator{
+    enum BOUNDARY_CONDITION{
+        BOUNDARY_CONDITION_OPEN,
+        BOUNDARY_CONDITION_PERIODIC_X,
+        BOUNDARY_CONDITION_PERIODIC_Y,
+        BOUNDARY_CONDITION_PERIODIC_Z,
+        BOUNDARY_CONDITION_PERIODIC_XY,
+        BOUNDARY_CONDITION_PERIODIC_XZ,
+        BOUNDARY_CONDITION_PERIODIC_YZ,
+        BOUNDARY_CONDITION_PERIODIC_XYZ,
+        BOUNDARY_CONDITION_SHEARING_BOX,
+        BOUNDARY_CONDITION_USER_DEFINED,
+    };
+}
+\end{lstlisting}
+
+以下にどの変数がどの境界条件に対応するかを記述する。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_OPEN}
+
+開放境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_X}
+
+x軸方向のみ周期境界、その他の軸方向は開放境界となる。周期の境界の下限
+は閉境界、上限は開境界となっている。この境界の規定はすべての軸方向にあ
+てはまる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_Y}
+
+y軸方向のみ周期境界、その他の軸方向は開放境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_Z}
+
+z軸方向のみ周期境界、その他の軸方向は開放境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_XY}
+
+x, y軸方向のみ周期境界、その他の軸方向は開放境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_XZ}
+
+x, z軸方向のみ周期境界、その他の軸方向は開放境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_YZ}
+
+y, z軸方向のみ周期境界、その他の軸方向は開放境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_PERIODIC\_XYZ}
+
+x, y, z軸方向すべてが周期境界となる。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_SHEARING\_BOX}
+
+未実装。
+
+\subsubsubsection{PS::BOUNDARY\_CONDITION\_USER\_DEFINED}
+
+未実装。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{PS::INTERACTION\_LIST\_MODE型}
+\label{sec:datatype_enum_interaction_list_mode}
+
+\subsubsubsection{概要}
+
+INTERACTION\_LIST\_MODE型は相互作用リストを再利用するかどうかを決定するためのデータ型である。これは以下のように定義されている。
+
+\begin{lstlisting}[caption=interaction\_list\_mode]
+namespace ParticleSimulator{
+    enum INTERACTION_LIST_MODE{
+        MAKE_LIST,
+        MAKE_LIST_FOR_REUSE,
+        REUSE_LIST,
+    };
+}
+\end{lstlisting}
+
+このデータ型はcalcForceAllAndWriteBack()等の関数の引数として使われる(詳しくはセクション\ref{sec:treeForForceHighLevelAPI}を参照)。
+
+\subsubsubsection{PS::MAKE\_LIST}
+相互作用リストを毎回作り相互作用計算を行う場合に用いる。FDPS は相互作
+用リストを記憶しないため、相互作用リストの再利用はできない。これはデフォ
+ルト動作である。
+
+
+\subsubsubsection{PS::MAKE\_LIST\_FOR\_REUSE}
+相互作用リストを再利用し相互作用計算を行いたい場合に用いる。このオプションを選択する事でFDPSは相互作用リストを作りそれを保持する。作成した相互作用リストはPS::MAKE\_LIST\_FOR\_REUSEもしくはPS::MAKE\_LISTを用いて相互作用計算を行った際に破棄される。
+
+\subsubsubsection{PS::REUSE\_INTERACTION\_LIST}
+相互作用リストを再利用し相互作用計算を行う。再利用される相互作用リスト
+は PS::MAKE\_LIST\_FOR\_REUSE を選択時に作成した相互作用リストである。
+この時、超粒子のモーメント情報は自動的にアップデートされる。
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{PS::EXCHANGE\_LET\_MODE型}
+\label{sec:datatype_enum_exchange_let_mode}
+
+\subsubsubsection{概要}
+
+EXCHANGE\_LET\_MODE型はLET交換の方法を決定するためのデータ型である。こ
+れは以下のように定義されている。
+
+\begin{lstlisting}[caption=EXCHANGE\_LET\_MODE]
+namespace ParticleSimulator{
+    enum EXCHANGE_LET_MODE{
+        EXCHANGE_LET_A2A,
+        EXCHANGE_LET_P2P_EXACT,
+        EXCHANGE_LET_P2P_FAST,
+    };
+}
+\end{lstlisting}
+
+このデータ型は{\tt PS::TreeForForce::setExchangeLet}の引数として使われる．
+(詳しくはセクション\ref{sec:module_standard_treeforce_setexchangeletmode}
+を参照)．
+
+\subsubsubsection{PS::EXCHANGE\_LET\_A2A}
+
+LETの交換に{\tt MPI\_Alltoall}を使用する。
+
+\subsubsubsection{PS::EXCHANGE\_LET\_P2P\_EXACT}
+
+LETの交換に{\tt MPI\_Alltoall}を使用せず、{\tt MPI\_Allgather}と{\tt
+MPI\_Isend/recv}を使用する。{\tt MPI\_Alltoall}が効率的に動かない計算
+機では、こちらの方が速い場合がある。結果は丸め誤差の範囲で
+PS::EXCHANGE\_LET\_A2Aを用いた場合と一致する。
+
+\subsubsubsection{EXCHANGE\_LET\_P2P\_FAST}
+
+LETの交換に{\tt MPI\_Alltoall}を使用せず、{\tt MPI\_Allgather}と{\tt
+MPI\_Isend/recv}を使用する。結果は{\tt PS::EXCHANGE\_LET\_P2P\_EXACT}
+を用いた場合と異なるが、より通信量が減っているため、高速に動作する可能
+性がある。
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{PS::CALC\_DISTANCE\_TYPE型}
+\label{sec:datatype_enum_calc_distance_type}
+
+\subsubsubsection{概要}
+
+{\tt CALC\_DISTANCE\_TYPE}型は粒子間の距離の計算方法を変更するための型
+である．
+
+\begin{lstlisting}[caption=CALC\_DISTANCE\_TYPE]
+namespace ParticleSimulator{
+    enum CALC_DISTANCE_TYPE{
+        CALC_DISTANCE_TYPE_NORMAL = 0,
+        CALC_DISTANCE_TYPE_NEAREST_X = 1,
+	CALC_DISTANCE_TYPE_NEAREST_Y = 2,
+        CALC_DISTANCE_TYPE_NEAREST_XY = 3,
+	CALC_DISTANCE_TYPE_NEAREST_Z = 4,
+	CALC_DISTANCE_TYPE_NEAREST_XZ = 5,
+	CALC_DISTANCE_TYPE_NEAREST_YZ = 6,
+	CALC_DISTANCE_TYPE_NEAREST_XYZ = 7,
+    };
+}
+\end{lstlisting}
+
+このデータ型は{\tt PS::TreeForForce}のテンプレート引数として与えられる．
+(セクション\ref{sec:module_standard_treeforce_object}を参照)．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NORMAL}
+
+領域内の粒子のL2ノルムを計算する．特に指定のない場合は、この値が使われる．
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_X}
+
+x方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．FDPS
+のx方向の境界条件が開放境界の場合でも、最近接粒子との距離を計算する。
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_Y}
+
+Y方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．FDPS
+のy方向の境界条件が開放境界の場合でも、最近接粒子との距離を計算する。
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_Z}
+
+Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．FDPS
+のz方向の境界条件が開放境界の場合でも、最近接粒子との距離を計算する。
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_XY}
+
+X,Y方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+FDPSのx,y方向の境界条件が開放境界の場合でも、最近接粒子との距離を計算
+する。
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_XZ}
+
+X,Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+FDPSのx,z方向の境界条件が開放境界の場合でも、最近接粒子との距離を計算す
+る。
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_YZ}
+
+Y,Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+FDPSのy,z方向の境界条件が開放境界の場合でも、最近接粒子との距離を計算
+する。
+
+\subsubsubsection{CALC\_DISTANCE\_TYPE\_NEAREST\_XYZ}
+
+X,Y,Z方向に周期境界だとした場合に最も近い粒子とのL2ノルムを計算する．
+FDPSのx,y,z方向の境界条件が開放境界の場合でも、最近接粒子との距離を計
+算する。

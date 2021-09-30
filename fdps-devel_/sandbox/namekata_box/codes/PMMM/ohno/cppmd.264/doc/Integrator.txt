@@ -1,0 +1,55 @@
+main loop of Integrator
+
+backup for SETTLE/SHAKE
+  backup_water_posvel
+    backup water position and velocity for Water Settle
+  backup_shake_posvel when shake
+    backup Hydrogen/HeveyAtom position and velocity for H-Hevy SHAKE
+
+T/P constraint
+  nose_hoover_pre/andersen_hoover_pre when reduction_step NVT
+    top half of nose hoover T control
+    update velocity, eta_pos/vel/force and ke_sum
+  andersen_hoover_pre when reduction_step NPT
+    top half of andersen hoover P control
+    update velocity, eta_pos/vel/force, logv_vel/force and ke_sum
+
+velocity verlet
+  velocity_verlet_pos_vel  when NVE,NVT
+    update position and velocity
+  velocity_verlet_npt_pos_vel  when NPT
+  
+SETTLE/RATTLE
+  settle.constrain_position
+  settle.rattle_position when shake
+
+move particle inter cell when move_step
+  move_top_half
+    select move out particle and move paticle inter own cells
+  check_move_over_and_rollback
+   check move-over/overflow and rollback
+  move_bottom_half
+    move particle inter node
+  check_move_over_and_rollback
+  backup_for_rollback
+    
+exchange particles for short-range direct sum
+  exchangeParticleArray when move step
+  exchangeParticleArray_onlyPosition when no move
+
+postprocess_after_exchangeparticle
+
+calcforce.calcForce
+
+exchangeForceArray when reaction-force
+
+velocity_verlet_velocity
+
+settle.constrain_velocity
+
+settle.rattle_velocity when shake
+
+reduce Ep,Ek,Virial reduction_step
+
+nose_hoover_post/andersen_hoover_post when reduction_step NVT/NPT
+

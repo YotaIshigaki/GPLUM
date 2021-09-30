@@ -1,0 +1,47 @@
+include ./mk_files/armagnac0.mk
+
+#----------------------------------------------------------------------
+#   Source and Object files
+#----------------------------------------------------------------------
+SRCS	= Physical_Constants.cpp \
+	  Simulation_Units.cpp \
+	  Calculation_Conditions.cpp \
+	  Particle_Class.cpp \
+	  Nbody_Objects_Class.cpp \
+	  Misc_Class.cpp \
+	  Initialize.cpp \
+	  Initial_Conditions.cpp \
+	  Error_Analysis.cpp \
+	  main.cpp
+OBJS	= $(SRCS:.cpp=.o)
+HDRS	= $(SRCS:.cpp=.h)
+
+TARGET = PMtest.x
+RESTART	= PMtest.x.rst
+
+$(TARGET): Makefile
+	./create_preprocess_keywords.pl initial_run
+	./check_undefined_macro.pl
+	make obj
+	mv $(TARGET) $(WORKDIR)
+
+restart: Makefile
+	./create_preprocess_keywords.pl restart_run
+	./check_undefined_macro.pl
+	make obj_rst
+	mv $(RESTART) $(WORKDIR)
+	cp ./scripts/make_restart_data.pl $(WORKDIR)
+	cp ./scripts/arrange_calc_info.pl $(WORKDIR)
+
+obj: Makefile $(OBJS) $(HDRS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(TARGET) $(LDFLAGS)
+
+obj_rst: Makefile $(OBJS) $(HDRS)
+	$(CXX) $(CXXFLAGS) $(OBJS) -o $(RESTART) $(LDFLAGS)
+
+%.o: %.cpp $(HDRS)
+	$(CXX) -c $< $(CXXFLAGS)
+
+clean:
+	rm -f $(TARGET) $(RESTART) *.o
+

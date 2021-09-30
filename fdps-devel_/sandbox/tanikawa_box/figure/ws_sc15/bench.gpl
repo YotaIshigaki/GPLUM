@@ -1,0 +1,82 @@
+set lmargin 7
+set rmargin 2
+set tmargin 2
+set bmargin 3
+
+set size ratio 1
+set size 0.5
+
+set term po eps enhanced font "TimesNewRoman"
+set output "tmp.eps"
+
+set multiplot
+dx=0.27
+dy=0.37
+
+set grid
+
+sinv=1e-9
+
+black="#000000"
+col00="#0000ff"        
+col01="#0080ff"
+col02="#00ffff"
+col03="#00ff80"
+col04="#00ff00"
+col05="#80ff00"
+col06="#ffff00"
+col07="#ff8000"
+col08="#ff0000"
+
+ncore=8
+
+#============================================
+
+set origin dx*0, dy*1
+
+set log x
+set xrange [1e1:1e6]
+set format x ""
+
+set log y
+set yrange [1e-2:1e4]
+set format y "10^{%T}"
+set ylabel "Performance [TFLOPS]"
+
+set key bottom right
+
+pl \
+"time_sph/time_GI.dat"       u ($1*8):($2*1e-3) w lp pt 5 ps 1 lt 1 lc 7 t "SPH K",\
+"xc30_sph/time.dat"          u 1:2              w lp pt 4 ps 1 lt 2 lc 7 t "SPH XC30",\
+"time_nbody/time.dat"        u ($1*8):($2*1e-3) w lp pt 7 ps 1 lt 1 lc 7 t "Nbody K",\
+"XC30/Nbody_Flops_Wtime.dat" u 1:2              w lp pt 6 ps 1 lt 2 lc 7 t "Nbody XC30"
+
+#"K/SPH_Flops_Wtime.dat"      u 1:2      w lp pt 5 ps 1 lt 1 lc 7 t "SPH K",\
+#"XC30/SPH_Flops_Wtime.dat"   u 1:2      w lp pt 4 ps 1 lt 2 lc 7 t "SPH XC30",\
+#"K/pl_bench_flops.log"       u ($1*8):2 w lp pt 7 ps 1 lt 1 lc 7 t "Nbody K",\
+#"XC30/Nbody_Flops_Wtime.dat" u 1:2      w lp pt 6 ps 1 lt 2 lc 7 t "Nbody XC30"
+
+
+#============================================
+
+set origin dx*0, dy*0
+
+set format x "10^{%T}"
+set xlabel "# of cores"
+
+set yrange [1e0:5e1]
+set format y "10^{%T}"
+set ylabel "Wallclock time [sec]"
+
+unset key
+
+pl \
+"time_sph/time_GI.dat"       u ($1*8):($3*0.25) w lp pt 5 ps 1 lt 1 lc 7 t "SPH K",\
+"xc30_sph/time.dat"          u 1:3              w lp pt 4 ps 1 lt 2 lc 7 t "SPH XC30",\
+"time_nbody/time.dat"        u ($1*8):($3*0.25) w lp pt 7 ps 1 lt 1 lc 7 t "Nbody K",\
+"XC30/Nbody_Flops_Wtime.dat" u 1:3              w lp pt 6 ps 1 lt 2 lc 7 t "Nbody XC30"
+
+#"K/SPH_Flops_Wtime.dat"      u 1:3      w lp pt 5 ps 1 lt 1 lc 7 t "SPH K",\
+#"XC30/SPH_Flops_Wtime.dat"   u 1:3      w lp pt 4 ps 1 lt 2 lc 7 t "SPH XC30",\
+#"K/pl2_bench_time.log"       u ($1*8):7 w lp pt 7 ps 1 lt 1 lc 7 t "Nbody K",\
+#"XC30/Nbody_Flops_Wtime.dat" u 1:3      w lp pt 6 ps 1 lt 2 lc 7 t "Nbody XC30"

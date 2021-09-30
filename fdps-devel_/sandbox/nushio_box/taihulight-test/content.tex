@@ -1,0 +1,952 @@
+\subsection{基本機能の確認}
+\subsubsection{やること}
+
+Sunwayで実行できる一番簡単なプログラムは、MPE
+(Management Processing Element)
+だけを使ったプログラムである。まずはMPEで走るプログラムを書いてみる。
+
+
+\subsubsection{ソースコード}
+以下のソースコードを実行した。
+
+\verb`src-exercise/01-master/src/Makefile`
+\begin{code}
+0MCC = swcc
+CC = sw5cc.new
+.PHONY:all run
+
+all: main.out
+
+CFLAGS = -O3 -msimd
+LIBFLAGS = -hybrid #-lslave -allshare
+
+main.out:master.o
+	$(CC) $(LIBFLAGS) master.o -o main.out
+
+master.o:master.c
+	$(CC) $(CFLAGS) -host -E master.c > master.e
+	$(CC) $(CFLAGS) -host -s master.c -o master.s
+	$(CC) $(CFLAGS) -host -c master.c -o master.o
+
+run:main.out Makefile
+	bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+
+\end{code}
+
+\verb`src-exercise/01-master/src/master.c`
+\begin{code}
+#include <stdio.h>
+#include <athread.h>
+#include <fcntl.h>
+#define N 4096
+
+
+//extern SLAVE_FUN(func)();
+
+double a[N];
+double b[N];
+double c[N];
+
+int main() {
+  int i;
+  printf("hello Sunway TaihuLight\n");
+
+  for (i=0; i<N;++i){
+    a[i] = i;
+    b[i] = i;
+  }
+
+  for (i=0; i<N;++i){
+    c[i] = a[i] * b[i];
+  }
+
+  for (i=1; i<N; i=2*i+1){
+    printf("%d^2 == %lf\n", i, c[i]);
+  }
+
+  return 0;
+}
+
+\end{code}
+
+\verb`src-exercise/01-master/src/run.sh`
+\begin{code}
+
+cd /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/01-master/src/
+make && make run
+    
+\end{code}
+
+\subsubsection{実行結果}
+
+次の実行結果を得た。
+
+\begin{code}
+# 2017-02-15 00:20:49.556760
+$ chmod 755 /home/nushio/hub/GB17/sunway-test/01-master/src/run.sh
+$ ssh sunway 'mkdir -p /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/01-master/src/'
+$ rsync -avz /home/nushio/hub/GB17/sunway-test/01-master/src/ sunway:/home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/01-master/src/
+sending incremental file list
+./
+Makefile
+run.sh
+
+sent 436 bytes  received 72 bytes  145.14 bytes/sec
+total size is 955  speedup is 1.88
+$ ssh sunway /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/01-master/src//run.sh
+make: `all' に対して行うべき事はありません.
+bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+Job <6419562> has been submitted to queue <q_sw_expr>
+waiting for dispatch ...
+hello Sunway TaihuLight
+1^2 == 1.000000
+3^2 == 9.000000
+7^2 == 49.000000
+15^2 == 225.000000
+31^2 == 961.000000
+63^2 == 3969.000000
+127^2 == 16129.000000
+255^2 == 65025.000000
+511^2 == 261121.000000
+1023^2 == 1046529.000000
+2047^2 == 4190209.000000
+4095^2 == 16769025.000000
+dispatching ...
+Job 6419562 has been finished.
+
+\end{code}
+
+\subsubsection{議論}
+
+MPEだけでプログラムを実行できた。
+
+
+\subsection{CPEの利用}
+\subsubsection{やること}
+
+Sunwayの演算力の主要部を担うのはCG(core group)あたり64個あるCPE(Computing Processing Element)である。
+
+MPEのプログラムは\verb`-host`,CPEのプログラムは\verb`-slave`フラグをつけてコンパイルする。両者をリンクするときは\verb`-hybrid`フラグをつける。
+
+MPEプログラムの方では、CPEの関数を次のマクロを使って宣言しておく必要がある。
+
+\begin{code}
+extern SLAVE_FUN(func)();
+\end{code}
+
+そして、CPEの関数を\verb`athread_spawn`関数を使って呼び出す。
+
+\begin{code}
+athread_spawn(func,0);
+athread_join();
+\end{code}
+
+\verb`athread_spawn`の２個めの引数は\verb`void *arg`で、funcに可変個の引数を渡せる仕組みになっている。ここではfuncに引数がないので、ヌルポインタを渡している。
+
+MPEとCPEの間のデータのやり取りは\verb`athread_get`と\verb`athread_put`を使う。
+
+
+
+
+\subsubsection{ソースコード}
+以下のソースコードを実行した。
+
+\verb`src-exercise/02-slave/src/Makefile`
+\begin{code}
+CC = sw5cc.new
+all: main.out
+
+CFLAGS = -O3 -msimd
+LIBFLAGS = -hybrid #-lslave -allshare
+
+main.out:master.o slave.o
+	$(CC) $(LIBFLAGS) master.o slave.o -o main.out
+
+master.o:master.c
+	$(CC) $(CFLAGS) -host -E master.c > master.e
+	#	$(CC) $(CFLAGS) -host -s master.c -o master.s
+	$(CC) $(CFLAGS) -host -c master.c -o master.o
+
+slave.o:slave.c
+	$(CC) $(CFLAGS) -slave -E slave.c > slave.e
+	#$(CC) $(CFLAGS) -slave -s slave.c -o slave.s
+	$(CC) $(CFLAGS) -slave -c slave.c -o slave.o
+
+run:
+	bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+
+core_functions.o: core_functions.S
+	$(CC) $(CFLAGS) -slave -c $^ -o $@
+
+\end{code}
+
+\verb`src-exercise/02-slave/src/master.c`
+\begin{code}
+#include <stdlib.h>
+#include <stdio.h>
+#include <athread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#define N 4096
+
+
+extern SLAVE_FUN(func)();
+
+double a[N];
+double b[N];
+double c[N];
+
+int main() {
+  int i;
+  printf("hello Sunway TaihuLight\n");
+
+  for (i=0; i<N;++i){
+    a[i] = i;
+    b[i] = i;
+  }
+
+  // for (i=0; i<N;++i){
+  //   c[i] = a[i] * b[i];
+  // }
+  athread_init();
+  athread_spawn(func,0);//fflush(NULL);
+  athread_join();
+
+  for (i=1; i<N; i=2*i+1){
+    printf("%d^2 == %lf\n", i, c[i]);
+  }
+  athread_halt();
+  return 0;
+}
+
+\end{code}
+
+\verb`src-exercise/02-slave/src/slave.c`
+\begin{code}
+#include <slave.h>
+#include <math.h>
+#include <dma.h>
+
+#define N 4096
+#define I 64
+
+__thread_local volatile unsigned long get_reply, put_reply;
+__thread_local int my_id;
+__thread_local double a_slave[I], b_slave[I], c_slave[I];
+extern double a[N], b[N], c[N];
+
+void func() {
+  int i;
+  my_id = athread_get_id(-1);
+  get_reply = 0;
+
+  athread_get(PE_MODE, &a[my_id*I], &a_slave[0],I*8,&get_reply,0,0,0);
+  athread_get(PE_MODE, &b[my_id*I], &b_slave[0],I*8,&get_reply,0,0,0);
+  while(get_reply!=2) {}
+
+  for(i=0;i<I;i++){
+    c_slave[i]=a_slave[i]*b_slave[i];
+  }
+
+  put_reply=0;
+  athread_put(PE_MODE,&c_slave[0],&c[my_id * I],I*8,&put_reply,0,0);
+  while(put_reply!=1) {}
+
+}
+
+\end{code}
+
+\verb`src-exercise/02-slave/src/run.sh`
+\begin{code}
+
+cd /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/02-slave/src/
+make && make run
+    
+\end{code}
+
+\subsubsection{実行結果}
+
+次の実行結果を得た。
+
+\begin{code}
+# 2017-02-14 20:29:33.736609
+$ chmod 755 /home/nushio/hub/GB17/sunway-test/02-slave/src/run.sh
+$ ssh sunway 'mkdir -p /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/02-slave/src/'
+$ rsync -avz /home/nushio/hub/GB17/sunway-test/02-slave/src/ sunway:/home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/02-slave/src/
+sending incremental file list
+./
+Makefile
+master.c
+run.sh
+slave.c
+
+sent 1,298 bytes  received 98 bytes  146.95 bytes/sec
+total size is 1,995  speedup is 1.43
+$ ssh sunway /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/02-slave/src//run.sh
+sw5cc.new -O3 -msimd -host -E master.c > master.e
+#	sw5cc.new -O3 -msimd -host -s master.c -o master.s
+sw5cc.new -O3 -msimd -host -c master.c -o master.o
+sw5cc.new -O3 -msimd -slave -E slave.c > slave.e
+#sw5cc.new -O3 -msimd -slave -s slave.c -o slave.s
+sw5cc.new -O3 -msimd -slave -c slave.c -o slave.o
+sw5cc.new -hybrid  master.o slave.o -o main.out
+bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+Job <6419252> has been submitted to queue <q_sw_expr>
+some node is sleeping, waiting for dispatch ...
+hello Sunway TaihuLight
+1^2 == 1.000000
+3^2 == 9.000000
+7^2 == 49.000000
+15^2 == 225.000000
+31^2 == 961.000000
+63^2 == 3969.000000
+127^2 == 16129.000000
+255^2 == 65025.000000
+511^2 == 261121.000000
+1023^2 == 1046529.000000
+2047^2 == 4190209.000000
+4095^2 == 16769025.000000
+dispatching ...
+Job 6419252 has been finished.
+
+\end{code}
+
+\subsubsection{議論}
+
+MPEからCPEへデータを転送し、プログラムを実行できた。
+
+
+\subsection{SIMD型の利用}
+\subsubsection{やること}
+
+Sunwayの性能を最大限に引き出しうる演算命令やコア間通信などの命令は、基本的にSIMD命令になっており、
+\verb`intv8`,
+\verb`doublev4`,
+\verb`floatv8`
+などの型を利用する。
+
+\verb`double` $\to$ \verb`doublev4`への型変換は
+ \verb`simd_load`,  \verb`simd_loadu`
+ などの専用命令を用いてもいいが、ポインタを読み替えるだけでいい。
+
+ SIMD型は演算子をオーバーロードしている。あるいは\verb`simd_vmad`等の命令もあるので、これらを用いて演算を行うこともできる。
+\begin{center}
+  \includegraphics[width=12cm]{figure/sunway-simd.png}
+  \end{center}
+
+\subsubsection{ソースコード}
+以下のソースコードを実行した。
+
+\verb`src-exercise/03-slave-vector/src/param.h`
+\begin{code}
+#define N 4096
+#define I 64
+#define Iv4 16
+
+\end{code}
+
+\verb`src-exercise/03-slave-vector/src/Makefile`
+\begin{code}
+CC = sw5cc.new
+all: main.out
+
+CFLAGS = -O3 -msimd
+LIBFLAGS = -hybrid #-lslave -allshare
+
+main.out:master.o slave.o
+	$(CC) $(LIBFLAGS) master.o slave.o -o main.out
+
+master.o:master.c
+	$(CC) $(CFLAGS) -host -E master.c > master.e
+	#	$(CC) $(CFLAGS) -host -s master.c -o master.s
+	$(CC) $(CFLAGS) -host -c master.c -o master.o
+
+slave.o:slave.c
+	$(CC) $(CFLAGS) -slave -E slave.c > slave.e
+	#$(CC) $(CFLAGS) -slave -s slave.c -o slave.s
+	$(CC) $(CFLAGS) -slave -c slave.c -o slave.o
+
+run:
+	bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+
+core_functions.o: core_functions.S
+	$(CC) $(CFLAGS) -slave -c $^ -o $@
+
+\end{code}
+
+\verb`src-exercise/03-slave-vector/src/master.c`
+\begin{code}
+#include <stdlib.h>
+#include <stdio.h>
+#include <athread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "param.h"
+
+extern SLAVE_FUN(func)();
+
+double a[N];
+double b[N];
+double c[N];
+
+int main() {
+  int i;
+  printf("hello Sunway TaihuLight\n");
+
+  for (i=0; i<N;++i){
+    a[i] = i;
+    b[i] = i;
+  }
+
+  // for (i=0; i<N;++i){
+  //   c[i] = a[i] * b[i];
+  // }
+  athread_init();
+  athread_spawn(func,0);//fflush(NULL);
+  athread_join();
+
+  for (i=1; i<N; i=2*i+1){
+    printf("%d^2 == %lf\n", i, c[i]);
+  }
+  athread_halt();
+  return 0;
+}
+
+\end{code}
+
+\verb`src-exercise/03-slave-vector/src/slave.c`
+\begin{code}
+#include <slave.h>
+#include <math.h>
+#include <dma.h>
+
+#include "param.h"
+
+__thread_local volatile unsigned long get_reply, put_reply;
+__thread_local doublev4 a_slave[Iv4], b_slave[Iv4], c_slave[Iv4];
+extern double a[N], b[N], c[N];
+
+void func() {
+  int i;
+  int my_id = athread_get_id(-1);
+  int cid = my_id%8, rid = my_id/8;
+
+  get_reply = 0;
+
+  athread_get(PE_MODE, &a[my_id*I], &a_slave[0],I*8,&get_reply,0,0,0);
+  athread_get(PE_MODE, &b[my_id*I], &b_slave[0],I*8,&get_reply,0,0,0);
+  while(get_reply!=2) {}
+
+  for(i=0;i<Iv4;i++){
+    c_slave[i]=a_slave[i]*b_slave[i];
+  }
+
+  put_reply=0;
+  athread_put(PE_MODE,&c_slave[0],&c[my_id * I],I*8,&put_reply,0,0);
+  while(put_reply!=1) {}
+
+}
+
+\end{code}
+
+\verb`src-exercise/03-slave-vector/src/run.sh`
+\begin{code}
+
+cd /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/03-slave-vector/src/
+make && make run
+    
+\end{code}
+
+\subsubsection{実行結果}
+
+次の実行結果を得た。
+
+\begin{code}
+# 2017-02-14 13:05:28.457861
+$ chmod 755 /home/nushio/hub/GB17/sunway-test/03-slave-vector/src/run.sh
+$ ssh sunway 'mkdir -p /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/03-slave-vector/src/'
+$ rsync -avz /home/nushio/hub/GB17/sunway-test/03-slave-vector/src/ sunway:/home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/03-slave-vector/src/
+sending incremental file list
+./
+Makefile
+master.c
+param.h
+run.sh
+slave.c
+
+sent 1,385 bytes  received 117 bytes  429.14 bytes/sec
+total size is 2,064  speedup is 1.37
+$ ssh sunway /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/03-slave-vector/src//run.sh
+sw5cc.new -O3 -msimd -host -E master.c > master.e
+#	sw5cc.new -O3 -msimd -host -s master.c -o master.s
+sw5cc.new -O3 -msimd -host -c master.c -o master.o
+sw5cc.new -O3 -msimd -slave -E slave.c > slave.e
+#sw5cc.new -O3 -msimd -slave -s slave.c -o slave.s
+sw5cc.new -O3 -msimd -slave -c slave.c -o slave.o
+sw5cc.new -hybrid  master.o slave.o -o main.out
+bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+Job <6418407> has been submitted to queue <q_sw_expr>
+some node is sleeping, waiting for dispatch ...
+hello Sunway TaihuLight
+1^2 == 1.000000
+3^2 == 9.000000
+7^2 == 49.000000
+15^2 == 225.000000
+31^2 == 961.000000
+63^2 == 3969.000000
+127^2 == 16129.000000
+255^2 == 65025.000000
+511^2 == 261121.000000
+1023^2 == 1046529.000000
+2047^2 == 4190209.000000
+4095^2 == 16769025.000000
+dispatching ...
+Job 6418407 has been finished.
+
+\end{code}
+
+\subsubsection{議論}
+
+ さきほどの計算を、
+CPEでSIMD型とSIMD演算を用いて実行できた。
+
+
+\subsection{CPE間の通信}
+\subsubsection{やること}
+
+CPE間は、行方向または列方向にデータを送ることができる。
+\verb`simd_putr`または
+\verb`simd_putc`で送信、
+\verb`simd_getr`または
+\verb`simd_getc`で受信できる。
+
+\verb`simd_putr`
+\verb`simd_putc`
+の第二引数は(0...7)で、これは宛先の行または列を指定する。8を指定するとブロードキャストになる。
+
+
+
+\subsubsection{ソースコード}
+以下のソースコードを実行した。
+
+\verb`src-exercise/04-slave-comm/src/param.h`
+\begin{code}
+#define N 256
+#define I 4
+#define Iv4 1
+
+\end{code}
+
+\verb`src-exercise/04-slave-comm/src/Makefile`
+\begin{code}
+CC = sw5cc.new
+all: main.out
+
+CFLAGS = -O3 -msimd
+LIBFLAGS = -hybrid #-lslave -allshare
+
+main.out:master.o slave.o
+	$(CC) $(LIBFLAGS) master.o slave.o -o main.out
+
+master.o:master.c
+	$(CC) $(CFLAGS) -host -E master.c > master.e
+	#	$(CC) $(CFLAGS) -host -s master.c -o master.s
+	$(CC) $(CFLAGS) -host -c master.c -o master.o
+
+slave.o:slave.c
+	$(CC) $(CFLAGS) -slave -E slave.c > slave.e
+	#$(CC) $(CFLAGS) -slave -s slave.c -o slave.s
+	$(CC) $(CFLAGS) -slave -c slave.c -o slave.o
+
+run:
+	bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+
+core_functions.o: core_functions.S
+	$(CC) $(CFLAGS) -slave -c $^ -o $@
+
+\end{code}
+
+\verb`src-exercise/04-slave-comm/src/master.c`
+\begin{code}
+#include <stdlib.h>
+#include <stdio.h>
+#include <athread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "param.h"
+
+extern SLAVE_FUN(move_r)();
+extern SLAVE_FUN(move_c)();
+
+double a[N];
+double b[N];
+double c[N];
+
+int main() {
+  int i;
+  athread_init();
+
+  for (i=0; i<N;++i){
+    a[i] = i/4;
+    b[i] = i/4;
+  }
+
+  printf("before:");
+  for (i=0; i<N; i++){
+    if(i%4==0) printf(" ");
+    if(i%32==0) printf("\n");
+    printf("%2.0lf", a[i]);
+  }
+  printf("\n");
+
+  athread_spawn(move_r,0);
+  athread_join();
+
+  printf("after move_r:");
+  for (i=0; i<N; i++){
+    if(i%4==0) printf(" ");
+    if(i%32==0) printf("\n");
+    printf("%2.0lf", c[i]);
+  }
+  printf("\n");
+
+  athread_spawn(move_c,0);
+  athread_join();
+
+  printf("after move_c:");
+  for (i=0; i<N; i++){
+    if(i%4==0) printf(" ");
+    if(i%32==0) printf("\n");
+    printf("%2.0lf", c[i]);
+  }
+  printf("\n");
+
+  athread_halt();
+  return 0;
+}
+
+\end{code}
+
+\verb`src-exercise/04-slave-comm/src/slave.c`
+\begin{code}
+#include <slave.h>
+#include <math.h>
+#include <dma.h>
+
+#include "param.h"
+
+__thread_local volatile unsigned long get_reply, put_reply;
+__thread_local doublev4 a_slave[Iv4], b_slave[Iv4], c_slave[Iv4];
+extern double a[N], b[N], c[N];
+
+void move_r() {
+  int i;
+  int my_id = athread_get_id(-1);
+  int cid = my_id%8, rid = my_id/8;
+
+  get_reply = 0;
+
+  athread_get(PE_MODE, &a[my_id*I], &a_slave[0],I*8,&get_reply,0,0,0);
+  athread_get(PE_MODE, &b[my_id*I], &b_slave[0],I*8,&get_reply,0,0,0);
+  while(get_reply!=2) {}
+
+  simd_putr(a_slave[0], (cid+1)%8);
+  c_slave[0] = simd_getr(c_slave[0]);
+
+  put_reply=0;
+  athread_put(PE_MODE,&c_slave[0],&c[my_id * I],I*8,&put_reply,0,0);
+  while(put_reply!=1) {}
+
+}
+
+void move_c() {
+  int i;
+  int my_id = athread_get_id(-1);
+  int cid = my_id%8, rid = my_id/8;
+
+  get_reply = 0;
+
+  athread_get(PE_MODE, &a[my_id*I], &a_slave[0],I*8,&get_reply,0,0,0);
+  athread_get(PE_MODE, &b[my_id*I], &b_slave[0],I*8,&get_reply,0,0,0);
+  while(get_reply!=2) {}
+
+  simd_putc(b_slave[0], (rid*3)%8);
+  c_slave[0] = simd_getc(c_slave[0]);
+
+  put_reply=0;
+  athread_put(PE_MODE,&c_slave[0],&c[my_id * I],I*8,&put_reply,0,0);
+  while(put_reply!=1) {}
+
+}
+
+\end{code}
+
+\verb`src-exercise/04-slave-comm/src/run.sh`
+\begin{code}
+
+cd /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/04-slave-comm/src/
+make && make run
+    
+\end{code}
+
+\subsubsection{実行結果}
+
+次の実行結果を得た。
+
+\begin{code}
+# 2017-02-15 00:36:05.867609
+$ chmod 755 /home/nushio/hub/GB17/sunway-test/04-slave-comm/src/run.sh
+$ ssh sunway 'mkdir -p /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/04-slave-comm/src/'
+$ rsync -avz /home/nushio/hub/GB17/sunway-test/04-slave-comm/src/ sunway:/home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/04-slave-comm/src/
+sending incremental file list
+./
+master.c
+run.sh
+
+sent 532 bytes  received 78 bytes  135.56 bytes/sec
+total size is 2,906  speedup is 4.76
+$ ssh sunway /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/04-slave-comm/src//run.sh
+sw5cc.new -O3 -msimd -host -E master.c > master.e
+#	sw5cc.new -O3 -msimd -host -s master.c -o master.s
+sw5cc.new -O3 -msimd -host -c master.c -o master.o
+sw5cc.new -hybrid  master.o slave.o -o main.out
+bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+Job <6419585> has been submitted to queue <q_sw_expr>
+waiting for dispatch ...
+before: 
+ 0 0 0 0  1 1 1 1  2 2 2 2  3 3 3 3  4 4 4 4  5 5 5 5  6 6 6 6  7 7 7 7 
+ 8 8 8 8  9 9 9 9 10101010 11111111 12121212 13131313 14141414 15151515 
+16161616 17171717 18181818 19191919 20202020 21212121 22222222 23232323 
+24242424 25252525 26262626 27272727 28282828 29292929 30303030 31313131 
+32323232 33333333 34343434 35353535 36363636 37373737 38383838 39393939 
+40404040 41414141 42424242 43434343 44444444 45454545 46464646 47474747 
+48484848 49494949 50505050 51515151 52525252 53535353 54545454 55555555 
+56565656 57575757 58585858 59595959 60606060 61616161 62626262 63636363
+after move_r: 
+ 7 7 7 7  0 0 0 0  1 1 1 1  2 2 2 2  3 3 3 3  4 4 4 4  5 5 5 5  6 6 6 6 
+15151515  8 8 8 8  9 9 9 9 10101010 11111111 12121212 13131313 14141414 
+23232323 16161616 17171717 18181818 19191919 20202020 21212121 22222222 
+31313131 24242424 25252525 26262626 27272727 28282828 29292929 30303030 
+39393939 32323232 33333333 34343434 35353535 36363636 37373737 38383838 
+47474747 40404040 41414141 42424242 43434343 44444444 45454545 46464646 
+55555555 48484848 49494949 50505050 51515151 52525252 53535353 54545454 
+63636363 56565656 57575757 58585858 59595959 60606060 61616161 62626262
+after move_c: 
+ 0 0 0 0  1 1 1 1  2 2 2 2  3 3 3 3  4 4 4 4  5 5 5 5  6 6 6 6  7 7 7 7 
+24242424 25252525 26262626 27272727 28282828 29292929 30303030 31313131 
+48484848 49494949 50505050 51515151 52525252 53535353 54545454 55555555 
+ 8 8 8 8  9 9 9 9 10101010 11111111 12121212 13131313 14141414 15151515 
+32323232 33333333 34343434 35353535 36363636 37373737 38383838 39393939 
+56565656 57575757 58585858 59595959 60606060 61616161 62626262 63636363 
+16161616 17171717 18181818 19191919 20202020 21212121 22222222 23232323 
+40404040 41414141 42424242 43434343 44444444 45454545 46464646 47474747
+dispatching ...
+Job 6419585 has been finished.
+
+\end{code}
+
+\subsubsection{議論}
+
+
+\verb`simd_putr`を使うと行方向に
+\verb`simd_putc`を使うと列方向にデータを移動できた。
+
+
+\subsection{SIMD型の利用}
+\subsubsection{やること}
+
+Sunwayの性能を最大限に引き出しうる演算命令やコア間通信などの命令は、基本的にSIMD命令になっており、
+\verb`intv8`,
+\verb`doublev4`,
+\verb`floatv8`
+などの型を利用する。
+
+\verb`double` $\to$ \verb`doublev4`への型変換は
+ \verb`simd_load`,  \verb`simd_loadu`
+ などの専用命令を用いてもいいが、ポインタを読み替えるだけでいい。
+
+ SIMD型は演算子をオーバーロードしている。あるいは\verb`simd_vmad`等の命令もあるので、これらを用いて演算を行うこともできる。
+\begin{center}
+  \includegraphics[width=12cm]{figure/sunway-simd.png}
+  \end{center}
+
+\subsubsection{ソースコード}
+以下のソースコードを実行した。
+
+\verb`src-exercise/05-slave-sqrt/src/param.h`
+\begin{code}
+#define N 4096
+#define I 64
+#define Iv4 16
+
+\end{code}
+
+\verb`src-exercise/05-slave-sqrt/src/Makefile`
+\begin{code}
+CC = sw5cc.new
+all: main.out
+
+CFLAGS = -O3 -msimd
+LIBFLAGS = -hybrid #-lslave -allshare
+
+main.out:master.o slave.o
+	$(CC) $(LIBFLAGS) master.o slave.o -o main.out
+
+master.o:master.c
+	$(CC) $(CFLAGS) -host -E master.c > master.e
+	#	$(CC) $(CFLAGS) -host -s master.c -o master.s
+	$(CC) $(CFLAGS) -host -c master.c -o master.o
+
+slave.o:slave.c
+	$(CC) $(CFLAGS) -slave -E slave.c > slave.e
+	#$(CC) $(CFLAGS) -slave -s slave.c -o slave.s
+	$(CC) $(CFLAGS) -slave -c slave.c -o slave.o
+
+run:
+	bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+
+core_functions.o: core_functions.S
+	$(CC) $(CFLAGS) -slave -c $^ -o $@
+
+\end{code}
+
+\verb`src-exercise/05-slave-sqrt/src/master.c`
+\begin{code}
+#include <stdlib.h>
+#include <stdio.h>
+#include <athread.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
+#include "param.h"
+
+extern SLAVE_FUN(func)();
+
+double a[N];
+double b[N];
+double c[N];
+
+int main() {
+  int i;
+  printf("hello Sunway TaihuLight\n");
+
+  for (i=0; i<N;++i){
+    a[i] = i;
+    b[i] = i;
+  }
+
+  // for (i=0; i<N;++i){
+  //   c[i] = a[i] * b[i];
+  // }
+  athread_init();
+  athread_spawn(func,0);//fflush(NULL);
+  athread_join();
+
+  for (i=1; i<N; i=2*i+1){
+    printf("%d^2 == %lf\n", i, c[i]);
+  }
+  athread_halt();
+  return 0;
+}
+
+\end{code}
+
+\verb`src-exercise/05-slave-sqrt/src/slave.c`
+\begin{code}
+#include <slave.h>
+#include <math.h>
+#include <dma.h>
+
+#include "param.h"
+
+__thread_local volatile unsigned long get_reply, put_reply;
+__thread_local doublev4 a_slave[Iv4], b_slave[Iv4], c_slave[Iv4];
+extern double a[N], b[N], c[N];
+
+void func() {
+  int i;
+  int my_id = athread_get_id(-1);
+  int cid = my_id%8, rid = my_id/8;
+
+  get_reply = 0;
+
+  athread_get(PE_MODE, &a[my_id*I], &a_slave[0],I*8,&get_reply,0,0,0);
+  athread_get(PE_MODE, &b[my_id*I], &b_slave[0],I*8,&get_reply,0,0,0);
+  while(get_reply!=2) {}
+
+  for(i=0;i<Iv4;i++){
+    c_slave[i]=a_slave[i]*b_slave[i];
+  }
+
+  put_reply=0;
+  athread_put(PE_MODE,&c_slave[0],&c[my_id * I],I*8,&put_reply,0,0);
+  while(put_reply!=1) {}
+
+}
+
+\end{code}
+
+\verb`src-exercise/05-slave-sqrt/src/run.sh`
+\begin{code}
+
+cd /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/
+make && make run
+    
+\end{code}
+
+\subsubsection{実行結果}
+
+次の実行結果を得た。
+
+\begin{code}
+# 2017-02-15 13:46:19.548559
+$ chmod 755 /home/nushio/hub/FDPS/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/run.sh
+$ ssh sunway 'mkdir -p /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/'
+$ rsync -avz /home/nushio/hub/FDPS/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/ sunway:/home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src/
+sending incremental file list
+run.sh
+
+sent 173 bytes  received 40 bytes  28.40 bytes/sec
+total size is 2,062  speedup is 9.68
+$ ssh sunway /home/export/base/nsccwuxi_riken/riken/online1/sandbox/nushio_box/sunway-test/05-slave-sqrt/src//run.sh
+sw5cc.new -O3 -msimd -host -E master.c > master.e
+#	sw5cc.new -O3 -msimd -host -s master.c -o master.s
+sw5cc.new -O3 -msimd -host -c master.c -o master.o
+sw5cc.new -O3 -msimd -slave -E slave.c > slave.e
+#sw5cc.new -O3 -msimd -slave -s slave.c -o slave.s
+sw5cc.new -O3 -msimd -slave -c slave.c -o slave.o
+sw5cc.new -hybrid  master.o slave.o -o main.out
+bsub -I -b -q q_sw_expr -n 1 -cgsp 64 -share_size 4096 -host_stack 128 ./main.out
+Job <6420164> has been submitted to queue <q_sw_expr>
+waiting for dispatch ...
+hello Sunway TaihuLight
+1^2 == 1.000000
+3^2 == 9.000000
+7^2 == 49.000000
+15^2 == 225.000000
+31^2 == 961.000000
+63^2 == 3969.000000
+127^2 == 16129.000000
+255^2 == 65025.000000
+511^2 == 261121.000000
+1023^2 == 1046529.000000
+2047^2 == 4190209.000000
+4095^2 == 16769025.000000
+dispatching ...
+Job 6420164 has been finished.
+
+\end{code}
+
+\subsubsection{議論}
+
+ さきほどの計算を、
+CPEでSIMD型とSIMD演算を用いて実行できた。
+
+

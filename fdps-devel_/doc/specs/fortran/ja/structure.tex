@@ -1,0 +1,13 @@
+この文書は大規模並列粒子シミュレーションの開発を支援するFramework for
+Developing Particle Simulator (FDPS)のFortran 及び C言語 インターフェース(以降、単にFortran/C言語インターフェースと略記する)の仕様書である。この文書は理化学研究所計算科学研究センター粒子系シミュレータ研究チームの行方大輔、岩澤全規、似鳥啓吾、谷川衝、細野七月、村主崇行、Long Wang、牧野淳一郎によって記述された。
+
+
+この文書は以下のような構成となっている。
+
+第\ref{chap:overview}、\ref{chap:file_str_and_ftn_if_overview}、\ref{chap:compile_and_macro}章には、FDPS Fortran/C言語 インターフェースを使ってプログラムを書く際に前提となる情報が記述されている。第\ref{chap:overview}章には、FDPSの概要として、FDPSの基本的な考えかたや動作が記述されている。第\ref{chap:file_str_and_ftn_if_overview}章には、FDPS Fortran/C言語 インターフェースのファイル構成とその概要が記述されている。第\ref{chap:compile_and_macro}章には、FDPS Fortran/C言語 インターフェースを使用したコードをコンパイルする時にどのようなマクロを用いればよいかが記述されている。
+
+第\ref{chap:data_types}、\ref{chap:user_defined}、\ref{chap:API_spec_list}章には、FDPS Fortran/C言語 インターフェースを使ってプログラムを書く際に必要となる情報が提供されている。第\ref{chap:data_types}章には、FDPSで独自に定義されている派生データ型(Fortran)、或いは、構造体(C言語)が記述されている。第\ref{chap:user_defined}には、FDPSのAPIを使用する際にユーザーが定義する必要があるFortranの派生データ型やサブルーチン(C言語では構造体や関数)について記述されている。第\ref{chap:API_spec_list}章には、Fortran、或いは、C言語からFDPSを操作するためのAPIについて記述されている。
+
+第\ref{chap:error_messages}、\ref{chap:limitation}章には、FDPSのAPIを使用したコードを記述したがコードが思ったように動作しない場合に有用な情報が記載されている。第\ref{chap:error_messages}章にはエラーメッセージが記述されている。第\ref{chap:limitation}章には、FDPSの限界について記述されている。
+
+最後に第\ref{chap:change_log}章にはこの文書の変更履歴が記述されている。

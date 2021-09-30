@@ -1,0 +1,33 @@
+#
+# Makefile for amanogawa smp machines.
+#
+
+
+COMPILER="gcc"
+
+CC = /home/opt/mpich2-1.0.4p1/bin/mpicc
+
+OPTIMIZE = -std=c99
+
+OPTIMIZE += -O3 -finline-functions -ffast-math -funroll-loops -frerun-cse-after-loop -fexpensive-optimizations -fomit-frame-pointer -mfpmath=sse -fprefetch-loop-arrays
+#OPTIMIZE += -O3 -finline-functions -ffast-math -funroll-loops -frerun-cse-after-loop -fexpensive-optimizations -fomit-frame-pointer -msse3 -m64 -mcpu=nocona -march=nocona -mfpmath=sse
+#OPTIMIZE += -finline-functions -ffast-math -funroll-loops -frerun-cse-after-loop -fexpensive-optimizations -fomit-frame-pointer -mfpmath=sse
+#OPTIMIZE += -finline-functions -funroll-loops -frerun-cse-after-loop -msse3 -m64 -mcpu=nocona -march=nocona -mfpmath=sse 
+OPTIMIZE += -Winline -Wundef -Wmissing-noreturn -Wstrict-prototypes 
+#OPTIMIZE += -mpitrace 
+#OPTIMIZE += -fprofile-arcs -ftest-coverage  # for gcov
+#OPTIMIZE += -Ooo # Oracular Optimization
+
+#OPTIMIZE += -pg 
+OPTIMIZE += -g 
+
+GRAPE="PHANTOM_GRAPE"
+INCLUDEPATH += -I/home/localuser/saitoh/lib/phantom_limited
+INCLUDEPATH += -I/home/opt/gsl/include 
+OPTIONS += -DHAVE_PHANTOM_GRAPE
+LDFLAGS += -L/home/localuser/saitoh/lib/phantom_limited -lpg5
+LDFLAGS += -L/home/opt/gsl/lib -lgsl -lgslcblas 
+
+LDFLAGS += -lefence 
+#setenv EF_PROTECT_BELOW 1
+#setenv EF_ALIGNMENT 0

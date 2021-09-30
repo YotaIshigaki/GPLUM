@@ -1,0 +1,121 @@
+\documentclass[10pt,onecolumn,a4paper,fleqn]{article}
+%\documentclass[10pt,twocolumn,a4paper,fleqn]{article}
+
+%%%%% AUTHORS - PLACE YOUR OWN PACKAGES HERE %%%%%
+\usepackage[x11names,table]{xcolor}
+\usepackage{moresize}
+\usepackage{minted}
+\usepackage{mdframed}
+\usepackage{caption}
+
+%%% minted setting %%%
+\setminted{fontsize=\ssmall,baselinestretch=1}
+%\setminted{fontsize=\fontsize{6.25}{7.25}\selectfont,baselinestretch=1}
+
+%%% Page size setting %%%
+\topmargin=0mm
+\oddsidemargin=-5mm
+\evensidemargin=-5mm
+%\textheight=222mm
+\textheight=210mm
+%\textheight=150mm
+\textwidth=165mm
+
+
+% Beginning of document
+\begin{document}
+\pagenumbering{gobble}
+
+%TODO: コードが1ページ以内に収まるように最低限の部分だけを残す。
+\definecolor{bg}{rgb}{0.95,0.95,0.95}
+\begin{mdframed}[
+    backgroundcolor=bg,
+    topline=false,
+    bottomline=false,
+    leftline=false,
+    rightline=false]
+  %\begin{minted}{cpp}
+  \begin{minted}[fontfamily=courier,linenos=true, breaklines]{cpp}
+PS::S32 DispatchKernelIndexStream2(const PS::S32 tag,
+                                   const PS::S32 n_walk,
+                                   const EPI *epi[],
+                                   const PS::S32 *n_epi,
+                                   const PS::S32 *id_epj[],
+                                   const PS::S32 *n_epj,
+                                   const PS::S32 *id_spj[],
+                                   const PS::S32 *n_spj,
+                                   const EPJ *epj,
+                                   const PS::S32 n_epj_tot,
+                                   const PS::SPJMonopole *spj,
+                                   const PS::S32 n_spj_tot,
+                                   const bool send_flag){
+  if(send_flag==true){
+    H2dJptcl(epj, n_epj_tot, epj_h, epj_d);
+    H2dJptcl(spj, n_spj_tot, epj_h, epj_d, n_epj_tot);
+    for(int i=0; i<N_STREAM; i++){
+      ID_EPJ_GLB_OFFSET[i] = 0;
+    }
+    return 0;
+  }
+  const int n_walk_ave = n_walk/N_STREAM;
+  for(int id_stream=0; id_stream<N_STREAM; id_stream++){
+    const int n_walk_in_stream = n_walk_ave + ((id_stream < n_walk%N_STREAM) ? 1 : 0);
+    const int id_walk_head = n_walk_ave*id_stream + std::min(id_stream, n_walk%N_STREAM);
+    ij_disp_h[id_stream][0].x = 0;
+    ij_disp_h[id_stream][0].y = ID_EPJ_GLB_OFFSET[id_stream];
+    for(int iw=0; iw<n_walk_in_stream; iw++){
+      const int iw_src = iw + id_walk_head;
+      ij_disp_h[id_stream][iw+1].x = ij_disp_h[id_stream][iw].x +  n_epi[iw_src];
+      ij_disp_h[id_stream][iw+1].y = ij_disp_h[id_stream][iw].y + (n_epj[iw_src]+n_spj[iw_src]);
+    }
+    ij_disp_h[id_stream][n_walk_in_stream+1] = ij_disp_h[id_stream][n_walk_in_stream];
+    ij_disp_h[id_stream].htod(n_walk_in_stream+2, stream[id_stream]);
+    cudaMemcpyAsync(ij_disp_d[id_stream], ij_disp_h[id_stream], (n_walk_in_stream+2)*sizeof(int), cudaMemcpyHostToDevice, stream[id_stream]);    
+    int ni_tot_reg = ij_disp_h[id_stream][n_walk_in_stream].x;
+    ni_tot_reg = ((ni_tot_reg-1)/N_THREAD_GPU + 1)*N_THREAD_GPU;
+    for(int iw=0; iw<n_walk_in_stream; iw++){
+      const int iw_src = id_walk_head + iw;
+      const int n_epi_tmp = n_epi[iw_src];
+      int i_dst = ij_disp_h[id_stream][iw].x;
+      for(int ip=0; ip<n_epi_tmp; ip++, i_dst++){
+        epi_h[id_stream][i_dst].pos.x   = epi[iw_src][ip].pos.x;
+        epi_h[id_stream][i_dst].pos.y   = epi[iw_src][ip].pos.y;
+        epi_h[id_stream][i_dst].pos.z   = epi[iw_src][ip].pos.z;
+        epi_h[id_stream][i_dst].id_walk = iw;
+      }
+      if(CONSTRUCTION_STEP==1){
+        int j_dst = ij_disp_h[id_stream][iw].y - ID_EPJ_GLB_OFFSET[id_stream];
+        const int n_epj_tmp = n_epj[iw_src];
+        for(int j=0; j<n_epj_tmp; j++, j_dst++){
+          id_epj_h[id_stream][j_dst] = id_epj[iw_src][j];
+        }
+        const int n_spj_tmp = n_spj[iw_src];
+        for(int j=0; j<n_spj_tmp; j++, j_dst++){
+          id_epj_h[id_stream][j_dst] = id_spj[iw_src][j]+n_epj_tot;
+        }
+      }
+    }
+    const int ni_tot = ij_disp_h[id_stream][n_walk_in_stream].x;
+    const int nj_tot = ij_disp_h[id_stream][n_walk_in_stream].y - ID_EPJ_GLB_OFFSET[id_stream];
+    for(int i=ni_tot; i<ni_tot_reg; i++){
+      epi_h[id_stream][i].id_walk = n_walk_in_stream;
+    }
+    dev_epi[id_stream].htod(ni_tot_reg, stream[id_stream]);
+    cudaMemcpyAsync(epi_d[id_stream], epi_h[id_stream], ni_tot_reg*sizeof(EPI_GPU), cudaMemcpyHostToDevice, stream[id_stream]);
+    if(CONSTRUCTION_STEP == 1){
+      cudaMemcpyAsync( id_epj_d[id_stream]+ID_EPJ_GLB_OFFSET[id_stream], id_epj_h[id_stream], nj_tot*sizeof(int), cudaMemcpyHostToDevice, stream[id_stream]);
+    }
+    ID_EPJ_GLB_OFFSET[id_stream] += nj_tot;
+    int nblocks  = ni_tot_reg / N_THREAD_GPU;
+    int nthreads = N_THREAD_GPU;
+    const float eps2 = FPGrav::eps * FPGrav::eps;
+    ForceKernelIndex <<<nblocks, nthreads, 0, stream[id_stream]>>> (ij_disp_d[id_stream], epi_d[id_stream], epj_d, id_epj_d[id_stream], force_d[id_stream], eps2);
+  }
+  return 0;
+}
+  \end{minted}
+\end{mdframed}
+
+% End of Document
+
+\end{document}

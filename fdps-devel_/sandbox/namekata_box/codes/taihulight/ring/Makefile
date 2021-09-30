@@ -1,0 +1,301 @@
+#==========================
+# Calculation conditions
+#==========================
+#NPROCS = 16
+#NPROCS = 32
+#NPROCS = 64
+#NPROCS = 256
+#NPROCS = 1024
+#NPROCS = 2048
+NPROCS = 4096
+#NPROCS = 8192
+#NPROCS = 16384
+#NPTCL_PER_PROC = 1024
+#NPTCL_PER_PROC = 2048
+#NPTCL_PER_PROC = 4096
+#NPTCL_PER_PROC = 131072
+#NPTCL_PER_PROC = 1048576
+#NPTCL_PER_PROC = 2097152
+#NPTCL_PER_PROC = 3145728
+#NPTCL_PER_PROC = 4194304
+#NPTCL_PER_PROC = 5242880
+NPTCL_PER_PROC = 6291456
+#NPTCL_PER_PROC = 7340032
+#NPTCL_PER_PROC = 8388608
+#NPTCL_PER_PROC = 9437184
+#NPTCL_PER_PROC = 10485760 
+N_GROUP_LIMIT = 1024
+THETA_GRV = 0.5
+N_LEAF_LIMIT = 16
+#QUEUE = q_sw_expr
+#QUEUE = q_sw_share
+QUEUE = q_sw_gb
+LOGFILE = 00stdout.log
+
+#==========================
+# Connection information
+#==========================
+USER = riken
+#REMOTE_HOST_NAME = 42.0.1.125
+REMOTE_HOST_NAME = 41.0.0.188
+ACCESS_POINT = $(USER)@$(REMOTE_HOST_NAME)
+ifeq ($(REMOTE_HOST_NAME),41.0.0.188)
+SSH = ssh -o 'StrictHostKeyChecking=no'
+RSYNC_SEND = rsync -ave "ssh -o StrictHostKeyChecking=no"
+RSYNC_RECV = rsync -avxe "ssh -o StrictHostKeyChecking=no"
+else
+SSH = ssh 
+RSYNC_SEND = rsync -ave "ssh"
+RSYNC_RECV = rsync -avxe "ssh"
+endif
+
+#==========================
+# Compile configuration
+#==========================
+PS_PATH = ./src/
+CPE_KERNEL = ./cpe_kernel/
+INC = -I$(PS_PATH) -I$(CPE_KERNEL)
+
+CC = sw5cc
+CXX = swg++ -I/usr/sw-mpp/mpi2/include -I/usr/sw-mpp/swcc/sw5gcc-binary/include
+CLINK=mpiCC -hybrid
+
+TARGET = nbody-namekata.out
+MY_DIR = /home/export/online1/riken/sandbox/namekata_box/codes/taihulight-jobs/debug
+
+CFLAGS = -O3
+#CFLAGS += -Wall
+#CFLAGS += -ffast-math
+#CFLAGS += -funroll-loops
+#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL
+#CFLAGS += -fopenmp
+CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
+CFLAGS += -DPARTICLE_SIMULATOR_ALL_64BIT_PRECISION
+#CFLAGS += -DPARTICLE_SIMULATOR_PSYS_DEBUG_PRINT
+#CFLAGS += -DPARTICLE_SIMULATOR_DINFO_DEBUG_PRINT
+#CFLAGS += -DGEN_MORTON_KEY_SEQ_EXEC_FOR_DEBUG
+#CFLAGS += -DCANCEL_FORCE
+
+CFLAGS += -DROTATE_PTCLS
+#CFLAGS += -DCHECK_ANGULAR_MOMENTUM
+CFLAGS += -DSUNWAY
+CFLAGS += -DSUNWAY_FORCE_KERNEL
+#CFLAGS += -DMPE_FORCE_KERNEL
+CFLAGS += -DUSE_DMA
+#CFLAGS += -DSPLIT
+CFLAGS += -DFULL_ASM
+#CFLAGS += -DPROFILE
+#CFLAGS += -DDEBUG
+CFLAGS += -DSUNWAY_DEVELOP
+#CFLAGS += -DPARTICLE_SIMULATOR_BARRIER_FOR_PROFILE
+
+CFLAGS += -DPARTICLE_SIMULATOR_IMPL3_DEBUG_PRINT
+CFLAGS += -DDEBUG_PRINT_MAIN
+#CFLAGS += -DDEBUG_PRING_CALC_FORCE_UNSAFE # check cm mass and cm pos of all interaction list for each ip group
+#CFLAGS += -DCHECK_NAN
+#CFLAGS += -DDEBUG_PRINT_EX_PTCL6
+#CFLAGS += -DDEBUG_EX_PTCL7 # shift particle pos to check ex_ptcl
+#CFLAGS += -DDEBUG_PRINT_EX_PTCL7
+#CFLAGS += -DDEBUG_EX_PTCL8 # shift particle pos to check ex_ptcl
+#CFLAGS += -DDEBUG_PRINT_EX_PTCL8
+CFLAGS += -DDEBUG_PRINT_EX_PTCL8_V2
+#CFLAGS += -DDEBUG_MAKELIST
+#CFLAGS += -DDEBUG_PRING_CALC_FORCE_LOOP_MERGE
+#CFLAGS += -DDEBUG_PRINT_SETLET_2
+#CFLAGS += -DDEBUG_EXLET_SUNWAY
+#CFLAGS += -DDEBUG_PRINT_EX_LET_3
+#CFLAGS += -DDEBUG_PRINT_SORT_GLB_3
+
+#CFLAGS += -DDEBUG_PRINT_EX_LET_SUPER_DOMAIN
+CFLAGS += -DDEBUG_PRINT_EX_LET_SUPER_DOMAIN_2
+#CFLAGS += -DROTATE_RANGE_CHECK
+#CFLAGS += -DDEBUG_PRINT_MAKE_LIST_ID3
+#CFLAGS += -DCHECK_EX_PTCL
+#CFLAGS += -DDEBUG_CALC_FORCE
+#CFLAGS += -DDEBUG_PRINT_CALC_MOMENT_LOCAL
+#CFLAGS += -DDEBUG_PRINT_EX_LET_SUPER_DOMAIN
+#CFLAGS += -DDEBUG_PRINT_CALC_MOMENT_LOCAL_LEAN
+#CFLAGS += -DDEBUG_PRINT_CALC_MOMENT_GLOBAL_LEAN
+#CFLAGS += -DDEBUG_PRINT_CALC_MOMENT_LOCAL
+#CFLAGS += -DDEBUG_PRINT_CALC_MOMENT_GLOBAL
+#CFLAGS += -DDEBUG_FORCE_OUTPUT
+#CFLAGS += -DBALANCE_NWALK_OUT
+#CFLAGS += -DDEBUG_SORT_LOCAL
+#CFLAGS += -DDEBUG_0709
+
+#CFLAGS += -DCANCEL_PLANET_FORCE
+#CFLAGS += -DSEND_ALL_LET
+CFLAGS += -DPHI_R_TREE
+CFLAGS += -DUSE_SUPER_DOMAIN
+CFLAGS += -DCALC_MOMENT_LEAN
+CFLAGS += -DUSE_STD_SORT
+#CFLAGS += -DUSE_CPE_SORT
+CFLAGS += -DSHIFT_CENTER_Z
+CFLAGS += -DKEY_3D
+#CFLAGS += -DBALANCE_NWALK
+CFLAGS += -DBALANCE_NWALK_ON_MPE
+#CFLAGS += -DBW_CHECK_SAFETY
+CFLAGS += -DUSE_MY_ATAN2
+#CFLAGS += -DFAST_EX_PTCL
+#CFLAGS += -DMULTI_ALLREDUCE
+
+#CFLAGS += -DNO_DOUBLE_BUFFER
+#CFLAGS += -DWRITE_SNP
+
+#CFLAGS += -DDEBUG_SHIFT_CENTER_Z
+
+#CFLAGS += -DREDUCE_MEMORY
+#CFLAGS += -DREDUCE_MEMORY_DEV
+
+
+OBJS = nbody.o copy.o gen_morton_key.o link_cell.o calc_moment.o make_interact_list.o rotate.o kernel_sunway_dyn.o force_loop.o posvel_loop.o rsqrt_loop.o force_counter_loop.o spj_loop.o mpe_force_kernel.o balance_nwalk.o sample_sort.o sort.o calc_moment_lean.o epj_loop.o ex_ptcl.o my_atan.o my_atan2.o copy_msort_glb_tree_reuse.o make_ipg.o rotate_and_shift_z.o
+
+
+
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CLINK) $(INC) $(CFLAGS) $^ $(CLIBS) -o $@
+
+nbody_host.out: nbody.cpp
+	$(CXX) $(INC) $(CFLAGS) $^ $(CLIBS) -o $@
+
+nbody.o: nbody.cpp 
+	$(CXX) $(INC) $(CFLAGS) -c $^ -o $@
+
+my_atan.o: ./cpe_kernel/s_atan.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+my_atan2.o: ./cpe_kernel/e_atan2.c my_atan.o
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+copy.o: ./cpe_kernel/copy.c my_atan2.o
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+copy.s: ./cpe_kernel/copy.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -S $^ -o $@
+
+make_ipg.o: ./cpe_kernel/make_ipg.c my_atan2.o
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+copy_msort_glb_tree_reuse.o: ./cpe_kernel/copy_msort_glb_tree_reuse.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+#copy2.o: ./cpe_kernel/copy2.c
+#	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+#copy2.s: ./cpe_kernel/copy2.c
+#	$(CC) -slave -msimd $(INC) $(CFLAGS) -S $^ -o $@
+
+gen_morton_key.o: ./cpe_kernel/gen_morton_key.c my_atan2.o
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+link_cell.o: ./cpe_kernel/link_cell.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+calc_moment.o: ./cpe_kernel/calc_moment.c my_atan2.o
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+calc_moment_lean.o: ./cpe_kernel/calc_moment_lean.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+#make_interact_list.o: ./cpe_kernel/make_interact_list.c
+#	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+make_interact_list.o: ./cpe_kernel/make_interact_list.org.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+rotate.o: ./cpe_kernel/rotate.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+kernel_sunway_dyn.o: ./cpe_kernel/kernel_sunway_dyn.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+#kernel_sunway_dyn.o: ./cpe_kernel/kernel_sunway_dyn.new_kernel.c
+#	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+force_loop.o: ./cpe_kernel/force_loop.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+posvel_loop.o: ./cpe_kernel/posvel_loop.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+rsqrt_loop.o: ./cpe_kernel/rsqrt_loop.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+force_counter_loop.o: ./cpe_kernel/force_counter_loop.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+spj_loop.o: ./cpe_kernel/spj_loop.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+epj_loop.o: ./cpe_kernel/epj_loop.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+ex_ptcl.o: ./cpe_kernel/ex_ptcl.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+balance_nwalk.o: ./cpe_kernel/balance_nwalk.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+sample_sort.o: ./cpe_kernel/sample_sort.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+rotate_and_shift_z.o: ./cpe_kernel/rotate_and_shift_z.c
+	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+sort.o: ./cpe_kernel/sort.cpp
+	$(CXX) $(INC) $(CFLAGS) -c $^ -o $@
+
+#my_atan.o: ./myAtan.c
+#	$(CC) -slave -msimd $(INC) $(CFLAGS) -c $^ -o $@
+
+mpe_force_kernel.o: mpe_force_kernel.cpp
+	$(CXX) $(INC) $(CFLAGS) -c $^ -o $@
+
+nbody.s: nbody.cpp 
+	$(CXX) $(INC) $(CFLAGS) -S $^ -o $@
+
+clean:
+	rm -f $(TARGET) *.o *~ 
+
+ssh_setting:
+	ssh-keygen -R $(ACCESS_POINT)
+
+send_src: ssh_setting
+	$(SSH) $(ACCESS_POINT) "mkdir -p $(MY_DIR); cd $(MY_DIR); mkdir -p ./src/; mkdir -p ./result; rm -f result/*.*"
+	$(RSYNC_SEND) --include='src' --include='src/*.hpp' --include='cpe_kernel' --include='cpe_kernel/*.c' --include='cpe_kernel/*.h' --include='Makefile' --include="*.h" --include="*.hpp" --include="*.c" --include="*.cpp" --exclude='*' ./ $(ACCESS_POINT):$(MY_DIR)
+
+compile: ssh_setting
+	$(SSH) $(ACCESS_POINT) "cd $(MY_DIR); make clean; make -B $(TARGET)"
+
+submit: ssh_setting
+	$(SSH) $(ACCESS_POINT) "cd $(MY_DIR); \
+	bsub -I -b -q $(QUEUE) -n $(NPROCS) -cgsp 64 -share_size 6500 -host_stack 512 ./$(TARGET) -N $(NPTCL_PER_PROC) -n $(N_GROUP_LIMIT) -t $(THETA_GRV) -l $(N_LEAF_LIMIT) > $(LOGFILE) 2>&1"
+
+get_log: ssh_setting
+	mkdir -p result
+	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/$(LOGFILE) ./result
+
+get_snp: ssh_setting
+	mkdir -p result
+	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/result/snp_000??_00000.dat ./result
+#	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/result/snp_000??_000??.dat ./result
+#	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/$(LOGFILE) ./result
+
+get: ssh_setting
+	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/00stdout.log ./
+	#$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/*.txt ./
+	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/result/debug_00000.dat ./
+	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/../tmp/*109* ./tmp/
+
+get_all: ssh_setting
+	$(RSYNC_RECV) $(ACCESS_POINT):$(MY_DIR)/result ./
+
+sc: send_src compile
+
+scs: send_src compile submit
+
+run:
+	bsub -I -b -q q_sw_bcc -n $(NPROCS) -cgsp 64 -share_size 6500 -host_stack 512 ./$(TARGET) -N $(NPTCL_PER_PROC) -n $(N_GROUP_LIMIT) -t $(THETA_GRV) > $(LOGFILE) 2>&1 &
+

@@ -1,0 +1,144 @@
+\begin{thebibliography}{10}
+
+\bibitem{2014NatGe...7..564A}
+{Asphaug}, E. and {Reufer}, A.: {Mercury and other iron-rich planetary bodies
+  as relics of inefficient accretion}, {\em Nature Geoscience},  Vol.~7, pp.\
+  564--568 (online), \doi{10.1038/ngeo2189} (2014).
+
+\bibitem{1986Natur.324..446B}
+{Barnes}, J. and {Hut}, P.: {A hierarchical O(N log N) force-calculation
+  algorithm}, {\em Nature},  Vol.~324, pp.\ 446--449 (1986).
+
+\bibitem{Bedorf:2014:PGT:2683593.2683600}
+B{\'e}dorf, J., Gaburov, E., Fujii, M.~S., Nitadori, K., Ishiyama, T. and
+  Zwart, S.~P.: 24.77 Pflops on a Gravitational Tree-code to Simulate the Milky
+  Way Galaxy with 18600 GPUs, {\em Proceedings of the International Conference
+  for High Performance Computing, Networking, Storage and Analysis}, SC '14,
+  Piscataway, NJ, USA, IEEE Press, pp.\ 54--65 (online),
+  \doi{10.1109/SC.2014.10} (2014).
+
+\bibitem{1986Icar...66..515B}
+{Benz}, W., {Slattery}, W.~L. and {Cameron}, A.~G.~W.: {The origin of the moon
+  and the single-impact hypothesis. I}, {\em \icarus},  Vol.~66, pp.\ 515--535
+  (online), \doi{10.1016/0019-1035(86)90088-6} (1986).
+
+\bibitem{Blackston:1997:HPE:509593.509597}
+Blackston, D. and Suel, T.: Highly Portable and Efficient Implementations of
+  Parallel Adaptive N-body Methods, {\em Proceedings of the 1997 ACM/IEEE
+  Conference on Supercomputing}, SC '97, New York, NY, USA, ACM, pp.\ 1--20
+  (online), \doi{10.1145/509593.509597} (1997).
+
+\bibitem{1976LPI.....7..120C}
+{Cameron}, A.~G.~W. and {Ward}, W.~R.: {The Origin of the Moon}, {\em Lunar and
+  Planetary Science Conference}, Lunar and Planetary Science Conference,
+  Vol.~7, p.\ 120 (1976).
+
+\bibitem{2013Icar..222..200C}
+{Canup}, R.~M., {Barr}, A.~C. and {Crawford}, D.~A.: {Lunar-forming impacts:
+  High-resolution SPH and AMR-CTH simulations}, {\em \icarus},  Vol.~222, pp.\
+  200--219 (online), \doi{10.1016/j.icarus.2012.10.011} (2013).
+
+\bibitem{hamada2009novel}
+Hamada, T., Nitadori, K., Benkrid, K., Ohno, Y., Morimoto, G., Masada, T.,
+  Shibata, Y., Oguri, K. and Taiji, M.: A novel multiple-walk parallel
+  algorithm for the Barnes-Hut treecode on GPUs-towards cost effective, high
+  performance N-body simulation, {\em Computer Science-Research and
+  Development},  Vol.~24, No.~1, pp.\ 21--31 (2009).
+
+\bibitem{Hamada:2009:THN:1654059.1654123}
+Hamada, T., Narumi, T., Yokota, R., Yasuoka, K., Nitadori, K. and Taiji, M.: 42
+  TFlops Hierarchical N-body Simulations on GPUs with Applications in Both
+  Astrophysics and Turbulence, {\em Proceedings of the Conference on High
+  Performance Computing Networking, Storage and Analysis}, SC '09, New York,
+  NY, USA, ACM, pp.\ 62:1--62:12 (online), \doi{10.1145/1654059.1654123}
+  (2009).
+
+\bibitem{1975Icar...24..504H}
+{Hartmann}, W.~K. and {Davis}, D.~R.: {Satellite-sized planetesimals and lunar
+  origin}, {\em \icarus},  Vol.~24, pp.\ 504--514 (online),
+  \doi{10.1016/0019-1035(75)90070-6} (1975).
+
+\bibitem{ishiyama:greem}
+Ishiyama, T., Fukushige, T. and makino, J.: GreeM: Massively Parallel TreePM
+  Code for Large Cosmological N -body Simulations, {\em Publications of the
+  Astronomical Society of Japan},  Vol.~61, No.~6, pp.\ 1319--1330 (2009).
+
+\bibitem{ishiyama:gordonbell}
+Ishiyama, T., Nitadori, K. and makino, J.: 4.45 Pflops Astrophysical N-Body
+  Simulation on K computer -- The Gravitational Trillion-Body Problem, {\em SC
+  '12 Proceedings of the International Conference on High Performance
+  Computing, Networking, Storage and Analysis (Salt Lake City, UT, USA, Nov 11
+  - 15, 2012} (2012).
+
+\bibitem{Leisheng823}
+Leisheng, L., Chaowei, W., Zhitao, M., Zhigang, H. and Rong, T.: petaPar: A
+  Scalable and Fault Tolerant Petascale Free Mesh Simulation System, {\em
+  Journal of Computer Research and Development},  Vol.~52, No.~4, p.\ 823
+  (online), \doi{10.7544/issn1000-1239.2015.20131332} (2015).
+
+\bibitem{2004PASJ...56..521M}
+{Makino}, J.: {A Fast Parallel Treecode with GRAPE}, {\em Publications of
+  Astronomical Society of Japan},  Vol.~56, pp.\ 521--531 (2004).
+
+\bibitem{1997JCoPh.136..298M}
+{Monaghan}, J.~J.: {SPH and Riemann Solvers}, {\em Journal of Computational
+  Physics},  Vol.~136, pp.\ 298--307 (online), \doi{10.1006/jcph.1997.5732}
+  (1997).
+
+\bibitem{2006NewA...12..169N}
+{Nitadori}, K., {Makino}, J. and {Hut}, P.: {Performance tuning of N-body codes
+  on modern microprocessors: I. Direct integration with a hermite scheme on
+  x86\_64 architecture}, {\em New Astronomy},  Vol.~12, pp.\ 169--181 (2006).
+
+\bibitem{1911MNRAS..71..460P}
+{Plummer}, H.~C.: {On the problem of distribution in globular star clusters},
+  {\em \mnras},  Vol.~71, pp.\ 460--470 (1911).
+
+\bibitem{2009NewAR..53...78R}
+{Rosswog}, S.: {Astrophysical smooth particle hydrodynamics}, {\em New
+  Astronomy Reviews},  Vol.~53, pp.\ 78--104 (online),
+  \doi{10.1016/j.newar.2009.08.007} (2009).
+
+\bibitem{1994JCoPh.111..136S}
+{Salmon}, J.~K. and {Warren}, M.~S.: {Skeletons from the treecode closet}, {\em
+  Journal of Computational Physics},  Vol.~111, pp.\ 136--155 (online),
+  \doi{10.1006/jcph.1994.1050} (1994).
+
+\bibitem{2010ARA&A..48..391S}
+{Springel}, V.: {Smoothed Particle Hydrodynamics in Astrophysics}, {\em \araa},
+   Vol.~48, pp.\ 391--430 (online), \doi{10.1146/annurev-astro-081309-130914}
+  (2010).
+
+\bibitem{springel:gadget2}
+Springel, V.: The cosmological simulation code GADGET-2, Vol.~364, No.~4, pp.\
+  1105--1134 (2005).
+
+\bibitem{2013NewA...19...74T}
+{Tanikawa}, A., {Yoshikawa}, K., {Nitadori}, K. and {Okamoto}, T.:
+  {Phantom-GRAPE: Numerical software library to accelerate collisionless N-body
+  simulation with SIMD instruction set on x86 architecture}, {\em New
+  Astronomy},  Vol.~19, pp.\ 74--88 (2013).
+
+\bibitem{2012NewA...17...82T}
+{Tanikawa}, A., {Yoshikawa}, K., {Okamoto}, T. and {Nitadori}, K.: {N-body
+  simulation for self-gravitating collisional systems with a new SIMD
+  instruction set extension to the x86 architecture, Advanced Vector
+  eXtensions}, {\em New Astronomy},  Vol.~17, pp.\ 82--92 (2012).
+
+\bibitem{Warren:1993:PHO:169627.169640}
+Warren, M.~S. and Salmon, J.~K.: A Parallel Hashed Oct-Tree N-body Algorithm,
+  {\em Proceedings of the 1993 ACM/IEEE Conference on Supercomputing},
+  Supercomputing '93, New York, NY, USA, ACM, pp.\ 12--21 (online),
+  \doi{10.1145/169627.169640} (1993).
+
+\bibitem{1995CoPhC..87..266W}
+{Warren}, M.~S. and {Salmon}, J.~K.: {A portable parallel particle program},
+  {\em Computer Physics Communications},  Vol.~87, pp.\ 266--290 (1995).
+
+\bibitem{2005PASJ...57..849Y}
+{Yoshikawa}, K. and {Fukushige}, T.: {PPPM and TreePM Methods on GRAPE Systems
+  for Cosmological N-Body Simulations}, {\em Publications of Astronomical
+  Society of Japan},  Vol.~57, pp.\ 849--860 (online),
+  \doi{10.1093/pasj/57.6.849} (2005).
+
+\end{thebibliography}

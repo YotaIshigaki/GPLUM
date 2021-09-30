@@ -1,0 +1,105 @@
+この節では、FDPSの初期化および終了処理に関わるAPIについて記述する。
+
+関連する全APIの名称の一覧を以下に示す:
+\begin{screen}
+\begin{spverbatim}
+ps_initialize (Fortran のみ)
+fdps_initialize (C言語のみ)
+ps_finalize (Fortran のみ)
+fdps_finalize (C言語のみ)
+ps_abort (Fortran のみ)
+fdps_abort (C言語のみ)
+\end{spverbatim}
+\end{screen}
+
+以下、順に、各APIの仕様を記述する。ただし、Fortran版とC言語版で同じ機能を持つAPIについては、まとめて一つの節で説明する。{\setnoko\uc{以降、本文書では、簡単のため、FortranとC言語のAPIの仕様を1つの節で説明する場合、その節の名前はFortranのAPI名を使用することにする}}。
+
+\clearpage
+
+
+%=============================================================
+% API名::ps_initialize()
+\subsection{ps\_initialize}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%ps_initialize()
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_initialize();
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様} 
+なし
+\subsubsection*{返値}
+なし
+\subsubsection*{機能}
+FDPSの初期化を行う。FDPSのAPIのうち最初に呼び出さなければならない。
+\clearpage
+
+
+%=============================================================
+% API名::ps_finalize()
+\subsection{ps\_finalize}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%ps_finalize()
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_finalize();
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様} 
+なし
+\subsubsection*{返値}
+なし
+\subsubsection*{機能}
+FDPSの終了処理を行う。
+\clearpage
+
+%=============================================================
+% API名::PS_abort()
+\subsection{ps\_abort}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%ps_abort(err_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_abort(const int err_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{err\_num} & integer(kind=c\_int) & 入力 & プログラムの終了ステータスを与える。Fortranでは、この引数は省略可能であり、省略した場合、デフォルト値 -1 が使用される。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+FDPSの異常終了処理を行う。引数はプログラムの終了ステータスである。この引数は、MPI を使用していない場合はC++のstd::exit関数に渡され、MPIを使用している場合は MPIのMPI\_Abort関数に渡される。
+\clearpage

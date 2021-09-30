@@ -1,0 +1,261 @@
+MPIParallel.h/cc
+
+Direct
+
+called from Integrator for exchange position, charge, etc befor force calculation
+exchange postion, charge, atomtype, atomid
+when particle distribution was changed
+  exchangeParticleArraysubset(particlearray, 
+                                           typerangearray, 
+                                           bondlistarray, 
+                                           ghost,
+                                           targetparticlerange, 
+                                           recvsetid, 
+                                           recvsetid_to_index,
+                                           targettyperange, 
+                                           targetbond);
+    particle_send_recv_Direct( myparticle, typerangearray, bondlistarray,
+                               targetparticle, target_range, 
+                               recvsetid, recvsetid_to_index,
+                               targettyperange, targetbond);
+      setSendParticlesubset(myparticle,typerangearray,bondlistarray);
+        sprf[t].setsendsubset(myparticle,typerangearray,bondlistarray,setid,srpf_setid[t]);  // OMP PARALLEL
+      transferParticle();
+        rpsf[t].prepare_receive(); 
+          MPI_Irecv
+        sprf[t].send();
+          MPI_Isend
+      getReceiveParticle(targetparticle,target_range,targettyperange,targetbond,recvsetid,recvsetid_to_index);
+        rpsf[t].wait_complete_recv();
+          MPI_Wait
+        rpsf[t].getreceive_number(pnum,setnum,bondnum);
+        rpsf[t].getreceive_offset(targetparticle, target_range[t],
+                              targettyperange, targetbond, recvsetid,
+                              setoffset[t],bondoffset[t]);                                 // OMP PARALLEL
+    wait_complete_Particle();
+      sprf[t].wait_complete_send();
+        MPI_Wait
+
+exchange position and charge
+when particle distribution was not changed
+  exchangeParticleArraysubset_onlyPosition(particlearray, 
+                                                        typerangearray, 
+                                                        bondlistarray, 
+                                                        ghost,
+                                                        targetparticlerange, 
+                                                        recvsetid, 
+                                                        recvsetid_to_index,
+                                                        targettyperange, 
+                                                        targetbond);
+    particle_send_recv_onlyPosition_Direct(myparticle, typerangearray, bondlistarray,
+                               targetparticle, target_range, 
+                               recvsetid, recvsetid_to_index,
+                               targettyperange, targetbond);
+      setSendParticlesubset_onlyPosition(myparticle,typerangearray);
+        sprf[t].setsendsubsetpos(myparticle,typerangearray,setid,srpf_setid[t]); // OMP PARALLEL
+      transferParticle();
+        rpsf[t].prepare_receive(); 
+          MPI_Irecv
+        sprf[t].send();
+          MPI_Isend
+      getReceiveParticle_onlyPosition(targetparticle);
+        rpsf[t].wait_complete_recv();
+          MPI_Wait
+        rpsf[t].getreceivepos_nowait(targetparticle);  // OMP PARALLEL
+    wait_complete_Particle();
+      sprf[t].wait_complete_send();
+        MPI_Wait
+
+called from Integrator for exchange force after force calculation
+exchange packed sparce-force with index
+when particle distribution was changed
+  exchangeForceArraysubset_with_index(ghostforce, 
+                                                       targetparticlerange, 
+                                                       ghostcbindexarray,
+                                                       force);
+    force_send_recv_Direct_with_index(sendforce, send_range, forceindexset, recvforce);
+      setSendForce_with_index(sendforce,send_range,forceindexset);
+        rpsf[t].setsend_with_index(sendforce,send_range[t],forceindexset); // OMP PARALLEL
+      transferForce();
+        sprf[t].prepare_receive();
+          MPI_Irecv
+        rpsf[t].send();
+          MPI_Isend
+      getReceiveForcesubset_with_index(recvforce);
+        getreceive_with_index(recvforce);
+          MPI_Wait
+      wait_complete_Force();
+        rpsf[t].wait_complete_send();
+          MPI_Wait
+
+exchange packed sparce-force without index
+when particle distribution was not changed
+  exchangeForceArraysubset_indexed(ghostforce, 
+                                                    targetparticlerange, 
+                                                    ghostcbindexarray,
+                                                    force);
+    force_send_recv_Direct_indexed(sendforce, send_range, forceindexset, recvforce);
+      setSendForce_indexed(sendforce,send_range,forceindexset);
+        rpsf[t].setsend_indexed(sendforce,send_range[t],forceindexset);  // OMP PARALLEL
+      transferForce();
+        sprf[t].prepare_receive();
+          MPI_Irecv
+        rpsf[t].send();
+          MPI_Isend
+      getReceiveForcesubset_indexed(recvforce);
+        sprf[t].getreceive_indexed(recvforce);
+          MPI_Wait
+          // AUTO PARALLEL
+      wait_complete_Force();
+        rpsf[t].wait_complete_send();
+          MPI_Wait
+
+exchange all force 
+  exchangeForceArraysubset(ghostforce, targetparticlerange, 
+                                          force);
+    force_send_recv_Direct(sendforce, send_range, recvforce);
+      setSendForce(sendforce,send_range);
+        rpsf[t].setsend(sendforce,send_range[t]);
+      transferForce();
+        sprf[t].prepare_receive();
+          MPI_Irecv
+        rpsf[t].send();
+          MPI_Isend
+      getReceiveForcesubset(recvforce);
+        sprf[t].getreceivesubset(recvforce);
+          MPI_Wait
+      wait_complete_Force();
+        rpsf[t].wait_complete_send();
+          MPI_Wait
+
+
+
+
+Nearest XYZ
+
+called from Integrator for exchange position, charge, etc befor force calculation
+exchange postion, charge, atomtype, atomid
+when particle distribution was changed
+  exchangeParticleArraysubset(particlearray, 
+                                           typerangearray, 
+                                           bondlistarray, 
+                                           ghost,
+                                           targetparticlerange, 
+                                           recvsetid, 
+                                           recvsetid_to_index,
+                                           targettyperange, 
+                                           targetbond);
+    particle_send_recv_Direct( myparticle, typerangearray, bondlistarray,
+                               targetparticle, target_range, 
+                               recvsetid, recvsetid_to_index,
+                               targettyperange, targetbond);
+      setSendParticlesubset(myparticle,typerangearray,bondlistarray);
+        sprf[t].setsendsubset(myparticle,typerangearray,bondlistarray,setid,srpf_setid[t]);  // OMP PARALLEL
+      transferParticle();
+        rpsf[t].prepare_receive(); 
+          MPI_Irecv
+        sprf[t].send();
+          MPI_Isend
+      getReceiveParticle(targetparticle,target_range,targettyperange,targetbond,recvsetid,recvsetid_to_index);
+        rpsf[t].wait_complete_recv();
+          MPI_Wait
+        rpsf[t].getreceive_number(pnum,setnum,bondnum);
+        rpsf[t].getreceive_offset(targetparticle, target_range[t],
+                              targettyperange, targetbond, recvsetid,
+                              setoffset[t],bondoffset[t]);                                 // OMP PARALLEL
+    wait_complete_Particle();
+      sprf[t].wait_complete_send();
+        MPI_Wait
+
+exchange position and charge
+when particle distribution was not changed
+  exchangeParticleArraysubset_onlyPosition(particlearray, 
+                                                        typerangearray, 
+                                                        bondlistarray, 
+                                                        ghost,
+                                                        targetparticlerange, 
+                                                        recvsetid, 
+                                                        recvsetid_to_index,
+                                                        targettyperange, 
+                                                        targetbond);
+    particle_send_recv_onlyPosition_Direct(myparticle, typerangearray, bondlistarray,
+                               targetparticle, target_range, 
+                               recvsetid, recvsetid_to_index,
+                               targettyperange, targetbond);
+      setSendParticlesubset_onlyPosition(myparticle,typerangearray);
+        sprf[t].setsendsubsetpos(myparticle,typerangearray,setid,srpf_setid[t]); // OMP PARALLEL
+      transferParticle();
+        rpsf[t].prepare_receive(); 
+          MPI_Irecv
+        sprf[t].send();
+          MPI_Isend
+      getReceiveParticle_onlyPosition(targetparticle);
+        rpsf[t].wait_complete_recv();
+          MPI_Wait
+        rpsf[t].getreceivepos_nowait(targetparticle);  // OMP PARALLEL
+    wait_complete_Particle();
+      sprf[t].wait_complete_send();
+        MPI_Wait
+
+called from Integrator for exchange force after force calculation
+exchange packed sparce-force with index
+when particle distribution was changed
+  exchangeForceArraysubset_with_index(ghostforce, 
+                                                       targetparticlerange, 
+                                                       ghostcbindexarray,
+                                                       force);
+    force_send_recv_Direct_with_index(sendforce, send_range, forceindexset, recvforce);
+      setSendForce_with_index(sendforce,send_range,forceindexset);
+        rpsf[t].setsend_with_index(sendforce,send_range[t],forceindexset); // OMP PARALLEL
+      transferForce();
+        sprf[t].prepare_receive();
+          MPI_Irecv
+        rpsf[t].send();
+          MPI_Isend
+      getReceiveForcesubset_with_index(recvforce);
+        getreceive_with_index(recvforce);
+          MPI_Wait
+      wait_complete_Force();
+        rpsf[t].wait_complete_send();
+          MPI_Wait
+
+exchange packed sparce-force without index
+when particle distribution was not changed
+  exchangeForceArraysubset_indexed(ghostforce, 
+                                                    targetparticlerange, 
+                                                    ghostcbindexarray,
+                                                    force);
+    force_send_recv_Direct_indexed(sendforce, send_range, forceindexset, recvforce);
+      setSendForce_indexed(sendforce,send_range,forceindexset);
+        rpsf[t].setsend_indexed(sendforce,send_range[t],forceindexset);  // OMP PARALLEL
+      transferForce();
+        sprf[t].prepare_receive();
+          MPI_Irecv
+        rpsf[t].send();
+          MPI_Isend
+      getReceiveForcesubset_indexed(recvforce);
+        sprf[t].getreceive_indexed(recvforce);
+          MPI_Wait
+          // AUTO PARALLEL
+      wait_complete_Force();
+        rpsf[t].wait_complete_send();
+          MPI_Wait
+
+exchange all force 
+  exchangeForceArraysubset(ghostforce, targetparticlerange, 
+                                          force);
+    force_send_recv_Direct(sendforce, send_range, recvforce);
+      setSendForce(sendforce,send_range);
+        rpsf[t].setsend(sendforce,send_range[t]);
+      transferForce();
+        sprf[t].prepare_receive();
+          MPI_Irecv
+        rpsf[t].send();
+          MPI_Isend
+      getReceiveForcesubset(recvforce);
+        sprf[t].getreceivesubset(recvforce);
+          MPI_Wait
+      wait_complete_Force();
+        rpsf[t].wait_complete_send();
+          MPI_Wait
+

@@ -1,0 +1,104 @@
+//=====================================================================
+//     This file is input condition for 'md_fdps'
+//      define sequence settings (time step and system condition).
+//=====================================================================
+
+//=====================================================================
+//  time step settings:
+//      i_start [integer]
+//      i_end   [integer]
+//      dt      [fs]
+//=====================================================================
+@<CONDITION>TIMESTEP
+i_start        0
+i_end         10
+dt           0.5      [fs]
+
+
+//=====================================================================
+//  FDPS tree object settings:
+//=====================================================================
+@<CONDITION>TREE
+coef_ema        0.3
+theta           0.5
+n_leaf_limit    8
+n_group_limit   64
+cycle_dinfo     10
+
+
+//=====================================================================
+//  cut_off settings:
+// (tag) cut_off_length [angstrom]
+//
+//     note: cut off length of coulomb interaction is fixed by PS::ParticleMesh.
+//           r_cut = 3.0/SIZE_OF_MESH
+//           SIZE_OF_MESH is defined in $(PS_DIR)/src/particle_mesh/param_fdps.h
+//=====================================================================
+@<CONDITION>CUT_OFF
+LJ     12.0
+intra   9.0
+
+
+//=====================================================================
+// external system controller settings:
+//      n_chain  [integer]  n of imaginary particle
+//      n_rep    [integer]  n of iteration
+//      n_nys    [integer]  n of integration
+//      NVT_freq [/s]       frequency of NVT control
+//      NPT_freq [/s]       frequency of NPT control
+//
+//      default control mode:
+//          default, mode, temperature, pressure
+//              default                     [-]  tag.
+//              mode ,temperature, presuure [*]  show description of "external system control sequence" in below.
+//=====================================================================
+@<CONDITION>EXT_SYS
+n_chain   3
+n_rep     3
+n_nys     3
+NVT_freq  1.e13
+NPT_freq  1.e11
+
+default   NVE  300.0  0.0
+
+
+//=====================================================================
+//  external system control sequence:
+//      mode, period, temperature, pressure
+//          mode        [-]        must be "NVE", "NVT", or "NPT".
+//          period      [integer]  period for applying control.
+//          temperature [K]
+//          pressure    [MPa]
+//=====================================================================
+@<CONDITION>EXT_SYS_SEQUENCE
+//--- test sequeence
+NPT   10000  600.0   1.0
+
+
+//=====================================================================
+//  recorder settings:
+//      ***_interval [integer]
+//      ***_start    [integer]
+//
+//      pos_***     [*]  for position data. written in "./posdata/"
+//      pdb_***     [*]  for ***.pdb file.  written in "./pdb/"
+//      resume_***  [*]  for resume file.   written in "./resume/"
+//
+//      eng_***  [*]  for energy observer.
+//      prop_*** [*]  for property observer.
+//=====================================================================
+@<CONDITION>RECORD
+pos_interval  100
+pos_start       0
+
+eng_interval   50
+eng_start       0
+
+prop_interval  50
+prop_start      0
+
+pdb_interval  1000
+pdb_start        0
+
+resume_interval  1000
+resume_start        0

@@ -1,0 +1,20 @@
+/* IMF.c */
+int GetArraySizeLifeTime(void);
+int GetArraySizeLifeTimeZMF(void);
+void InitializeLifeTimeLookUpTable(void);
+double GetDyingStarMassFromAge(double Age, const double Metal);
+double GetDyingStarMassFromAgeWithClip(const double Age, const double Metal);
+double GetLifeTimeFromStellarMass(const double Mass, const double Metal);
+void InitializeIMF(void);
+double IMFSNIINumberPerMass(void);
+double IMFdSNIINumberPerMass(const double Mass);
+double IMFSNIINumberPerMassLimitedTimeRange(const double TimeMax, const double TimeMin, const double Metallicity);
+double IMFSNIINumberPerMassLimitedRange(const double MassMax, const double MassMin);
+double IMFSNIIEjectaMassPerMass(void);
+double IMFSNIIEjectaMassPerMassLimitedRange(const double MassMax, const double MassMin);
+double IMFSNIIEjectaMassPerMassLimitedTimeRange(const double TimeMax, const double TimeMin, const double Metallicity);
+double IMFSNIIYieldMassPerMass(void);
+double IMFSNIIYieldMassPerMassLimitedRange(const double MassMax, const double MassMin);
+void IMFSNIINumberEjectaYieldPerMassLimitedRange(double MassMax, double MassMin, double *SNIINumber, double *SNIIEjectaMass, double *SNIIYieldMass);
+double IMFLongestLifeTime(void);
+double IMFShortestLifeTime(void);

@@ -1,0 +1,4 @@
+# architecture 		time 		Gflops ninteraction
+# N^2, coulomb only, no cutoff (N = 32768 for skylake, 256*512 for A64FX) 73 flops / interaction
+PPA			0.84758		51.94	1073709056
+GROMACS			0.931879	81.81	1073709056

@@ -1,0 +1,786 @@
+本節では、通信用データクラス{\tt CommInfo}クラスと{\tt Comm}クラスにつ
+いて記述する。これらのクラスはノード間通信のための情報の保持や実際の通
+信を行うモジュールである。{\tt CommInfo}クラスは1つのMPIのコミュニケー
+タを持ち、そのメンバ関数はそのコミュニケータの元で動作する．{\tt
+ParticleSystem}クラス、{\tt TreeForForce}クラス、{\tt DomainInfo}クラ
+スはそれぞれ通信用データクラスをもっており，ユーザーは自分で作成した
+{\tt CommInfo}クラスのオブジェクトをそれらのクラスのオブジェクトに与え
+ることで、任意のコミュニケータ上で相互作用計算をさせることができる．
+
+{\tt Comm}クラスはコミュニケータに{\tt MPI\_COMM\_WORLD}を指定した場合
+のラッパークラスとなっている．{\tt Comm}クラスはシングルトンパターンで
+管理されており、ユーザーはオブジェクトの生成は必要としない．
+
+ここでは{\tt CommInfo}クラスと{\tt Comm}クラスのAPIを記述する。
+
+%\subsubsubsection{CommInfoクラス}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsubsection{オブジェクトの生成}
+\subsubsubsection{オブジェクトの生成}
+{\tt CommInfo}クラスは以下のように宣言されている。
+\begin{lstlisting}[caption=CommInfo0]
+namespace ParticleSimulator {
+    class CommInfo;
+}
+\end{lstlisting}
+
+{\tt CommInfo}クラスのオブジェクトの生成は以下のように行う。ここでは
+{\tt comm\_info}というオブジェクトを生成している。
+\begin{screen}
+\begin{verbatim}
+PS::CommInfo comm_info;
+\end{verbatim}
+\end{screen}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{API}
+
+{\tt CommInfo}クラスのAPIの宣言は以下のようになっている。
+\begin{lstlisting}[caption=CommunicationInformation]
+namespace ParticleSimulator {
+    class CommInfo{
+    public:
+        void setCommunicator(const MPI_Comm & comm);
+        CommInfo create(const int n, const int rank[]);
+        CommInfo split(int color, int key);
+        S32 getRank();
+        S32 getNumberOfProc();
+        S32 getRankMultiDim(const S32 id);
+        S32 getNumberOfProcMultiDim(const S32 id);
+        bool synchronizeConditionalBranchAND
+                    (const bool local);
+        bool synchronizeConditionalBranchOR
+                    (const bool local);
+        template<class T>
+        T getMinValue(const T val);
+        template<class Tfloat, class Tint>
+        void getMinValue(const Tfloat f_in,
+                                const Tint i_in,
+                                Tfloat & f_out,
+                                Tint & i_out);
+        template<class T>
+        T getMaxValue(const T val);
+        template<class Tfloat, class Tint>
+        void getMaxValue(const Tfloat f_in,
+                                const Tint i_in,
+                                Tfloat & f_out,
+                                Tint & i_out );
+        template<class T>
+        T getSum(const T val);
+        template<class T>
+        void broadcast(T * val,
+                              const S32 n,
+                              const S32 src=0);
+        MPI_Comm getCommunicator();
+    };
+}
+\end{lstlisting}
+
+
+{\tt Comm}クラスのAPIの宣言は以下のようになっている。
+\begin{lstlisting}[caption=Communication]
+namespace ParticleSimulator {
+    class Comm{
+    public:
+        static S32 getRank();
+        static S32 getNumberOfProc();
+        static S32 getRankMultiDim(const S32 id);
+        static S32 getNumberOfProcMultiDim(const S32 id);
+        static bool synchronizeConditionalBranchAND
+                    (const bool local);
+        static bool synchronizeConditionalBranchOR
+                    (const bool local);
+        template<class T>
+        static T getMinValue(const T val);
+        template<class Tfloat, class Tint>
+        static void getMinValue(const Tfloat f_in,
+                                const Tint i_in,
+                                Tfloat & f_out,
+                                Tint & i_out);
+        template<class T>
+        static T getMaxValue(const T val);
+        template<class Tfloat, class Tint>
+        static void getMaxValue(const Tfloat f_in,
+                                const Tint i_in,
+                                Tfloat & f_out,
+                                Tint & i_out );
+        template<class T>
+        static T getSum(const T val);
+        template<class T>
+        static void broadcast(T * val,
+                              const S32 n,
+                              const S32 src=0);
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{初期設定}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{コンストラクタ}
+
+\begin{screen}
+\begin{verbatim}
+PS::CommInfo PS::CommInfo::CommInfo(const MPI_Comm & comm = MPI_COMM_NULL);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+comm: 入力．{\tt const MPI\_Comm \&} 型．
+
+\item {\bf 返値}
+
+CommInfo型．生成されたコミュニケータ．
+
+\item {\bf 機能}
+
+{\tt CommInfo}クラスのオブジェクトを生成する。デフォルトのコミュニケー
+タは{\tt MPI\_COMM\_NULL}である．
+
+\end{itemize}
+
+\subsubsubsubsection{PS::CommInfo::setCommunicator}
+\begin{screen}
+\begin{verbatim}
+void PS::CommInfo::setCommunicator(const MPI_Comm & comm = MPI_COMM_WORLD);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+comm: 入力．{\tt const MPI\_Comm \&} 型．
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+{\tt CommInfo}クラスのオブジェクトにMPIコミュニケータを設定する．デフォ
+ルトは{\tt MPI\_COMM\_WORLD}である．
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::create}
+\begin{screen}
+\begin{verbatim}
+CommInfo create(const int n, const int rank[]) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+n: 入力．int型．生成されるコミュニケータに所属するプロセスの数．
+
+rank: 入力．int型の配列．生成されるコミュニケータに所属するプロセスのランクの配列．
+
+\item {\bf 返値}
+
+CommInfo型．生成されたコミュニケータ．
+
+\item {\bf 機能}
+
+呼び出しもとの{\tt CommInfo}クラスのもつMPIコミュニケータから新たなコ
+ミュニケータを作成する．配列rank[]で表せられるプロセスが所属するコミュ
+ニケータを作成し返す．
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::split}
+\begin{screen}
+\begin{verbatim}
+CommInfo split(int color, int key) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+color: 入力．int型．
+key: 入力．int型．
+
+\item {\bf 返値}
+
+CommInfo型．スプリットされたコミュニケータを返す．
+
+\item {\bf 機能}
+
+呼び出しもとの{\tt CommInfo}クラスのもつMPIコミュニケータを分割する．
+同じcolorのプロセスは同一コミュニケータに所属し、keyの小さいものから順
+にそのコミュニケータでのランクが割り振られる．
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{情報取得}
+
+\subsubsubsubsubsection{PS::CommInfo::getRank}
+
+\begin{screen}
+\begin{verbatim}
+PS::S32 PS::CommInfo::getRank();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+{PS::S32}型。コミュニケータ内でのランクを返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::getNumberOfProc}
+
+\begin{screen}
+\begin{verbatim}
+PS::S32 PS::CommInfo::getNumberOfProc();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+PS::S32型。全プロセス数を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::getRankMultiDim}
+
+\begin{screen}
+\begin{verbatim}
+PS::S32 PS::CommInfo::getRankMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+id: 入力。const PS::S32型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{{\bf 返り値}}
+
+PS::S32型。id番目の軸でのランクを返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::getNumberOfProcMultiDim}
+
+\begin{screen}
+\begin{verbatim}
+PS::S32 PS::CommInfo::getNumberOfProcMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+id: 入力。const PS::S32型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{{\bf 返り値}}
+
+PS::S32型。id番目の軸のプロセス数を返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::synchronizeConditionalBranchAND}
+
+\begin{screen}
+\begin{verbatim}
+bool PS::CommInfo::synchronizeConditionalBranchAND(const bool local)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+local: 入力。const bool型。
+
+\item{{\bf 返り値}}
+
+bool型。全プロセスでlocalの論理積を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::synchronizeConditionalBranchOR}
+
+\begin{screen}
+\begin{verbatim}
+bool PS::CommInfo::synchronizeConditionalBranchOR(const bool local);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+local: 入力。const bool型。
+
+\item{{\bf 返り値}}
+
+bool型。全プロセスでlocalの論理和を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::getMinValue}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+T PS::CommInfo::getMinValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+val: 入力。const T型。
+
+\item{{\bf 返り値}}
+
+T型。全プロセスでvalの最小値を取り、結果を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+void PS::CommInfo::getMinValue(const Tfloat f_in,
+                               const Tint i_in,
+                               Tfloat & f_out,
+                               Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+f\_in: 入力。const Tfloat型。
+
+i\_in: 入力。const Tint型。
+
+f\_out: 出力。Tfloat型。全プロセスでf\_inの最小値を取
+り、結果を返す。
+
+i\_out: 出力。Tint型。f\_outに伴うIDを返す。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::getMaxValue}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::CommInfo::getMaxValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+val: 入力。const T型。
+
+\item{{\bf 返り値}}
+
+T型。全プロセスでvalの最大値を取り、結果を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+void PS::CommInfo::getMaxValue(const Tfloat f_in,
+                               const Tint i_in,
+                               Tfloat & f_out,
+                               Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+f\_in: 入力。const Tfloat型。
+
+i\_in: 入力。{const Tint}型。
+
+{f\_out}: 出力。{Tfloat}型。全プロセスで{f\_in}の最大値を取
+り、結果を返す。
+
+{i\_out}: 出力。{Tint}型。{f\_out}に伴うIDを返す。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::getSum}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+T PS::Comm::getSum(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{val}: 入力。{const T}型。
+
+\item{{\bf 返り値}}
+
+{T}型。全プロセスで{val}の総和を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::CommInfo::broadcast}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+void PS::CommInfo::broadcast(T * val,
+                             const PS::S32 n,
+                             const PS::S32 src=0);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+val: 入力。T *型。
+
+n: 入力。const PS::S32型。T型変数の数。
+
+src: 入力。const PS::S32型。放送するプロセスランク。デフォルトのランク
+は0。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+プロセスランクsrcのプロセスがn個のT型変数を全プロセスに放送する。
+
+\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\subsubsubsection{Commクラス}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\subsubsubsubsection{CommクラスのAPI}
+
+
+
+\subsubsubsubsubsection{PS::Comm::getRank}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getRank();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+{PS::S32}型。全プロセス中でのランクを返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::getNumberOfProc}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getNumberOfProc();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+PS::S32型。全プロセス数を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::getRankMultiDim}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getRankMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+id: 入力。const PS::S32型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{{\bf 返り値}}
+
+PS::S32型。id番目の軸でのランクを返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::getNumberOfProcMultiDim}
+
+\begin{screen}
+\begin{verbatim}
+static PS::S32 PS::Comm::getNumberOfProcMultiDim(const PS::S32 id);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+id: 入力。const PS::S32型。軸の番号。x軸:0, y軸:1, z軸:2。
+
+\item{{\bf 返り値}}
+
+PS::S32型。id番目の軸のプロセス数を返す。2次元の場合、id=2は1を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::synchronizeConditionalBranchAND}
+
+\begin{screen}
+\begin{verbatim}
+static bool PS::Comm::synchronizeConditionalBranchAND(const bool local)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+local: 入力。const bool型。
+
+\item{{\bf 返り値}}
+
+bool型。全プロセスでlocalの論理積を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::synchronizeConditionalBranchOR}
+
+\begin{screen}
+\begin{verbatim}
+static bool PS::Comm::synchronizeConditionalBranchOR(const bool local);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+local: 入力。const bool型。
+
+\item{{\bf 返り値}}
+
+bool型。全プロセスでlocalの論理和を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::getMinValue}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getMinValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+val: 入力。const T型。
+
+\item{{\bf 返り値}}
+
+T型。全プロセスでvalの最小値を取り、結果を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+static void PS::Comm::getMinValue(const Tfloat f_in,
+                                  const Tint i_in,
+                                  Tfloat & f_out,
+                                  Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+f\_in: 入力。const Tfloat型。
+
+i\_in: 入力。const Tint型。
+
+f\_out: 出力。Tfloat型。全プロセスでf\_inの最小値を取
+り、結果を返す。
+
+i\_out: 出力。Tint型。f\_outに伴うIDを返す。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::getMaxValue}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getMaxValue(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+val: 入力。const T型。
+
+\item{{\bf 返り値}}
+
+T型。全プロセスでvalの最大値を取り、結果を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template <class Tfloat, class Tint>
+static void PS::Comm::getMaxValue(const Tfloat f_in,
+                                  const Tint i_in,
+                                  Tfloat & f_out,
+                                  Tint & i_out);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+f\_in: 入力。const Tfloat型。
+
+i\_in: 入力。{const Tint}型。
+
+{f\_out}: 出力。{Tfloat}型。全プロセスで{f\_in}の最大値を取
+り、結果を返す。
+
+{i\_out}: 出力。{Tint}型。{f\_out}に伴うIDを返す。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::getSum}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static T PS::Comm::getSum(const T val);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{val}: 入力。{const T}型。
+
+\item{{\bf 返り値}}
+
+{T}型。全プロセスで{val}の総和を取り、結果を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::Comm::broadcast}
+
+\begin{screen}
+\begin{verbatim}
+template <class T>
+static void PS::Comm::broadcast(T * val,
+                                const PS::S32 n,
+                                const PS::S32 src=0);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+val: 入力。T *型。
+
+n: 入力。const PS::S32型。T型変数の数。
+
+src: 入力。const PS::S32型。放送するプロセスランク。デフォルトのランク
+は0。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+プロセスランクsrcのプロセスがn個のT型変数を全プロセスに放送する。
+
+\end{itemize}
+
+

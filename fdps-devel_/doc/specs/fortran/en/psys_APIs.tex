@@ -1,0 +1,772 @@
+In this section, we describe the specifications of APIs related to an object of ParticleSystem class in FDPS (see Chap.~\ref{chap:overview}; hereafter, we call it \textbf{ParticleSystem object}). In FDPS, ParticleSystem object has all information of a particle as described in FullParticle type and provides an API to exchange particles between MPI processes. Users must manage particles via this ParticleSystem object. In FDPS Fortran/C interface, this object is managed by an identification number.
+
+Here is the list of APIs to manipulate ParticleSystem object:
+\begin{screen}
+\begin{spverbatim}
+(fdps_)create_psys
+(fdps_)delete_psys
+(fdps_)init_psys
+(fdps_)get_psys_info
+(fdps_)get_psys_memsize
+(fdps_)get_psys_time_prof
+(fdps_)clear_psys_time_prof
+(fdps_)set_nptcl_smpl
+(fdps_)set_nptcl_loc
+(fdps_)get_nptcl_loc
+(fdps_)get_nptcl_glb
+get_psys_fptr (Fortran only)
+fdps_get_psys_cptr (C only)
+(fdps_)exchange_particle
+(fdps_)add_particle 
+(fdps_)remove_particle
+(fdps_)adjust_pos_into_root_domain
+(fdps_)sort_particle
+(fdps_)set_psys_comm_info
+\end{spverbatim}
+\end{screen}
+where \texttt{(fdps\_)} represents that the API names for C language start with a string of characters \texttt{fdps\_}.
+
+In the following, we describe the specification of each API in the order shown above.
+\clearpage
+
+
+%=============================================================
+\subsection{create\_psys}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%create_psys(psys_num,psys_info_in)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_create_psys(int *psys_num,
+                      char *psys_info);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input and Output & Variable receiving the identification number of a ParticleSystem object. \uwave{Note that users need to pass the address of the variable in C}. \\
+\texttt{psys\_info\_in} & character\newline\ \ (len=*,kind=c\_char) & Input & The name of a derived data type corresponding to FullParticle type. \\
+\texttt{psys\_info} & char * & Input & The name of a structure corresponding to FullParticle type. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Create an ParticleSystem object class and return its identification number. {\setnoko\Euc{Users must specify the name of a derived data type {\small (in Fortran)} or a structure {\small (in C)} in lower-case}}.
+
+\clearpage
+
+%=============================================================
+\subsection{delete\_psys}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%delete_psys(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_delete_psys(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\  
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Delete a ParticleSystem object indicated by the identification number.
+
+\clearpage
+
+%=============================================================
+\subsection{init\_psys}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%init_psys(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_init_psys(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\    
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Initialize an ParticleSystem object indicated by the identification number. Users must call this API before calling APIs for ParticleSystem object described later.
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_info}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_psys_info(psys_num,psys_info)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_get_psys_info(const int psys_num,
+                        char *psys_info,
+                        size_t *charlen);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\      
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\texttt{psys\_info} & character \newline\ \ (len=*,kind=c\_char) & Input and Output & Characters to receive the name of a FullParticle type corresponding to a ParticleSystem object indicated by the identification number. \\
+\texttt{charlen} & size\_t * & Input and Output & The length of a string of characters substituted into variable \texttt{psys\_info}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Obtain the name of FullParticle type corresponding to ParticleSystem object indicated by the identification number.
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_memsize}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+function fdps_ctrl%get_psys_memsize(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+long long int fdps_get_psys_memsize(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\        
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+Type integer(kind=c\_long\_long).
+
+\subsubsection*{Function}
+Return the size of the memory used in the ParticleSystem object.
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_time\_prof}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_psys_time_prof(psys_num,prof)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_get_psys_time_prof(const int psys_num,
+                             fdps_time_prof *prof);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\        
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\texttt{prof} & type(fdps\_time\_prof) & Input and Output & Variable giving the identification number of a ParticleSystem object. {\setnoko\Euc{Note that users need to pass the address of the variable in C}}.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Store the execution time (in milliseconds) of the API \texttt{(fdps\_)exchange\_particle} to the member variable \texttt{exchange\_particles} of a {\tt time\_profile} object.
+
+\clearpage
+
+%=============================================================
+\subsection{clear\_psys\_time\_prof}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%clear_psys_time_prof(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_clear_psys_time_prof(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\ 
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+ParticleSystem object has a private variable of TimeProfile class, which is a C++ class corresponding to a derived data type \texttt{fdps\_time\_prof} in FDPS Fortran interface  or a structure \texttt{fdps\_time\_prof} in FDPS C interface (for details, see the specification document of FDPS, \texttt{doc\_specs\_cpp\_en.pdf}). This API sets the the member variable \texttt{exchange\_particles} of this private variable of the ParticleSystem object indicated by \texttt{psys\_num} to 0. Usually, this API is used to reset time measurement.
+
+\clearpage
+
+%=============================================================
+\subsection{set\_nptcl\_smpl}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_nptcl_smpl(psys_num,nptcl)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_nptcl_smpl(const int psys_num,
+                         const int nptcl);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\   
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\texttt{nptcl} & integer(kind=c\_int) & Input & The average number of sample particles per MPI process.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Set the average number of sample particles per MPI process. If this
+function is not called, the average number is 30.
+
+\clearpage
+
+%=============================================================
+\subsection{set\_nptcl\_loc}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_nptcl_loc(psys_num,nptcl)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_nptcl_loc(const int psys_num,
+                        const int nptcl);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\   
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\texttt{nptcl} & integer(kind=c\_int) & Input & The number of particles of the MPI process calling this API. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Set the number of particles of the MPI process calling this API.
+
+\clearpage
+
+%=============================================================
+\subsection{get\_nptcl\_loc}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+function fdps_ctrl%get_nptcl_loc(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+int fdps_get_nptcl_loc(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\     
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+Type integer(kind=c\_int).
+
+\subsubsection*{Function}
+Return the number of particles of the MPI process calling this API.
+
+\clearpage
+
+%=============================================================
+\subsection{get\_nptcl\_glb}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+function fdps_ctrl%get_nptcl_glb(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+int fdps_get_nptcl_glb(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\       
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+Type integer(kind=c\_int).
+
+\subsubsection*{Function}
+Return the total number of particles of all processes.
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_fptr {\small (Fortran only)}}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_psys_fptr(psys_num,fptr_to_FP)
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object. \\
+\texttt{fptr\_to\_FP} & FullParticle type,\newline dimension(:), pointer & Input and Output & The pointer to the array of particles of FullParticle type stored in the ParticleSystem object. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Get the pointer to the array of particles of FullParticle type stored in the ParticleSystem object indicated by the identification number \texttt{psys\_num}. The size of the array is set to the number of the local particles, which is the returned value of the API \texttt{get\_nptcl\_loc}. Users can validly access the array elements \texttt{fptr\_to\_FP(}$i$\texttt{)} ($i=1$-$n_{\mathrm{ptcl,loc}}$, where $n_{\mathrm{ptcl,loc}}$ is the number of local particles). This API provides only the way to access the array of particles stored in a ParticleSystem object. Below is an usage example of this API. In this example, one first gets the pointer of the array of particles of FullParticle type \texttt{full\_particle} and then set some values to these particles:
+\begin{lstlisting}[caption=An usage example of API \texttt{get\_psys\_fptr}]
+!* Local variablestype(full_particle), dimension(:), pointer :: ptcl
+!* Get the pointer to full particle datacall fdps_ctrl%get_psys_fptr(psys_num,ptcl)
+!* Set particle datado i=1,nptcl_loc   ptcl(i)%mass =  ! do something
+   ptcl(i)%pos%x = ! do something
+   ptcl(i)%pos%y = ! do something
+   ptcl(i)%pos%z = ! do somethingend do
+\end{lstlisting}
+
+\clearpage
+
+%=============================================================
+\subsection{fdps\_get\_psys\_cptr {\small (C only)}}
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void * fdps_get_psys_cptr(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & const int & Input & Variable giving the identification number of a ParticleSystem object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+Type \texttt{void *}.
+
+\subsubsection*{Function}
+Get the pointer to the array of particles of FullParticle type stored in the ParticleSystem object indicated by the identification number \texttt{psys\_num}. The size of the array is set to the number of the local particles, which is the returned value of the API \texttt{fdps\_get\_nptcl\_loc}. Users can validly access the array elements $i=0$-$n_{\mathrm{ptcl,loc}}-1$, where $n_{\mathrm{ptcl,loc}}$ is the returned value of API \texttt{fdps\_get\_nptcl\_loc}. This API provides only the way to access the array of particles stored in a ParticleSystem object. Below is an usage example of this API. In this example, one first gets the pointer of the array of particles of FullParticle type \texttt{full\_particle} and then set some values to these particles:
+\begin{lstlisting}[language=C,caption=An usage example of API \texttt{fdps\_get\_psys\_cptr}]
+// Local variables
+struct full_particle *ptcl;
+// Get the pointer to full particle data
+ptcl = (struct full_particle *) fdps_get_psys_cptr(psys_num);
+// Set particle data
+for (i = 0; i < nptcl_loc; i++) {
+   ptcl[i].mass =  // do something
+   ptcl[i].pos.x = // do something
+   ptcl[i].pos.y = // do something
+   ptcl[i].pos.z = // do something
+}
+\end{lstlisting}
+
+\clearpage
+
+%=============================================================
+\subsection{exchange\_particle}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%exchange_particle(psys_num,dinfo_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_exchange_particle(const int psys_num,
+                            const int dinfo_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\         
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\texttt{dinfo\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a DomainInfo object.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Redistribute particles among MPI processes so that the particles are
+in appropriate domains.
+
+\clearpage
+
+%=============================================================
+\subsection{add\_particle}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%add_particle(psys_num,ptcl)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_add_particle(const int psys_num,
+                       const void *cptr_to_fp);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object. \\
+\texttt{ptcl} & FullParticle type & Input & Data of particle of FullParticle type. \\
+\texttt{cptr\_to\_fp} & const void * & Input & Address of data of particle of FullParticle type.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Add particle \texttt{ptcl} {\small (in Fortran)} or the copy of particle pointed by the pointer \texttt{cptr\_to\_fp} {\small (in C)} to the end of the array of particles of FullParticle type stored in the ParticleSystem object indicated by the identification number \texttt{psys\_num}.
+
+\clearpage
+
+%=============================================================
+\subsection{remove\_particle}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%remove_particle(psys_num,nptcl,ptcl_indx)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_remove_particle(const int psys_num,                                                       
+                          const int nptcl,
+                          int *ptcl_indx);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object. \\
+\texttt{nptcl} & integer(kind=c\_int) & Input & The number of particles to be removed.\\
+\texttt{ptcl\_indx} & integer(kind=c\_int),\newline dimension(nptcl) & Input & An array storing the array indices (array element numbers) of the particles to be removed. {\setnoko\Euc{Note that users need to pass the beginning address of the array in C}}. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Remove the particles with the indice in the array {\tt ptcl\_idx}. The minimum value of array index must be $1$ in Fortran and $0$ in C. After calling this API, the order of the array of the particles would be changed.
+
+\clearpage
+
+%=============================================================
+\subsection{adjust\_pos\_into\_root\_domain}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%adjust_pos_into_root_domain(psys_num,dinfo_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_adjust_pos_into_root_domain(const int psys_num,
+                                      const int dinfo_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O characteristics & Defintion \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object. \\
+\texttt{dinfo\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a DomainInfo object. \\
+\bottomrule
+
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+Under the periodic boundary condition, the particles outside the calculation domain move to appropriate positions.
+
+\clearpage
+
+%=============================================================
+\subsection{sort\_particle}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%sort_particle(psys_num,pfunc_comp)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_sort_particle(const int psys_num,
+                        _Bool (*pfunc_comp)(const void *, const void *));
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input & Variable giving the identification number of a ParticleSystem object.\\
+\texttt{pfunc\_comp} & type(c\_funptr) & Input & Pointer to a function which returns \texttt{.true.} {\small (in Fortran)}/\texttt{true} {\small (in C)} if FullParticle in the first argument is less than the other one in the second argument. \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+This API sorts an array of FullParticles stored in the ParticleSystem object specified by \texttt{psys\_num} in the order determined by a comparison function \texttt{comp} (function pointer to which is \texttt{pfunc\_comp}). The returned value of \texttt{comp} must be logical(kind=c\_bool) type {\small (in Fortran)} or \_Bool type {\small (in C)} and it must take two arguments of FullParticles. Note that the data types of two arguments of \texttt{comp} must be FullParticle type that is used in the creation of the ParticleSystem object specified by \texttt{psys\_num}; Otherwise, the API does not work correctly. The following is an example of \texttt{comp} written in Fortran to sort FullParticles in ascending order of particle ID.
+\begin{lstlisting}[caption=An example of comparison function (Fortran)]
+function comp(left, right) bind(c)
+   use, intrinsic :: iso_c_binding
+   use user_defined_types
+   implicit none
+   logical(kind=c_bool) :: comp
+   type(full_particle), intent(in) :: left, right
+   comp = (left%id < right%id)
+end function comp
+\end{lstlisting}
+where we assume that derived data type \texttt{full\_particle} is defined in the module \texttt{user\_defined\_types}.
+
+
+%=============================================================
+\subsection{set\_psys\_comm\_info}
+\subsubsection*{Fortran syntax}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_psys_comm_info(psys_num, ci)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C syntax}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_psys_comm_info(int psys_num,
+                                   int ci);
+\end{spverbatim}
+\end{screen}
+
+
+
+% 仮引数
+\subsubsection*{Dummy argument specification}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & Input &  Variable giving the identification number of a ParticleSystem object.\\
+\texttt{ci} & integer(kind=c\_int) & Input & Index of the communicator.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{Returned value}
+None.
+
+\subsubsection*{Function}
+
+Specify the communicator used for MPI communication.
+
+\clearpage

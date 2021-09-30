@@ -1,0 +1,2 @@
+./open_house/2016/fs2020/poster/一般公開2016牧野チーム_v1.pdf filter=lfs diff=lfs merge=lfs -text
+./open_house/2016/fs2020/poster/一般公開2016牧野チーム_v1.ai filter=lfs diff=lfs merge=lfs -text

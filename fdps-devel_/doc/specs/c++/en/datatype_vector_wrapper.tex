@@ -1,0 +1,31 @@
+The wrappers of vector types are defined as follows.
+%ベクトル型のラッパーの定義を以下に示す。
+\begin{lstlisting}[caption=vectorwrapper]
+namespace ParticleSimulator{
+    typedef Vector2<F32> F32vec2;
+    typedef Vector3<F32> F32vec3;
+    typedef Vector2<F64> F64vec2;
+    typedef Vector3<F64> F64vec3;
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+    typedef F32vec2 F32vec;
+    typedef F64vec2 F64vec;
+#else
+    typedef F32vec3 F32vec;
+    typedef F64vec3 F64vec;
+#endif
+}
+\end{lstlisting}
+
+PS::F32vec2, PS::F32vec3, PS::F64vec2, and PS::F64vec3 are,
+respectively, 2D vector in single precision, 3D vector in single
+presicion, 2D vector in double precision, and 3D vector in double
+precision. If users set 2D (3D) coordinate system, PS::F32vec and
+PS::F64vec is wrappers of PS::F32vec2 and PS::F64vec2 (PS::F32vec3 and
+PS::F64vec3).
+%%すなわちPS::F32vec2, PS::F32vec3, PS::F64vec2, PS::F64vec3はそれぞれ
+%%単精度2次元ベクトル、倍精度2次元ベクトル、単精度3次元ベクトル、倍精度
+%%3次元ベクトルである。FDPSで扱う空間座標系を2次元とした場合、
+%%PS::F32vecとPS::F64vecはそれぞれ単精度2次元ベクトル、倍精度2次元ベク
+%%トルとなる。一方、FDPSで扱う空間座標系を3次元とした場合、PS::F32vecと
+%%PS::F64vecはそれぞれ単精度3次元ベクトル、倍精度3次元ベクトルとなる。
+

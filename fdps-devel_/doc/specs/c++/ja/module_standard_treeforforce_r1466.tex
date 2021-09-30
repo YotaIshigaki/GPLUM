@@ -1,0 +1,2019 @@
+本節では、相互作用ツリークラスについて記述する。このクラスは粒子間相互
+作用の計算を行うモジュールである。まずオブジェクトの生成方法を記述し、
+その後APIを記述する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{オブジェクトの生成}
+
+このクラスは以下のように宣言されている。
+\begin{lstlisting}[caption=TreeForForce0]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce;
+}
+\end{lstlisting}
+
+テンプレート引数は順に、PS::SEARCH\_MODE型(ユーザー選択)、Forceク
+ラス(ユーザー定義)、EssentialParticleIクラス(ユーザー定義)、
+EssentialParticleJ型(ユーザー定義)、ローカルツリーのMoment型(ユーザー
+定義)、グローバルツリーのMoment型(ユーザー定義)、SuperParticleJ型(ユー
+ザー定義)である。
+
+PS::SEARCH\_MODE型に応じてラッパーを用意した。これらのラッパーを使えば
+入力するテンプレート引数の数が減るので、こちらのラッパーを用いることを
+推奨する。以下、PS::SEARCH\_MODE型がPS::SEARCH\_MODE\_LONG,
+PS::SEARCH\_MODE\_LONG\_CUTOFF, PS::SEARCH\_MODE\_GATHER,
+PS::SEARCH\_MODE\_SCATTER, \\PS::SEARCH\_MODE\_SYMMETRYの場合のオブジェ
+クトの生成方法を記述する。
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_LONG}
+\label{sec:module_treeforce_standard_search_mode_long}
+
+PS::SEARCH\_MODE\_LONG\_SCATTER も同様である。
+
+以下のようにオブジェクトsystemを生成する。
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj, TMom, TSpj>::Normal system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス(ユーザー定義)、EssentialParticleI
+クラス(ユーザー定義)、EssentialParticleJクラス(ユーザー定義)、ローカル
+ツリー及びグローバルツリーのMomentクラス(ユーザー定義)、SuperParticleJ
+クラス(ユーザー定義)である。
+
+あらかじめMomentクラスとSuperParticleJクラスを指定した型も用意した
+(節\ref{sec:moment}, \ref{sec:superparticlej}参照)。これらはモーメント
+の計算方法別に6種類ある。以下、粒子の重心を中心とした場合の単極子まで、
+四重極子までのモーメント計算、粒子の幾何中心を中心とした場合の単極子ま
+で、双極子まで、四重極子までのモーメント計算、のオブジェクトの生成方法
+をこの順で記述する。ここでは、すべてsystemというオブジェクトを生成して
+いる。
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::Monopole system;
+\end{verbatim}
+\end{screen}
+
+%%\begin{screen}
+%%\begin{verbatim}
+%%PS::TreeForForceLong<Tforce, Tepi, Tepj>::Dipole system;
+%%\end{verbatim}
+%%\end{screen}
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::Quadrupole system;
+\end{verbatim}
+\end{screen}
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::MonopoleGeometricCenter system;
+\end{verbatim}
+\end{screen}
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::DipoleGeometricCenter system;
+\end{verbatim}
+\end{screen}
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::QuadrupoleGeometricCenter system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス、EssentialParticleIクラス、
+EssentialParticleJクラスである。
+
+また、PS::SEARCH\_MODE\_LONG\_SCATTER のためにも
+あらかじめMomentクラスとSuperParticleJクラスを指定した型も用意した。
+MomentMonopoleScatter と
+MomentQuadruopoleScatter に対応した以下の2つである。
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::MonopoleWithScatterSearch system;
+\end{verbatim}
+\end{screen}
+
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::QuadrupoleWithScatterSearch system;
+\end{verbatim}
+\end{screen}
+
+テンプレート引数は PS::SEARCH\_MODE\_LONG の場合と同じである。
+
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_LONG\_CUTOFF}
+
+
+以下のようにオブジェクトsystemを生成する。
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj, TMom, TSpj>::WithCutoff system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス、EssentialParticleIクラス、
+EssentialParticleJクラス、ローカルツリー及びグローバルツリーのMomentク
+ラス、SuperParticleJクラスである。
+
+あらかじめMomentクラスとSuperParticleJ型を指定したクラスも用意した
+(節\ref{sec:moment}, \ref{sec:superparticlej}参照)。モーメント計算の中
+心を粒子の重心とした場合に、単極子まで計算するものである。ここでは
+systemというオブジェクトを生成している。
+
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceLong<TResult, TEpi, TEpj>::MonopoleWithCutoff system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス、EssentialParticleIクラス、
+EssentialParticleJクラスである。
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_GATHER}
+
+以下のようにオブジェクトsystemを生成する。
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceShort<TResult, TEpi, TEpj>::Gather system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス、EssentialParticleIクラス、
+EssentialParticleJクラスである。
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_SCATTER}
+
+以下のようにオブジェクトsystemを生成する。
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceShort<TResult, TEpi, TEpj>::Scatter system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス、EssentialParticleIクラス、
+EssentialParticleJクラスである。
+
+\subsubsubsubsection{PS::SEARCH\_MODE\_SYMMETRY}
+
+以下のようにオブジェクトsystemを生成する。
+\begin{screen}
+\begin{verbatim}
+PS::TreeForForceShort<TResult, TEpi, TEpj>::Symmetry system;
+\end{verbatim}
+\end{screen}
+テンプレート引数は順に、Forceクラス、EssentialParticleIクラス、
+EssentialParticleJクラスである。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{API}
+
+このモジュールには初期設定関連のAPI、相互作用計算関連の低レベルAPI、相
+互作用計算関連の高レベルAPI、ネイバーリスト関連のAPIがある。以下、各節
+に分けて記述する。
+
+本節の中のAPIの宣言ではテンプレートクラスのテンプレート引数は省略する。
+すなわち、本来ならば以下のように記述するべきであるが、
+\begin{screen}
+\begin{verbatim}
+template <class TSearchMode,
+          class TResult,
+          class TEpi,
+          class TEpj,
+          class TMomLocal,
+          class TMomGlobal,
+          class TSpj>
+void PS::TreeForForce<TSearchMode,
+                      TEpi,
+                      TEpj,
+                      TMomLocal,
+                      TMomGlobal,
+                      TSpj>::MemberFunction1();
+
+template <class TSearchMode,
+          class TResult,
+          class TEpi,
+          class TEpj,
+          class TMomLocal,
+          class TMomGlobal,
+          class TSpj>
+template <class TTT>
+void PS::TreeForForce<TSearchMode,
+                      TEpi,
+                      TEpj,
+                      TMomLocal,
+                      TMomGlobal,
+                      TSpj>::MemberFunction2(TTT arg1);
+\end{verbatim}
+\end{screen}
+冗長であるので、以下のように省略する。
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::MemberFunction1();
+
+template <class TTT>
+void PS::TreeForForce::MemberFunction2(TTT arg1);
+\end{verbatim}
+\end{screen}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{初期設定}
+
+初期設定関連のAPIの宣言は以下のようになっている。このあと各APIについて
+記述する。
+\begin{lstlisting}[caption=TreeForForce1]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+    void TreeForForce();
+    void initialize(const U64 n_glb_tot,
+                    const F32 theta=0.7,
+                    const U32 n_leaf_limit=8,
+                    const U32 n_group_limit=64);
+    };
+}
+\end{lstlisting}
+
+\subsubsubsubsubsection{コンストラクタ}
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::TreeForForce();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+相互作用ツリークラスのオブジェクトを生成する。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::initialize}
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::initialize
+            (const PS::U64 n_glb_tot,
+             const PS::F32 theta=0.7,
+             const PS::U32 n_leaf_limit=8,
+             const PS::U32 n_group_limit=64);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+n\_glb\_tot: 入力。const PS::U64型。粒子配列の上限。
+
+theta: 入力。const PS::F32型。見こみ角に対する基準。デフォルト0.7。
+
+n\_leaf\_limit。const PS::U32型。ツリーを切るのをやめる粒子数の上限。
+デフォルト8。
+
+n\_group\_limit。const PS::U32型。相互作用リストを共有する粒子数の上限。
+デフォルト64。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+相互作用ツリークラスのオブジェクトを初期化する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{低レベル関数}
+
+相互作用計算関連の低レベルAPIの宣言は以下のようになっている。このあと
+各APIについて記述する。
+\begin{lstlisting}[caption=TreeForForce1]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        template<class Tpsys>
+        void setParticleLocalTree(const Tpsys & psys,
+                                  const bool clear=true);
+        template<class Tdinfo>
+        void makeLocalTree(const Tdinfo & dinfo);
+        void makeLocalTree(const F32 l,
+                           const F32vec & c = F32vec(0.0));
+        template<class Tdinfo>
+        void makeGlobalTree(const Tdinfo & dinfo);        
+        void calcMomentGlobalTree();
+        template<class Tfunc_ep_ep>
+        void calcForce(Tfunc_ep_ep pfunc_ep_ep,
+                       const bool clear=true);  
+        template<class Tfunc_ep_ep, class Tfunc_sp_ep>
+        void calcForce(Tfunc_ep_ep pfunc_ep_ep,
+                       Tfunc_sp_ep pfunc_sp_ep,
+                       const bool clear=true);
+        Tforce getForce(const S32 i);
+    };
+}
+\end{lstlisting}
+
+\subsubsubsubsubsection{PS::TreeForForce::setParticleLocalTree}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tpsys>
+void PS::TreeForForce::setParticleLocalTree
+            (const Tpsys & psys,
+             const bool clear = true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+psys: 入力。const Tpsys \& 型。ローカルツリーを構成する粒子群クラスの
+オブジェクト。
+
+clear: 入力。const bool型。前に読込んだ粒子をクリアするかどうか決定す
+るフラグ。trueでクリアする。デフォルトtrue。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+相互作用ツリークラスのオブジェクトに粒子群クラスのオブジェクトの粒子を
+読み込む。clearがtrueならば前に読込んだ粒子情報をクリアし、falseならク
+リアしない。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::makeLocalTree}
+%% setRootCell, mortonSortLocalTreeOnly, linkCellLocalTreeOnly
+%% setRootCell関係でオーバーロード
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::TreeForForce::makeLocalTree
+            (const Tdinfo & dinfo);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+dinfo: 入力。const Tdinfo \&型。領域クラスのオブジェクト。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+ローカルツリーを作る。領域クラスのオブジェクトから扱うべきルートドメイ
+ンを読み取り、ツリーのルートセルを決定する。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::TreeForForce::makeLocalTree
+            (const PS::F32 l,
+             const PS::F32vec & c = PS::F32vec(0.0));
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+l: 入力。const PS::F32型。ツリーのルートセルの大きさ。
+
+c: 入力。const PS::F32vec \&型。ツリーの中心の座標。デフォルトは座標原点。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+ローカルツリーを作る。ツリーのルートセルを２つの引数で決定する。ツリー
+のルートセルは全プロセスで共通でなければならない。共通でない場合の動作
+の正しさは保証しない。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::makeGlobalTree}
+%% calcMomentLocalTreeOnly, exchangeLocalEssentialTree,
+%% setLocalEssentialTreeToGlobalTree, mortonSortGlobalTreeOnly,
+%% linkCellGlobalTreeOnly
+
+\begin{screen}
+\begin{verbatim}
+template<class Tdinfo>
+void PS::TreeForForce::makeGlobalTree
+            (const Tdinfo & dinfo);        
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+dinfo: 入力。const Tdinfo \& 型。領域クラスのオブジェクト。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+グローバルツリーを作る。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcMomentGlobalTree}
+%% calcMomentGlobalTreeOnly, makeIPGroup
+
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::calcMomentGlobalTree();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+グローバルツリーの各々のセルのモーメントを計算する。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcForce}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep>
+void PS::TreeForForce::calcForce
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト
+(節\ref{sec:userdefined_calcForceEpEp}参照)。関数の引数は第１引数から
+順に(const) TEpi *型、const PS::S32型、(const) TEpj *型、const PS::S32
+型、TResult *型。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+このオブジェクトに読み込まれた粒子すべての粒子間相互作用を計算する。こ
+れを使うのはPS::SEARCH\_MODE型がPS::SEARCH\_MODE\_GATHER,
+PS::SEARCH\_MODE\_SCATTER, PS::SEARCH\_MODE\_SYMMETRYの場合に限る。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep, class Tfunc_sp_ep>
+void PS::TreeForForce::calcForce
+             (Tfunc_ep_ep pfunc_ep_ep,
+              Tfunc_ep_ep pfunc_sp_ep,
+              const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、const PS::S32型、(const) TEpj *型、
+const PS::S32型、TResult *型。
+
+pfunc\_sp\_ep: 入力。返値がvoid型のEssentialParticleIと
+SuperParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、const PS::S32型、(const) TSpj *型、
+const PS::S32型、TResult *型。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+このオブジェクトに読み込まれた粒子すべての粒子間相互作用を計算する。こ
+れを使うのはPS::SEARCH\_MODE型がPS::SEARCH\_MODE\_LONG,\\
+PS::SEARCH\_MODE\_LONG\_CUTOFFの場合に限る。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::getForce}
+
+\begin{screen}
+\begin{verbatim}
+TResult PS::TreeForForce::getForce(const PS::S32 i);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+i: 入力。const PS::S32型。粒子配列のインデックス。
+
+\item {\bf 返値}
+
+TResult型。PS::TreeForForce::setParticleLocalTreeでi番目に読み込まれた
+粒子の受ける作用。
+
+\item {\bf 機能}
+
+PS::TreeForForce::setParticleLocalTreeでi番目に読み込まれた粒子の受け
+る作用を返す。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::copyLocalTreeStructure}
+
+今後、追加する。
+
+\subsubsubsubsubsection{PS::TreeForForce::repeatLocalCalcForce}
+
+今後、追加する。
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{高レベル関数}
+\label{sec:treeForForceHighLevelAPI}
+
+相互作用計算関連の高レベルAPIの宣言は以下のようになっている。このあと
+各APIについて記述する。
+\begin{lstlisting}[caption=TreeForForce1]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        template<class Tfunc_ep_ep,
+                 class Tpsys,
+                 class Tdinfo>
+        void calcForceAllAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tpsys & psys,
+                     Tdinfo & dinfo,
+                     const bool clear_force = true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys,
+                 class Tdinfo>
+        void calcForceAllAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,  
+                     Tpsys & psys,
+                     TDinfo & dinfo,
+                     const bool clear_force=true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+                     
+        template<class Tfunc_dispatch,
+                 class Tfunc_retrieve,
+                 class Tpsys,
+                 class Tdinfo>
+        void TreeForForce::calcForceAllandWriteBackMultiWalk
+             (Tfunc_dispatch pfunc_dispatch,
+              Tfunc_retrieve pfunc_retrieve,
+              Tpsys & psys,
+              Tdinfo & dinfo,
+              const S32 nwalk,
+              const bool clear=true,
+              enum INTERACTION_LIST_MODE = INTERACTION_LIST_MAKE); 
+
+        void TreeForForce::calcForceAllandWriteBackMultiWalkIndex
+             (Tfunc_dispatch pfunc_dispatch,
+              Tfunc_retrieve pfunc_retrieve,
+              Tpsys & psys,
+              Tdinfo & dinfo,
+              const S32 nwalk,
+              const bool clear=true,
+              enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys,
+                 class Tdinfo>
+        void calcForceAll
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,
+                     Tpsys & psys,
+                     Tdinfo & dinfo,
+                     const bool clear_force=true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys,
+                 class Tdinfo>
+        void calcForceAll(Tfunc_ep_ep pfunc_ep_ep,
+                          Tfunc_sp_ep pfunc_sp_ep,
+                          Tpsys & psys,
+                          Tdinfo & dinfo,
+                          const bool clear_force=true,
+                          enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+
+        template<class Tfunc_ep_ep,
+                 class Tdinfo>
+        void calcForceMakeingTree
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tdinfo & dinfo,
+                     const bool clear_force=true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tdinfo>
+        void calcForceMakingTree
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,
+                     Tdinfo & dinfo,
+                     const bool clear_force=true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+
+        template<class Tfunc_ep_ep,
+                 class Tpsys>
+        void calcForceAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tpsys & psys,
+                     const bool clear=true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+                     
+        template<class Tfunc_ep_ep,
+                 class Tfunc_sp_ep,
+                 class Tpsys>
+        void calcForceAndWriteBack
+                    (Tfunc_ep_ep pfunc_ep_ep,
+                     Tfunc_sp_ep pfunc_sp_ep,
+                     Tpsys & psys,
+                     const bool clear=true,
+                     enum INTERACTION_LIST_MODE = MAKE_INTERACTION_LIST);
+    };
+}
+namespace PS = ParticleSimulator;
+\end{lstlisting}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcForceAllAndWriteBack}
+\label{sec:module_standard_treeforforce_calcforceallandwriteback}
+%% setParticleLocalTree, makeLocalTree, makeGlobalTree,
+%% calcMomentGlobalTree, calcForce, getForce
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tpsys,
+         class Tdinfo>
+void PS::TreeForForce::calcForceAllandWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              Tdinfo & dinfo
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+psys: 入力。Tpsys \&型。相互作用を計算したい粒子群クラスのオブジェクト。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトはPS::MAKE\_INTERACTION\_LIST。
+PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysの粒子すべての相互作用を計算し、その計算
+結果をpsysに書き戻す。これを使うのはPS::SEARCH\_MODE型が
+PS::SEARCH\_MODE\_GATHER, PS::SEARCH\_MODE\_SCATTER,
+PS::SEARCH\_MODE\_SYMMETRYの場合に限る。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tpsys,
+         class Tdinfo>
+void PS::TreeForForce::calcForceAllandWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              Tdinfo & dinfo
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+pfunc\_sp\_ep: 入力。返値がvoid型のEssentialParticleIとSuperParticleJ
+の間の相互作用計算用の関数オブジェクト。関数の引数は第１引数から順に
+(const) TEpi *型、PS::S32型、const TSpj *型、PS::S32型、TResult *型。
+
+psys: 入力。Tpsys \&型。相互作用を計算したい粒子群クラスのオブジェクト。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysの粒子すべての相互作用を計算し、その計算
+結果をpsysに書き戻す。これを使うのはPS::SEARCH\_MODE型が
+PS::SEARCH\_MODE\_LONG, PS::SEARCH\_MODE\_LONG\_CUTOFFの場合に限る。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_dispatch,
+         class Tfunc_retrieve,
+         class Tpsys,
+         class Tdinfo>
+void PS::TreeForForce::calcForceAllandWriteBackMultiWalk
+             (Tfunc_dispatch pfunc_dispatch,
+              Tfunc_retrieve pfunc_retrieve,
+              const PS::S32 tag_max,
+              Tpsys & psys,
+              Tdinfo & dinfo,
+              const PS::S32 nwalk,
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_dispatch: 入力。返値がvoid型で、EssentialParticleIの配列と
+EssentialParticleJの配列(とSuperParticleJの配列)をアクセラレータに転送
+し、カーネルを発行させる関数。PS::SEARCH\_MODE型が
+PS::SEARCH\_MODE\_LONG, PS::SEARCH\_MODE\_LONG\_CUTOFFの場合にこの関数
+は以下の形ををしている必要がある。
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32  tag,
+                       const PS::S32  nwalk,
+                       const TEpi**   iptcl,
+                       const PS::S32* ni,
+                       const TEpj**   jptcl_ep,
+                       const PS::S32* nj_ep,
+                       const TSpj**   jptcl_sp,
+                       const PS::S32* nj_sp);
+\end{verbatim}
+
+関数の引数は第１引数から順にconst PS::S32型、const PS::S32型、const
+TEpi**型、PS::S32型、const TEpj**型、PS::S32型、const TSpj**型、
+PS::S32型。返り値はPS::S32型とし、正常に終了した場合は0を返す。
+
+
+PS::SEARCH\_MODE型がPS::SEARCH\_MODE\_GATHER,
+PS::SEARCH\_MODE\_SCATTER, PS::SEARCH\_MODE\_SYMMETRYの場合にこの関数
+は以下の形ををしている必要がある。
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32  tag,
+                       const PS::S32  nwalk,
+                       const TEpi**   iptcl,
+                       const PS::S32* ni,
+                       const TEpj**   jptcl_ep,
+                       const PS::S32* nj_ep);
+\end{verbatim}
+
+関数の引数は第１引数から順にconst PS::S32型、const PS::S32型、const
+TEpi**型、PS::S32型、const TEpj**型、PS::S32型。返り値はPS::S32型とし、
+正常に終了した場合は0を返す。
+
+pfunc\_retrieve: 入力。返値がvoid型で、pfunc\_dispatchで転送したデータ
+の結果を回収する関数。この関数は以下の形ををしている必要がある。
+
+\begin{verbatim}
+void pfunc_retrieve(const PS::S32  tag,
+                    const PS::S32  nwalk,
+                    const PS::S32* ni,
+                    TResult**      force);
+\end{verbatim}
+
+関数の引数は第１引数から順にconst PS::S32型、PS::S32*型、TResult**型。
+引数tagはpfunc\_dispatch()とpfunc\_retrieve()を関係させるもので、
+pfunc\_dispatchで計算された結果は同じtagの値を持つpfunc\_retrieve()で
+回収される。
+
+tag\_max: 入力。const PS::S32 型。発行されるtagの数の最大値。扱うtagの
+番号は0からtag\_max-1までとなる。0以下の整数を指定した場合はエラーを出
+力する。現バージョンでは、1の場合に正常に動作し、1を超える値を指定した
+場合にはtagの値は０のみである。
+
+psys: 入力。Tpsys \&型。相互作用を計算したい粒子群クラスのオブジェクト。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+nwalk: 入力。const PS::S32 型。1度にアクセラレータに送る相互作用リストの数の最大値。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysの粒子すべての相互作用を計算し、その計算
+結果をpsysに書き戻す。相互作用リストを作る際にマルチウォーク法を用い、
+一度に複数の相互作用リストを作成する。一度に作成する相互作用リストの数
+の最大値はnwalkである。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_dispatch,
+         class Tfunc_retrieve,
+         class Tpsys,
+         class Tdinfo>
+void PS::TreeForForce::calcForceAllandWriteBackMultiWalkIndex
+             (Tfunc_dispatch pfunc_dispatch,
+              Tfunc_retrieve pfunc_retrieve,
+              const PS::S32 tag_max,
+              Tpsys & psys,
+              Tdinfo & dinfo,
+              const PS::S32 nwalk,
+              const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_dispatch: 入力。返値がvoid型で、EssentialParticleIの配列と
+EssentialParticleJの配列(とSuperParticleJの配列)をアクセラレータに転送
+し、カーネルを発行させる関数。PS::SEARCH\_MODE型が
+PS::SEARCH\_MODE\_LONG, PS::SEARCH\_MODE\_LONG\_CUTOFFの場合にこの関数
+は以下の形ををしている必要がある。
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32   tag,
+                       const PS::S32   nwalk,
+                       const TEpi**    iptcl,
+                       const PS::S32*  ni,
+                       const PS::S32** id_jptcl_ep,
+                       const PS::S32*  nj_ep,
+                       const PS::S32** id_jptcl_sp,
+                       const PS::S32*  nj_sp,
+                       const TEpj*     jptcl_ep,
+                       const PS::S32   n_send_ep,
+                       const TSpj*     jptcl_sp,
+                       const PS::S32   n_send_sp,
+                       const bool send_ptcl);
+\end{verbatim}
+
+関数の引数は第１引数から順にconst PS::S32型、const PS::S32型、const
+TEpi**型、PS::S32*型、const PS::S32**型、const PS::S32*型、const
+PS::S32**型、const PS::S32*型、const TEpj*型、PS::S32型、const TSpj*型、
+PS::S32型、const bool型。返り値はPS::S32型とし、正常に終了した場合は0
+を返す。
+
+PS::SEARCH\_MODE型がPS::SEARCH\_MODE\_GATHER,
+PS::SEARCH\_MODE\_SCATTER, PS::SEARCH\_MODE\_SYMMETRYの場合にこの関数
+は以下の形ををしている必要がある。
+
+\begin{verbatim}
+PS::S32 pfunc_dispatch(const PS::S32   tag,
+                       const PS::S32   nwalk,
+                       const TEpi**    iptcl,
+                       const PS::S32*  ni,
+                       const PS::S32** id_jptcl_ep,
+                       const PS::S32*  nj_ep,
+                       const TEpj*     jptcl_ep,
+                       const PS::S32   n_send_ep,
+                       const bool send_ptcl);
+\end{verbatim}
+
+関数の引数は第１引数から順にconst PS::S32型、const PS::S32型、const
+TEpi**型、PS::S32*型、const PS::S32**型、const PS::S32*型、const TEpj*
+型、PS::S32型、const TSpj*型、PS::S32型、const bool型。返り値はPS::S32
+型とし、正常に終了した場合は0を返す。
+
+pfunc\_retrieve: 入力。返値がvoid型で、pfunc\_dispatchで転送したデータ
+の結果を回収する関数。この関数は以下の形ををしている必要がある。
+
+\begin{verbatim}
+void pfunc_retrieve(const PS::S32  tag,
+                    const PS::S32  nwalk,
+                    const PS::S32* ni,
+                    TResult**      force);
+\end{verbatim}
+
+関数の引数は第１引数から順にconst PS::S32型、const TEpi *型、PS::S32型、
+const TSpj *型、PS::S32型、TResult *型。引数tagはpfunc\_dispatch()と
+pfunc\_retrieve()を関係させるもので、pfunc\_dispatchで計算された結果は
+同じtagの値を持つpfunc\_retrieve()で回収される。
+
+tag\_max: 入力。const PS::S32 型。発行されるtagの数の最大値。扱うtagの
+番号は0からtag\_max-1までとなる。0以下の整数を指定した場合はエラーを出
+力する。現バージョンでは、1の場合に正常に動作し、1を超える値を指定した
+場合にはtagの値は０のみである。
+
+psys: 入力。Tpsys \&型。相互作用を計算したい粒子群クラスのオブジェクト。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+nwalk: 入力。const PS::S32 型。1度にアクセラレータに送る相互作用リストの数の最大値。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysの粒子すべての相互作用を計算し、その計算
+結果をpsysに書き戻す。初期に全てのEPJとSPJをdeviceメモリ上に転送し、
+FDPSはデバイス上のインデクスについての相互作用リストを作る。この際にマ
+ルチウォーク法を用い、一度に複数の相互作用リストを作成する。一度に作成
+する相互作用リストの数の最大値はnwalkである。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsubsubsubsection{PS::TreeForForce::calcForceAll}
+%% setParticleLocalTree, makeLocalTree, makeGlobalTree,
+%% calcMomentGlobalTree, calcForce
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tpsys,
+         class Tdinfo>
+void PS::TreeForForce::calcForceAll
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              Tdinfo & dinfo
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+psys: 入力。Tpsys \&型。相互作用を計算したい粒子群クラスのオブジェクト。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysの粒子すべての相互作用を計算する。これを
+使うのはPS::SEARCH\_MODE型がPS::SEARCH\_MODE\_GATHER,
+PS::SEARCH\_MODE\_SCATTER, PS::SEARCH\_MODE\_SYMMETRYの場合に限る。
+PS::TreeForForce::calcForceAllAndWriteBackから計算結果の書き戻しがなく
+なったもの。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tpsys,
+         class Tdinfo>
+void PS::TreeForForce::calcForceAll
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              Tdinfo & dinfo
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+pfunc\_sp\_ep: 入力。返値がvoid型のEssentialParticleIとSuperParticleJ
+の間の相互作用計算用の関数オブジェクト。関数の引数は第１引数から順に
+(const) TEpi *型、PS::S32型、const TSpj *型、PS::S32型、TResult *型。
+
+psys: 入力。Tpsys \&型。相互作用を計算したい粒子群クラスのオブジェクト。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+粒子群クラスのオブジェクトpsysの粒子すべての相互作用を計算する。これを
+使うのはPS::SEARCH\_MODE型がPS::SEARCH\_MODE\_LONG,
+PS::SEARCH\_MODE\_LONG\_CUTOFFの場合に限る。
+PS::TreeForForce::calcForceAllAndWriteBackから計算結果の書き戻しがなく
+なったもの。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcForceMakingTree}
+%% makeLocalTree, makeGlobalTree, calcMomentGlobalTree, calcForce
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tdinfo>
+void PS::TreeForForce::calcForceMakingTree
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tdinfo & dinfo
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+これより前に相互作用ツリークラスのオブジェクトに読み込まれた粒子群クラ
+スのオブジェクトの粒子すべての相互作用を計算する。これを使うのは
+PS::SEARCH\_MODE型がPS::SEARCH\_MODE\_GATHER,
+PS::SEARCH\_MODE\_SCATTER,\\ PS::SEARCH\_MODE\_SYMMETRYの場合に限る。
+PS::TreeForForce::calcForceAllAndWriteBackから粒子群クラスのオブジェク
+トの読込と計算結果の書き戻しがなくなったもの。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tdinfo>
+void PS::TreeForForce::calcForceMakingTree
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tdinfo & dinfo
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+pfunc\_sp\_ep: 入力。返値がvoid型のEssentialParticleIとSuperParticleJ
+の間の相互作用計算用の関数オブジェクト。関数の引数は第１引数から順に
+(const) TEpi *型、PS::S32型、const TSpj *型、PS::S32型、TResult *型。
+
+dinfo: 入力。Tdinfo \&型。領域クラスのオブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+これより前に相互作用ツリークラスのオブジェクトに読み込まれた粒子群クラ
+スのオブジェクトの粒子すべての相互作用を計算する。これを使うのは
+PS::SEARCH\_MODE型がPS::SEARCH\_MODE\_LONG, PS::SEARCH\_MODE\_LONG\_CUTOFF
+の場合に限る。PS::TreeForForce::calcForceAllAndWriteBackから粒子群クラ
+スのオブジェクトの読込と計算結果の書き戻しがなくなったもの。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+\subsubsubsubsubsection{PS::TreeForForce::calcForceAndWriteBack}
+%% calcForce, getForce
+%% いる？
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAndWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+psys: 入力。Tpsys \&型。相互作用の計算結果を書き戻したい粒子群クラスの
+オブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトは
+PS::MAKE\_INTERACTION\_LIST。PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+これより前に相互作用ツリークラスのオブジェクトに構築されたグローバルツ
+リーとそのモーメントをもとに、相互作用ツリークラスのオブジェクトに属す
+る粒子すべての相互作用が計算され、さらにその結果が粒子群クラスのオブジェ
+クトpsysに書き戻される。これを使うのはPS::SEARCH\_MODE型が
+PS::SEARCH\_MODE\_GATHER, PS::SEARCH\_MODE\_SCATTER,
+PS::SEARCH\_MODE\_SYMMETRYの場合に限る。
+PS::TreeForForce::calcForceAllAndWriteBackから粒子群クラスのオブジェク
+トの読込、ローカルツリーの構築、グローバルツリーの構築、グローバルツリー
+のモーメントの計算がなくなったもの。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<class Tfunc_ep_ep,
+         class Tfunc_sp_ep,
+         class Tpsys>
+void PS::TreeForForce::calcForceAllandWriteBack
+             (Tfunc_ep_ep pfunc_ep_ep(TEpi *,
+                                      const PS::S32,
+                                      TEpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tfunc_sp_ep pfunc_sp_ep(TEpi *,
+                                      const PS::S32,
+                                      TSpj *,
+                                      const PS::S32,
+                                      TResult *),
+              Tpsys & psys,
+              const bool clear=true,
+              enum PS::INTERACTION_LIST_MODE = PS::MAKE_INTERACTION_LIST);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+pfunc\_ep\_ep: 入力。返値がvoid型のEssentialParticleIと
+EssentialParticleJの間の相互作用計算用の関数オブジェクト。関数の引数は
+第１引数から順に(const) TEpi *型、PS::S32型、const
+TEpj *型、PS::S32型、TResult *型。
+
+pfunc\_sp\_ep: 入力。返値がvoid型のEssentialParticleIとSuperParticleJ
+の間の相互作用計算用の関数オブジェクト。関数の引数は第１引数から順に
+(const) TEpi *型、PS::S32型、const TSpj *型、PS::S32型、TResult *型。
+
+psys: 入力。Tpsys \&型。相互作用の計算結果を書き戻したい粒子群クラスの
+オブジェクト。
+
+clear: 入力。const bool型。前に計算された相互作用の結果をクリアするか
+どうかを決定するフラグ。trueならばクリアする。デフォルトtrue。
+
+PS::INTERACTION\_LIST\_MODE: 入力。PS::INTERACTION\_LIST\_MODE 型。相
+互作用リストを作成し相互作用計算を行うか、前回作成した相互作用リストを
+再利用し相互作用計算を行うかを決定するフラグ。
+PS::MAKE\_INTERACTION\_LISTならば新たに相互作用リストを作成する。この
+場合、次の相互作用計算時に相互作用リストの再利用はできず、新たに相互作
+用リストを作成する必要がある。PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSE
+は新たに相互作用リストを作成し相互作用計算を行う。この場合、次回の相互
+作用計算時に、今回作った相互作用リストを再利用し相互作用計算ができる。
+PS::REUSE\_INTERACTION\_LISTならば、前回
+PS::MAKE\_INTERACTION\_LIST\_FOR\_REUSEを選んだ際に作成した相互作用リ
+ストを再利用し相互作用計算を行う。デフォルトはPS::MAKE\_INTERACTION\_LIST。
+PS::INTERACTION\_LIST\_MODEの詳細はセクショ
+ン\ref{sec:datatype_enum_interaction_list_mode}を参照。
+
+\item {\bf 返値}
+
+なし
+
+\item {\bf 機能}
+
+これより前に相互作用ツリークラスのオブジェクトに構築されたグローバルツ
+リーとそのモーメントをもとに、相互作用ツリークラスのオブジェクトに属す
+る粒子すべての相互作用が計算され、さらにその結果が粒子群クラスのオブジェ
+クトpsysに書き戻される。これを使うのはPS::SEARCH\_MODE型が
+PS::SEARCH\_MODE\_LONG, PS::SEARCH\_MODE\_LONG\_CUTOFFの場合に限る。\\
+PS::TreeForForce::calcForceAllAndWriteBackから粒子群クラスのオブジェク
+トの読込、ローカルツリーの構築、グローバルツリーの構築、グローバルツリー
+のモーメントの計算がなくなったもの。
+
+PS::INTERACTION\_LIST\_MODEにより相互作用リストを新たに作るか再利用す
+るかを選ぶことができる。相互作用リストの再利用している間は
+PS::ParticlySystem::exchangeParticle()によって粒子の交換を行ってはなら
+ない。また、粒子データの消去や粒子配列の順番の並び替えを行ってはならな
+い。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{ネイバーリスト}
+\label{sec:neighborlist}
+
+%今後、追加する。
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{getNeighborListOneParticle}
+\begin{screen}
+\begin{verbatim}
+template<class Tptcl>
+PS::S32 PS::TreeForForce::getNeighborListOneParticle(const Tptcl & ptcl, 
+                                                     EPJ * & epj);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+ptcl: 入力。Tptcl \&型。近傍粒子を求めたい粒子。
+
+epj: 出力。EPJ * \&型。近傍粒子の配列の先頭ポインタ。
+
+\item {\bf 返値}
+
+PS::S32 \&型。近傍粒子の個数。
+
+\item {\bf 機能}
+
+呼び出し元のツリー構造を使って、ptclの近傍粒子の配列の先頭ポインタを
+epjに与え、近傍粒子数を返す。epj は EPJ 型の粒子データの配列(粒子への
+ポインタの配列ではない)の先頭へのポインタであり、FDPS が内部にもってい
+るバッファ領域を指す。このため、ユーザはこのポインタに対してfree()や
+delete()をしてはならない。
+この関数はスレッドセーフである。すなわち、スレッド毎に別のバッファ領域
+をもっている。なお、この領域はスレッド毎に1つしかないため、
+同一スレッドでこの関数を呼び出すたびに上書きされる。
+
+
+これを使うのはPS::SEARCH\_MODE型
+がPS::SEARCH\_MODE\_LONG\_SCATTER,
+PS::SEARCH\_MODE\_LONG\_CUTOFF\_SCATTER(未実装), \\
+PS::SEARCH\_MODE\_LONG\_GATHER(未実装), \\
+PS::SEARCH\_MODE\_LONG\_CUTOFF\_GATHER(未実装), \\
+PS::SEARCH\_MODE\_LONG\_SYMMETRY(未実装), \\
+PS::SEARCH\_MODE\_LONG\_CUTOFF\_SYMMETRY(未実装)の場合に限る。ptclのメ
+ンバ関数にはFPと同様にPS::F64vec getPos()が必要である。
+PS::SEARCH\_MODE型がPS::SEARCH\_MODE\_LONG\_GATHER,
+PS::SEARCH\_MODE\_LONG\_CUTOFF\_GATHER,
+PS::SEARCH\_MODE\_LONG\_SYMMETRY, \\
+PS::SEARCH\_MODE\_LONG\_CUTOFF\_SYMMETRYの場合にはさらに、ptclの探査半
+径を返すメンバ関数PS::F64 getRSearch()も必要となる。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\begin{screen}
+%\begin{verbatim}
+%void PS::TreeForForce::getNeighborListOneIPGroup(const PS::S32 iipg,
+%                                                 PS::S32 & nip,
+%                                                 const Tepi * epi,
+%                                                 PS::S32 & nnp,
+%                                                 Tepj * & epj);
+%\end{verbatim}
+%\end{screen}
+%
+%\begin{itemize}
+%
+%\item{{\bf 引数}}
+%
+%iipg: 入力。const PS::S32型。
+%
+%nip: 出力。PS::S32 \&型。
+%
+%epi: 出力。const epi *型。
+%
+%nnp: 出力。PS::S32 \&型。
+%
+%epj: 出力。Tepj * \&型。
+%
+%\item{{\bf 返り値}}
+%
+%なし
+%
+%\item 機能
+%
+%この相互作用ツリークラスのある１つのiグループのネイバーリストの和集合
+%(以下ネイバーリストと省略)を返す。iグループの指定を第１引数{\tt iipg}で
+%行う。ユーザーはiグループの数を{\tt PS::TreeForForce::getNumberOfIPG}で
+%知ることはできるので、{\tt for}ループでまわせば、全iグループのネイバー
+%リストを得ることができる。第２引数{\tt nip}に指定したiグループの粒子の
+%数を返す。第３引数{\tt epi}にこのi グループの粒子リストを返す。この型は
+%この相互作用ツリークラスのEssentialParticleI型と同じである必要があり、
+%そうでないとコンパイルエラーとなる。第４引数{\tt nnp}にこのiグループの
+%ネイバー粒子の数を返す。第５引数{\tt epj}にこのiグループのネイバーリス
+%トを返す。{\tt epj}の型はこの相互作用ツリークラスのEssentialParticleJ型
+%と同じ型でなければならず、そうでない場合はコンパイルエラーとなる。{\tt
+%epi}と{\tt epj}のメモリの確保は、この関数内で行う。これらの寿命は{\tt
+%getNeighborListOneParticle}のネイバーリストの寿命と同じ。
+%\end{itemize}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%\subsubsubsubsubsection{getNeighborListOneIPGroup}
+
+%%\subsubsubsubsubsection{getNeighborListOneIPGroupEachParticle}
+
+%%\subsubsubsubsubsection{getNumberOfIPG}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{時間計測}
+
+クラス内の時間計測関連のAPIの宣言は以下のようになっている。自クラスの
+主要なメソッドを呼び出すとそれにかかった時間をプライベートメンバの
+time\_profile\_の該当メンバに書き込む。メソッドclearTimeProfile()を呼
+ばない限り時間は足しあわされていく。
+
+\begin{lstlisting}[caption=TreeForForce2]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        TimeProfile getTimeProfile();
+        void clearTimeProfile();
+    };
+}
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getTimeProfile}
+\begin{screen}
+\begin{verbatim}
+PS::TimeProfile PS::TreeForForce::getTimeProfile();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::TimeProfile型。
+
+\item {\bf 機能}
+
+ローカルツリー構築、グローバルツリー構築、力の計算(walk込)、ローカルツ
+リーのモーメント計算、グローバルツリーのモーメント計算、LET構築、LET交
+換にかかった時間（ミリ秒単位）をTimeProfile型のメンバ変数の該当部分
+make\_local\_tree, make\_global\_tree\_, calc\_force\_,
+calc\_moment\_local\_tree\_, calc\_moment\_global\_tree\_,
+make\_LET\_1st\_, make\_LET\_2nd\_, exchange\_LET\_1st\_,
+exchange\_LET\_2nd\_に格納する。長距離力や散乱モードの様にLET交換が1段
+階通信の場合はmake\_LET\_2nd\_, exchange\_LET\_2nd\_に値は格納されない。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::clearTimeProfile}
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::clearTimeProfile();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+なし。
+
+\item {\bf 機能}
+
+相互作用ツリークラスのTimeProfile型のプライベートメンバ変数のメンバ変
+数make\_local\_tree, make\_global\_tree\_, calc\_force\_,
+calc\_moment\_local\_tree\_, calc\_moment\_global\_tree\_,
+make\_LET\_1st\_, make\_LET\_2nd\_, exchange\_LET\_1st\_,
+exchange\_LET\_2nd\_の値を０クリアする。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsection{情報取得}
+
+クラス内の情報取得関連のAPIの宣言は以下のようになっている。自クラスの
+主要なメソッドを呼び出すとそれにかかった時間をプライベートメンバの
+time\_profile\_の該当メンバに書き込む。メソッドclearTimeProfile()を呼
+ばない限り時間は足しあわされていく。
+
+\begin{lstlisting}[caption=TreeForForce2]
+namespace ParticleSimulator {
+    template<class TSearchMode,
+             class TResult,
+             class TEpi,
+             class TEpj,
+             class TMomLocal,
+             class TMomGlobal,
+             class TSpj>
+    class TreeForForce{
+    public:
+        TimeProfile getTimeProfile();
+        void clearTimeProfile();
+        Count_t getNumberOfInteractionEPEPLocal();
+        Count_t getNumberOfInteractionEPSPLocal();
+        Count_t getNumberOfInteractionEPEPGlobal();
+        Count_t getNumberOfInteractionEPSPGlobal();
+        void clearNumberOfInteraction();
+        S64 getUsedMemorySizeTotal();
+    };
+}
+\end{lstlisting}
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPEPLocal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfInteractionEPEPLocal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::Count\_t型。
+
+\item {\bf 機能}
+
+自プロセス内で計算したEPIとEPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPEPGlobal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfInteractionEPEPGlobal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::Count\_t型。
+
+\item {\bf 機能}
+
+全プロセス内で計算したEPIとEPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPSPLocal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfInteractionEPSPLocal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::Count\_t型。
+
+\item {\bf 機能}
+
+自プロセス内で計算したEPIとSPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfInteractionEPSPGlobal}
+\begin{screen}
+\begin{verbatim}
+PS::S64 PS::TreeForForce::getNumberOfInteractionEPSPGlobal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::Count\_t型。
+
+\item {\bf 機能}
+
+全プロセスで計算したEPIとSPJの相互作用数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::clearNumberOfInteraction}
+\begin{screen}
+\begin{verbatim}
+void PS::TreeForForce::clearNumberOfInteraction();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+なし。
+
+\item {\bf 機能}
+
+EP-EP,EP-SPのlocal,globalの相互作用数を0クリアする。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfWalkLocal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfWalkLocal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::Count\_t型。
+
+\item {\bf 機能}
+
+自プロセスでの相互作用計算時のtree walk数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getNumberOfWalkGlobal}
+\begin{screen}
+\begin{verbatim}
+PS::Count\_t PS::TreeForForce::getNumberOfWalkGlobal();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::S64。
+
+\item {\bf 機能}
+
+全プロセスでの相互作用計算時のtree walk数を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsubsubsection{PS::TreeForForce::getUsedMemorySize}
+\begin{screen}
+\begin{verbatim}
+PS::S64 PS::TreeForForce::getUsedMemorySize();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf 引数}
+
+なし。
+
+\item {\bf 返値}
+
+PS::S64。
+
+\item {\bf 機能}
+
+対象のオブジェクトが使用しているメモリー量をByte単位で返す。
+
+\end{itemize}
+

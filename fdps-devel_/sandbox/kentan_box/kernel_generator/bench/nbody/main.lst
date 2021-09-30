@@ -1,0 +1,184 @@
+Fujitsu C/C++ Version 4.1.0   Thu Jan 30 12:45:16 2020
+Compilation information
+  Current directory : /home/users/go19/go0011/kernel_generator/bench/nbody
+  Source file       : main.cpp
+(line-no.)(optimize)
+        1             #include <stdio.h>
+        2             #include <stdlib.h>
+        3             #include <assert.h>
+        4             
+        5             #include <particle_simulator.hpp>
+        6             #include "user_defined_class.h"
+        7             
+        8             #ifdef USE_ARM_SVE
+        9             #include <unistd.h>
+       10             #include <time.h>
+       11             double get_dtime(void){
+       12               struct timespec tp;
+       13               clock_gettime(CLOCK_MONOTONIC,&tp);
+       14               return ((double)(tp.tv_sec)+(double)(tp.tv_nsec)*1e-9);
+       15             }
+       16             #endif
+       17             
+       18             //void CalcForceLongEpEp(const EPI*, const int,const EPJ*,const int,Force*);
+       19             //void CalcForceLongEpSp(const EPI*, const int,const SPJ*,const int,Force*);
+       20             #ifdef USE_ARM_SVE
+       21             #include "kernel.cpp"
+       22             #endif
+       23             
+       24             #include "kernel_serial.c"
+       25             
+       26             unsigned long long get_current_cycle(){
+       27               int64_t virtual_timer_value;
+       28               asm volatile("mrs %0, cntvct_el0" : "=r"(virtual_timer_value));
+       29               return virtual_timer_value;
+       30             }
+       31             
+       32             double random_number(){
+       33               return (double)rand()/((double)RAND_MAX+1);
+       34             }
+       35             
+       36             void makeColdUniformSphere(const double mass_glb,
+       37                                        const int n_loc,
+       38                                        EPJ* epj,
+       39                                        const double eng,
+       40                                        const int seed) {
+       41               assert(eng < 0.0);
+       42               {
+       43                 for(int i = 0; i < n_loc; i++){
+       44                   epj[i].mass = mass_glb / n_loc;
+       45                   epj[i].eps2 = 0.01;
+       46                   const double radius = 3.0;
+       47          s        do {
+       48    i        	epj[i].pos.x = (2. * random_number() - 1.) * radius;
+       49    i        	epj[i].pos.y = (2. * random_number() - 1.) * radius;
+       50    i        	epj[i].pos.z = (2. * random_number() - 1.) * radius;
+       51    i              }while(epj[i].pos*epj[i].pos >= radius * radius);
+       52                 }
+       53               }
+       54             
+       55               double cm_x = 0.0;
+       56               double cm_y = 0.0;
+       57               double cm_z = 0.0;
+       58               double cm_m = 0.0;
+       59         8s    for(int i = 0; i < n_loc; i++){
+       60                 cm_x  += epj[i].pos.x * epj[i].mass;
+       61                 cm_y  += epj[i].pos.y * epj[i].mass;
+       62                 cm_z  += epj[i].pos.z * epj[i].mass;
+       63                 cm_m  += epj[i].mass;
+       64               }
+       65               cm_x /= cm_m;
+       66               cm_y /= cm_m;
+       67               cm_z /= cm_m;
+                       <<< Loop-information Start >>>
+                       <<<  [OPTIMIZATION]
+                       <<<    SIMD(VL: 2 Interleave: 1)
+                       <<< Loop-information End >>>
+       68          v    for(int i = 0; i < n_loc; i++){
+       69                 epj[i].pos.x -= cm_x;
+       70                 epj[i].pos.y -= cm_y;
+       71                 epj[i].pos.z -= cm_z;
+       72               }
+       73             }
+       74             
+       75             const int Niter = 10240;
+       76             const int N = 512;
+       77             int main(){
+       78               assert(NJ_EPEP<=N && NJ_EPSP <= N);
+       79               EPI *epi;
+       80               EPJ *epj;
+       81               //SPJ *spj;
+       82               Force *force;
+       83               posix_memalign((void**)(&epi), 512, sizeof(EPI)*N);
+       84               posix_memalign((void**)(&epj), 512, sizeof(EPJ)*N);
+       85               //posix_memalign((void**)(&spj), 512, sizeof(SPJ)*N);
+       86               posix_memalign((void**)(&force), 512, sizeof(Force)*N);
+       87             
+       88             #ifdef CHECK_FORCE
+       89               makeColdUniformSphere(1.0,N,epj,-0.25,0);
+       90               for(int i=0;i<N;i++){
+       91                 epi[i].pos  = epj[i].pos;
+       92                 epi[i].eps2 = 0.01f;
+       93             #if 0
+       94                 spj[i].pos  = epj[i].pos;
+       95                 spj[i].mass = epj[i].mass;
+       96                 spj[i].xx = random_number();
+       97                 spj[i].yy = random_number();
+       98                 spj[i].zz = random_number();
+       99                 spj[i].xy = random_number();
+      100                 spj[i].yz = random_number();
+      101                 spj[i].zx = random_number();
+      102                 spj[i].tr = spj[i].xx + spj[i].yy + spj[i].zz;
+      103             #endif
+      104               }
+      105               for(int i=0;i<N;i++){
+      106                 force[i].acc.x = force[i].acc.y = force[i].acc.z = force[i].pot = 0.f;
+      107               }
+      108             #endif
+      109             
+      110    i     s    for(int i=0;i<100;i++) CalcForceLongEpEp()(epi,N,epj,N,force);
+      111               //for(int i=0;i<100;i++) CalcForceLongEpSp(epi,N,spj,N,force);
+      112             
+      113             #ifdef USE_ARM_SVE
+      114               printf("N=%d, NJ_EPEP=%d, NJ_EPSP=%d\n",N,NJ_EPEP,NJ_EPSP);
+      115    i          double t = get_dtime();
+      116    i          unsigned long long c = get_current_cycle();
+      117             #endif
+      118    i     s    for(int i=0;i<Niter;i++) CalcForceLongEpEp()(epi,N,epj,N,force);
+      119             #ifdef USE_ARM_SVE
+      120    i          unsigned long long elapsed_cycle_epep = get_current_cycle() - c;
+      121    i          double elapsed_time_epep = get_dtime() - t;
+      122               printf("epep_elapsed_time: %lf sec, %lf Gflops, %llu cycle\n",elapsed_time_epep,((unsigned long long)Niter*27*(unsigned long long)N*(unsigned long long)N)/elapsed_time_epep/1e9,elapsed_cycle_epep);
+      123               /*
+      124               t = get_dtime();
+      125               c = get_current_cycle();
+      126             #endif
+      127               for(int i=0;i<Niter;i++) CalcForceLongEpSp(epi,N,spj,N,force);
+      128             #ifdef USE_ARM_SVE
+      129               double elapsed_time_epsp = get_dtime() - t;
+      130               unsigned long long elapsed_cycle_epsp = get_current_cycle() - c;
+      131               printf("epsp_elapsed_time: %f sec, %lf Gflops, %llu cycle\n",elapsed_time_epsp,(Niter*66*N*N)/elapsed_time_epsp/1e9,elapsed_cycle_epsp);
+      132             #endif
+      133              */
+      134             #endif
+      135             
+      136             #if defined(CHECK_FORCE)||defined(CHECK_FORCE_DETAIL)
+      137               for(int i=0;i<N;i++){
+      138                 force[i].acc.x = force[i].acc.y = force[i].acc.z = force[i].pot = 0.f;
+      139               }
+      140    i          CalcForceLongEpEp()(epi,N,epj,N,force);
+      141               //CalcForceLongEpSp(epi,N,spj,N,force);
+      142               Force* force_orig = (Force*)malloc(sizeof(Force)*N);
+      143               for(int i=0;i<N;i++){
+      144                 force_orig[i].acc.x = force_orig[i].acc.y = force_orig[i].acc.z = force_orig[i].pot = 0.f;
+      145               }
+      146               CalcForceLongEpEpOrig(epi,N,epj,N,force_orig);
+      147               //CalcForceLongEpSpOrig(epi,N,spj,N,force_orig);
+      148    i          Force ave;
+      149               ave.acc.x  =  ave.acc.y = ave.acc.z = 0.f;
+      150          s    for(int i=0;i<N;i++){
+      151                 float dx = force[i].acc.x - force_orig[i].acc.x;
+      152                 float dy = force[i].acc.y - force_orig[i].acc.y;
+      153                 float dz = force[i].acc.z - force_orig[i].acc.z;
+      154             #ifdef CHECK_FORCE_DETAIL
+      155                 printf("%4d %e %e %e, %e %e %e, %e %e %e\n",
+      156             	   i,force[i].acc.x,force[i].acc.y,force[i].acc.z,
+      157             	   force_orig[i].acc.x,force_orig[i].acc.y,force_orig[i].acc.z,
+      158             	   dx,dy,dz);
+      159             #endif
+      160    i            ave.acc.x += fabs(dx);
+      161    i            ave.acc.y += fabs(dy);
+      162    i            ave.acc.z += fabs(dz);
+      163               }
+      164               printf("average absolute error of force: %e %e %e\n",ave.acc.x/N,ave.acc.y/N,ave.acc.z/N);
+      165               free(force_orig);
+      166             #endif
+      167             #if 0
+      168               free(force);
+      169               //free(spj);
+      170               free(epj);
+      171               free(epi);
+      172             #endif
+      173               return 0;
+      174             }
+      175             

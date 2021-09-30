@@ -1,0 +1,123 @@
+\subsection{Summary}
+
+We describe the directory strutcures and files of FDPS file
+distribution.
+%file configuration of FDPS: documents, source files, test
+%codes, and sample codes.
+%%ここではFDPSのファイル構成について記述する。ドキュメント、ソースファ
+%%イル、テストコード、サンプルコードの順に記述する。
+
+\subsection{Documents}
+
+Document files are in directory \texttt{doc}. Files
+\texttt{doc\_tutorial\_e.pdf} and \texttt{doc\_specs\_en.pdf} are
+tutorial and specification, respectively.
+%ドキュメント関係のファイルはディレクトリdocの下にある。チュートリアル
+%がdoc\_tutorial.pdfであり、仕様書がdoc\_specs.pdfである。
+
+\subsection{Source files}
+
+Source files are in directory \texttt{src}. Files related to the
+standard features are directly under directory \texttt{src}. When
+users include header file \texttt{particle\_simulator.hpp} in their
+source files, the standard features become available.
+%%ソースファイルはディレクトリsrcの下にある。標準機能関係のソースファイ
+%%ルはsrcの直下にある。ディレクトリsrcの直下にあるヘッダファイル
+%%particle\_simulator.hppをソースファイルにインクルードすれば、FDPSの標
+%%準機能を使用できるようになる。
+
+\subsubsection{Extended features}
+
+Source files related to extended features are in directories in
+directory \texttt{src}. The extended features include Particle Mesh
+and Phantom-GRAPE version x86.
+%%拡張機能関係のソースファイルはディレクトリsrcの直下のディレクトリにそ
+%%れぞれ入っている。拡張機能にはParticle Mesh、x86版Phantom-GRAPEがある。
+
+\subsubsubsection{Particle Mesh scheme}
+
+Source files related to the Particle Mesh scheme are in directory
+\texttt{particle\_mesh}.  When users edit \texttt{Makefile}, and
+run \texttt{make}, they get header file
+\texttt{particle\_mesh\_class.hpp} and library \texttt{libpm.a}. By
+including this header file, and linking this library, they can use the
+features of the Particle Mesh scheme.
+%%Particle Meshのソースファイルはディレクトリsrc/particle\_meshの下にあ
+%%る。ここでMakefileを編集して、makeを実行すると、ヘッダファイル
+%%particle\_mesh\_class.hppとライブラリlibpm.aができる。このヘッダファ
+%%イルをインクルードし、このライブラリをリンクづけすれば、Particle
+%%Meshの機能を使用できるようになる。
+
+\subsubsubsection{x86 version Phantom-GRAPE}
+
+Source files related to x86 version Phantom-GRAPE are in directory
+\texttt{src/phantom\_GRAPE\_x86}. This directory has directories containing
+Phantom-GRAPE libraries for low precision, for low precision with cutoff, and
+for high precision.
+%%x86版Phantom-GRAPEのソースファイルはディレクトリ
+%%src/phantom\_GRAPE\_x86の下にある。この下には低精度N体シミュレーショ
+%%ン用、低精度カットオフ付き相互作用計算用、高精度N体シミュレーション用
+%%(ディレクトリG6/libavx)がある。それぞれについて述べる。
+
+\subsubsubsubsection{Low precision}
+
+Files are in directory \texttt{src/phantom\_GRAPE\_x86/G5/newton/libpg5}.
+Users should edit \texttt{Makefile} in this directory, and run \texttt{make},
+to get library \texttt{libpg5.a}. Users include header file \texttt{gp5util.h}
+in this directory, and to link library \texttt{libpg5.a}, to use this Phantom-GRAPE.
+%%これはディレクトリsrc/phantom\_GRAPE\_x86/G5/newton/libpg5にある。こ
+%%のディレクトリ内のMakefileを編集して、makeを実行すると、ライブラリ
+%%libpg5.aができる。このディレクトリ内のヘッダファイルgp5util.hをインク
+%%ルードし、ライブラリlibpg5.aをリンクすると、このPhantom-GRAPEが使用可
+%%能になる。
+
+\subsubsubsubsection{Low precision with cutoff}
+
+Files are in directory \texttt{src/phantom\_GRAPE\_x86/G5/table}.
+Users should edit \texttt{Makefile} in this directory, and run \texttt{make},
+to get library \texttt{libpg5.a}. Users include header file \texttt{gp5util.h}
+in this directory, and to link library \texttt{libpg5.a}, to use this Phantom-GRAPE.
+%%これはディレクトリsrc/phantom\_GRAPE\_x86/G5/table/にある。このディレ
+%%クトリ内のMakefileを編集して、makeを実行すると、ライブラリlibpg5.aが
+%%できる。このディレクトリ内のヘッダファイルgp5util.hをインクルードし、
+%%ライブラリlibpg5.aをリンクすると、このPhantom-GRAPEが使用可能になる。
+
+\subsubsubsubsection{High precision}
+
+Files are in directory \texttt{src/phantom\_GRAPE\_x86/G6/libavx}.
+Users should edit \texttt{Makefile} in this directory, and run \texttt{make},
+to get library \texttt{libg6avx.a}. Users include header file \texttt{gp6util.h}
+in this directory, and to link library \texttt{libg6avx.a}, to use this Phantom-GRAPE.
+%%これはディレクトリsrc/phantom\_GRAPE\_x86/G6/libavx/にある。このディ
+%%レクトリ内のMakefileを編集して、makeを実行すると、ライブラリ
+%%libg6avx.aができる。このディレクトリ内のヘッダファイルgp6util.hをイン
+%%クルードし、ライブラリlibg6avx.aをリンクすると、このPhantom-GRAPEが使
+%%用可能になる。
+
+\subsection{Test codes}
+
+Test codes are in directory \texttt{tests}. When users run \texttt{make check}
+in this directory, the test suite are executed.
+%%テストコードはディレクトリtestsの下にある。ディレクトリtestsにカレン
+%%トディレクトリを移し、make checkを実行するとテストスィートが動作する。
+
+\subsection{Sample codes}
+
+Sample codes are in directory \texttt{sample}. There are two sample codes:
+gravitational $N$-body simulation, and SPH simulation.
+%%サンプルコードはディレクトリsampleの下にある。サンプルコードは２つ用
+%%意されており、重力N体シミュレーションとSPHシミュレーションである。
+
+\subsubsection{Gravitational $N$-body simulation}
+
+Source files are in directory \texttt{sample/nbody}. In file \texttt{doc\_tutorial.pdf},
+we describe how to use this code.
+%%ディレクトリsample/nbodyの下にソースファイルがある。サンプルコードの
+%%実行方法はチュートリアルを参照のこと。
+
+\subsubsection{SPH Simulation}
+
+Source files are in directory \texttt{sample/sph}. In file \texttt{doc\_tutorial.pdf},
+we describe how to use this code.
+%%ディレクトリsample/sphの下にソースファイルがある。サンプルコードの実
+%%行方法はチュートリアルを参照のこと。

@@ -1,0 +1,61 @@
+#include<pzc_builtin.h>
+#include"../class_device.hpp"
+
+void pzc_ForceKernel(const int *j_disp,
+                     const float *epi,
+                     const float *epj,
+                     ForceDev *force,
+                     const int ni_tot,
+		     const int nj_tot){
+  const int cut_off2 = 4.5*4.5;
+  const int tid = get_tid();
+  const int pid = get_pid();
+  const int index_offset = pid*get_maxtid() + tid;
+  const int index_base = get_maxpid()*get_maxtid();
+
+  const float *epix = epi+0*ni_tot;
+  const float *epiy = epi+1*ni_tot;
+  const float *epiz = epi+2*ni_tot;
+  const int *epi_id = (int*)(epi+3*ni_tot);
+  const float *epjx = epj+0*nj_tot;
+  const float *epjy = epj+1*nj_tot;
+  const float *epjz = epj+2*nj_tot;
+
+  for(int index=index_offset; index<ni_tot; index += index_base){
+    double ax, ay, az, pot;
+    ax = ay = az = pot = 0.0f;
+    sync_L1();
+    const float xi = epix[index];
+    const float yi = epiy[index];
+    const float zi = epiz[index];
+    const int id_walk = epi_id[index];
+    chgthread();
+
+    const int j_head = j_disp[id_walk];
+    const int j_tail = j_disp[id_walk+1];
+    for(int j=j_head; j<j_tail; j++){
+      const float xj = epjx[j];
+      const float yj = epjy[j];
+      const float zj = epjz[j];
+      const float dx = xi - xj;
+      const float dy = yi - yj;
+      const float dz = zi - zj;
+      const float r2 = (dx*dx + dy*dy) + dz*dz;
+      if(r2 <= cut_off2 && r2!=0.0){
+	const float r2_inv  = 1.f / r2;
+	const float r6_inv  = r2_inv*r2_inv*r2_inv;
+	const float r12_inv = r6_inv*r6_inv;
+	pot += 4.0f*(r12_inv - r6_inv);
+	const float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	ax  += dphi * dx;
+	ay  += dphi * dy;
+	az  += dphi * dz;
+      }
+    }
+    force[index].pot = pot;
+    force[index].ax = ax;
+    force[index].ay = ay;
+    force[index].az = az;
+  }
+  flush();
+}

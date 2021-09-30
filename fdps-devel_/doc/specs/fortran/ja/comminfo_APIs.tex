@@ -1,0 +1,235 @@
+%
+% comminfo_APIs.tex
+%
+% FDPS development team June 2021
+%
+
+本節では、MPIコミュニケータを操作するAPIについて説明する。
+
+
+コミュニケータを操作するAPIの名称の一覧を以下に示す:
+\begin{screen}
+  \begin{spverbatim}
+(fdps_)ci_initialize
+(fdps_)ci_set_communicator
+(fdps_)ci_delete
+(fdps_)ci_create
+(fdps_)ci_split
+\end{spverbatim}
+\end{screen}
+
+これらの関数群は、 MPI コミュニケータに対応したテーブルをもち、
+そのテーブルインデックスを通してMPIコミュニケータを操作する。
+このインデックスを {\tt ci\_}がついた通信関数、さらに {\tt
+  set\_dinfo\_comm\_info} 等の関数でFDPSのデータクラスに与えることで、
+FDPSで指定したコミュニケータを使うことができる。
+
+この機能により、単一プログラムの中で複数の FDPS インスタンスの時間積分
+を並行して行なうことができる。
+
+以下、順に各APIの仕様を記述していく。
+
+%=============================================================
+\subsection{ci\_initialize}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+integer(kind=c_int) fdps_ctrl%ci_initialize(comm)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+int fdps_ci_initialize(int comm);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\verb|comm| & integer(kind=c\_int) & 入力 & MPIコミュニケータ(Fortran API)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+integer(kind=c\_int) 型。コミュニケータに対応するインデックスを返す。
+
+\subsubsection*{機能}
+コミュニケータに対応するインデックスを返す。
+入力の MPIコミュニケータは Fortran API であることに注意する。
+すなわち、 引数は C 言語APIにおける MPI コミュニケータ({\tt MPI\_Comm}型)ではなく、
+それを {\tt MPI\_Comm\_c2f} 関数で変換したFortran 言語でのコミュニケータでなければならない。
+
+
+%=============================================================
+\subsection{ci\_set\_communicator}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%ci_set_communicator(ci, comm)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_ci_set_communicator(int ci, int comm);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\verb|ci| & integer(kind=c\_int) & 入力 & コミュニケータインデックス\\
+\verb|comm| & integer(kind=c\_int) & 入力 & MPIコミュニケータ(Fortran API)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+あるインデックスのMPIコミュニケータを変更する。
+
+%=============================================================
+\subsection{ci\_delete}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%ci_delete(ci, comm)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_ci_delete(int ci, int comm);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\verb|ci| & integer(kind=c\_int) & 入力 & コミュニケータインデックス\\
+\verb|comm| & integer(kind=c\_int) & 入力 & MPIコミュニケータ(Fortran API)\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし。
+
+\subsubsection*{機能}
+あるインデックスのMPIコミュニケータを削除 ({\tt MPI\_Comm\_free})する。
+このインデックスは「未使用」状態となり、{\tt ci\_initialize} によって
+新しいコミュニケータが割り当てられるまで使えない。
+
+
+%=============================================================
+\subsection{ci\_create}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+integer(kind=c_int) fdps_ctrl%ci_create(ci, n, rank)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+int fdps_ci_create(int ci, int n, int rank[]);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\verb|ci| & integer(kind=c\_int) & 入力 & コミュニケータインデックス\\
+\verb|n| & integer(kind=c\_int) & 入力 &生成されるコミュニケータに所属するプロセスの数\\
+\verb|rank| & integer(kind=c\_int), dimension(n) & 入力 &生成されるコミュニケータに所属するプロセスのランクの配列。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+integer(kind=c\_int) 型。生成されたコミュニケータに対応するインデックスを返す。
+
+
+\subsubsection*{機能}
+呼び出しもとの{\tt ci}に対応するMPIコミュニケータから新たなコ
+ミュニケータを作成する。配列rank で表されるプロセスが所属するコミュ
+ニケータを作成し対応するインデックスを返す。
+
+%=============================================================
+\subsection{ci\_split}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+integer(kind=c_int) fdps_ctrl%ci_split(ci, n, rank)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+int fdps_ci_split(int ci, int color, int key);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\verb|ci| & integer(kind=c\_int) & 入力 & コミュニケータインデックス\\
+\verb|color| & integer(kind=c\_int) & 入力 &これが同じプロセスは同一のコミュニケータに属する\\
+\verb|key| & integer(kind=c\_int) & 入力 &同一コミュニケータの中での順序を与える\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+integer(kind=c\_int) 型。生成されたコミュニケータに対応するインデックスを返す。
+
+
+\subsubsection*{機能}
+呼び出しもとの{\tt ci}に対応するMPIコミュニケータを分割する．
+同じcolorのプロセスは同一コミュニケータに所属し、keyの小さいものから順
+にそのコミュニケータでのランクが割り振られる．
+
+
+
+
+\clearpage
+
+
+
+
+
+

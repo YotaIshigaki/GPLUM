@@ -1,0 +1,583 @@
+%%% Notice: This file contains a large number of \verb's 
+%%%         or verbatim environments in order to display command names
+%%%         or examples.  But the use of \verb/verbatim is *not* recommended. 
+%%% ver.6 2015/01/05 
+\documentclass{pasj01}
+%\draft 
+\Received{$\langle$reception date$\rangle$}
+\Accepted{$\langle$acception date$\rangle$}
+\Published{$\langle$publication date$\rangle$}
+%% \SetRunningHead{Astronomical Society of Japan}{Usage of \texttt{pasj00.cls}}
+
+
+\begin{document}
+
+\title{Usage of \texttt{pasj01.cls}}
+\author{PASJ Editorial Office}%
+\altaffiltext{}{Astronomical Society of Japan, c/o National Astoronomical Observatory of Japan, 
+ 2-21-1 Osawa, Mitaka, Tokyo 181-8588, Japan }
+\email{***@***.***.***}
+
+\KeyWords{key word${}_1$ --- key word${}_2$ --- \dots --- key word${}_n$}
+
+\maketitle
+
+\begin{abstract}
+In this document (\texttt{pasj.tex}), we provide a brief explanation about \texttt{pasj01.cls}, 
+the current version of PASJ's document class for authors. 
+The class file, \texttt{pasj01.cls}, is prepared so that authors can typeset/preview 
+articles for PASJ under the \textit{standard} {\LaTeXe} system.
+Note that it is assumed that authors are used to writing documents in 
+\LaTeX{} style; that is, this manual shows only the differences of 
+functions provided by \texttt{pasj01.cls} and those in the \textit{standard} \LaTeXe{}.  
+Here, we use the phrase ``standard \LaTeX'' for ``\LaTeXe{} without 
+any optional package.''  
+The old system, {\LaTeX2.09},  is no longer supported.   
+\end{abstract}
+
+\section{Overview}
+When \texttt{pasj01.cls} is applied to an article for PASJ, 
+the article should be prepared in the standard \LaTeXe{} style with 
+slight modifications.  
+That is, a manu\-script has the following structure:
+\begin{verbatim}
+\documentclass{pasj01}
+\draft 
+\begin{document}
+
+\title{title of the article}
+\author{list of authors} 
+\altaffiltext{}{the authors' affiliation}
+%%% some other commands
+\KeyWords{}
+
+\maketitle
+
+\begin{abstract}
+  abstract of the article
+\end{abstract}
+
+\section{First section}
+%%% contents
+
+\begin{ack}
+ a brief note for an acknowledgment, if any.   
+\end{ack}
+
+\begin{thebibliography}{}%%% references
+\bibitem[label]{key} reference entry
+...
+\end{thebibliography}
+\end{document}
+\end{verbatim}
+
+The cross-reference system of \LaTeX{} is also available without restriction. 
+If the \texttt{graphicx} package is available, figures in eps format can be 
+embedded via the usual figure environment (see section~\ref{sec:figures}).
+
+\textbf{Important Notice:}~The class file \texttt{pasj01.cls}  uses 
+the Times and Helvetica families for its default typeface, which is different 
+from the current default typeface of the journal.  That is, authors cannot 
+obtain an identical image with the published article unless the class file
+is not changed or replaced. 
+
+
+
+\section{Class options}
+
+The class file \texttt{pasj01.cls} admits the following options:
+\begin{itemize}
+\item \texttt{draft}: produce ``overfull rules'' 
+      (i.e.,~Black boxes will appear everywhere
+       ``overfull \verb/\hbox/'' is occurred.)
+\item \texttt{final}: hide ``overfull rules'' 
+\item \texttt{onecolumn}: use one-column format
+\item \texttt{twocolumn}: use two-column format 
+\item \texttt{proof}: typeset in draft-style for a submission 
+\item \texttt{useamsfonts}: enable to use symbols defined in \textsf{amssymb.sty}
+\item \texttt{mfastrosym}: enable to use the font ``astrosym'' 
+\end{itemize}
+
+ Note that the \texttt{mfastrosym} option requires that the font ``astrosym'' (by Peter Schmitt) be \textit{properly} 
+installed in the \TeX{} system. 
+
+
+
+\section{Preamble commands}
+
+To produce the title page, each article should contain the following 
+five items:
+\begin{enumerate}\raggedright
+  \item list of authors/their affiliation\\
+        \verb/\author{/\textsl{authors}\verb/}/, 
+        \verb/\affil{/\textsl{affiliation}\verb/}/,\\
+        \verb/\altaffilmark{/\textsl{n}\verb/}/,  
+        \verb/\altaffiltext{/\textsl{n}\verb/}{/\textsl{affiliation}\verb/}/\\
+  \item title\\
+        \verb/\title{/\textsl{title}\verb/}/
+  \item date of reception/acception\\
+        \verb/\Received{/\textsl{reception date}\verb/}/, 
+           \verb/\Accepted{/\textsl{acception date}\verb/}/
+  \item list of key words\\
+        \verb/\KeyWords{/\textsl{key words}\verb/}/
+  \item e-mail address, if any \\
+        \verb/\email{/\textsl{e-mail address}\verb/}/
+\end{enumerate}
+
+The title of the article, author name, and affiliation should be typed at  
+the beginning of the article. 
+These can be produced using the following input:  
+
+\underline{Single affiliation} \\
+ \verb/   \author{/%
+    {John} \verb/\textsc{/{Smith}\verb/} /\\ 
+ \verb/       / and 
+    {Paul} \verb/\textsc{/{Wood}\verb/} }/\\
+ \verb/ \affil{/\textsl{Affiliation}\verb/}/\\ 
+ \verb/   \email{/\textsl{Address${}_{1}$}, \textsl{Address${}_{2}$}\verb/}/
+
+\underline{Two or more affiliations} \\
+ \verb/   \author{/%
+    {John} \verb/\textsc{/{Smith}\verb/}/%\\
+ \verb/\altaffilmark{1}/ \\
+ \verb/     / and
+    {Paul} \verb/\textsc{/{Wood}\verb/}/%\\
+ \verb/\altaffilmark{2} } / \\
+ \verb/   \altaffiltext{1}{/\textsl{Affiliation}\verb/}/\\
+ \verb/   \altaffiltext{2}{/\textsl{Affiliation}\verb/}/\\
+ \verb/   \email{/\textsl{Address${}_{1}$}, \textsl{Address${}_{2}$}\verb/}/
+
+As shown in the above example, the description 
+\verb/\altaffilmark{/\textsl{label}\verb/}/ gives a label  
+and corresponding text is given by \verb/\altaffiltext/ with the same label 
+in its first argument. 
+
+
+
+\section{Cross-references}
+
+\subsection{\texttt{\textbackslash label}, \texttt{\textbackslash ref}, 
+\texttt{\textbackslash cite}, and thebibliography environment}
+
+For cross-references of sections, figures, equations etc., the pair of 
+commands, \verb/\label/ and \verb/\ref/, is available.  Since the usage 
+of these two commands is exactly the same as that in the standard \LaTeX, 
+we leave the explanation about \verb/\label/ and \verb/\ref/ 
+to adequate instructions of \LaTeX.
+
+For in-text citations, \texttt{pasj01.cls} provides the system of \verb/\cite/ and 
+a ``thebibliography'' environment, as in the case of many other class files 
+of \LaTeX.  The syntax of the ``thebibliography'' environment provided 
+by \texttt{pasj01.cls} is as follows:
+\begin{quote}
+  \verb/\begin{thebibliography}{}/\\
+  \verb/\bibitem[/\textsl{label}${}_1$\verb/]{/\textsl{key}${}_1$\verb/}/
+  \textsl{entry}${}_1$\\
+  \verb/\bibitem[/\textsl{label}${}_2$\verb/]{/\textsl{key}${}_2$\verb/}/
+  \textsl{entry}${}_2$\\
+  \dots\\
+  \verb/\bibitem[/\textsl{label}${}_n$\verb/]{/\textsl{key}${}_n$\verb/}/
+  \textsl{entry}${}_n$\\
+  \verb/\end{thebibliography}/
+\end{quote}
+Note that the input of \textsl{label}, in the form of 
+ ``\textsl{author(year)},''   
+will appear in the result of typesetting. 
+The \textsl{label} should be typed according to an expression of citation  
+such as ``Smith (2010),''  ``Wood et al.\ (2002),''  
+``(Smith \& Wood 2007),'' or ``Smith, Wood, and Fisher (2007).''    
+
+
+\subsection{Miscellaneous citation commands}
+
+In addition to the usual \verb/\cite/ command, \texttt{pasj01.cls} provides 
+various citation commands.  
+In the following list, \textsl{key} is a reference key in  
+the ``thebibliography'' environment and \textsl{author}, 
+\textsl{year} are the corresponding authors and publication year, respectively. 
+That is, the term 
+\verb/\bibitem[/\textsl{author}\texttt{(}\textsl{year}\verb/)]{/%
+\textsl{key}\verb/}/\dots{} is contained in the ``thebibliography'' environment. 
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+   \multicolumn{1}{c}{Description}    &  \multicolumn{1}{c}{Result}\\
+   \verb/\cite{/\textsl{key}\verb/}/  & \textsl{author} \textsl{year}\\
+   \verb/\citep{/\textsl{key}\verb/}/ & (\textsl{author} \textsl{year})\\
+   \verb/\citet{/\textsl{key}\verb/}/ & \textsl{author} (\textsl{year})\\
+   \verb/\authorcite{/\textsl{key}\verb/}/  & \textsl{author}\\
+   \verb/\yearcite{/\textsl{key}\verb/}/    & \textsl{year}
+\end{tabular}
+\end{center}
+
+If a comma-separated list of reference keys is given as an argument 
+of the \verb/\cite/ command, we obtain a semicolon-separated list 
+of reference labels.  For other commands, readers can easily find 
+the result for a list of keys by simple experiments. 
+
+
+
+\section{Mathematical formulas}
+
+For mathematical formulas,  \texttt{pasj01.cls} allows 
+\verb/$...$/ and ``math'' environment for in-text formulas and  
+\verb/\[...\]/ and ``displaymath, equation, eqnarray($*$)'' environments 
+for displayed formulas.  
+The use of \verb/$$...$$/ for a displayed formula is not recommended.  
+
+For mathematical symbols, \textsf{pasj01.cls} allows one to use symbols 
+provided by the standard \LaTeXe{} and some more symbols given 
+in table~\ref{table:extramath} (see also subsection \ref{sec:math-symbols}). 
+Note that if the \texttt{amssymb} package is available, 
+the \texttt{useamsfonts} class option enables the use of symbols defined 
+by \textsf{amssymb.sty}. 
+
+
+
+\section{Figures}\label{sec:figures}
+
+The class file \texttt{pasj01.cls} supports the embeddings of graphic 
+files in the EPS (Encapsulated PostScript) format as its default.  
+
+ To place figures appropriately, the usual ``figure'' environment is available. 
+ As in the standard \LaTeXe, \texttt{pasj01.cls} allows the following description and
+figure~\ref{fig:usage} is an example of usage of the ``\mbox{figure}'' environment.
+\begin{verbatim}
+\begin{figure}
+ \begin{center}
+  \includegraphics[width=80cm]{figure1.eps}
+ \end{center}
+ \caption{*****}\label{.....}
+\end{figure}
+\end{verbatim}
+
+\begin{figure}
+  \begin{center}
+    \begin{picture}(200,100)
+      \put(  5,  5){\line( 0, 1){ 90}}
+      \put(  5,  5){\line( 1, 0){190}}
+      \put(195,  5){\line( 0, 1){ 90}}
+      \put(  5, 95){\line( 1, 0){190}}
+      \put(  5,  5){\line( 2, 1){ 90}}
+      \put(  5, 95){\line( 2,-1){ 90}}
+      \put(195,  5){\line(-2, 1){ 90}}
+      \put(195, 95){\line(-2,-1){ 90}}
+      \put( 95, 50){\line( 1, 0){ 10}}
+      \put(  5,  5){\circle {6}}
+      \put(195,  5){\circle*{6}}
+      \put(  5, 95){\circle*{6}}
+      \put(195, 95){\circle {6}}
+    \end{picture}
+  \end{center}
+  \caption{%
+     Simple example of usage of the ``figure'' environment.
+     This sample figure is a ``picture'' environment and no eps file 
+     is included.  If the \texttt{graphicx} package is available 
+     and some appropriate graphic files exist, readers might 
+     observe the usage of the \texttt{\textbackslash includegraphics} command.}%
+  \label{fig:usage}
+\end{figure}
+
+Though the ``figure'' environment can take one optinal argument showing 
+possible positions of the figure, the use of this optional argument is 
+not recommended.  
+
+
+For the location of figure files (or the directory/folder in which 
+figure files exist), \texttt{pasj01.cls} assumes that figure files and 
+the \LaTeX{} file containing those figures are placed in the same directory. 
+
+
+\textbf{Important Notice:}    Note that authors \textit{must not} use 
+old packages for graphics, such as \texttt{epsf.sty}, \texttt{epsbox.sty}. 
+
+
+
+\section{Tables}
+
+To include tables which are small enough to be contained in one page, 
+the usual pair of ``table'' and ``tabular'' environments is available.  
+That is, authors can place a small table as in the following way:
+\begin{verbatim}
+\begin{table}
+  \tbl{Heading of this tabular.}{%
+  \begin{tabular}{lll}
+    ..........
+  \end{tabular}}\label{...}
+  \begin{tabnote}
+    a brief note of table 
+  \end{tabnote}
+\end{table}
+\end{verbatim}
+
+To produce long tables, a simplified version of the ``longtable'' environment 
+is implemeted.  The usege is very similar to that of the ``longtable'' environment  
+provided by the \texttt{longtable} package. 
+Thus, a long table can be described as follows:
+\begin{verbatim}
+\begin{longtable}{*{8}{l}}
+\caption{Heading of this tabular.}
+\hline
+\multicolumn{8}{c}{first head} \\
+A & B & C & D & E & F & G & H  \\
+\hline
+\endfirsthead
+\hline
+A & B & C & D & E & F & G & H  \\
+\hline
+\endhead
+\hline
+\endfoot
+\hline
+\multicolumn{8}{l}{some remarks...} \\
+\hline
+\endlastfoot
+a & b & c & d & e & f & g & h \\
+............%%% table data
+a' & b' & c' & d' & e' & f' & g' & h' \\
+\end{longtable}
+\end{verbatim}
+
+Note that this ``longtable'' environment obtains the maximum size 
+of the width of cells in each column via the aux file.  Therefore, it is 
+required to typeset at least twice to produce a correct table.  
+For the meanings of \verb/\endhead/ etc., see ``The \LaTeX{} Companion'' or 
+appropriate instruction for \LaTeXe.
+
+\textbf{Important Notice~1:}~Since PASJ's ``longtable'' environemnt, itself, 
+is treated like table environments, there is no need to put a long table 
+in ``table'' environment. 
+
+\textbf{Important Notice~2:}~In the ``longtable'' environment, \verb/\caption/ 
+should be placed at the first part of this environment.  
+Though the \texttt{longtable} package provides some parameters, like 
+\verb/\LTleft/ and \verb/\LTpre/, the \texttt{pasj01.cls} class file 
+inhibits one to use those parameters in order to keep the uniformity of 
+the appearance of the tables in the journal. 
+
+
+
+\section{Miscellaneous remarks}
+
+\subsection{Draft mode}
+The class file \texttt{pasj01.cls} provides the \verb/\draft/ command 
+to produce a one-column and double-spaced with 12pt fonts.  
+The \verb/\draft/ command could be simply placed in the preamble 
+of an article. 
+A manuscript of submission should be prepared in this style.  
+
+\subsection{Additional mathematical symbols}\label{sec:math-symbols}
+
+The symbols in table~\ref{table:extramath} are provided by \textsf{pasj01.cls}. 
+Some of them are also defined in \textsf{amssymb.sty}, and 
+the definitions of such commands are replaced with those 
+in \textsf{amssymb.sty} if \texttt{useamsfont} option is specified. 
+
+\begin{table}
+\tbl{Addtional mathematical symbols.\footnotemark[$*$] }{%
+\begin{tabular}{@{}lc@{\qquad}lc@{}}  
+\hline\noalign{\vskip3pt} 
+\multicolumn{1}{c}{Name} & Symbol & \multicolumn{1}{c}{Name} & Symbol \\  [2pt] 
+\hline\noalign{\vskip3pt} 
+  \texttt{\string\lesssim}         & $\lesssim$         &
+  \texttt{\string\gtrsim}          & $\gtrsim$          \\
+  \texttt{\string\leqq}            & $\leqq$            &
+  \texttt{\string\geqq}            & $\geqq$            \\
+  \texttt{\string\lessgtr}         & $\lessgtr$         &
+  \texttt{\string\gtrless}         & $\gtrless$         \\
+  \texttt{\string\lessapprox}      & $\lessapprox$      &
+  \texttt{\string\gtrapprox}       & $\gtrapprox$       \\
+  \texttt{\string\leftrightarrows} & $\leftrightarrows$ &
+  \texttt{\string\square}          & $\square$          \\
+  \texttt{\string\diameter}        & $\diameter$        &
+  \texttt{\string\hateqq}          & $\hateqq$          \\
+  \texttt{\string\simless}         & $\simless$         &
+  \texttt{\string\simgtr}          & $\simgtr$          \\
+  \texttt{\string\lesssimeq}       & $\lesssimeq$       &
+  \texttt{\string\gtrsimeq}        & $\gtrsimeq$        \\
+  \texttt{\string\singlebond}      & $\singlebond$      &
+  \texttt{\string\doublebond}      & $\doublebond$      \\
+  \texttt{\string\triplebond}      & $\triplebond$      &
+  \texttt{\string\onehalf}         & $\onehalf$         \\
+  \texttt{\string\onethird}        & $\onethird$        &
+  \texttt{\string\twothirds}       & $\twothirds$       \\
+  \texttt{\string\onequarter}      & $\onequarter$      &
+  \texttt{\string\threequarters}   & $\threequarters$   \\
+  \texttt{\string\micron}          & $\micron$          \\  [2pt] 
+\hline\noalign{\vskip3pt} 
+\end{tabular}}\label{table:extramath}
+\begin{tabnote}
+\hangindent6pt\noindent
+\hbox to6pt{\footnotemark[$*$]\hss}\unskip% 
+ Symbols provided by the standard \LaTeX{} system such as $\cong$, $\approx$ are available. 
+ If the \textsf{amssymb} package is available, then the \textsf{useamsfonts} class option enables 
+ to use the symbols defined by \textsf{amssymb} package. 
+ (Also note that this document is \textit{not} an instruction for \LaTeX{} itself, 
+ we omit a list for those symbols.)
+\end{tabnote}
+\end{table}
+
+\subsection{Astronomical symbols}
+The class file \texttt{pasj01.cls} provides the commands listed 
+in table~\ref{table:astrosym} for astronomical symbols. 
+For the symbol of the sun, \verb/\Sol/ and \verb/\solar/ produce 
+the symbol \Sol.
+
+\begin{table}
+\tbl{Symbols in font ``astrosym.'' 
+\label{table:astrosym}}{%
+\begin{tabular}{@{}lc@{\qquad}lc@{}}  
+\hline\noalign{\vskip3pt} 
+\multicolumn{1}{c}{Name} & Symbol & \multicolumn{1}{c}{Name} & Symbol \\  [2pt] 
+\hline\noalign{\vskip3pt} 
+   \texttt{\string\Mercurius} & \Mercurius& 
+   \texttt{\string\Venus} & \Venus \\
+   \texttt{\string\Terra} & \Terra& 
+   \texttt{\string\Mars} & \Mars \\
+   \texttt{\string\Jupiter} & \Jupiter &
+   \texttt{\string\Saturnus} & \Saturnus \\
+   \texttt{\string\varSaturnus} & \varSaturnus &
+   \texttt{\string\Uranus} & \Uranus \\
+   \texttt{\string\Neptunus} & \Neptunus &
+   \texttt{\string\varNeptunus} & \varNeptunus \\
+   \texttt{\string\Pluto} & \Pluto &
+   \texttt{\string\varPluto} & \varPluto \\
+   \texttt{\string\Luna} & \Luna &
+   \texttt{\string\Aries} & \Aries \\
+   \texttt{\string\Taurus} & \Taurus &
+   \texttt{\string\Gemini} & \Gemini \\
+   \texttt{\string\Cancer} & \Cancer &
+   \texttt{\string\Leo} & \Leo \\
+   \texttt{\string\Virgo} & \Virgo &
+   \texttt{\string\Libra} & \Libra \\
+   \texttt{\string\varLibra} & \varLibra &
+   \texttt{\string\Scorpio} & \Scorpio \\
+   \texttt{\string\Sagittarius} & \Sagittarius &
+   \texttt{\string\Capriconus} & \Capriconus \\
+   \texttt{\string\Aquarius} & \Aquarius &
+   \texttt{\string\varAquarius} & \varAquarius \\
+   \texttt{\string\VarAquarius} & \VarAquarius &
+   \texttt{\string\Pisces} & \Pisces \\  [2pt] 
+\hline\noalign{\vskip3pt} 
+\end{tabular}}
+\end{table}
+
+
+\subsection{Description of time/angle, atoms etc.}
+
+To produce the description of time/angle like ``\timeform{1h23m45.67s}''
+or ``\timeform{6D54'32.1''}'', the class file \textsf{pasj01.cls} provides 
+a simple notation \verb/\timeform{1h23m45.67s}/ or 
+\verb/\timeform{6D54'32.1''}/.  In the argument of \verb/\timeform/ command, 
+the letter ``\texttt{D}'' corresponds to the symbol ``\degree'. 
+Note that all of the three expressions \verb/\timeform{1.23s}/, 
+\verb/\timeform{1s.23}/ and \verb/\timeform{1.s23}/ give the same result
+``\timeform{1.23s}'', that is, there is no importance in the order of 
+a decimal point and a unit symbol.  Also, we note that the \verb/\timeform/ 
+command assumes that there is \textit{at most one} decimal point 
+in its argument.  
+
+Though the file \textsf{pasj01.cls} also provides (\textsf{aastex}-like) 
+commands, such as \verb/\fh/(\fh), \verb/\fdg/(\fdg), 
+the use of such commands with ambiguous names is not recommended. 
+
+Atomic symbols like ``\atom{C}{}{12}'' or ``\atom{N}{7}{14}'' can be produced 
+by ``\verb/\atom{C}{}{12}/'' or ``\verb/\atom{N}{7}{14}/'' respectively. 
+
+Ionization state the elements like ``Fe\,\emissiontype{II}'' can be expressed by 
+ ``Fe\,\verb/\emissiontype{/II\verb/}/''. 
+
+
+\subsection{Abbreviation of journal names}
+
+The following list shows the abbreviations of journal names already defined 
+by \texttt{pasj01.cls}.
+\begin{description}
+\item[{\normalfont\texttt{\textbackslash aap}:}] \aap\\
+   Astronomy and Astrophysics 
+\item[{\normalfont\texttt{\textbackslash aapr}:}] \aapr\\
+   Astronomy and Astrophysics Reviews 
+\item[{\normalfont\texttt{\textbackslash aaps}:}] \aaps\\
+   Astronomy and Astrophysics, Supplement 
+\item[{\normalfont\texttt{\textbackslash aip}:}] \aip\\
+   AIP Conference Proceedings 
+\item[{\normalfont\texttt{\textbackslash aj}:}] \aj\\
+   Astronomical Journal 
+\item[{\normalfont\texttt{\textbackslash ao}:}] \ao\\
+   Applied Optics 
+\item[{\normalfont\texttt{\textbackslash apj}:}] \apj\\
+   Astrophysical Journal (including Letters) 
+\item[{\normalfont\texttt{\textbackslash apjs}:}] \apjs\\
+   Astrophysical Journal, Supplement 
+\item[{\normalfont\texttt{\textbackslash aplett}:}] \aplett\\
+   Astrophysics Letters 
+\item[{\normalfont\texttt{\textbackslash apspr}:}] \apspr\\
+   Astrophysics Space Physics Research 
+\item[{\normalfont\texttt{\textbackslash apss}:}] \apss\\
+   Astrophysics and Space Science 
+\item[{\normalfont\texttt{\textbackslash araa}:}] \araa\\
+   Annual Review of Astron and Astrophys 
+\item[{\normalfont\texttt{\textbackslash asp}:}] \asp\\
+   ASP Conference Series 
+\item[{\normalfont\texttt{\textbackslash baas}:}] \baas\\
+   Bulletin of the AAS 
+\item[{\normalfont\texttt{\textbackslash iaucirc}:}] \iaucirc\\
+   IAU Cirulars 
+\item[{\normalfont\texttt{\textbackslash jcp}:}] \jcp\\
+   Journal of Chemical Physics 
+\item[{\normalfont\texttt{\textbackslash jgr}:}] \jgr\\
+   Journal of Geophysics Research 
+\item[{\normalfont\texttt{\textbackslash mnras}:}] \mnras\\
+   Monthly Notices of the RAS 
+\item[{\normalfont\texttt{\textbackslash nat}:}] \nat\\
+   Nature 
+\item[{\normalfont\texttt{\textbackslash nphysa}:}] \nphysa\\
+   Nuclear Physics A 
+\item[{\normalfont\texttt{\textbackslash pasj}:}] \pasj\\
+   Publications of the ASJ 
+\item[{\normalfont\texttt{\textbackslash pasp}:}] \pasp\\
+   Publications of the ASP 
+\item[{\normalfont\texttt{\textbackslash physrep}:}] \physrep\\
+   Physics Reports 
+\item[{\normalfont\texttt{\textbackslash planss}:}] \planss\\
+   Planetary Space Science 
+\item[{\normalfont\texttt{\textbackslash pra}:}] \pra\\
+   Physical Review A: General Physics 
+\item[{\normalfont\texttt{\textbackslash prb}:}] \prb\\
+   Physical Review B: Solid State 
+\item[{\normalfont\texttt{\textbackslash prc}:}] \prc\\
+   Physical Review C 
+\vfill\pagebreak   
+\item[{\normalfont\texttt{\textbackslash prd}:}] \prd\\
+   Physical Review D 
+\item[{\normalfont\texttt{\textbackslash pre}:}] \pre\\
+   Physical Review E 
+\item[{\normalfont\texttt{\textbackslash prl}:}] \prl\\
+   Physical Review Letters 
+\item[{\normalfont\texttt{\textbackslash procspie}:}] \procspie\\
+   Proceedings of the SPIE 
+\item[{\normalfont\texttt{\textbackslash qjras}:}] \qjras\\
+   Quarterly Journal of the RAS 
+\item[{\normalfont\texttt{\textbackslash skytel}:}] \skytel\\
+   Sky and Telescope 
+\item[{\normalfont\texttt{\textbackslash solphys}:}] \solphys\\
+   Solar Physics 
+\item[{\normalfont\texttt{\textbackslash sovast}:}] \sovast\\
+   Soviet Astronomy 
+\item[{\normalfont\texttt{\textbackslash ssr}:}] \ssr\\
+   Space Science Reviews 
+\end{description}
+
+
+
+\subsection{About user-defined commands}
+Though class file \textsf{pasj01.cls} does not inihibit the use 
+of \verb/\def/, \verb/\newcommand/ etc., it is \textit{not} recommended 
+to define a user's own command.  Note that a user's own trivial abbriviations 
+might cause fatal errors by changing the existing commands or by interfering 
+with macros defined in other articles (or in the class file used 
+for publication).  Every author should remember that \textit{no} journal 
+consists of his/hers papers only. 
+
+
+\end{document}
+

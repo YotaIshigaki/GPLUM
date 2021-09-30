@@ -1,0 +1,402 @@
+\subsubsection{Summary}
+
+The \texttt{FullParticle} class contains all information of a particle and is one of the template parameters of FDPS-defined \texttt{ParticleSystem} (see step 0 in Sec. \ref{sec:overview_action}). Users can define arbitrary member variables and member functions, as far as required member functions are defined. Below, we describe the required member functions.
+
+\subsubsection{Premise}
+
+Let us take \texttt{FP} class as an example of \texttt{FullParticle} as below. Users can use an arbitrary name in place of \texttt{FP}.
+\begin{screen}
+\begin{verbatim}
+class FP;
+\end{verbatim}
+\end{screen}
+
+\subsubsection{Required member functions}
+
+\subsubsubsection{Summary}
+
+The member functions \texttt{FP::getPos} and \texttt{FP::copyFromForce} are required. \texttt{FP::getPos} returns the position of a particle. Function \texttt{FP::copyFromForce} copies the results of calculation back to \texttt{FullParticle}. The examples and descriptions for these member functions are listed below.
+
+\subsubsubsection{FP::getPos}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64vec getPos() const;
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+  None.
+  
+\item {\bf Returns}
+
+  \texttt{PS::F32vec} or \texttt{PS::F64vec}.
+  Returns the position of \texttt{FP} class.
+  
+\item {\bf Behaviour}
+
+  Returns the member variables which contains the position of a particle.
+
+\end{itemize}
+
+\subsubsubsection{FP::copyFromForce}
+
+\begin{screen}
+\begin{verbatim}
+class Force;
+
+class FP {
+public:
+    void copyFromForce(const Force & force);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{force}: Input. \texttt{const Force} type.
+  
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behaviour}
+
+  Copies back the results of calculation to \texttt{FP} class.
+
+\end{itemize}
+
+\subsubsection{Required member functions for specific cases}
+
+\subsubsubsection{Summary}
+
+In this section we describe the member functions for specific cases listed below;
+\begin{itemize}
+\item{} Modes other than \texttt{PS::SEARCH\_MODE\_LONG} for \texttt{PS::SEARCH\_MODE} are used.
+\item{} APIs for file I/O in \texttt{ParticleSystem} are used.
+\item{} \texttt{ParticleSystem::adjustPositionIntoRootDomain} API is used.
+\item{} Particle Mesh class, which is an extension of FDPS, is used.
+\end{itemize}
+
+\subsubsubsection{Modes other than \texttt{PS::SEARCH\_MODE\_LONG} for \texttt{PS::SEARCH\_MODE} are used}
+
+\subsubsubsubsection{FP::getRSearch}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64 getRSearch() const;
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  None.
+
+\item {\bf Returns}
+
+  \texttt{PS::F32vec} or \texttt{PS::F64vec}.
+  Returns the value of the member variable which contains neighbor search radius in \texttt{FP}.
+
+\item {\bf Behaviour}
+
+  Returns the value of the member variable which contains neighbor search radius in \texttt{FP}.
+  
+\end{itemize}
+
+\subsubsubsection{APIs for file I/O in \texttt{ParticleSystem} are used}
+\label{sec:userdefined_fullparticle_io}
+
+
+The member functions \texttt{readAscii}, \texttt{writeAscii}, \texttt{readBinary}, and \texttt{writeBinary} are necessary, if users use \texttt{ParticleSystem::readParticleAscii}, \texttt{ParticleSystem::writeParticleAscii}, \texttt{ParticleSystem::readParticleBinary}, and \texttt{ParticleSystem::writeParticleBinary}, respectively  (users can also use different names for these member functions. For more details, please see section \ref{sec:ParticleSystem:IO}).  In this section we describe the rules for defining \texttt{readAscii}, \texttt{writeAscii}, \texttt{readBinary}, and \texttt{writeBinary}.
+
+\subsubsubsubsection{FP::readAscii}
+\label{sec:FP_readAscii}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    void readAscii(FILE *fp);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{fp}: \texttt{FILE *} type. A file pointer of input file.
+
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behavior}
+
+  Set the values of member variables of an instance of class \texttt{FP} by reading data from a ASCII file specified by file pointer \texttt{fp}. Data of one particle must be stored in one line. In other words, Data of one particle must end with a single new-line character (\texttt{\textbackslash n}).
+  
+\end{itemize}
+
+\subsubsubsubsection{FP::writeAscii}
+\label{sec:FP_writeAscii}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    void writeAscii(FILE *fp);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{fp}: \texttt{FILE *} type. A file pointer of output file.
+  
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behavior}
+
+
+  Output the data of an instance of class \texttt{FP} to a file specified by file pointer \texttt{fp} in a ASCII format. Data must be written as one line. In other words, data of one particle must end with a single newline character (\texttt{\textbackslash n}).
+  
+\end{itemize}
+
+\subsubsubsubsection{FP::readBinary}
+\label{sec:FP_readBinary}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    void readBinary(FILE *fp);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{fp}: \texttt{FILE *} type. A file pointer of input file.
+
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behavior}
+
+  Set the values of member variables of an instance of class \texttt{FP} by reading data from a binary file specified by file pointer \texttt{fp}.
+  
+\end{itemize}
+
+\subsubsubsubsection{FP::writeBinary}
+\label{sec:FP_writeBinary}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    void writeBinary(FILE *fp);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{fp}: \texttt{FILE *} type. A file pointer of output file.
+  
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behavior}
+
+
+  Output the data of an instance of class \texttt{FP} to a file specified by file pointer \texttt{fp} in a binary format. 
+  
+\end{itemize}
+
+
+\subsubsubsection{\texttt{ParticleSystem::adjustPositionIntoRootDomain} API is used}
+
+\subsubsubsubsection{FP::setPos}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    void setPos(const PS::F64vec pos_new);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{pos\_new}: Input. \texttt{const PS::F32vec} or \texttt{const PS::F64vec}. Modified positions of particle by FDPS.
+
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behaviour}
+
+  Replaces the positions in \texttt{FP} class by those modified by FDPS.
+
+\end{itemize}
+
+\subsubsubsection{Particle Mesh class, which is an extension of FDPS, is used}
+
+When \texttt{Particle Mesh} class is used, \texttt{FP::getChargeParticleMesh} and \texttt{FP::copyFromForceParticleMesh} must be defined. Below, the rules for these functions are described.
+
+\subsubsubsubsection{FP::getChargeParticleMesh}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    PS::F64 getChargeParticleMesh() const;
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  None.
+
+\item {\bf Returns}
+
+  \texttt{PS::F32} or \texttt{PS::F64}.
+  Returns the mass or the electric charge of a particle.
+
+\end{itemize}
+
+\subsubsubsubsection{FP::copyFromForceParticleMesh}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    void copyFromForceParticleMesh(const PS::F32vec & acc_pm);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{acc\_pm}: \texttt{const PS::F32vec} or \texttt{const PS::F64vec}. Returns the resulting force by Particle Mesh.
+
+\item {\bf Returns}
+
+  None.
+  
+\item {\bf Behaviour}
+
+  Writes back the resulting force by Particle Mesh to a particle.
+  
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsubsection{Serialize particle data when particle exchange}
+\label{sec:FP:serialize}
+
+Member functions \texttt{FP::pack} and \texttt{FP::unpack} are necessary, if users send the data of particles with serializing them during particle exchange. Below, we describe the specifications for these functions.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsubsubsection{FP::pack}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    static PS::S32 pack(const PS::S32 n_ptcl, const FP *ptcl[], char *buf, 
+                        size_t & packed_size, const size_t max_buf_size);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{n\_ptcl}: Number of particles to be sent when exchanging particles. 
+  
+  \texttt{ptcl}: Array of pointers to particles to be sent.
+  
+  \texttt{buf}: Beginning address of a send buffer. 
+  
+  \texttt{packed\_size}: Size to be written to the send buffer by the user (in bytes). 
+  
+  \texttt{max\_buf\_size}: Size of writable area of the send buffer (in bytes).
+
+\item {\bf Returns}
+
+  Type \texttt{PS::S32}. Return -1 if \texttt{packed\_size} is greater than \texttt{max\_buf\_size}. Otherwise, returns 0.
+  
+\item {\bf Behaviour}
+
+This function serializes the data of particles to be sent when exchanging particles and writes it into a send buffer.
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsubsubsection{FP::unPack}
+
+\begin{screen}
+\begin{verbatim}
+class FP {
+public:
+    static PS::S32 unPack(const PS::S32 n_ptcl, FP ptcl[],
+                          const char *buf);
+};
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item {\bf Arguments}
+
+  \texttt{n\_ptcl}: Number of particles received when exchanging particles. 
+  
+  \texttt{ptcl}: Array of particles to store the received particles. 
+  
+  \texttt{buf}: Beginning address of a receive buffer.
+
+\item {\bf Returns}
+
+  Type \texttt{PS::S32}. Returns -1 when failing to deserialize. Otherwise, returns 0.
+
+\item {\bf Behaviour}
+
+ This functions deserializes received particles when exchanging particles and writes them to an array of particles. For details, see \S~\ref{sec:particleSystem:exchangeParticle}. When failing to deserialize, it calls PS::Abort() and the programs is terminated.
+
+\end{itemize}

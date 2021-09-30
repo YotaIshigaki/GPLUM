@@ -1,0 +1,353 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% 分子シミュレーション学会誌「アンサンブル」用テンプレートファイル
+%
+% Ver. 3.1  2017/04/16
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\UseRawInputEncoding
+\documentclass[twocolumn,10pt]{jarticle}
+%\usepackage[sjis]{inputenc}
+\usepackage[review]{ensemble} %単著の場合 reviewb -> review
+\usepackage{listings,jlisting}
+
+\lstset{%
+  language={C},
+  basicstyle={\small},%
+  identifierstyle={\small},%
+  commentstyle={\small\itshape},%
+  keywordstyle={\small\bfseries},%
+  ndkeywordstyle={\small},%
+  stringstyle={\small\ttfamily},
+  frame={tb},
+  breaklines=true,
+  columns=[l]{fullflexible},%
+  numbers=left,%
+  xrightmargin=0zw,%
+  xleftmargin=1zw,%
+  numberstyle={\scriptsize},%
+  stepnumber=1,
+  numbersep=1zw,%
+  lineskip=-0.5ex%
+}
+%
+% === 使用方法 ===
+%
+% \usepackage[option]{ensemble}
+%
+% option のところを，記事の種類に合わせて変更してください．
+%
+% review : 論文・研究紹介（著者一人）
+% reviewb : 論文・研究紹介（著者二人）
+%
+% amsmath, amssymb, cite, color, graphicx, here, 
+% は，ensemble.sty の中で読み込まれています．
+%
+\setcounter{page}{101}  % 開始ページ (編集委員用)
+
+\title{% タイトル
+[]超並列粒子法シミュレーションプログラム自動生成ツールの紹介～並列プログラミング初心者にもできる！～
+}
+
+\author{% 著者名
+野村昴太郎, 行方大輔，岩澤全規，牧野淳一郎
+}
+
+\email{% e-mail address
+makino@mail.jmlab.jp
+}
+
+\affiliation{% 所属
+神戸大学 惑星科学研究センター,
+理化学研究所 計算科学研究センター
+}
+
+\career{% 著者紹介
+野村昴太郎(博士(工学))：〔経歴〕2017年慶應義塾大学大学院理工学研究科博士課程単位取得退学，同年理化学研究所に入所(現職)．
+%2019年より神戸大学惑星科学研究センター 特命助教（現職）．
+2019年博士(工学)を取得．〔専門〕ハイパフォーマンスコンピューティング．〔趣味〕料理，テニス，フットサル，コンサドーレ札幌．}
+
+\abst{% 概要
+本稿では、私達が開発・公開している多体シミュレーション
+プログラム開発フレームワーク「FDPS (Framework for Developping Particle
+  Simulators)」を紹介します。FDPS は、粒子シミュレーションを研究に使っ
+ている多くの研究者が、並列化や計算機アーキテクチャ固有のチューニングに
+多大な時間を費やすことなく、自分の扱いたい問題向けのシミュレーションプ
+ログラムを容易に作成できるようになることを目標として開発したフレームワー
+クです。連載第一回の今回は、FDPS の開発の背景、考え方と、実際にどのよ
+うなことができるか、という簡単な例を紹介します。\\
+\textcolor{white}{(1行あける)}
+}
+
+\keyword{
+FDPS, 粒子系シミュレーション
+}
+
+% 顔写真のファイル名．デフォルトはphoto.eps, photob.eps
+% 第1著者
+\photofile{photo.eps}
+
+%------------------------------------------------------------------------
+% ユーザー定義のマクロはここに書く．
+%------------------------------------------------------------------------
+%\renewcommand{\v}[1]{{\bf #1}}
+%\newcommand{\ave}[1]{\left< #1 \right>}
+%------------------------------------------------------------------------
+\begin{document}
+
+\maketitle
+%------------------------------------------------------------------------
+% 原稿ここから
+%------------------------------------------------------------------------
+
+\section{はじめに} %total 1-2 pages
+%% 第1章では，FDPS(Framework for Developing Particle Simulators)の開発に至った背景などについて説明する。大規模な粒子シミュレーションを行いたいと思った時，30年前であれば，自分でプログラムを書いても，気を遣うべきはベクトル化程度で，それほど大変ではなかった。しかし，近年では，計算ノード，ノード内のCPU，CPU内の演算コアといった異なる階層での並列化を考慮しないことには，計算機が本来もっている性能の数千分の一の能力しか生かせないことになってしまうという悲しい現実が待っている。そこで，粒子間相互作用を定義するだけで大規模並列シミュレーションコードを生成できるようなツールを開発するに至った。その成果物がFDPSである。
+
+\input intro.tex
+
+%%  \section{FDPSの概要} %total 2-3 pages
+%% 第2章では，FDPSの機能の説明を行う。一般的な多体粒子シミュレーションでは，次に示す1～7のステップを繰り返すことにより，時間発展する。この中の，ステップ2，3，4の，一般的には面倒なコードとなる部分を行う関数(サブルーチン)を自動的に生成する。
+%% \begin{enumerate}
+%% \item 粒子の初期分布を作る(ファイルから読む・内部で生成する)
+%% \item 領域分割のしかたを決める
+%% \item 粒子を担当するプロセスが持つように転送する
+%% \item 粒子間相互作用を計算して、各粒子の加速度を求める
+%% \item 速度をアップデートする(時間刻みの中央まで)
+%% \item 位置をアップデートする
+%% \item ステップ2に戻る
+%% \end{enumerate}
+%% この際，FDPSでは，MPIを使った並列化，OpenMPを使った並列化，長距離相
+%% 互作用，および%% 短距離相互作用のツリー法やネイバーリストを使った高
+%% 速化を自動的に行う。また，それ以外の部分，例えば，時間積分方法など
+%% は，ユーザが自由に決定することができる。本章では，上記の自動生成を
+%% 行うために必要な情報の書き方を説明する。 
+
+ \input fdps_overview.tex
+ 
+\section{実例}% total 2-3 page
+\subsection{単純な分子動力学計算}
+%希ガス単原子分子を模したLennard-Jones粒子のシミュレーションを，簡単なコードを示しながら解説する。また，並列化を意識しないシリアルなコードから，コンパイルオプションを変更するだけでノード内並列，ノード間並列が可能な実行ファイルがコンパイル可能なことを示す。
+本節では，希ガスの単原子分子を模したLennard-Jones(LJ)粒子のシミュレーションコード例について説明する．
+LJ粒子$i$と$j$の2体間相互作用は以下のポテンシャルで表される．
+\begin{eqnarray}
+ U_{\mathrm{LJ}}(r_{ij}) = \begin{cases}
+	   4\epsilon\left\{\left(\frac{\sigma}{r_{ij}}\right)^{12} - \left(\frac{\sigma}{r_{ij}}\right)^{6}\right\} (\mathrm{if}\ r_{ij} < r_c)\\
+	   0\ (\mathrm{else})
+	  \end{cases}.
+\end{eqnarray}
+$\epsilon$と$\sigma$はそれぞれポテンシャルの深さと粒子の大きさを特徴づけるパラメータで，$r_c$はカットオフ距離である．本解説では簡単のために$\epsilon = \sigma = 1$としている．
+
+紙面の都合上，最低限必要な部分のみを解説していく．ある程度，CもしくはC++の知識があることを前提としている．
+Fortranインターフェースを用いる場合でも，同様の情報を書く必要があるので参考にはなると思われる．
+コード全体についてはhttps://XXX.orgを参照してほしい．
+
+まず，コードの本体であるmain.cppである．
+ここでは，
+ \begin{enumerate}
+ \item FDPSのヘッダーファイルのインクルード
+ \item 粒子データクラス(クラス名FP, EP, Force)の定義
+ \item 粒子間相互作用関数(関数名Kernel)の定義
+ \item main関数の定義
+ \end{enumerate}
+ が行われている．FDPSのヘッダーファイルのインクルードはファイルの先頭で行われている．
+  \begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+   #include <particle_simulator.hpp>
+   using namespace PS;
+   using namespace std;
+  \end{lstlisting}
+  また，ここでは記述を短くするために名前空間PS(ParticleSimulatorの略)とstd(C++標準ライブラリ)で定義されている変数や関数，クラスを使うことを宣言している(PS::が省略されている)．
+
+  粒子データクラス(構造体)の定義では，粒子が持たなくてはならない情報とFDPSが必要とするデータを操作する関数を定義する．
+FPクラスについて見てみよう．FPはFullParticleクラスの略で，時間発展や相互作用を計算するにあたって必要な情報全てを持つ粒子データクラスである．
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+struct FP{
+  F64vec r,v,f; // 座標，速度，力
+  F64    p;     // ポテンシャル
+  void copyFromForce(const Force& _f)
+   {f = _f.f; p = _f.p;}
+  F64vec getPos() const {return r;};
+  void setPos(const F64vec& _r){r = _r;}
+  void kick(const F64 dt){v += f*dt;}
+  void drift(const F64 dt){r += v*dt;}
+};
+\end{lstlisting}
+粒子データクラスが持つメンバ変数として座標，速度，力，ポテンシャルエネルギーと，FDPSがこのデータを操作するのに必要なメンバ関数(copyFromForce, getPos, setPos)が定義されている．また，kickとdriftという粒子の時間発展を行なうメンバ関数が定義されている．このように，FDPSが必要としていないメンバ関数もユーザの必要に応じて追加することができる．粒子データクラスの定義では，更にForceとEP(EssentialParticleの略)クラスを定義している．それぞれ，相互作用計算を行なう際の結果(力とポテンシャル)と相互作用計算に必要(Essential)なデータ(ここでは座標のみ)を持ったクラスである．それぞれについて，FDPSが必要とする関数が少しずつ異なる．このように相互作用計算のみに使われる粒子データクラスを定義して相互作用計算のときに利用することにより，メモリ使用量の削減や最適化を行いやすくしている．EPクラスは，$i$粒子と$j$粒子(相互作用を受ける粒子とおよぼす粒子)それぞれについて定義できるが，本コードでは両方に同じEPクラスを用いている．最も簡単にコードを書く場合，Forceクラス，EPクラスを定義せずにFPクラスを全ての用途で使い回すこともできる．
+
+相互作用関数の定義では，上記のポテンシャルから力の計算を行っている．この関数は，$i$と$j$粒子のリストとその長さ(epi, epjとni, nj)を受け取って，結果のリスト(force)に計算結果を書き込んでいる．FDPSはFPのリストから$i$と$j$粒子のリストを作り，相互作用関数を呼び出し，結果をFPに書き戻す．この際，分散メモリ上の並列計算については，復数のプロセス間での通信などが必要に応じて行われる．
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+void Kernel(const EP *epi,const S32 ni,
+	    const EP *epj,const S32 nj,
+	    Force *force){
+  const F64 rc2 = RCUT*RCUT;
+  for(S32 i=0; i<ni; i++){
+    F64vec ri = epi[i].r, fi = force[i].f;
+    F64 pi = force[i].p;
+    for(S32 j=0; j<nj; j++){
+      F64vec rij = ri - epj[j].r;
+      const F64 r2 = rij * rij;
+      if(r2==0.0 || r2>rc2) continue;
+      const F64 r2i = 1.0/r2;
+      const F64 r6i = r2i * r2i * r2i;
+      fi += r6i*(48.0*r6i-24.0)*r2i * rij;
+      pi += 4.0*r6i*(r6i-1.0);
+    }
+    force[i].f = fi;
+    force[i].p = 0.5*pi;
+  }
+}
+\end{lstlisting}
+
+main関数の定義では，シミュレーションを行なうのに必要なインスタンスを作成し，実際にシミュレーションを行う．main関数では，まず最初にPS::Initializeを呼び出す．この関数はFDPSに必要な初期化を行なう(主にMPIプロセスの初期化など)．
+ \begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+Initialize(argc,argv);
+\end{lstlisting}
+ 次にParticleSystemやDomainInfo，TreeForForceを定義した粒子データクラスを使用してインスタンスにして，各インスタンスにおいてInitialize関数を呼び出す．本コードでは，初期条件として粒子を格子上に配置しているが，ここでは解説を省略する．
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+ParticleSystem<FP> ps;
+ps.initialize();
+\end{lstlisting}
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+DomainInfo di;
+di.initialize(0.3);
+di.decomposeDomainAll(ps);
+ps.exchangeParticle(di);
+TreeForForceShort<Force,EP,EP>::Scatter t;
+t.initialize(3*n*n*n,0.0,64,256);
+t.calcForceAllAndWriteBack(Kernel,ps,di);
+\end{lstlisting}
+以下のループでは実際にシミュレーションを進めている．時間発展(kick，drifp)を行い，空間の分割(DomainInfo::decomposeDomainAll)，粒子の分配(ParticleSystem::exchangeParticle)，力の計算(TreeForForce::calcForceAllAndWriteBack)を行っている．
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+S64 nl = ps.getNumberOfParticleLocal();
+for(int s=0;s<10000;s++){
+  for(int i=0;i<nl;i++){
+    ps[i].kick(dth);
+    ps[i].drift(dt);
+  }
+  ps.adjustPositionIntoRootDomain(di);
+  di.decomposeDomainAll(ps);
+  ps.exchangeParticle(di);
+  nl = ps.getNumberOfParticleLocal();
+  t.calcForceAllAndWriteBack(Kernel,ps,di);
+  for(int i=0;i<nl;i++) ps[i].kick(dth);
+  const F64 pot = AccumulatePotential(ps);
+  const F64 kin = CalcKineticEnergy(ps);
+  if(Comm::getRank()==0)
+    cout << scientific << pot << " " << kin << " " << pot+kin << endl;
+ }
+\end{lstlisting}
+最後にPS::Finalizeを行い，終了処理を行う．
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+Finalize();
+\end{lstlisting}
+
+次にMakefileを見てみよう．FDPS\_PATHはgithubからダウンロードしてきたファイルのパスである．FDPSを用いたコードをコンパイルする際には\$(FDPS\_PATH)/src/particle\_simulator.hppをincludeする必要があるためヘッダーファイルの検索パスを追加している．
+MPIを用いて並列化する場合は，MPI用コンパイラを用いて，PARTICLE\_SIMULATOR\_MPI\_PARALLELマクロを有効にする必要がある．OpenMPを利用する際は，OpenMP用のオプションを有効化してPARTICLE\_SIMULATOR\_THREAD\_PARALLELマクロを有効化することでスレッド並列化を行なうことができる．このとき，時間発展などのユーザー記述部分はスレッド並列化されないので注意されたい．また，両方を用いるハイブリッド並列化も可能である．
+\begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+INC+= -I$(FDPS_PATH)/src
+CXX=g++
+CXXFLAGS= -O2 $(INC)
+#FL+= -DPARTICLE_SIMULATOR_THREAD_PARALLEL
+#FL+= -DPARTICLE_SIMULATOR_MPI_PARALLEL
+SRC=main.cpp
+
+all:	argon.out
+argon.out:	$(SRC) Makefile
+	$(CXX) $(FL) $(SRC) -o argon.out
+\end{lstlisting}
+
+LJ粒子のサンプルコードの解説は以上である．シリアルなコードをコンパイル時にマクロを変更することで簡単に並列化が行えることが分かってもらえただろうか．
+
+% \begin{lstlisting}[language=c++,numbers=left,numbersep=5pt,frame=single,basicstyle=\ttfamily]
+% int main(int argc,char **argv){
+%   assert(argc == 2);
+%   Initialize(argc,argv);
+%   ParticleSystem<FP> ps;
+%   ps.initialize();
+%   const S32 n = atoi(argv[1]);
+%   const F64 l = powf(n*n*n/NUM_DENSITY,1./3.); // length of cubic system
+%   const F64 lh = 0.5*l;
+%   const F64 u = l / (F64)n; // unit lattice size
+%   if(Comm::getRank()==0){ // generate particles on master process
+%     mt19937 rnd;
+%     ps.setNumberOfParticleLocal(n*n*n);
+%     S32 count = 0;
+%     for(S32 x=0;x<n;x++)
+%       for(S32 y=0;y<n;y++)
+%         for(S32 z=0;z<n;z++){
+%           ps[count].r = u*F64vec(x,y,z)-lh;
+%           ps[count].v = F64vec(rnd(),rnd(),rnd());
+% 	  count++;
+%         }
+%   }else ps.setNumberOfParticleLocal(0); // set local number of particle 0 in the other processes
+%   DomainInfo di;
+%   di.initialize(0.3);
+%   di.decomposeDomainAll(ps);
+%   ps.exchangeParticle(di);
+%   TreeForForceShort<Force,EP,EP>::Scatter t;
+%   t.initialize(3*n*n*n,0.0,64,256);
+%   t.calcForceAllAndWriteBack(Kernel,ps,di);
+%   RemoveTotalMomentum(ps);
+%   ScaleVelocity(ps,INIT_TEMP);
+
+%   S32 nl = ps.getNumberOfParticleLocal();
+%   const F64 dt = 0.0005; const F64 dth = 0.5*dt;
+%   for(int s=0;s<10000;s++){
+%     for(int i=0;i<nl;i++){
+%       ps[i].kick(dth);
+%       ps[i].drift(dt);
+%     }
+%     ps.adjustPositionIntoRootDomain(di);
+%     di.decomposeDomainAll(ps);
+%     ps.exchangeParticle(di);
+%     nl = ps.getNumberOfParticleLocal();
+%     t.calcForceAllAndWriteBack(Kernel,ps,di);
+%     for(int i=0;i<nl;i++) ps[i].kick(dth);
+%     F64 pot = 0.0, kin = 0.0;
+%     for(int i=0;i<nl;i++){
+%       pot += ps[i].p;
+%       kin += 0.5*(ps[i].v*ps[i].v);
+%     }
+%     pot = Comm::getSum(pot);
+%     kin = Comm::getSum(kin);
+%     if(Comm::getRank()==0)
+%       cout << scientific << pot << " " << kin << " " << pot+kin << endl;
+%   }
+%   Finalize();
+% }
+%  \end{lstlisting}
+
+\subsection{プラズマの例1}
+\subsection{プラズマの例2}
+
+\section{おわりに}
+
+本稿では、粒子系大規模並列化のためのフレームワーク FDPS を紹介しました。
+現代の大規模計算では MPI 等での並列化が必須になっていますが、
+FDPS を使うことでその部分は自分で開発しなくても、高性能な並列プログラ
+ムを実現できます。本稿が読者の皆様の研究のためのプログラム開発の一助に
+なれば
+幸いです。
+
+
+
+% 謝辞
+\acknowledgement{}
+
+% 参考文献
+\begin{thebibliography}{9}
+%\bibitem{Lobban1998}
+% C. Lobban, J. L. Finney and W. F. Kuhs, \textit{Nature}, {\bf 391}, 268 (1998).
+\end{thebibliography}
+
+%------------------------------------------------------------------------
+% 原稿ここまで
+%------------------------------------------------------------------------
+
+% 著者紹介出力
+%\profile
+
+
+
+
+\end{document}
+

@@ -1,0 +1,244 @@
+CovalentBond
+
+粒子移動にともなう処理
+
+template<class PA > bool move_top_half (PA &  particlearray, std::vector< TypeRange > &  typerangearray, std::vector< CovalentBondInfo::BondList > &  bondlistarray, WaterList &  waterlist, ShakeList &  shakelist, MPICommunicator &  communicator, PostProcess &  postprocess, int &over_move) [inline]  Definition at line 343 of file Integrator.cc. call at line 2028  of file Integrator.cc.
+  communicator.all_move_out_bondlistarray.clear();
+    std::vector<CovalentBondInfo::BondList> MPICommunicator::all_move_out_bondlistarray Definition at line 923 of file MPIParallel.h.
+  postprocess.select_and_move_inside_node(particlearray, typerangearray, bondlistarray, waterlist, shakelist, communicator.setid, communicator.all_move_out_particle, communicator.all_move_out_cellid, communicator.all_move_out_type, communicator.all_move_out_bondlistarray, communicator.setid_to_index, over_move );
+    template<typename PA , typename MPA > bool PostProcess::select_and_move_inside_node ( PA &  particlearray, std::vector< TypeRange > &  typerangearray, std::vector< CovalentBondInfo::BondList > &  bondlistarray, WaterList &  waterlist, ShakeList &  shakelist, const std::vector< int > &  cellid, MPA &  move_out_particles, std::vector< int > &  move_out_cellid, std::vector< PotentialModel > &  move_out_type, std::vector< CovalentBondInfo::BondList > &  move_out_bondlistarray, std::map< int, int > &  setid_to_index, int &  over_move) [inline] Definition at line 1512 of file CellIndex.cc.
+      select_move_particle(particlearray, typerangearray, bondlistarray, waterlist, shakelist, cellid, over_move);
+        template<typename PA > bool PostProcess::select_move_particle (PA & particle, std::vector< TypeRange > &  typerange, std::vector< CovalentBondInfo::BondList > &  bondlistarray, WaterList &  waterlist, ShakeList &  shakelist, const std::vector< int > &  cellid, int &  over_move ) [inline] Definition at line 993 of file CellIndex.cc.
+          move_bond_cache.clear(); 1014
+          if not water, not shake,   push_back bondlist assigned to moved particle to move_bond_cache and remove from bondlistarray
+           where ci : cell index,  i : particle index,  std::vector<CovalentBondInfo::BondList> PostProcess::move_bond_cache Definition at line 313 of file CellIndex.h.
+            CovalentBondInfo::BondList bond_cache;   1135   temporal bondlist
+            bond_cache.clear();                      1136
+            bondlistarray[ci].pick_up_bondlist(bond_cache,getatomid(particle,i)); 1137
+              void CovalentBondInfo::BondList::pick_up_bondlist (CovalentBondInfo::BondList & bondlist, const AtomID atomid) Definition at line 256 of file CovalentBondInfo.cc. 
+                pick_up<Bond>(bondlist.BondArray,BondArray,atomid);
+                pick_up<Angle>(bondlist.AngleArray,AngleArray,atomid);
+                pick_up<Torsion>(bondlist.TorsionArray,TorsionArray,atomid);
+                pick_up<Improper>(bondlist.ImproperArray,ImproperArray,atomid);
+                  template<typename CB >void CovalentBondInfo::BondList::pick_up ( std::vector< CB > &  destarray, const std::vector< CB > &  srcarray, const AtomID  atomid ) [inline] Definition at line 122 of file CovalentBondInfo.h.
+                    push_back bond in srcarray which assign_atomid is atomid to destarray
+            move_bond_cache.push_back(bond_cache);   1139
+            bondlistarray[ci].remove_atomid(getatomid(particle,i));     1146
+              void CovalentBondInfo::BondList::remove_atomid (const AtomID atomid) Definition at line 264 of file CovalentBondInfo.cc.
+                remove bonds which assign_atomid is atomid
+      move_inside_node(particlearray, typerangearray, bondlistarray, waterlist, shakelist, move_out_particles, move_out_cellid, move_out_type, move_out_bondlistarray, setid_to_index);
+        template<typename PA , typename MPA >bool PostProcess::move_inside_node ( PA &  particle, std::vector< TypeRange > &  typerange, std::vector< CovalentBondInfo::BondList > &  bondlistarray, WaterList &  waterlist, ShakeList &  shakelist, MPA &  move_out_particle, std::vector< int > &  move_out_cellid, std::vector< PotentialModel > &  move_out_type, std::vector< CovalentBondInfo::BondList > &  move_out_bondlistarray, std::map< int, int > &  setidtoindex ) [inline] Definition at line 1243 of file CellIndex.cc.
+         where mi is index of moved paricle, tocellindex is cell index where the particle move to
+          if move to cell in this node
+            bondlistarray[tocellindex].push_back(move_bond_cache[mi]);
+          else
+            move_out_bondlistarray.push_back(move_bond_cache[mi]);
+ remove bonds assigned to move out particle from bondlistarray and push_back to communicator.all_move_out_bondlistarray
+
+template<class PA >bool move_bottom_half ( PA &  particlearray, std::vector< TypeRange > &  typerangearray, std::vector< CovalentBondInfo::BondList > &  bondlistarray, WaterList &  waterlist, ShakeList &  shakelist, MPICommunicator &  communicator, PostProcess &  postprocess, const ShakeList &  sl ) [inline] Definition at line 388 of file Integrator.cc.
+  communicator.move_particle(particlearray, typerangearray); 397
+    template<typename PA > void MPICommunicator::move_particle(PA & particlearray,std::vector< TypeRange > &typerangearray) [inline] Definition at line 4252 of file MPIParallel.cc.
+      move_out_bondlistarray[t].clear();  4263
+      distribute_move_out<Direct>(); 4267
+        move_out_bondlistarray[target].push_back(all_move_out_bondlistarray[i]);
+      move_send_recv<Direct>(); 4278
+        template<> void MPICommunicator::move_send_recv<Direct>() Definition at line 3812 of file MPIParallel.cc.
+          setSendMove();
+            move_out[t].setmoveoutparticle(move_out_particle[t],move_out_type[t],move_out_cellid[t],move_out_bondlistarray[t]); 
+              set_send_buffer_pointers(number_of_particle,outbondlistarray)
+              for(size_t i=0;i<outbondlistarray.size();i++){
+                outbondlistarray[i].pack_int_array(sendbondpackarray[i]);
+              }
+          transferMove();
+            move_in[t].prepare_receive();
+            move_out[t].send();
+          move_in_bondlistarray.clear();
+          getReceiveMove();
+            move_in[t].getreceive(move_in_particle,move_in_type,move_in_cellid,move_in_bondlistarray);
+  postprocess.merge(particlearray, communicator.setid, communicator.setid_to_index, typerangearray, bondlistarray, waterlist, shakelist, communicator.move_in_particle, communicator.move_in_cellid, communicator.move_in_type, communicator.move_in_bondlistarray, sl); 399
+
+
+
+
+計算
+CBPARTICLE is CBModule::CBInterface::ParticleIndex for new particle
+call from line 984 in CalcForce.cc
+void calcForce(CovalentBondList& bondlist, double& energy, double& shortenergy, double &shortvirial) Definition at line 155 of file CovalentBond.h.
+  cbInterface.calcBond<CBPARTICLE>(bondlist.bond,energy, shortenergy, shortvirial);
+    template<typename PR>void calcBond(const BondArray& bond, double& energy, double& shortenergy, double& shortvirial) Definition at line 304 of file CBInterface.h.
+      CBContext context(bond, energy, shortenergy, shortvirial);
+        CBContext(const BondArray& bond, double& _energy, double& _shortenergy, double& _shortvirial) Definition at line 19 of file CBInterface.h.
+          pBond(&bond),
+            const BondArray* const pBond;  Definition at line 28 of file CBInterface.h.
+          pAngle(), pTorsion(), pImproper(), 
+          energy(_energy), shortenergy(_shortenergy), shortvirial(_shortvirial)   double
+      cbObjects.calcCBBond<PR>(&context);
+        template<typename PR> void CBObjects::calcCBBond(CBInterface::Context pContext)Definition at line 43 of file CBObjects.cc.
+          loop of  pContext->pBond  line 57 of file CBObjects.cc.
+            cbInterface->getParticleLocation<PR>(pContext, pBond.id_of_atom[0]);
+              template <> CBInterface::ParticleIndex CBInterface::getParticleLocation(Context pContext, const AtomID ai) Definition at line 25 of file CBObjects.cc.
+                particleIndexMap.at(ai);
+            cbInterface->calcDistance(pContext, p0, p1, d);
+              void calcDistance(Context pContext, ParticleIndex pi, ParticleIndex pj, Position& d) Definition at line 453 of file CBInterface.h.
+                d = (*poscharge[pi.array])[pi.index].position - (*poscharge[pj.array])[pj.index].position;
+            cbInterface->isFixed(pBond)
+              bool isFixed(const Bond& pBond) Definition at line 457 of file CBInterface.h.
+                return pBond.shake;
+            sqrt(d.norm2());
+            cbInterface->calcInteraction(pBond, r, p, dp);
+              template <typename T> void calcInteraction(const T& p, const double r, double& potential, double& force); Definition at line 460 of file CBInterface.h.
+                template<>void CBInterface::calcInteraction(const Bond& p, const double r, double& potential, double& force) Definition at line 66 of file CBInterfaceImpl.h.
+                  pParameterList->bond[p.typeofbond];
+            cbInterface->addPotentialEnergy<CBInterface::Bond>(pContext, p);
+              template <typename T> void addPotentialEnergy(Context pContext, const double erg)  Definition at line 468 of file CBInterface.h.
+                pContext->energy += erg;
+            force = static_cast<Force>(d*dp);
+            cbInterface->addForce(pContext, p0, force);
+              void addForce(Context pContext, ParticleIndex p, const Force& force) Definition at line 475 of file CBInterface.h.
+                (*forcea[p.array])[p.index] += force;
+            cbInterface->subForce(pContext, p1, force);
+              void subForce(Context pContext, ParticleIndex p, const Force& force) Definition at line 484 of file CBInterface.h.
+                (*forcea[p.array])[p.index] -= force;
+            cbInterface->getForceLocation(pContext, pBond, 0);
+              template <typename T> ForceLocation getForceLocation(Context pContext, const T& p, int i) Definition at line 386 of file CBInterface.h.
+                return forceMap.at(p.id_of_atom[i]);
+            cbInterface->getForceLocation(pContext, pBond, 1);
+            subtractCBParticleForce<PR>(pContext, p0, p1, f0, f1, d);
+              template<typename PR>void subtractCBParticleForce(CBInterface_::Context pContext, PR pi, PR pj, CBInterface_::ForceLocation fi, CBInterface_::ForceLocation fj, const Position& d); 
+                template<typename PR>void CBObjects::subtractCBParticleForce(CBInterface::Context pContext, PR pi, PR pj, CBInterface::ForceLocation fi, CBInterface::ForceLocation fj, const Position& d) Definition at line 331 of file CBObjects.cc.
+                  cbInterface->inCutoffSphere(pContext, r2)
+                    bool inCutoffSphere(Context pContext, double r2) { return true; }  Definition at line 492 of file CBInterface.h.
+                  cbInterface->calcInteraction(pContext, pi, pj, d,r2, shortRangePotential, longRangePotential, force, virial);
+                    void calcInteraction(Context pContext, ParticleIndex pi, ParticleIndex pj, const Position& d, double& r2, double& shortPot, double& longPot, SpaceVector<double>& force, double& virial) Definition at line 651 of file CBInterface.h.
+                      Interaction_LJShiftCoulombShift(r2, (*poscharge[ai])[ii].charge, (*poscharge[aj])[ij].charge, (*atomtype[ai])[ii], (*atomtype[aj])[ij], shortPot, dp);
+                        inline void Interaction_LJShiftCoulombShift(const double r2, const double chargei, const double chargej, const Atomtype atomi, const Atomtype atomj, double& energy, double& dp)Definition at line 197 of file ShortRangeInteraction.h.
+                  cbInterface->calcInteraction(pContext, pi, pj, d,r2, shortRangePotential, longRangePotential, force);
+                    void calcInteraction(Context pContext, ParticleIndex pi, ParticleIndex pj, const Position& d, double& r2, double& shortPot, double& longPot, SpaceVector<double>& force) Definition at line 592 of file CBInterface.h.
+                      Interaction_LJShiftCoulombShift(r2, (*poscharge[ai])[ii].charge, (*poscharge[aj])[ij].charge, (*atomtype[ai])[ii], (*atomtype[aj])[ij], shortPot, dp);
+                  cbInterface->addShortPotentialEnergy(pContext, -shortRangePotential);
+                    void addShortPotentialEnergy(Context pContext, const double erg) Definition at line 493 of file CBInterface.h.
+                      pContext->shortenergy += erg;
+                  cbInterface->addLongPotentialEnergy(pContext, -longRangePotential);
+                    void addLongPotentialEnergy(Context pContext, const double erg) Definition at line 496 of file CBInterface.h.
+                      pContext->energy += erg;
+                  cbInterface->subshortForce(pContext, fi, force);
+                    void subshortForce(Context pContext, ForceLocation p, const Force& force) Definition at line 487 of file CBInterface.h.
+                      (*p) -= force;
+                  cbInterface->addshortForce(pContext, fj, force);
+                    void addshortForce(Context pContext, ForceLocation p, const Force& force) Definition at line 478 of file CBInterface.h.
+                      (*p) += force;
+                  cbInterface->addshortVirial(pContext,-virial);
+                    void addshortVirial(Context pContext, const double virial) Definition at line 499 of file CBInterface.h.
+                      pContext->shortvirial += virial;
+  cbInterface.calcAngle<CBPARTICLE>(bondlist.angle,energy, shortenergy, shortvirial);
+    template<typename PR>void calcAngle(const AngleArray& angle, double& energy, double& shortenergy, double& shortvirial) Definition at line 309 of file CBInterface.h.
+      CBContext context(angle, energy, shortenergy, shortvirial);
+        CBContext(const AngleArray& angle, double& _energy, double& _shortenergy, double& _shortvirial) Definition at line 21 of file CBInterface.h.
+          pBond(), 
+          pAngle(&angle),
+            const AngleArray* const pAngle; Definition at line 29 of file CBInterface.h.
+          pTorsion(), pImproper(), 
+          energy(_energy), shortenergy(_shortenergy), shortvirial(_shortvirial) double
+      cbObjects.calcCBAngle<PR>(&context);
+        template <typename PR>void CBObjects::calcCBAngle(CBInterface::Context pContext) Definition at line 103 of file CBObjects.cc.
+          loop of pContext->pAngle  line 111 of CBObjects.cc.
+            cbInterface->getParticleLocation<PR>(pContext, pAngle.id_of_atom[{0,1,2}]);
+            cbInterface->calcDistance(pContext, p0, p1, d01);
+            cbInterface->calcDistance(pContext, p2, p1, d21);
+	    1.0/sqrt(d01.norm2());
+            1.0/sqrt(d21.norm2());
+            acos((d01*d21)*ir01*ir21);
+            cbInterface->calcInteraction(pAngle, theta, p, dp);
+              template <typename T> void calcInteraction(const T& p, const double r, double& potential, double& force); Definition at line 460 of file CBInterface.h.
+                template<>void CBInterface::calcInteraction(const Angle& p, const double r, double& potential, double& force) Definition at line 81 of file CBInterfaceImpl.h.
+            cbInterface->addPotentialEnergy<CBInterface::Angle>(pContext, p);
+              template <typename T> void addPotentialEnergy(Context pContext, const double erg)  Definition at line 468 of file CBInterface.h.
+                pContext->energy += erg;
+            dp/sin(theta);
+            cos(theta);
+            cbInterface->addForce(pContext, p0, force01);
+            cbInterface->addForce(pContext, p2, force21);
+            cbInterface->subForce(pContext, p1, force01+force21);
+            cbInterface->getForceLocation(pContext, pAngle, {0,2});
+            cbInterface->calcDistance(pContext, p0, p2, d02);
+            subtractCBParticleForce(pContext, p0, p2, f0, f2, d02);
+  cbInterface.calcTorsion<CBPARTICLE>(bondlist.torsion,energy, shortenergy, shortvirial);
+    CBContext context(torsion, energy, shortenergy, shortvirial);
+      CBContext(const TorsionArray& torsion, double& _energy, double& _shortenergy, double& _shortvirial) Definition at line 23 of file CBInterface.h.
+        pBond(), pAngle(), 
+        pTorsion(&torsion),  
+          const TorsionArray* const pTorsion; Definition at line 30 of file CBInterface.h.
+        pImproper(), 
+        energy(_energy), shortenergy(_shortenergy), shortvirial(_shortvirial) double
+    cbObjects.calcCBTorsion<PR>(&context);
+      template<typename PR>void calcTorsion(const TorsionArray& torsion, double& energy, double& shortenergy, double& shortvirial) Definition at line 314 of file CBInterface.h.
+        template <typename PR>void CBObjects::calcCBTorsion(CBInterface::Context pContext) Definition at line 163 of file CBObjects.cc.
+          calcCBTorsionImproper<PR, CBInterface::Torsion, CBInterface::CBTorsionIterator>(pContext); 
+            template <typename PR, typename T, typename ITERATOR> void CBObjects::calcCBTorsionImproper(CBInterface::Context pContext) Definition at line 185 of file CBObjects.cc.
+              loop of pContext->pTorsion  line 194 of file CBObjects.cc.
+                cbInterface->getParticleLocation<PR>(pContext, pTorsion.id_of_atom[{0,1,2,3}]);
+                cbInterface->calcDistance(pContext, pk, pj, rkj);
+                cbInterface->calcDistance(pContext, pk, pl, rkl);
+                cbInterface->calcDistance(pContext, pi, pk, rik);
+                cbInterface->calcDistance(pContext, pi, pj, rij);
+                cbInterface->calcDistance(pContext, pj, pl, rjl);
+                (rij % rkj);
+                  const SpaceVector<T> operator% (const SpaceVector<T> &v) const  Definition at line 77 of file SpaceVector.h.
+                    return SpaceVector<T> (y*v.z - z*v.y, vz*v.x - x*v.z, x*v.y - y*v.x);
+                (rkj % rkl);
+                1.0/nv1.norm();
+                1.0/nv2.norm();
+                nv1 % nv2;
+                acos(dot)*(sign > 0 ? 1:-1);
+                cos(theta);
+                loop cbInterface->getParameterNum(pTorsion)  // = 1
+                    template <typename T> int getParameterNum(const T& p) { return 1; }  Definition at line 490 of file CBInterface.h.
+                  cbInterface->calcInteraction(pTorsion, i, theta, p, dp);
+                    template <typename T> void calcInteraction(const T& p, int iparm, const double r, double& potential, double& force); Definition at line 464 of file CBInterface.h.
+                      template<>void CBInterface::calcInteraction(const Torsion& p, int iparam, const double theta, double& potential, double& force) Definition at line 116 of file CBInterfaceImpl.h.
+                        const TorsionParameter& param = pParameterList->torsion[p.typeoftorsion];
+                        calcInteractionTorsion(param, theta, potential, force);
+                          template <typename TP>void CBInterface::calcInteractionTorsion(const TP& param, const double theta, double& potential, double& force) Definition at line 96 of file CBInterfaceImpl.h.
+                            param.force_constant * (1 + cos(theta*param.periodicity - param.phase));
+                            force = param.force_constant * param.periodicity * cos(param.phase);
+                            if (param.periodicity == 2) {
+                              force *= 2.0 * cos(theta);
+                            } else if (param.periodicity == 3) {
+                              force *= 3.0 - 4.0 * sin(theta) * sin(theta);
+                            } else if (param.periodicity == 4) {
+                              force *= 4.0 * cos(theta) * (2.0 * cos(theta) * cos(theta) - 1); 
+                            } else if (param.periodicity != 1) {
+                              force = 0;
+                            }
+                  cbInterface->addPotentialEnergy<T>(pContext, p);
+                    template <typename T> void addPotentialEnergy(Context pContext, const double erg)  Definition at line 468 of file CBInterface.h.
+                pContext->energy += erg;
+                  (nv2*nv2INorm - cos_theta*nv1*nv1INorm)*nv1INorm;
+                  (nv1*nv1INorm - cos_theta*nv2*nv2INorm)*nv2INorm;
+                  cbInterface->addForce(pContext, pi,dp*force0%rkj);
+                  cbInterface->addForce(pContext, pj,dp*(force0%rik - force1%rkl));
+                  cbInterface->addForce(pContext, pk,dp*(force1%rjl - force0%rij));
+                  cbInterface->addForce(pContext, pl,dp*force1%rkj);
+                cbInterface->getForceLocation(pContext, pTorsion, {0,3});
+                cbInterface->isCalc14Interaction(pContext, pTorsion)
+                  template <typename T> bool isCalc14Interaction(Context pContext, const T& p); Definition at line 491 of file CBInterface.h.
+                    template<>bool CBInterface::isCalc14Interaction(Context pContext, const Torsion& p) Definition at line 144 of file CBInterfaceImpl.h.
+                      return p.calc14interaction;
+                cbInterface->calcDistance(pContext, pi, pl, dil);
+                calcCB14Interaction(pContext, pi, pl, fi, fl, dil);
+                  template<typename PR>void CBObjects::calcCB14Interaction(CBInterface::Context pContext, PR pi, PR pl, CBInterface::ForceLocation fi, CBInterface::ForceLocation fl, const Position& d) Definition at line 285 of file CBObjects.cc.
+                    cbInterface->inCutoffSphere(pContext, r2)
+                    cbInterface->calcInteraction(pContext, pi, pl, scnbInv, sceeInv, d, r2, shortRangePotential, longRangePotential, force); 
+                       void calcInteraction(Context pContext, ParticleIndex pi, ParticleIndex pj, const double scnbInv, const double sceeInv, const Position& d, double& r2, double& shortPot, double& longPot, SpaceVector<double>& force) Definition at line 529 of file CBInterface.h.
+                         Interaction_LJShiftCoulombShift(r2, (*poscharge[ai])[ii].charge, (*poscharge[aj])[ij].charge, (*atomtype[ai])[ii], (*atomtype[aj])[ij], pot_nb, dp_nb, pot_ee, dp_ee);
+                           inline void Interaction_LJShiftCoulombShift(const double r2, const double chargei, const double chargej, const Atomtype atomi, const Atomtype atomj, double& ljenergy, double& ljdp, double& energy, double& dp) Definition at line 222 of file ShortRangeInteraction.h.
+                             sqrt, etc..
+                         shortPot = scnbInv * pot_nb + sceeInv * pot_ee;
+                         longPot = 0.0;
+                         force = d * (scnbInv * dp_nb + sceeInv * dp_ee);
+                    cbInterface->addShortPotentialEnergy(pContext, shortRangePotential);
+                    cbInterface->addLongPotentialEnergy(pContext, longRangePotential);
+                    cbInterface->addshortForce(pContext, fi,force);
+                    cbInterface->subshortForce(pContext, fl,force);
+                subtractCBParticleForce(pContext, pi, pl, fi, fl, dil);
+  cbInterface.calcImproper<CBPARTICLE>(bondlist.improper,energy, shortenergy, shortvirial);

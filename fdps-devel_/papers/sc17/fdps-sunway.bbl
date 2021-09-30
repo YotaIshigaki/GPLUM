@@ -1,0 +1,328 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\newcommand{\noopsort}[1]{} \newcommand{\printfirst}[2]{#1}
+  \newcommand{\singleletter}[1]{#1} \newcommand{\switchargs}[2]{#2#1}
+\begin{thebibliography}{00}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{}, \showDOI{}, and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showDOI}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showDOI #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showDOI      \undefined \def \showDOI       #1{{\tt DOI:}\penalty0{#1}\ }
+  \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       #1{#1}          \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[\protect\citeauthoryear{{Bagla}}{{Bagla}}{2002}]%
+        {Bagla2002}
+\bibfield{author}{\bibinfo{person}{J.~S. {Bagla}}.}
+  \bibinfo{year}{2002}\natexlab{}.
+\newblock \showarticletitle{{TreePM: A Code for Cosmological N-Body
+  Simulations}}.
+\newblock \bibinfo{journal}{{\em Journal of Astrophysics and Astronomy\/}}
+  \bibinfo{volume}{23} (\bibinfo{date}{Dec.} \bibinfo{year}{2002}),
+  \bibinfo{pages}{185--196}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1007/BF02702282}}
+\showeprint{astro-ph/9911025}
+
+
+\bibitem[\protect\citeauthoryear{{Ballouz}, {Richardson}, and
+  {Morishima}}{{Ballouz} et~al\mbox{.}}{2017}]%
+        {Ballouzetal2017}
+\bibfield{author}{\bibinfo{person}{R.-L. {Ballouz}}, \bibinfo{person}{D.~C.
+  {Richardson}}, {and} \bibinfo{person}{R. {Morishima}}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{Numerical Simulations of Saturn{\rsquo}s B Ring:
+  Granular Friction as a Mediator between Self-gravity Wakes and Viscous
+  Overstability}}.
+\newblock \bibinfo{journal}{{\em \aj\/}}  \bibinfo{volume}{153}
+  (\bibinfo{date}{April} \bibinfo{year}{2017}), \bibinfo{pages}{146}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.3847/1538-3881/aa60be}}
+\showeprint[arxiv]{astro-ph.EP/1702.04617}
+
+
+\bibitem[\protect\citeauthoryear{{Barnes} and {Hut}}{{Barnes} and
+  {Hut}}{1986}]%
+        {BarnesHut1986}
+\bibfield{author}{\bibinfo{person}{J. {Barnes}} {and} \bibinfo{person}{P.
+  {Hut}}.} \bibinfo{year}{1986}\natexlab{}.
+\newblock \showarticletitle{A Hiearchical O(NlogN) Force Calculation
+  Algorithm}.
+\newblock \bibinfo{journal}{{\em Nature\/}}  \bibinfo{volume}{324}
+  (\bibinfo{year}{1986}), \bibinfo{pages}{446--449}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Barnes}{Barnes}{1990}]%
+        {Barnes1990}
+\bibfield{author}{\bibinfo{person}{J.~E. Barnes}.}
+  \bibinfo{year}{1990}\natexlab{}.
+\newblock \showarticletitle{A modified tree code: don't laugh; it runs.}
+\newblock \bibinfo{journal}{{\em \jcp\/}}  \bibinfo{volume}{87}
+  (\bibinfo{year}{1990}), \bibinfo{pages}{161--170}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{B{\'e}dorf}{B{\'e}dorf}{}]%
+        {Bedorfetal2014}
+\bibfield{author}{\bibinfo{person}{J. B{\'e}dorf}.}
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{{B{\'e}dorf}, {Gaburov}, and {Portegies
+  Zwart}}{{B{\'e}dorf} et~al\mbox{.}}{2012}]%
+        {Bedorfetal2012}
+\bibfield{author}{\bibinfo{person}{J. {B{\'e}dorf}}, \bibinfo{person}{E.
+  {Gaburov}}, {and} \bibinfo{person}{S. {Portegies Zwart}}.}
+  \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{{A sparse octree gravitational N-body code that
+  runs entirely on the GPU processor}}.
+\newblock \bibinfo{journal}{{\it J. Comput. Phys.}}  \bibinfo{volume}{231}
+  (\bibinfo{date}{April} \bibinfo{year}{2012}), \bibinfo{pages}{2825--2839}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1016/j.jcp.2011.12.024}}
+\showeprint[arxiv]{astro-ph.IM/1106.1900}
+
+
+\bibitem[\protect\citeauthoryear{Hamada, Narumi, Yokota, Yasuoka, Nitadori, and
+  Taiji}{Hamada et~al\mbox{.}}{2009}]%
+        {Hamadaetal2009}
+\bibfield{author}{\bibinfo{person}{Tsuyoshi Hamada}, \bibinfo{person}{Tetsu
+  Narumi}, \bibinfo{person}{Rio Yokota}, \bibinfo{person}{Kenji Yasuoka},
+  \bibinfo{person}{Keigo Nitadori}, {and} \bibinfo{person}{Makoto Taiji}.}
+  \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{42 TFlops Hierarchical N-body Simulations on GPUs
+  with Applications in Both Astrophysics and Turbulence}. In
+  \bibinfo{booktitle}{{\em Proceedings of the Conference on High Performance
+  Computing Networking, Storage and Analysis}} {\em (\bibinfo{series}{SC
+  '09})}. \bibinfo{publisher}{ACM}, \bibinfo{address}{New York, NY, USA},
+  Article \bibinfo{articleno}{62}, \bibinfo{numpages}{12}~pages.
+\newblock
+\showISBNx{978-1-60558-744-8}
+\showDOI{%
+\url{https://doi.org/10.1145/1654059.1654123}}
+
+
+\bibitem[\protect\citeauthoryear{{Ishiyama}}{{Ishiyama}}{2014}]%
+        {Ishiyama2014}
+\bibfield{author}{\bibinfo{person}{T. {Ishiyama}}.}
+  \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{Hierarchical Formation of Dark Matter Halos and
+  the Free Streaming Scale}}.
+\newblock \bibinfo{journal}{{\em \apj\/}}  \bibinfo{volume}{788}
+  (\bibinfo{date}{June} \bibinfo{year}{2014}), \bibinfo{pages}{27}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1088/0004-637X/788/1/27}}
+\showeprint[arxiv]{1404.1650}
+
+
+\bibitem[\protect\citeauthoryear{Ishiyama, Nitadori, and Makino}{Ishiyama
+  et~al\mbox{.}}{2012}]%
+        {Ishiyamaetal2012}
+\bibfield{author}{\bibinfo{person}{Tomoaki Ishiyama}, \bibinfo{person}{Keigo
+  Nitadori}, {and} \bibinfo{person}{Junichiro Makino}.}
+  \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{4.45 Pflops Astrophysical N-body Simulation on K
+  Computer: The Gravitational Trillion-body Problem}. In
+  \bibinfo{booktitle}{{\em Proceedings of the International Conference on High
+  Performance Computing, Networking, Storage and Analysis}} {\em
+  (\bibinfo{series}{SC '12})}. \bibinfo{publisher}{IEEE Computer Society
+  Press}, \bibinfo{address}{Los Alamitos, CA, USA}, Article
+  \bibinfo{articleno}{5}, \bibinfo{numpages}{10}~pages.
+\newblock
+\showISBNx{978-1-4673-0804-5}
+\showURL{%
+\url{http://dl.acm.org/citation.cfm?id=2388996.2389003}}
+
+
+\bibitem[\protect\citeauthoryear{{Iwasawa}, {Tanikawa}, {Hosono}, {Nitadori},
+  {Muranushi}, and {Makino}}{{Iwasawa} et~al\mbox{.}}{2016}]%
+        {Iwasawaetal2016}
+\bibfield{author}{\bibinfo{person}{M. {Iwasawa}}, \bibinfo{person}{A.
+  {Tanikawa}}, \bibinfo{person}{N. {Hosono}}, \bibinfo{person}{K. {Nitadori}},
+  \bibinfo{person}{T. {Muranushi}}, {and} \bibinfo{person}{J. {Makino}}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{{Implementation and performance of FDPS: a
+  framework for developing parallel particle simulation codes}}.
+\newblock \bibinfo{journal}{{\em \pasj\/}}  \bibinfo{volume}{68}
+  (\bibinfo{date}{Aug.} \bibinfo{year}{2016}), \bibinfo{pages}{54}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1093/pasj/psw053}}
+\showeprint[arxiv]{astro-ph.IM/1601.03138}
+
+
+\bibitem[\protect\citeauthoryear{{Makino}}{{Makino}}{1991}]%
+        {Makino1991c}
+\bibfield{author}{\bibinfo{person}{Junichiro {Makino}}.}
+  \bibinfo{year}{1991}\natexlab{}.
+\newblock \showarticletitle{Treecode with a Special-Purpose Processor}.
+\newblock \bibinfo{journal}{{\em \pasj\/}}  \bibinfo{volume}{43}
+  (\bibinfo{year}{1991}), \bibinfo{pages}{621--638}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{{Makino}}{{Makino}}{2004}]%
+        {Makino2004}
+\bibfield{author}{\bibinfo{person}{J. {Makino}}.}
+  \bibinfo{year}{2004}\natexlab{}.
+\newblock \showarticletitle{{A Fast Parallel Treecode with GRAPE}}.
+\newblock \bibinfo{journal}{{\em \pasj\/}}  \bibinfo{volume}{56}
+  (\bibinfo{date}{June} \bibinfo{year}{2004}), \bibinfo{pages}{521--531}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{{Michikoshi} and {Kokubo}}{{Michikoshi} and
+  {Kokubo}}{2017}]%
+        {MichikoshiKokubo2017}
+\bibfield{author}{\bibinfo{person}{S. {Michikoshi}} {and} \bibinfo{person}{E.
+  {Kokubo}}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{{Simulating the Smallest Ring World of Chariklo}}.
+\newblock \bibinfo{journal}{{\em \apjl\/}}  \bibinfo{volume}{837}
+  (\bibinfo{date}{March} \bibinfo{year}{2017}), \bibinfo{pages}{L13}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.3847/2041-8213/aa6256}}
+\showeprint[arxiv]{astro-ph.EP/1702.06356}
+
+
+\bibitem[\protect\citeauthoryear{{Portegies Zwart} and {B{\'e}dorf}}{{Portegies
+  Zwart} and {B{\'e}dorf}}{2014}]%
+        {PortegiesZwartetal2014}
+\bibfield{author}{\bibinfo{person}{S. {Portegies Zwart}} {and}
+  \bibinfo{person}{J. {B{\'e}dorf}}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{{Computational Gravitational Dynamics with Modern
+  Numerical Accelerators}}.
+\newblock \bibinfo{journal}{{\em ArXiv e-prints\/}} (\bibinfo{date}{Sept.}
+  \bibinfo{year}{2014}).
+\newblock
+\showeprint[arxiv]{astro-ph.IM/1409.5474}
+
+
+\bibitem[\protect\citeauthoryear{{Rein} and {Latter}}{{Rein} and
+  {Latter}}{2013}]%
+        {ReinLatter2013}
+\bibfield{author}{\bibinfo{person}{H. {Rein}} {and} \bibinfo{person}{H.~N.
+  {Latter}}.} \bibinfo{year}{2013}\natexlab{}.
+\newblock \showarticletitle{{Large-scale N-body simulations of the viscous
+  overstability in Saturn's rings}}.
+\newblock \bibinfo{journal}{{\em \mnras\/}}  \bibinfo{volume}{431}
+  (\bibinfo{date}{May} \bibinfo{year}{2013}), \bibinfo{pages}{145--158}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1093/mnras/stt152}}
+\showeprint[arxiv]{astro-ph.EP/1210.3358}
+
+
+\bibitem[\protect\citeauthoryear{{Rein} and {Liu}}{{Rein} and {Liu}}{2012}]%
+        {ReinLiu2012}
+\bibfield{author}{\bibinfo{person}{H. {Rein}} {and} \bibinfo{person}{S.-F.
+  {Liu}}.} \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{{REBOUND: an open-source multi-purpose N-body code
+  for collisional dynamics}}.
+\newblock \bibinfo{journal}{{\em \aap\/}}  \bibinfo{volume}{537}
+  (\bibinfo{date}{Jan.} \bibinfo{year}{2012}), \bibinfo{pages}{A128}.
+\newblock
+\showDOI{%
+\url{https://doi.org/10.1051/0004-6361/201118085}}
+\showeprint[arxiv]{astro-ph.EP/1110.4876}
+
+
+\bibitem[\protect\citeauthoryear{Salmon, Quinn, and Warren}{Salmon
+  et~al\mbox{.}}{1990}]%
+        {Salmon1990}
+\bibfield{author}{\bibinfo{person}{J. Salmon}, \bibinfo{person}{P.~J. Quinn},
+  {and} \bibinfo{person}{M. Warren}.} \bibinfo{year}{1990}\natexlab{}.
+\newblock \bibinfo{booktitle}{{\em Using Parallel Computers for Very Large
+  N-Body Simulations: Shell Formation Using 180 K Particles}}.
+\newblock \bibinfo{publisher}{Springer Berlin Heidelberg},
+  \bibinfo{address}{Berlin, Heidelberg}, \bibinfo{pages}{216--218}.
+\newblock
+\showISBNx{978-3-642-75273-5}
+\showDOI{%
+\url{https://doi.org/10.1007/978-3-642-75273-5_51}}
+
+
+\bibitem[\protect\citeauthoryear{{Stadel}}{{Stadel}}{2001}]%
+        {Stadel2001}
+\bibfield{author}{\bibinfo{person}{J.~G. {Stadel}}.}
+  \bibinfo{year}{2001}\natexlab{}.
+\newblock {\em \bibinfo{title}{{Cosmological N-body simulations and their
+  analysis}}}.
+\newblock \bibinfo{thesistype}{Ph.D. Dissertation}. \bibinfo{school}{UNIVERSITY
+  OF WASHINGTON}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Warren and Salmon}{Warren and Salmon}{1992}]%
+        {WarrenSalmon1992}
+\bibfield{author}{\bibinfo{person}{Michael~S. Warren} {and}
+  \bibinfo{person}{John~K. Salmon}.} \bibinfo{year}{1992}\natexlab{}.
+\newblock \showarticletitle{Astrophysical {N}-Body Simulations Using
+  Hierarchical Tree Data Structures}. In \bibinfo{booktitle}{{\em
+  Supercomputing '92}}. \bibinfo{publisher}{IEEE Comp. Soc.},
+  \bibinfo{address}{Los Alamitos}, \bibinfo{pages}{570--576}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{{Wisdom} and {Tremaine}}{{Wisdom} and
+  {Tremaine}}{1988}]%
+        {WisdomTremaine1988}
+\bibfield{author}{\bibinfo{person}{J. {Wisdom}} {and} \bibinfo{person}{S.
+  {Tremaine}}.} \bibinfo{year}{1988}\natexlab{}.
+\newblock \showarticletitle{Local simulations of planetary rings}.
+\newblock \bibinfo{journal}{{\em \aj\/}}  \bibinfo{volume}{95}
+  (\bibinfo{year}{1988}), \bibinfo{pages}{925--940}.
+\newblock
+
+
+\bibitem[\protect\citeauthoryear{Zebker, Marouf, and Tyler}{Zebker
+  et~al\mbox{.}}{1985}]%
+        {ZEBKER1985531}
+\bibfield{author}{\bibinfo{person}{Howard~A. Zebker}, \bibinfo{person}{Essam~A.
+  Marouf}, {and} \bibinfo{person}{G.~Leonard Tyler}.}
+  \bibinfo{year}{1985}\natexlab{}.
+\newblock \showarticletitle{Saturn's rings: Particle size distributions for
+  thin layer models}.
+\newblock \bibinfo{journal}{{\em Icarus\/}} \bibinfo{volume}{64},
+  \bibinfo{number}{3} (\bibinfo{year}{1985}), \bibinfo{pages}{531 -- 548}.
+\newblock
+\showISSN{0019-1035}
+\showDOI{%
+\url{https://doi.org/10.1016/0019-1035(85)90074-0}}
+
+
+\end{thebibliography}

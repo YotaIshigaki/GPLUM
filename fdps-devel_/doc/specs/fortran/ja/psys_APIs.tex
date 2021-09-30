@@ -1,0 +1,783 @@
+本節では、第\ref{chap:overview}章で説明した粒子群クラスのオブジェクト(以後、\textbf{粒子群オブジェクト}と呼ぶ)に関するAPIについて説明する。FDPS本体において、粒子群オブジェクトはFullParticle型に記述された粒子の情報のすべてを持ち、粒子交換を行うAPIを提供する。ユーザは、粒子群オブジェクトを通じて、粒子情報の初期化・更新を行うこととなる。Fortran/C言語 インターフェースを用いたプログラムでは、粒子群オブジェクトを識別番号で管理する。
+
+粒子群オブジェクトを操作する全APIの名称の一覧を以下に示す:
+\begin{screen}
+\begin{spverbatim}
+(fdps_)create_psys
+(fdps_)delete_psys
+(fdps_)init_psys
+(fdps_)get_psys_info
+(fdps_)get_psys_memsize
+(fdps_)get_psys_time_prof
+(fdps_)clear_psys_time_prof
+(fdps_)set_nptcl_smpl
+(fdps_)set_nptcl_loc
+(fdps_)get_nptcl_loc
+(fdps_)get_nptcl_glb
+get_psys_fptr (Fortranのみ)
+fdps_get_psys_cptr (C言語のみ)
+(fdps_)exchange_particle
+(fdps_)add_particle 
+(fdps_)remove_particle
+(fdps_)adjust_pos_into_root_domain
+(fdps_)sort_particle
+\end{spverbatim}
+\end{screen}
+ここで、\texttt{(fdps\_)}はC言語の場合のみAPI名に接頭辞\texttt{fdps\_}が付くことを示している。
+以下、順に、各APIの仕様を記述する。
+\clearpage
+
+%=============================================================
+\subsection{create\_psys}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%create_psys(psys_num,psys_info_in)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_create_psys(int *psys_num,
+                      char *psys_info);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入出力 & 粒子群オブジェクトの識別番号を受け取るための変数。{\setnoko\uc{C言語では変数のアドレスを引数として指定する必要があることに注意}}。 \\
+\texttt{psys\_info\_in} & character(len=*,kind=c\_char) & 入力 & FullParticle型の派生データ型名を格納した文字列。\\
+\texttt{psys\_info} & char * & 入力 & FullParticle型の構造体名を格納した文字列定数。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+文字列\texttt{psys\_info\_in} {\small (Fortranの場合)} 或いは 文字列定数\texttt{psys\_info} {\small (C言語の場合)}で指定される名称のFullParticle型に対応した粒子群オブジェクトを生成し、そのオブジェクトの識別番号を返す。{\setnoko\uc{{FullParticle}型の派生データ型名 {\small (Fortranの場合)} 或いは 構造体名 {\small (C言語の場合)}はすべて小文字で入力されなければならない}}。
+
+\clearpage
+
+%=============================================================
+\subsection{delete\_psys}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%delete_psys(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_delete_psys(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+メモリー上から、識別番号 \texttt{psys\_num} を持つ粒子群オブジェクトを削除する。
+
+\clearpage
+
+%=============================================================
+\subsection{init\_psys}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%init_psys(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_init_psys(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトを初期化する。以降に記述する粒子群オブジェクト用APIを使用する前に、必ず1度呼び出す必要がある。
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_info}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_psys_info(psys_num,psys_info)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_get_psys_info(const int psys_num,
+                        char *psys_info,
+                        size_t *charlen);
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{psys\_info} & character(len=*,kind=c\_char) & 入出力 & 粒子群オブジェクトに対応したFullParticle型の派生データ型名 {\small (Fortranの場合)} 或いは 構造体名 {\small (C言語の場合)}。\\
+\texttt{charlen} & size\_t * & 入出力 & 変数\texttt{psys\_info}に書き込まれた文字列の長さ。 \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% 返り値
+\subsubsection*{返り値}
+なし
+
+% 機能
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトに対応したFullParticle型の派生データ型名 {\small (Fortranの場合)} 或いは 構造体名 {\small (C言語の場合)}を取得する。これは粒子群オブジェクト生成時に指定した文字列そのものである。
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_memsize}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+function fdps_ctrl%get_psys_memsize(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+long long int fdps_get_psys_memsize(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% 返り値
+\subsubsection*{返り値}
+integer(kind=c\_long\_long)型のスカラー値。
+
+% 機能
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトが消費しているメモリー量をByte単位で返す。
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_time\_prof}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_psys_time_prof(psys_num,prof)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_get_psys_time_prof(const int psys_num,
+                             fdps_time_prof *prof);
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{prof} & type(fdps\_time\_prof) & 入出力 & 粒子群オブジェクト用のAPIでかかった時間を受け取るための変数。{\setnoko\uc{C言語では変数のアドレスを引数として指定する必要があることに注意}}。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% 返り値
+\subsubsection*{返り値}
+なし
+
+% 機能
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトで粒子交換(API \texttt{(fdps\_)exchange\_particle})にかかった時間(ミリ秒単位)を\texttt{fdps\_time\_prof}型のメンバ変数\texttt{exchange\_particle}に格納する。
+
+\clearpage
+
+%=============================================================
+\subsection{clear\_psys\_time\_prof}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%clear_psys_time_prof(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_clear_psys_time_prof(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+FDPS 本体に用意された識別番号 \texttt{psys\_num}の粒子群オブジェクトのTimeProfile型プライベートメンバ変数のメンバ変数\text{exchange\_particles\_}の値を0クリアする。ここで、TimeProfile型はFortran/C言語インターフェースで用意された\texttt{fdps\_time\_prof}型に対応するC++のデータ型のことである(詳細は、FDPS本体の仕様書を参照)。本APIは時間計測をリセットするために使用する。
+
+\clearpage
+
+%=============================================================
+\subsection{set\_nptcl\_smpl}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_nptcl_smpl(psys_num,nptcl)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_nptcl_smpl(const int psys_num,
+                         const int nptcl);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{nptcl} & integer(kind=c\_int) & 入力 & １つのMPIプロセスでサンプルする粒子数目標。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+１つのMPIプロセスでサンプルする粒子数の目標を設定する。呼び出さなくてもよいが、呼び出さないとこの目標数が30となる。
+
+\clearpage
+
+%=============================================================
+\subsection{set\_nptcl\_loc}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_nptcl_loc(psys_num,nptcl)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_set_nptcl_loc(const int psys_num,
+                        const int nptcl);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{nptcl} & integer(kind=c\_int) & 入力 & 粒子数。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+１つのMPIプロセスの持つ粒子数を設定する。MPIプロセスごとに異なる粒子数を指定してもよい。
+
+\clearpage
+
+%=============================================================
+\subsection{get\_nptcl\_loc}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+function fdps_ctrl%get_nptcl_loc(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+int fdps_get_nptcl_loc(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+integer(kind=c\_int)型のスカラー値。
+
+\subsubsection*{機能}
+自分のMPIプロセスの持つ粒子数を返す。
+
+\clearpage
+
+%=============================================================
+\subsection{get\_nptcl\_glb}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+function fdps_ctrl%get_nptcl_glb(psys_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+int fdps_get_nptcl_glb(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+integer(kind=c\_int)型のスカラー値。
+
+\subsubsection*{機能}
+全粒子数を返す。
+
+\clearpage
+
+%=============================================================
+\subsection{get\_psys\_fptr {\small (Fortranのみ)}}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%get_psys_fptr(psys_num,fptr_to_FP)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{fptr\_to\_FP} & FullParticle型, dimension(:), pointer & 入出力 & 粒子群オブジェクトで管理されているFullParticle型の粒子配列へのポインタ。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトで管理されているFullParticle型の粒子配列へのポインタを取得する。配列サイズは本APIの呼出時のローカル粒子数(API \texttt{get\_nptcl\_loc}の返り値)にセットされる。正常にアクセス可能なのは、\texttt{fptr\_to\_FP(}$i$\texttt{)} ($i=1$〜ローカル粒子数)である。本APIは粒子群オブジェクトで管理されるFullParticle型の粒子配列への唯一のアクセス方法を提供する。本APIの使用例を以下に示す。この例では、粒子群オブジェクトで管理されている \texttt{full\_particle}型 の粒子配列のポインタを取得し、値を設定している:
+\begin{lstlisting}[caption=API \texttt{get\_psys\_fptr}の使用例]
+!* Local variables
+type(full_particle), dimension(:), pointer :: ptcl
+!* Get the pointer to full particle data
+call fdps_ctrl%get_psys_fptr(psys_num,ptcl)
+!* Set particle data
+do i=1,nptcl_loc
+   ptcl(i)%mass =  ! do something
+   ptcl(i)%pos%x = ! do something
+   ptcl(i)%pos%y = ! do something
+   ptcl(i)%pos%z = ! do something
+end do
+\end{lstlisting}
+
+\clearpage
+
+%=============================================================
+\subsection{fdps\_get\_psys\_cptr {\small (C言語のみ)}}
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void * fdps_get_psys_cptr(const int psys_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & const int & 入力 & 粒子群オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+\texttt{void *}型。
+
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトで管理されているFullParticle型の粒子配列の先頭アドレスを取得する。正常にアクセス可能なのは、配列要素が0から$n_{\mathrm{ptcl,loc}}-1$の間である。ここで、$n_{\mathrm{ptcl,loc}}$はAPI \texttt{fdps\_get\_nptcl\_loc}の返り値である。本APIは粒子群オブジェクトで管理されるFullParticle型の粒子配列への唯一のアクセス方法を提供する。本APIの使用例を以下に示す。この例では、粒子群オブジェクトで管理されている \texttt{full\_particle}型 の粒子配列のポインタを取得し、値を設定している:
+\begin{lstlisting}[language=C,caption=API \texttt{fdps\_get\_psys\_cptr}の使用例]
+// Local variables
+struct full_particle *ptcl;
+// Get the pointer to full particle data
+ptcl = (struct full_particle *) fdps_get_psys_cptr(psys_num);
+// Set particle data
+for (i = 0; i < nptcl_loc; i++) {
+   ptcl[i].mass =  // do something
+   ptcl[i].pos.x = // do something
+   ptcl[i].pos.y = // do something
+   ptcl[i].pos.z = // do something
+}
+\end{lstlisting}
+
+\clearpage
+
+
+%=============================================================
+\subsection{exchange\_particle}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%exchange_particle(psys_num,dinfo_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_exchange_particle(const int psys_num,
+                            const int dinfo_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{dinfo\_num} & integer(kind=c\_int) & 入力 & 領域情報オブジェクトの識別番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+粒子が適切なドメインに配置されるように、粒子の交換を行う。
+
+\clearpage
+
+%=============================================================
+\subsection{add\_particle}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%add_particle(psys_num,ptcl)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_add_particle(const int psys_num,
+                       const void *cptr_to_fp);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{ptcl} & FullParticle型 & 入力 & 追加したい粒子のデータ。\\
+\texttt{cptr\_to\_fp} & void *型 & 入力 & 追加したい粒子のデータのアドレス。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+識別番号 \texttt{psys\_num} の粒子群オブジェクトで管理されているFullParticle型の粒子配列の末尾に、粒子\texttt{ptcl} {\small (Fortranの場合)} 或いは ポインタ\texttt{cptr\_to\_fp}が指す粒子データのコピー {\small (C言語の場合)}を追加する。
+
+\clearpage
+
+
+%=============================================================
+\subsection{remove\_particle}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%remove_particle(psys_num,nptcl,ptcl_indx)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_remove_particle(const int psys_num,                                                       
+                          const int nptcl,
+                          int *ptcl_indx);
+\end{spverbatim}
+\end{screen}
+
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{nptcl} & integer(kind=c\_int) & 入力 & 配列 \texttt{ptcl\_indx} のサイズ。\\
+\texttt{ptcl\_indx} & integer(kind=c\_int), dimension(nptcl) & 入力 & 消去する粒子の配列インデックス(配列要素番号)を格納した配列。{\setnoko\uc{C言語では配列の先頭アドレスを引数に指定することに注意}}。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+配列\texttt{ptcl\_indx}に格納されている配列インデックスの粒子を削除する。配列インデックスの最小値はFortranでは1、C言語では0とする。この関数を呼ぶ前後で、粒子の配列インデックスが同じである事は保証されない。
+
+\clearpage
+
+%=============================================================
+\subsection{adjust\_pos\_into\_root\_domain}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%adjust_pos_into_root_domain(psys_num,dinfo_num)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_adjust_pos_into_root_domain(const int psys_num,
+                                      const int dinfo_num);
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{dinfo\_num} & integer(kind=c\_int) & 入力 & 領域情報オブジェクトの識別番号。\\
+\bottomrule
+
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+周期境界条件の場合に、計算領域からはみ出した粒子を計算領域に適切に戻す。
+
+\clearpage
+
+%=============================================================
+\subsection{sort\_particle}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%sort_particle(psys_num,pfunc_comp)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_sort_particle(const int psys_num,
+                        _Bool (*pfunc_comp)(const void *, const void *));
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{pfunc\_comp} & type(c\_funptr) & 入力 & 比較関数の関数ポインタ。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+粒子群オブジェクトが保持する FullParticle の配列を比較関数 comp (この関数ポインタがpfunc\_comp)で指示したように並べ替える。比較関数は返り値を logical(kind=c\_bool) 型とし、引数は 識別番号 psys\_num に対応したFullParticle型を2つ取るものである必要がある(比較関数の引数のデータ型が、識別番号 psys\_num で指定される粒子群オブジェクトの生成に使用したFullParticle型と異なる場合の動作は不定である)。例として以下に FullParticle がメンバ変数 id を持っており id の昇順に並べ替える場合の比較関数を示す(Fortranの場合)。
+\begin{lstlisting}[caption=比較関数の例]
+function comp(left, right) bind(c)
+   use, intrinsic :: iso_c_binding
+   use user_defined_types
+   implicit none
+   logical(kind=c_bool) :: comp
+   type(full_particle), intent(in) :: left, right
+   comp = (left%id < right%id)
+end function comp
+\end{lstlisting}
+ここで、構造体 full\_particle は、モジュール user\_defined\_types 内で定義されているものとする。
+
+%=============================================================
+\subsection{set\_psys\_comm\_info}
+\subsubsection*{Fortran 構文}
+\begin{screen}
+\begin{spverbatim}
+subroutine fdps_ctrl%set_psys_comm_info(psys_num, ci)
+\end{spverbatim}
+\end{screen}
+
+\subsubsection*{C言語 構文}
+\begin{screen}
+\begin{spverbatim}
+void fdps_fdps_set_psys_comm_info(int psys_num,
+                                   int ci);
+\end{spverbatim}
+\end{screen}
+
+
+
+% 仮引数
+\subsubsection*{仮引数仕様}
+\begin{table}[h]
+\begin{tabularx}{\linewidth}{cccX}
+\toprule
+\rowcolor{Snow2}
+仮引数名 & データ型 & 入出力属性 & 定義 \\
+\midrule
+\texttt{psys\_num} & integer(kind=c\_int) & 入力 & 粒子群オブジェクトの識別番号。\\
+\texttt{ci} & integer(kind=c\_int) & 入力 & コミュニケータクラスに対応する番号。\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\subsubsection*{返り値}
+なし
+
+\subsubsection*{機能}
+
+通信に使うコミュニケータを指定する。 
+
+
+\clearpage

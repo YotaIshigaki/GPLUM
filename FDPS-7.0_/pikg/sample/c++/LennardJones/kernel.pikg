@@ -1,0 +1,37 @@
+F64 l
+F64 rc
+
+dx  = EPI.rx - EPJ.rx
+if dx < -0.5*l
+  dx = dx + l
+endif
+if dx >= 0.5*l
+  dx = dx - l
+endif
+
+dy = EPI.ry - EPJ.ry
+if dy < -0.5*l
+  dy = dy + l
+endif
+if dy >= 0.5*l
+  dy = dy - l
+endif
+
+dz  = EPI.rz - EPJ.rz
+if dz < -0.5*l
+  dz = dz + l
+endif
+if dz >= 0.5*l
+  dz = dz - l
+endif
+
+r2  = dx * dx + dy * dy + dz * dz
+if r2 < rc*rc && r2 > 0.0
+ r2i = 1.0 / r2
+ r6i = r2i * r2i * r2i
+ f = (48.0 * r6i - 24.0) * r6i * r2i
+ FORCE.fx += f * dx
+ FORCE.fy += f * dy
+ FORCE.fz += f * dz
+ FORCE.p += 4.0 * r6i*(r6i - 1.0)
+endif
