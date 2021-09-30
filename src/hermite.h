@@ -101,7 +101,7 @@ PS::S32 collisionDetermination(Tpsys & pp,
 {
     PS::F64 R_min = 1.;
 #ifdef MERGE_BINARY
-    PS::F64 S_min = 1.;
+    PS::F64 E_min = 0.;
 #endif
     PS::S32 flag_col = 0;
     
@@ -141,36 +141,49 @@ PS::S32 collisionDetermination(Tpsys & pp,
 #ifdef MERGE_BINARY
             //Determination of Binary Partcles
             if ( !flag_col ){
-                PS::F64 axi = pp[i].getSemimajorAxis();
-                PS::F64 axj = pp[pj_id].getSemimajorAxis();
-                PS::F64 mi  = pp[i].mass;
-                PS::F64 mj  = pp[pj_id].mass;
-                PS::F64 ax_mut = ( axi > 0. && axj > 0.) ? 0.5*(axi + axj) : 0.;
-                PS::F64 r_Hill_mut = pow((mi+mj)/(3.*FP_t::m_sun), 1./3.) * ax_mut;
+                PS::F64    mi  = pp[i].mass;
+                PS::F64    mj  = pp[pj_id].mass;
+                PS::F64vec ri  = pp[i].pos;
+                PS::F64vec rj  = pp[pj_id].pos;
+                PS::F64vec r_c = (mi*ri + mj*rj) / (mi + mj);
+                PS::F64    ax  = sqrt(r_c * r_c);
+                PS::F64    r_H = pow((mi+mj)/(3.*FP_t::m_sun), 1./3.) * ax;
+ 
                 PS::F64 R_merge = std::min(pp[i].R_merge, pp[pj_id].R_merge);  
-                R = r1 / ( R_merge * r_Hill_mut );
+                R = r1 / ( R_merge * r_H );
                 if ( R < 1. ){
-                    PS::F64vec pos_rel = pp[i].pos - pp[pj_id].pos;
-                    PS::F64vec vel_rel = pp[i].vel - mj*pp[pj_id].vel;
-                    PS::F64 r_rel  = sqrt(pos_rel*pos_rel);
-                    PS::F64 rv_rel = pos_rel * vel_rel;
-                    PS::F64 ax_rel  = 1.0 / (2.0/r_rel - vel_rel*vel_rel/(mi+mj));
-                    if ( ax_rel > 0. ){
-                        PS::F64 ecccosu = 1. - r_rel/ax_rel;
-                        PS::F64 eccsinu2 = rv_rel*rv_rel/((mi+mj)*ax_rel);
-                        PS::F64 ecc_rel = sqrt(ecccosu*ecccosu + eccsinu2);
-                        R = (1.+ecc_rel)*ax_rel / ( R_merge * r_Hill_mut );
-                        if ( R < S_min ){
-                            S_min = R;
-                            if ( pp[i].mass < pp[pj_id].mass ){
-                                col_pair.first = i;
-                                col_pair.second = pj_id;
-                            } else {
-                                col_pair.first = pj_id;
-                                col_pair.second = i;
-                            }
-                            flag_col = 2;
+                    PS::F64vec vi  = pp[i].vel;
+                    PS::F64vec vj  = pp[pj_id].vel;
+                    PS::F64vec v_c = (mi*vi + mj*vj) / (mi + mj);
+                    
+                    PS::F64vec ex  = r_c / ax;
+                    PS::F64vec ez  = 0.;
+                    ez.x = v_c.y*ex.z - v_c.z*ex.y;
+                    ez.y = v_c.z*ex.x - v_c.x*ex.z;
+                    ez.z = v_c.x*ex.y - v_c.y*ex.x;
+                    ez = ez / sqrt(ez*ez) ;
+                    
+                    PS::F64vec dr = ri - rj;
+                    PS::F64vec dv = vi - vj;
+                    PS::F64 dr_x = dr * ex;
+                    PS::F64 dr_z = dr * ez;
+                    
+                    PS::F64 Omega = sqrt(FP_t::m_sun / (ax*ax*ax));
+                    
+                    PS::F64 E_J = 0.5*dv*dv
+                        + Omega*Omega*(-1.5*dr_x*dr_x + 0.5*dr_z*dr_z +4.5*r_H*r_H)
+                        - (mi + mj) / sqrt(dr*dr);
+                    
+                    if ( E_J < E_min ){
+                        E_min = E_J;
+                        if ( pp[i].mass < pp[pj_id].mass ){
+                            col_pair.first = i;
+                            col_pair.second = pj_id;
+                        } else {
+                            col_pair.first = pj_id;
+                            col_pair.second = i;
                         }
+                        flag_col = 2;
                     }
                 }
             }

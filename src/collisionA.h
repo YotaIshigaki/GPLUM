@@ -132,8 +132,7 @@ class Collision0{
 
     static void readParameter(std::string name,
                               std::string value){}
-    static void showParameter() {}
-    static void showParameter(std::ofstream & fout) {}
+    static void showParameter(std::ostream & fout = std::cout) {}
 };
 
 PS::F64 Collision0::m_min = 9.426627927538057e-12;

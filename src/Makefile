@@ -30,7 +30,7 @@ use_AVX2 = yes
 #########################
 individual_cutoff = yes
 quadrupole = yes
-#polar_coordinate = yes
+polar_coordinate = yes
 #isotropic = yes
 #gas_drag = yes
 #integrate_6th = yes
@@ -38,10 +38,10 @@ quadrupole = yes
 #test_particle = yes
 
 collision = yes
-#Kominami = yes
+Kominami = yes
 #Chembers = yes
 #Shibata = yes
-#merge_binary = yes
+merge_binary = yes
 
 #without_sun = yes
 #constant_random_velocity = yes
@@ -57,7 +57,7 @@ CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
-#CFLAGS += -DFOR_PIKG01
+CFLAGS += -DFOR_PIKG01
 CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
 
 ifeq ($(use_OpenMP),yes)

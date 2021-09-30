@@ -38,7 +38,7 @@
 }
 
 \newcommand{\ourcode}{GPLUM\xspace}
-\newcommand{\ourcodeR}{GPLUM-2.4\xspace}
+\newcommand{\ourcodeR}{GPLUM-2.5\xspace}
 %\pagestyle{empty}
 \begin{document}
 %\maketitle
@@ -77,20 +77,27 @@
 
 \ourcode は ${\rm P^{3}T}$法 (Oshino et al. 2011)を用いた惑星系形成N体計算用コードです．
 \ourcode はFDPS (Iwasawa et al. 2016) を使用しています．
-現在の最新バージョンは\ourcodeR です．\ourcodeR はFDPS-5.0gでの動作確認をしています．
+現在の最新バージョンは\ourcodeR です．\ourcodeR はFDPS-7.0での動作確認をしています．
 
 
 \section{ダウンロード}
 \ourcode のソースコードは\textcolor{blue}{https://github.com/YotaIshigaki/GPLUM}からダウンロードできます．
 
-以下のコマンドを実行して，\texttt{\ourcode}をダウンロードしてください．
+以下を実行して，\ourcode をダウンロードしてください．
 \begin{verbatim}
 $ git clone https://github.com/YotaIshigaki/GPLUM.git
 \end{verbatim}
 
-さらに，ダウンロードされた\ourcode のディレクトリに移動して，以下のコマンドを実行して，PIKGをダウンロードしてください．
+さらに，ダウンロードされた\ourcode のディレクトリに移動して，以下を実行して，PIKG，FDPSをダウンロードしてください．
+\footnote{
+現在，領域の極座標分割は公開版のFDPSでは対応していません(Section \ref{s:error}参照)．領域の極座標分割を使用する場合は，FDPSの開発版にアクセス可能であれば，以下を実行して，FDPSの開発版をダウンロードして使用してください．
+\begin{verbatim}
+$ git clone -b makinotest https://github.com/FDPS/fdps-devel.git
+\end{verbatim}
+}
 \begin{verbatim}
 $ git clone https://github.com/FDPS/PIKG.git
+$ git clone https://github.com/FDPS/FDPS.git
 \end{verbatim}
 
 
@@ -116,14 +123,12 @@ $ git clone https://github.com/FDPS/PIKG.git
 \texttt{parameter.dat}は，パラメータファイルのサンプルファイルです．
 設定できるパラメータについては，Section \ref{parameter}を参照してください．
 
-\subsection{FDPS}
-FDPSに関するファイルは，ディレクトリ\texttt{FDPS-5.0g}，\texttt{FDPS-5.0d2}にあります．
-ディレクトリ内のファイル構成は，FDPSの仕様書を参照してください．
-\texttt{FDPS-5.0g}はFDPS-5.0gのファイル，\texttt{FDPS-5.0d2}はFDPS-5.0dのいくつかの処理を更新したファイルです．
-
 \subsection{解析用ソースファイル}
 結果の作図などに用いるソースファイルのサンプルファイルは，ディレクトリ\texttt{analysis}にあります．
 使用方法は，ソースファイルのドキュメンテーションを参照してください．
+
+\subsection{FDPS，PIKG}
+FDPSやPIKGについては，それぞれの仕様書を参照してください．
 
 
 
@@ -135,7 +140,7 @@ FDPSに関するファイルは，ディレクトリ\texttt{FDPS-5.0g}，\texttt
 
 \subsubsection{コンパイラ}
 \texttt{src/Makefile}の\texttt{CC}でコンパイラを指定します．
-\ourcodeR は，GNU version 7.3.0での動作確認をしています．
+%\ourcodeR は，GNU version 7.3.0での動作確認をしています．
 
 \subsubsection{オプション}
 \texttt{src/Makefile}の\texttt{CFLAGS}でオプションを指定します．
@@ -172,18 +177,11 @@ SIMD命令に関するオプションについて，詳しくは，使用する�
 四重極子まで展開する場合は， %\texttt{-DUSE\_QUAD}を有効にしてください.
 \texttt{quad}をyesにしてください．
 
-%\item[ツリーの計算精度]
-%ツリー法での重力相互作用計算は，デフォルトでは単精度です．
-%essential-particle 同士の重力相互作用計算を倍精度で計算する場合は，\texttt{-DCALC\_EPEP\_64bit}を有効にしてください.
-%essential-particleとsuper-particle の重力相互作用計算を倍精度で計算する場合は，\texttt{-DCALC\_EPSP\_64bit}を有効にしてください.
+\item[領域分割]
+領域分割は，デフォルトではデカルト座標系を使用します．
+領域分割に極座標を使用する場合は，
+\texttt{use\_polar\_coordinate}をyesにしてください．
 
-%\item[LETの通信]
-%local essential tree (LET)のMPI通信は，デフォルトでは\texttt{MPI\_Alltoall}を使用します．
-%\texttt{MPI\_Allgather}を使用する場合は，\texttt{-DUSE\_ALLGATHER\_EXLET}を有効にしてください.
-
-%\item[ネイバー粒子探索]
-%ネイバー粒子探索は，デフォルトでは1段階です．
-%\Paper で説明するように2段階にする場合は，\texttt{-DUSE\_RE\_SEARCH\_NEIGHBOR}を有効にしてください.
 
 \item[ランダム速度]
 粒子のランダム速度は，デフォルトではKepler速度との差として定義されます．
@@ -197,9 +195,6 @@ SIMD命令に関するオプションについて，詳しくは，使用する�
 \texttt{gas\_drag}をyesにしてください．
 ガス抵抗は，Adachi et al. (1976)のモデルを使用します．
 
-%\item[indirect 項]
-%デフォルトでは indirect 項は計算されません．
-%indirect 項の効果を反映する場合は，\texttt{-DINDIRECT\_TERM}を有効にしてください．
 
 \item[Hermite法の精度]
 デフォルトではHard partの中心星相互作用，粒子間重力相互作用は4次Hermite法で積分されます．
@@ -332,7 +327,10 @@ $y$方向のルートドメインの分割数を指定します．
 出力ディレクトリ名(OUTPUT)．ここで設定した名前のディレクトリに計算結果が出力されます．その名前のディレクトリがカレントディレクトリにない場合は，その名前のディレクトリが作成されます．
 \item[\texttt{Restart}:]
 計算を再スタートさせる場合は$1$，そうでない場合には$0$を設定します(0)．
-この値に$1$を設定すると，出力ディレクトリにあるスナップショットファイルの中で番号が最も大きいファイルから初期条件を読み込み，計算をスタートします．
+この値に$1$を設定すると，
+%出力ディレクトリにあるスナップショットファイルの中で番号が最も大きいファイルから初期条件を読み込み，
+出力ディレクトリの再計算用の出力(\texttt{snap\_temp.dat})から初期条件を読み込み，
+計算をスタートします．
 
 \end{description}
 
@@ -414,6 +412,7 @@ $\Sigma_{\rm g}$のスケーリングファクター$f_{\rm g}$\ (0.71)．
 領域分割の指数移動平均の平滑化係数(0.3)．
 \item[\texttt{nx},\texttt{ny}:]
 $x,y$方向のルートドメインの分割数$n_{x},\ n_{y}$\ ($n_{x}n_{y}$がMPIプロセス数となる整数)．
+極座標系を使用して分割する場合は，それぞれ$\theta,\, r$方向のルートドメインの分割数となります．
 
 領域分割については，FDPSのマニュアルも参照してください．
 \item[\texttt{reset\_step}:]
@@ -439,6 +438,8 @@ $x,y$方向のルートドメインの分割数$n_{x},\ n_{y}$\ ($n_{x}n_{y}$が
 ツリーのタイムステップ$\Delta t_{\rm tree}$\ (1/32)．2の冪乗でなければなりません．
 \item[\texttt{dt\_snap}:]
 出力の時間間隔$\Delta t_{\rm snap}$\ (1/32)．$\Delta t_{\rm tree}$の整数倍でなければなりません．
+\item[\texttt{dt\_snap\_tmp}:]
+再計算用のファイル出力の時間間隔$\Delta t_{\rm snap}$\ (1/32)．$\Delta t_{\rm tree}$の整数倍でなければなりません．
 \item[\texttt{dt\_min}:]
 Hermite法におけるタイムステップの最小値$\ \Delta t_{\rm min}$\ (1/8192)．2の冪乗でなければなりません．また，$\Delta t_{\rm min}<0.5\Delta t_{\rm tree}$でなければなりません．
 \item[\texttt{eta},\ \texttt{eta\_sun}:]
@@ -600,7 +601,7 @@ v^{*}_{{\rm ran},j}=\sqrt{\langle |\bm{v}_{j}|^{2}\rangle-|\langle \bm{v}\rangle
 \begin{equation}
 r_{ij} < \tilde{R}_{\rm merge}r_{{\rm Hill},ij}
 \end{equation}
-を満たし，かつ，2粒子の重心に対する粒子の軌道離心率が1より小さい場合に，2粒子をまとめて1つの超粒子に置き換えます．
+を満たし，かつ，2粒子のJacobiエネルギーが負の場合に，2粒子をまとめて1つの粒子に置き換えます．
 $r_{{\rm Hill},ij}$は粒子$i\ ,j$の相互Hill半径です．
 \end{description}
 
@@ -610,7 +611,7 @@ $r_{{\rm Hill},ij}$は粒子$i\ ,j$の相互Hill半径です．
 \section{出力ファイル\label{output}}
 
 出力ディレクトリには，\texttt{snap}$N$\texttt{.dat}と，
-\texttt{collision}$N$\texttt{.dat}，\texttt{remove}$N$\texttt{.dat}
+\texttt{collision}$N$\texttt{.dat}，\texttt{remove}$N$\texttt{.dat}，\texttt{snap\_tmp.dat}
 \texttt{energy.dat}，\texttt{param.dat}が出力されます．
 $N$には6桁の整数が0から入ります．
 
@@ -648,7 +649,8 @@ flagは粒子の状態を表すフラグで，粒子が連微惑星をまとめ�
 
 計算途中で衝突破壊などで新しい粒子が生成される場合は，粒子IDは${\rm ID}_{\rm MAX}+1$から順に設定されます．
 
-スナップショットファイルに出力する粒子情報，初期条件ファイルから読み込む粒子情報は，それぞれ\texttt{particle.h}のFPGrav::writeAscii 関数，FPGrav::readAscii 関数を書き換えることで変更できます．ただし，計算を再スタートするためには，FPGrav::writeAscii 関数で書き出す情報とFPGrav::readAscii 関数で読み込む情報の形式が一致している必要があります．
+スナップショットファイルに出力する粒子情報，初期条件ファイルから読み込む粒子情報は，それぞれ\texttt{particle.h}のFPGrav::writeAscii 関数，FPGrav::readAscii 関数を書き換えることで変更できます．
+%ただし，計算を再スタートするためには，FPGrav::writeAscii 関数で書き出す情報とFPGrav::readAscii 関数で読み込む情報の形式が一致している必要があります．
 
 \subsection{\texttt{collision}$N$\texttt{.dat}}
 
@@ -692,6 +694,10 @@ $n_{\rm large cluster},\ n_{\rm cluster},\ n_{\rm iso particle}$は，直前の1
 
 %マクロ\texttt{OUTPUT\_DETAIL}
 Makefileで\texttt{output\_detail}がyesになっている場合は，この後に，最大質量，平均質量，平均近接粒子数も出力されます．
+
+\subsection{\texttt{snap\_tmp.dat}}
+\texttt{snap\_tmp.dat}には，再計算に使用するための粒子の情報がバイナリ形式で出力されます．
+
 
 \subsection{\texttt{param.dat}}
 
@@ -835,7 +841,7 @@ static void readParameter(std::string name, std::string value)
 
 \begin{screen}
 \begin{verbatim}
-static void readParameter()
+static void showParameter(std::ostream & fout = std::cout)
 \end{verbatim}
 \end{screen}
 
@@ -849,29 +855,7 @@ static void readParameter()
 なし．
 \item[機能]
 
-標準出力にパラメータの値を出力します．
-
-\end{description}
-
-
-\begin{screen}
-\begin{verbatim}
-static void readParameter(std::ofstream & fout)
-\end{verbatim}
-\end{screen}
-
-\begin{description}
-\item[引数]
-
-\texttt{fout}:\ 入力．std::ofstream\&型．出力ファイル(\texttt{param.dat})．
-
-\item[返値]
-
-なし．
-
-\item[機能]
-
-\texttt{param.dat}にパラメータの値を出力します．
+パラメータの値を出力します．
 
 \end{description}
 
@@ -910,28 +894,20 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 %\end{quote}
 
 
-\section{現在分かっている不具合}
+\section{現在分かっている不具合\label{s:error}}
 
 \begin{itemize}
 \item
-プログラムが以下のようなエラーを出力して異常終了することがあります．
-\begin{verbatim}
-gplum.out: ../FDPS-5.0d2/src/memory_pool.hpp:185: static void ParticleSimulator::Me
-moryPool::alloc(size_t, int&, void*, void*&): Assertion `N_SEGMENT_LIMIT > getInsta
-nce().n_segment_+1' failed.
-===================================================================================
-=   BAD TERMINATION OF ONE OF YOUR APPLICATION PROCESSES
-=   PID 64 RUNNING AT LAPTOP-PMT9ABH2
-=   EXIT CODE: 134
-=   CLEANING UP REMAINING PROCESSES
-=   YOU CAN IGNORE THE BELOW CLEANUP MESSAGES
-===================================================================================
-YOUR APPLICATION TERMINATED WITH THE EXIT STRING: Aborted (signal 6)
-This typically refers to a problem with your application.
-Please see the FAQ page for debugging suggestions
-\end{verbatim}
+FDPSのディレクトリ内のPIKGはバージョンが古いため，そちらを使用すると正常にコンパイルされないことがあります．
+PIKGは，別途最新版をダンロードしてください．
 
-Memory Pool 関連のエラーはFDPS-5.0dのバグのようです．FDPS-5.0cか，最新バージョンのFDPSを使ってください．
+\item
+PIKG-0.1では64bit整数に未対応であるため，SIMD命令を使用すると，正常にコンパイルされないことがあります．
+その場合は，\texttt{-DFOR\_PIKG01}を有効にしてコンパイルしてください．
+
+\item
+FDPS-7.0では一部のsearch modeで周期境界条件が未対応であるため，領域の極座標分割を使用すると正確に計算されません．
+fdps-develのmakinotestブランチでは，\ourcode で使用しているsearch modeで周期境界条件に対応しています．fdps-develにアクセス可能であればこちらを使用してください．
 
 \end{itemize}
 

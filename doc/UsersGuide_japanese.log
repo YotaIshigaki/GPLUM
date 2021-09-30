@@ -1,4 +1,4 @@
-This is e-pTeX, Version 3.14159265-p3.8.3-191112-2.6 (utf8.euc) (TeX Live 2020) (preloaded format=platex 2020.12.15)  10 AUG 2021 17:29
+This is e-pTeX, Version 3.14159265-p3.8.3-191112-2.6 (utf8.euc) (TeX Live 2020) (preloaded format=platex 2020.12.15)  30 SEP 2021 18:18
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -865,80 +865,76 @@ LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
 \openout7 = `UsersGuide_japanese.toc'.
 
  [2]
+(I search kanjifont definition file: . . ) (I search font definition file: . .
+. . . . . )
+LaTeX Font Info:    Trying to load font information for T1+ntxsups on input lin
+e 92.
+ (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/t1ntxsups.fd
+File: t1ntxsups.fd 2015/01/17 v1.0
+)
+LaTeX Font Info:    Font shape `T1/ntxsups/m/n' will be
+(Font)              scaled to size 10.0pt on input line 92.
+LaTeX Font Info:    Font shape `JT1/hmc/m/n' will be
+(Font)              scaled to size 7.39746pt on input line 92.
+LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
+(Font)              scaled to size 7.39746pt on input line 92.
+LaTeX Font Info:    Font shape `T1/ntxtlf/m/n' will be
+(Font)              scaled to size 8.0pt on input line 92.
+LaTeX Font Info:    Font shape `T1/ntxsups/m/n' will be
+(Font)              scaled to size 8.0pt on input line 92.
 LaTeX Font Info:    Font shape `JT1/hgt/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 99.
+(Font)              scaled to size 7.39746pt on input line 94.
 LaTeX Font Info:    Font shape `JY1/hgt/m/n' will be
-(Font)              scaled to size 11.09619pt on input line 99.
+(Font)              scaled to size 7.39746pt on input line 94.
+LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
+(Font)              scaled to size 8.0pt on input line 94.
+LaTeX Font Info:    Font shape `JT1/hgt/m/n' will be
+(Font)              scaled to size 11.09619pt on input line 106.
+LaTeX Font Info:    Font shape `JY1/hgt/m/n' will be
+(Font)              scaled to size 11.09619pt on input line 106.
 LaTeX Font Info:    Font shape `T1/qhv/m/n' will be
-(Font)              scaled to size 10.79993pt on input line 99.
+(Font)              scaled to size 10.79993pt on input line 106.
 
-[3] [4] [5] [6] [7] [8]
-Overfull \hbox (2.2632pt too wide) in paragraph at lines 597--600
+[3] [4] [5] [6] [7] [8] [9]
+Overfull \hbox (2.2632pt too wide) in paragraph at lines 598--601
 []\JY1/hmc/m/n/10 連微惑星の形成の判定のためのパラメ ータ $[]$ \T1/ntxtlf/m/n/1
 0 (0.2)\JY1/hmc/m/n/10 ． コンパイルオプシ ョンで\T1/ntxtt/m/n/10 -DMERGE_BINAR
 Y
  []
 
-[9]
 LaTeX Font Info:    Font shape `T1/ntxtt/m/n' will be
-(Font)              scaled to size 12.0pt on input line 617.
+(Font)              scaled to size 12.0pt on input line 618.
 LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 7.39746pt on input line 617.
-LaTeX Font Info:    Font shape `JY1/hmc/m/n' will be
-(Font)              scaled to size 5.5481pt on input line 617.
+(Font)              scaled to size 5.5481pt on input line 618.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 11.09619pt on input line 617.
+(Font)              scaled to size 11.09619pt on input line 618.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 7.39746pt on input line 617.
+(Font)              scaled to size 7.39746pt on input line 618.
 LaTeX Font Info:    Font shape `JY1/hmc/bx/n' will be
-(Font)              scaled to size 5.5481pt on input line 617.
+(Font)              scaled to size 5.5481pt on input line 618.
 
-Overfull \hbox (59.73792pt too wide) detected at line 624
+Overfull \hbox (59.73792pt too wide) detected at line 625
 \OML/cmm/m/it/10 t n [][] E[] E[] E[] E[] \OT1/cmr/m/n/10 ^^A\OML/cmm/m/it/10 E
 [] E[] E[] E[] E[] \OT1/cmr/m/n/10 ^^A\OML/cmm/m/it/10 E[]
  []
 
 [10] [11]
 LaTeX Font Info:    Trying to load font information for TS1+ntxtlf on input lin
-e 734.
+e 740.
  (/usr/local/texlive/2020/texmf-dist/tex/latex/newtx/ts1ntxtlf.fd
 File: ts1ntxtlf.fd 2015/01/18 v1.0 fd file for TS1/ntxtlf
 )
 LaTeX Font Info:    Font shape `TS1/ntxtlf/m/n' will be
-(Font)              scaled to size 10.0pt on input line 734.
+(Font)              scaled to size 10.0pt on input line 740.
 
-[12] [13]
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 919--919
- []\T1/ntxtt/m/n/10 gplum.out: ../FDPS-5.0d2/src/memory_pool.hpp:185: static vo
-id ParticleSimulator::Me 
- []
-
-
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 920--920
- []\T1/ntxtt/m/n/10 moryPool::alloc(size_t, int&, void*, void*&): Assertion `N_
-SEGMENT_LIMIT > getInsta[] 
- []
-
-[14]
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 922--922
- []\T1/ntxtt/m/n/10 ===========================================================
-========================[] 
- []
-
-
-Overfull \hbox (8.24524pt too wide) in paragraph at lines 928--928
- []\T1/ntxtt/m/n/10 ===========================================================
-========================[] 
- []
-
-[15] (./UsersGuide_japanese.aux) ) 
+[12] [13] [14] [15] (./UsersGuide_japanese.aux) ) 
 Here is how much of TeX's memory you used:
- 21423 strings out of 479854
- 417802 string characters out of 5881695
- 721583 words of memory out of 5000000
- 38349 multiletter control sequences out of 15000+600000
- 443590 words of font info for 128 fonts, out of 8000000 for 9000
+ 21480 strings out of 479854
+ 418751 string characters out of 5881695
+ 720592 words of memory out of 5000000
+ 38394 multiletter control sequences out of 15000+600000
+ 448974 words of font info for 135 fonts, out of 8000000 for 9000
  934 hyphenation exceptions out of 8191
  79i,15n,85p,504b,1029s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on UsersGuide_japanese.dvi (15 pages, 82184 bytes).
+Output written on UsersGuide_japanese.dvi (15 pages, 83152 bytes).

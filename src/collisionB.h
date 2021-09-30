@@ -23,13 +23,7 @@ class Collision : public Collision0 {
             N_frag = std::atoi(value.c_str());
         }
     }
-    static void showParameter() {
-        std::cout << std::fixed<<std::setprecision(5)
-                  << "a_frag        = " << a_frag << std::endl
-                  << "N_frag        = " << N_frag << std::endl;
-                  
-    }
-    static void showParameter(std::ofstream & fout) {
+    static void showParameter(std::ostream & fout = std::cout) {
         fout << std::fixed<<std::setprecision(5)
              << "a_frag        = " << a_frag << std::endl
              << "N_frag        = " << N_frag << std::endl;
@@ -133,19 +127,7 @@ class Collision : public Collision0 {
             eps_t = getvalue(value, 1., 1.);
         } 
     }
-    static void showParameter() {
-        const PS::F64 L = 14959787070000;
-        const PS::F64 M = 1.9884e33;
-        std::cout << std::scientific << std::setprecision(15)
-                  << "N_frag        = " << N_frag << std::endl
-                  << "dens_imp      = " << dens << "\t(" << dens*M/(L*L*L) << " g/cm^3)"<< std::endl
-                  << "c_s           = " << c_s << std::endl
-                  << "mu_           = " << mu_ << std::endl
-                  << "eta_          = " << eta_ << std::endl
-                  << "eps_n         = " << eps_n << std::endl
-                  << "eps_t         = " << eps_t << std::endl;
-    }
-    static void showParameter(std::ofstream & fout) {
+    static void showParameter(std::ostream & fout = std::cout) {
         const PS::F64 L = 14959787070000;
         const PS::F64 M = 1.9884e33;
         fout << std::scientific << std::setprecision(15)
@@ -395,14 +377,7 @@ class Collision : public Collision0 {
             eps_t = getvalue(value, 1., 1.);
         } 
     }
-    static void showParameter() {
-        //const PS::F64 L = 14959787070000;
-        //const PS::F64 M = 1.9884e33;
-        std::cout << std::scientific << std::setprecision(15)
-                  << "eps_n         = " << eps_n << std::endl
-                  << "eps_t         = " << eps_t << std::endl;
-    }
-    static void showParameter(std::ofstream & fout) {
+    static void showParameter(std::ostream & fout = std::cout) {
         //const PS::F64 L = 14959787070000;
         //const PS::F64 M = 1.9884e33;
         fout << std::scientific << std::setprecision(15)

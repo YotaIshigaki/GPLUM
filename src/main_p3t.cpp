@@ -89,9 +89,7 @@ int main(int argc, char *argv[])
     bool makeInit = false;
 
     PS::F64 coef_ema = 0.3;
-    PS::S32 nx = (int)sqrt(PS::Comm::getNumberOfProc());
-    while ( PS::Comm::getNumberOfProc()%nx != 0 ) nx++;
-    PS::S32 ny = PS::Comm::getNumberOfProc()/nx;
+    PS::S32 nx = 0, ny = 0;
     
     PS::F64 theta         = 0.5;
     PS::S32 n_leaf_limit  = 8;
@@ -196,6 +194,16 @@ int main(int argc, char *argv[])
     if (opt_S) FP_t::R_cut1 = Rcut1_opt;
     if (opt_x) nx = nx_opt;
     if (opt_y) ny = ny_opt;
+
+    if ( nx == 0 && ny == 0 ) {
+        nx = (int)sqrt(PS::Comm::getNumberOfProc());
+        while ( PS::Comm::getNumberOfProc()%nx != 0 ) nx++;
+        ny = PS::Comm::getNumberOfProc()/nx;
+    } else if ( nx == 0 ) {
+        nx = PS::Comm::getNumberOfProc()/ny;
+    } else if ( ny == 0 ) {
+        ny = PS::Comm::getNumberOfProc()/nx;
+    }
 
     if ( checkParameter(init_file, bHeader, output_dir, bRestart,  makeInit,
                         coef_ema, nx, ny,
