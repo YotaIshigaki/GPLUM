@@ -1,0 +1,8 @@
+rij    = pos - EPJ.pos
+r2 = rij * rij + eps*eps
+r_inv  = rsqrt(r2)
+r2_inv = r_inv * r_inv
+mr_inv  = EPJ.mass * r_inv
+mr3_inv = r2_inv * mr_inv
+acc   -= mr3_inv * rij
+pot   -= mr_inv

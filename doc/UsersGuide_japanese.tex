@@ -88,18 +88,6 @@
 $ git clone --recursive https://github.com/YotaIshigaki/GPLUM.git
 \end{verbatim}
 
-%さらに，ダウンロードされた\ourcode のディレクトリに移動して，以下を実行して，PIKG，FDPSをダウンロードしてください．
-%\footnote{
-%現在，領域の極座標分割は公開版のFDPSでは対応していません(Section \ref{s:error}参照)．領域の極座標分割を使用する場合は，FDPSの開発版にアクセス可能であれば，以下を実行して，FDPSの開発版をダウンロードして使用してください．
-%\begin{verbatim}
-%$ git clone -b makinotest https://github.com/FDPS/fdps-devel.git
-%\end{verbatim}
-%}
-%\begin{verbatim}
-%$ git clone https://github.com/FDPS/PIKG.git
-%$ git clone https://github.com/FDPS/FDPS.git
-%\end{verbatim}
-
 
 \section{ファイル構成}
 
@@ -127,8 +115,12 @@ $ git clone --recursive https://github.com/YotaIshigaki/GPLUM.git
 結果の作図などに用いるソースファイルのサンプルファイルは，ディレクトリ\texttt{analysis}にあります．
 使用方法は，ソースファイルのドキュメンテーションを参照してください．
 
-\subsection{FDPS，PIKG}
-FDPSやPIKGについては，それぞれの仕様書を参照してください．
+\subsection{FDPS}
+\texttt{FDPS}ディレクトリのファイル構成は，FDPSの仕様書を参照してください．
+別のバージョンのFDPSや，FDPSの開発版\footnote{Section \ref{s:error}参照}を使用する場合には，別途ダウンロードしてください．
+
+\subsection{PIKG}
+\texttt{PIKG}ディレクトリのファイル構成は，PIKGの仕様書を参照してください．
 
 
 
@@ -238,9 +230,10 @@ Chambers (2013)の衝突破壊モデルを使用します．
 
 \end{description}
 
-\subsubsection{FDPS}
-\texttt{src/Makefile}の\texttt{PS\_PATH}でFDPSの\texttt{src}ディレクトリにパスを設定します．
-FDPSの他のバージョンを用いる場合は，FDPSをダウンロードし，同様にそのFDPSの\texttt{src}ディレクトリにパスを設定してください．
+\subsubsection{FDPS，PIKG}
+\texttt{src/Makefile}の\texttt{PS\_PATH\_FDPS}で\texttt{FDPS/src/}に，
+\texttt{PS\_PATH\_PIKG}で\texttt{PIKG/}に，パスを設定します．
+別のバージョンのFDPS，PIKGや，FDPS，PIKGの開発版などを使用する場合は，別途ダウンロードし，対応するディレクトリにパスを設定してください．
 
 
 \subsection{コンパイル\label{compile}}
@@ -898,16 +891,24 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 \begin{itemize}
 \item
-FDPSのディレクトリ内のPIKGはバージョンが古いため，そちらを使用すると正常にコンパイルされないことがあります．
-PIKGは，別途最新版をダンロードしてください．
+\texttt{FDPS/pikg}ディレクトリにあるPIKGは，\ourcode で使用できるものとバージョンが異なるため，こちらを用いると正常にコンパイルされないことがあります．
+\texttt{PIKG}ディレクトリのPIKGを使用してください．
+FDPSのPIKGのバージョンが新しくなり次第，こちらにパスを設定するように\texttt{Makefile}を書き換える予定です．
 
 \item
-PIKG-0.1では64bit整数に未対応であるため，SIMD命令を使用すると，正常にコンパイルされないことがあります．
-その場合は，\texttt{-DFOR\_PIKG01}を有効にしてコンパイルしてください．
+PIKG-0.2では64bit整数に未対応であるため，SIMD命令を使用すると，正常にコンパイルされないことがあります．
+\texttt{Makefile}で\texttt{-DFOR\_PIKG01}を有効にしてコンパイルすると，この問題を回避できます．
 
 \item
 FDPS-7.0では一部のsearch modeで周期境界条件が未対応であるため，領域の極座標分割を使用すると正確に計算されません．
-fdps-develのmakinotestブランチでは，\ourcode で使用しているsearch modeで周期境界条件に対応しています．fdps-develにアクセス可能であればこちらを使用してください．
+FDPSの開発版の一部のブランチでは，\ourcode で使用しているsearch modeで周期境界条件に対応しています．FDPSの開発版にアクセス可能であれば，\ourcode のディレクトリ内で以下を実行して，FDPSの開発版 fdps-devel をダウンロードし，そちらを使用してください．
+\begin{verbatim}
+$ git clone -b makinotest https://github.com/FDPS/fdps-devel.git
+\end{verbatim}
+
+\item
+PIKG-0.2では，SIMD命令にSVEを指定するとコンパイルできないことがあります．
+PIKG-0.1dであればコンパイルできることが確認できているので，PIKG-0.1dをダウンロードして使用してください．
 
 \end{itemize}
 
