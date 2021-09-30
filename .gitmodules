@@ -1,10 +1,6 @@
 [submodule "PIKG"]
 	path = PIKG
 	url = https://github.com/FDPS/PIKG.git
-[submodule "fdps-devel"]
-	path = fdps-devel
-	url = https://github.com/FDPS/fdps-devel.git
-	branch = makinotest
 [submodule "FDPS"]
 	path = FDPS
 	url = https://github.com/FDPS/FDPS.git
