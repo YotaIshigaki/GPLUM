@@ -38,7 +38,7 @@
 }
 
 \newcommand{\ourcode}{GPLUM\xspace}
-\newcommand{\ourcodeR}{GPLUM-2.5\xspace}
+\newcommand{\ourcodeR}{GPLUM-2.4\xspace}
 %\pagestyle{empty}
 \begin{document}
 %\maketitle
@@ -220,9 +220,6 @@ Chambers (2013)の衝突破壊モデルを使用します．
 \texttt{output\_detail}をyesにすると，
 出力ファイルに出力される内容が増えます．詳細はSection \ref{outputene}を参照してください．
 
-%\item[テスト粒子]
-%テスト粒子(質量が0の粒子)が存在すると，FDPSが異常終了することがあります．
-%\texttt{-DTEST\_PTCL}を有効にすると，テスト粒子の質量にdouble型の数値的な最小値を設定することで異常終了を防ぎます．テスト粒子同士の相互作用は，Hard partでは計算されません．
 
 %\item[その他]
 %FDPSの開始メッセージにモナーのアスキーアートを表示する場合は，マクロ\texttt{MONAR}を定義してください．
@@ -265,7 +262,7 @@ $ ./gplum.out
 \item[\texttt{-p}:]
 パラメータファイルを指定します．このオプションを指定しない場合は，パラメータファイルは\texttt{parameter.dat}となります．\texttt{parameter.dat}というファイル名以外のパラメータファイルを用いる場合に指定してください．
 \item[\texttt{-r}:]
-計算を再スタートするときに指定してください．このオプションを指定すると，出力ディレクトリにあるスナップショットファイルの中で番号が最も大きいファイルから初期条件を読み込み，計算をスタートします．
+計算を再スタートするときに指定してください．このオプションを指定すると，出力ディレクトリにある再計算用ファイル\texttt{snap\_tmp.dat}から初期条件を読み込み，計算をスタートします．
 \item[\texttt{-i}:]
 初期条件ファイルを指定します．
 \item[\texttt{-s}:]
@@ -285,9 +282,9 @@ $ ./gplum.out
 
 $\tilde{R}_{\rm cut,0},\ \tilde{R}_{\rm cut,1}$について，詳しくはSection \ref{paramg}を参照してください．
 \item[\texttt{-x}:]
-$x$方向のルートドメインの分割数を指定します．
+$x$方向のルートドメインの分割数を指定します．領域分割に極座標を使用している場合は，$\theta$方向のルートドメインの分割数を指定します．
 \item[\texttt{-y}:]
-$y$方向のルートドメインの分割数を指定します．
+$y$方向のルートドメインの分割数を指定します．領域分割に極座標を使用している場合は，$r$方向のルートドメインの分割数を指定します．
 
 領域分割については，FDPSのマニュアルも参照してください．
 
@@ -430,9 +427,9 @@ $x,y$方向のルートドメインの分割数$n_{x},\ n_{y}$\ ($n_{x}n_{y}$が
 \item[\texttt{dt\_tree}:]
 ツリーのタイムステップ$\Delta t_{\rm tree}$\ (1/32)．2の冪乗でなければなりません．
 \item[\texttt{dt\_snap}:]
-出力の時間間隔$\Delta t_{\rm snap}$\ (1/32)．$\Delta t_{\rm tree}$の整数倍でなければなりません．
+ スナップショットファイル\texttt{snap}$N$\texttt{.dat}出力の時間間隔$\Delta t_{\rm snap}$\ (1/32)．$\Delta t_{\rm tree}$の整数倍でなければなりません．\texttt{energy.dat}への出力もこの時間間隔で行われます．
 \item[\texttt{dt\_snap\_tmp}:]
-再計算用のファイル出力の時間間隔$\Delta t_{\rm snap}$\ (1/32)．$\Delta t_{\rm tree}$の整数倍でなければなりません．
+再計算用のファイル\texttt{snap\_tmp.dat}出力の時間間隔$\Delta t_{\rm snap}$\ (1/32)．$\Delta t_{\rm tree}$の整数倍でなければなりません．
 \item[\texttt{dt\_min}:]
 Hermite法におけるタイムステップの最小値$\ \Delta t_{\rm min}$\ (1/8192)．2の冪乗でなければなりません．また，$\Delta t_{\rm min}<0.5\Delta t_{\rm tree}$でなければなりません．
 \item[\texttt{eta},\ \texttt{eta\_sun}:]
@@ -586,7 +583,7 @@ v^{*}_{{\rm ran},j}=\sqrt{\langle |\bm{v}_{j}|^{2}\rangle-|\langle \bm{v}\rangle
 \begin{description}
 \item[\texttt{f}:]
 粒子の半径の膨らまし係数$f$\ (1.0)．
-初期条件ファイルから初期条件を読み込まない場合，初期条件ファイルの$f$が0に設定されている場合に，この膨らまし係数を用います．
+初期条件ファイルから初期条件を読み込まない場合，または，初期条件ファイルの$f$が0に設定されている場合に，この膨らまし係数を用います．
 \item[\texttt{R\_merge}:]
 連微惑星の形成の判定のためのパラメータ$\tilde{R}_{\rm merge}$\ (0.2)．
 コンパイルオプションで\texttt{-DMERGE\_BINARY}が有効になっていない場合は使用されません．
@@ -892,8 +889,8 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 \begin{itemize}
 \item
 \texttt{FDPS/pikg}ディレクトリにあるPIKGは，\ourcode で使用できるものとバージョンが異なるため，こちらを用いると正常にコンパイルされないことがあります．
-\texttt{PIKG}ディレクトリのPIKGを使用してください．
-FDPSのPIKGのバージョンが新しくなり次第，こちらにパスを設定するように\texttt{Makefile}を書き換える予定です．
+GPLUMのコンパイルには，\texttt{PIKG}ディレクトリのPIKGを使用してください．
+FDPSのPIKGのバージョンが新しくなり次第，FDPSのPIKGを使用するように\texttt{Makefile}を書き換える予定です．
 
 \item
 PIKG-0.2では64bit整数に未対応であるため，SIMD命令を使用すると，正常にコンパイルされないことがあります．
