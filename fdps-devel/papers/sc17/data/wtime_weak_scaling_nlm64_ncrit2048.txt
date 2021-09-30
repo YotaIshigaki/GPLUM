@@ -1,3 +1,0 @@
-# nprocs  wt_total  flops  wt_force(=wtime_dipatch)  wt_comm(=communication+exchange_LET_tot)  wt_other(=wt_total-wt_force-wt_other)
-32768   0.86994   4.1001e15  0.562725  0.0316104  0.2756046
-131072  0.989176  1.455e16   0.605716  0.0854418  0.2980182

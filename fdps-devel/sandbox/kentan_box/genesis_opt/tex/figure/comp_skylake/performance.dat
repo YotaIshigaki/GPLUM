@@ -1,8 +1,0 @@
-# architecture 		time 		Gflops ninteraction
-# N^2, coulomb only, no cutoff (N = 32768 for skylake, 256*512 for A64FX) 73 flops / interaction
-skylake			0.84758		51.94	1073709056
-A64FX(simulator)	0.001645	22.94	1048320
-
-
-# makino kernel (Naiive)
-skylake			0.931879	81.81	1073709056
