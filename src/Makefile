@@ -1,4 +1,4 @@
-#PS_PATH_FDPS = ../FDPS-7.0/src/
+#PS_PATH_FDPS = ../FDPS/src/
 PS_PATH_FDPS = ../fdps-devel/src/
 PS_PATH_PIKG = ../PIKG/inc/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
