@@ -1,0 +1,512 @@
+\texttt{PS::Vector2} has two components: \texttt{x} and \texttt{y}.
+We define various APIs and operators for these components.
+In the following, we list them.
+
+%%PS::Vector2はx, yの2要素を持つ。これらに対する様々なAPIや演算子を定義
+%%した。それらの宣言を以下に記述する。この節ではこれらについて詳しく記
+%%述する。
+\begin{lstlisting}[caption=Vector2]
+namespace ParticleSimulator{
+    template <typename T>
+    class Vector2{
+    public:
+        // Two member variables
+        T x, y;
+
+        // Constructors
+        Vector2();
+        Vector2(const T _x, const T _y) : x(_x), y(_y) {}
+        Vector2(const T s) : x(s), y(s) {}
+        Vector2(const Vector2 & src) : x(src.x), y(src.y) {}
+
+        // Assignment operator
+        const Vector2 & operator = (const Vector2 & rhs);
+
+        //[] operators
+        const T & opertor[](const int i);
+        T & operator[](const int i);
+
+        // Addition and subtraction
+        Vector2 operator + (const Vector2 & rhs) const;
+        const Vector2 & operator += (const Vector2 & rhs);
+        Vector2 operator - (const Vector2 & rhs) const;
+        const Vector2 & operator -= (const Vector2 & rhs);
+
+        // Scalar multiplication
+        Vector2 operator * (const T s) const;
+        const Vector2 & operator *= (const T s);
+        friend Vector2 operator * (const T s,
+                                   const Vector2 & v);
+        Vector2 operator / (const T s) const;
+        const Vector2 & operator /= (const T s);
+
+        // Inner product (scalar product)
+        T operator * (const Vector2 & rhs) const;
+
+        // Outer product (vector product).
+        // Caution: the return value is a scalar value.
+        T operator ^ (const Vector2 & rhs) const;
+
+        // Typecast to Vector2<U>
+        template <typename U>
+        operator Vector2<U> () const;
+    };
+}
+namespace PS = ParticleSimulator;
+\end{lstlisting}
+
+\subsubsubsection{Constructor}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T>::Vector2()
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+None.
+
+\item{{\bf Feature}}
+
+Default constructor. The member variables \texttt{x} and \texttt{y} are initialized as 0.
+%デフォルトコンストラクタ。メンバx,yは0で初期化される。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T>::Vector2(const T_x, const T_y)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{\_x}: Input. Type \texttt{const T}.
+
+\texttt{\_y}: Input. Type \texttt{const T}.
+
+\item{{\bf Feature}}
+
+Values of members \texttt{x} and \texttt{y} are set to values of arguments \texttt{\_x} and \texttt{\_y}, respectively.
+%メンバ{x}、{y}をそれぞれ{\_x}、{\_y}で初期化する。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T>::Vector2(const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+
+\item{{\bf Feature}}
+
+Values of both of members \texttt{x} and \texttt{y} are set to the value of argument \texttt{s}.
+%メンバ{x}、{y}を両方とも{s}の値で初期化する。
+
+\end{itemize}
+
+\subsubsubsection{Copy constructor}
+%\subsubsubsection{コピーコンストラクタ}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T>::Vector2(const PS::Vector2<T> & src)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{src}: Input. Type \texttt{const PS::Vector2$<$T$>$}.
+
+\item{{\bf Feature}}
+
+Copy constructor. The new variable will have the same value as \texttt{src}.
+%コピーコンストラクタ。{src}で初期化する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Member variables}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::Vector2<T>::x;
+
+template<typename T>
+T PS::Vector2<T>::y;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+  
+\item{{\bf function}}
+  
+  Member variables, {x} and {y} can be directly handled.
+  
+\end{itemize}
+
+
+
+
+\subsubsubsection{Assignment operator}
+%\subsubsubsection{代入演算子}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector2<T> & PS::Vector2<T>::operator = 
+                       (const PS::Vector2<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector2$<$T$>$ \&}. Assigns the values of components of \texttt{rhs}
+to its components, and returns the vector itself.
+%%{const PS::Vector2$<$T$>$ \&}型。{rhs}のx,yの値を自身のメンバx,yに代
+%%入し自身の参照を返す。代入演算子。
+
+\end{itemize}
+
+\subsubsubsection{[] operators}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const T & PS::Vector2<T>::operator[]
+                       (const int i);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{i}: input. Type \texttt{const int}.
+
+\item{{\bf Return value}}
+
+Type \texttt{const $<$T$>$ \&}. It returns i-component of the vector.
+
+\item{{\bf Remark}}
+
+This operator would be slower than the direct access of the member variables.
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T & PS::Vector2<T>::operator[]
+                       (const int i);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{i}: input. Type \texttt{const int}.
+
+\item{{\bf Return value}}
+
+Type \texttt{$<$T$>$ \&}. It returns i-component of the vector.
+
+\item{{\bf Remark}}
+
+This operator would be slower than the direct access of the member variables.
+
+\end{itemize}
+
+\subsubsubsection{Addition and subtraction}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T> PS::Vector2<T>::operator + 
+               (const PS::Vector2<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector2$<$T$>$}. Add the components of \texttt{rhs} and its
+components, and return the results.
+%%{PS::Vector2$<$T$>$}型。{rhs}のx,yの値と自身のメンバx,yの値の和を取っ
+%%た値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector2<T> & PS::Vector2<T>::operator += 
+                       (const PS::Vector2<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector2$<$T$>$ \&}. Add the components of \texttt{rhs} to its
+components, and return itself (lhs is changed).
+%%{const PS::Vector2$<$T$>$ \&}型。{rhs}のx,yの値を自身のメンバx,yに足
+%%し、自身を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T> PS::Vector2<T>::operator - 
+               (const PS::Vector2<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector2$<$T$>$}. Subtract the components of \texttt{rhs} from its
+components, and return the results.
+%%{PS::Vector2$<$T$>$}型。{rhs}のx,yの値と自身のメンバx,yの値の差を取っ
+%%た値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector2<T> & PS::Vector2<T>::operator -= 
+                       (const PS::Vector2<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector2$<$T$>$ \&}. Subtract the components of \texttt{rhs} from
+its components, and return itself (lhs is changed).
+%%{const PS::Vector2$<$T$>$ \&}型。自身のメンバx,yから{rhs}のx,yを引き
+%%自身を返す。
+
+\end{itemize}
+
+\subsubsubsection{Scalar multiplication}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T> PS::Vector2<T>::operator * (const T s) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+%{s}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector2$<$T$>$}. Multiply its components by \texttt{s}, and return
+the results.
+%%{PS::Vector2$<$T$>$}型。自身のメンバx,yそれぞれに{s}をかけた値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector2<T> & PS::Vector2<T>::operator *= (const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const T}.
+%{rhs}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector2$<$T$>$ \&}. Multiply its components by \texttt{s},
+and return itself (lhs is changed).
+%%{const PS::Vector2$<$T$>$ \&}型。自身のメンバx,yそれぞれに{s}をかけ自
+%%身を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::Vector2<T> PS::Vector2<T>::operator / (const T s) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+%{s}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::Vector2$<$T$>$}. Divide its components by \texttt{s}, and return
+the results.
+%%{PS::Vector2$<$T$>$}型。自身のメンバx,yそれぞれを{s}で割った値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::Vector2<T> & PS::Vector2<T>::operator /= (const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const T}.
+%{rhs}: 入力。{const T}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::Vector2$<$T$>$ \&}. Divide its components by \texttt{s}, and
+return itself (lhs is changed).
+%%{const PS::Vector2$<$T$>$ \&}型。自身のメンバx,yそれぞれを{s}で割り自
+%%身を返す。
+
+\end{itemize}
+
+\subsubsubsection{Inner and outer products}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::Vector2<T>::operator * (const PS::Vector2<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{T}. Take inner product of it and \texttt{rhs}, and return the result.
+%{T}型。自身と{rhs}の内積を取った値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::Vector2<T>::operator ^ (const PS::Vector2<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::Vector2$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::Vector2$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{T}. Take outer product of it and \texttt{rhs}, and return the results.
+%{T}型。自身と{rhs}の外積を取った値を返す。
+
+\end{itemize}
+
+\subsubsubsection{Typecast to Vector2$<$U$>$}
+%\subsubsubsection{{Vector2$<$U$>$}への型変換}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+template <typename U>
+PS::Vector2<T>::operator PS::Vector2<U> () const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+%  なし。
+
+\item{{\bf Return value}}
+
+  Type \texttt{const PS::Vector2$<$U$>$}.
+%  {const PS::Vector2$<$U$>$}型。
+
+\item{{\bf Feature}}
+
+  Typecast from type \texttt{const PS::Vector2$<$T$>$} to type \texttt{const
+  PS::Vector2$<$U$>$}.
+%%  {const PS::Vector2$<$T$>$}型を{const PS::Vector2$<$U$>$}型にキャス
+%%  トする。
+
+\end{itemize}
+
+

@@ -1,0 +1,38 @@
+set lmargin 7
+set rmargin 2
+set tmargin 2
+set bmargin 3
+
+set term po co eps enhanced "TimesNewRoman"
+set output "tmp.eps"
+
+set si ra 1
+set si 0.8
+
+set xrange [-8:6]
+#set xtic -8, 4, 8
+#set mxtic 4
+set xtic -10, 20, 10
+set mxtic 0
+set format x ""
+
+set yrange [-8:6]
+set ytic -10, 20, 10
+set mytic 0
+set format y ""
+
+unset key
+
+set origin 0, 0
+
+set pm3d
+set pm3d map
+set ticslevel 0
+set cbrange[0:1]
+#set palette defined (0 "white", 0.5 "gray", 1 "black")
+set palette defined (0 "black", 0.5 "light-blue", 1 "white")
+unset colorbox
+
+splot \
+"out/mapDensity.dat" with pm3d, \
+"out/dd.txt" w l lt 1 lw 0.5 lc rgb "#ffffff"

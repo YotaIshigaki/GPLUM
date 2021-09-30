@@ -1,0 +1,68 @@
+EPI U32    ti:type
+EPI F32vec ri:pos
+EPI F32vec vi:vel
+EPI F32    hi:h
+
+EPJ U32    tj:type
+EPJ F32vec rj:pos
+EPJ F32vec vj:vel
+EPJ F32    mj:mass
+EPJ F32    uj:eng
+
+FORCE F32 dens:dens
+FORCE F32 pres:pres
+FORCE F32 gradh:gradh
+FORCE F32 divv:divv
+FORCE F32 rotv:rotv
+
+F32 gamma
+
+function gradW(dr,h)
+  r = sqrt(dr * dr)
+  u = r*inv(h)
+  p1u = 1.0f - u
+  h2 = h*h
+  h5 = h2*h2*h
+  coeff = 1155.0f * inv(12.5663706144f * h5)
+  p1u2 = p1u*p1u
+  p1u5 = p1u2*p1u2*p1u
+  return - coeff * p1u5 * (1.0f + 5.0f * u)
+end
+
+function W(r,h)
+  u = r*inv(h)
+  p1u = max(0.0f, 1.0f - u)
+  coeff = 495.0f * inv(100.530964915f * h*h*h)
+  p1u2 = p1u*p1u
+  p1u6 = p1u2 * p1u2 * p1u2
+  return coeff * p1u6 * (1.0f + u * (6.0f + 11.6666666667f * u))
+end
+
+function dwdh(r,h)
+  u = r*inv(h)
+  p1u = max(0.0f, 1.0f - u)
+  h2 = h*h
+  coeff = 165.0f * inv(100.530964915f * h2*h2)
+  p1u2 = p1u * p1u
+  p1u5 = p1u2 * p1u2 * p1u
+  return -coeff*p1u5*(9.0f + u*(45.0f + u*(-5.0f - 385.0f*u)))
+end
+
+g1u = gamma - 1.0f
+dr = ri - rj
+dv = vi - vj
+if tj > 0.0
+rij = sqrt(dr*dr)
+else
+rij = 2.0f * hi
+endif
+wij = W(rij,hi)
+dens += mj*wij
+pres += g1u * mj * uj * wij
+dwdh_ij = dwdh(rij,hi)
+gradh += g1u*mj*uj*dwdh_ij
+divv -= g1u * mj * uj * (dr * dv) * gradW(dr,hi)
+tmp.x = dv.y * dr.z - dv.z * dr.y
+tmp.y = dv.z * dr.x - dv.x * dr.z
+tmp.z = dv.x * dr.y - dv.y * dr.z
+rotv -= g1u * mj * uj * tmp

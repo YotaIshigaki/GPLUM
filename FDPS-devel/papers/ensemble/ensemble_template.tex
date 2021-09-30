@@ -1,0 +1,238 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% 分子シミュレーション研究会会誌「アンサンブル」用テンプレートファイル
+%
+% Ver. 3.0  2016/07/08
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[twocolumn,10pt]{jarticle}
+\usepackage[reviewb]{ensemble}
+%
+% === 使用方法 ===
+%
+% \usepackage[option]{ensemble}
+%
+% option のところを，記事の種類に合わせて変更してください．
+% 
+% review : 論文・研究紹介（著者一人）
+% reviewb : 論文・研究紹介（著者二人）
+% intro : 特集の前書き，研究室紹介，海外紹介（著者一人）
+% introb : 特集の前書き，研究室紹介（著者二人）
+% report : 夏の学校報告等（著者有り、著者紹介無し）
+% noauther : 報告（著者無し）
+%
+% amsmath, amssymb, cite, color, graphicx, here, 
+% は，ensemble.sty の中で読み込まれています．
+%
+\setcounter{page}{101}  % 開始ページ (編集委員用)
+
+\title{% タイトル
+[1]分子シミュレーション研究会会誌の書き方
+}
+
+\author{% 著者名
+分子太郎
+}
+
+\email{% e-mail address
+bunshi@aaa.bbb.ccc
+}
+
+\affiliation{% 所属
+分子大学\quad シミュレーション学部
+}
+
+\career{% 著者紹介
+分子太郎(博士(理学))：〔経歴〕1980年分子科学大学理工学研究科博士課程修了，同年分子科学研究所に入所．1990年から現所属．〔専門〕統計力学，液体論．〔趣味〕演劇鑑賞．\\
+写真サイズは縦35mm横25mm程度．
+}
+
+% 第2著者
+\authorb{原子次郎}
+\emailb{genshi@aaa.bbb.ccc}
+\affiliationb{% 所属
+原子大学\quad シミュレーション学部
+}
+\careerb{% 著者紹介
+原子次郎(博士(工学))：〔経歴〕1985年原子科学大学理工学研究科博士課程修了，同年原子科学研究所に入所．1995年から現所属．〔専門〕原子力工学〔趣味〕演劇鑑賞．\\
+写真サイズは縦35mm横25mm程度．
+}
+
+\abst{% 概要
+　数行程度（概要の部分は、1段組）\\
+\textcolor{red}{(1行あける)}}
+
+\keyword{% キーワード
+５〜１０個程度　（キーワードの部分は、1段組）\\
+\textcolor{red}{(1行あける)}}
+
+% 顔写真のファイル名．デフォルトはphoto.eps, photob.eps
+% 第1著者
+\photofile{photo.eps} 
+% 第2著者
+\photofileb{photob.eps} 
+
+%------------------------------------------------------------------------
+% ユーザー定義のマクロはここに書く．
+%------------------------------------------------------------------------
+%\renewcommand{\v}[1]{{\bf #1}}
+%\newcommand{\ave}[1]{\left< #1 \right>}
+%------------------------------------------------------------------------
+\begin{document}
+\maketitle
+%------------------------------------------------------------------------
+% 原稿ここから
+%------------------------------------------------------------------------
+
+\section{はじめに}
+以下の注意事項に留意して，原稿を作成すること．\\
+\textcolor{red}{(1行あける)}
+%
+\section{「アンサンブル」用原稿作成上の注意}
+
+\subsection{標準形式}
+原稿はMicrosoft Word，TeX等を用いて作成し，図や写真等は原稿に張り込み一つのファイルとして完結させる．原稿の標準形式を表\ref{format-table}に示す．
+
+\begin{table}[H]
+\caption{原稿の標準形式}
+\begin{tabular}{|c|l|}
+\hline
+用紙サイズ  &  A4縦長(210mm×297mm)，横書き  \\
+\hline
+余白サイズ  &
+\begin{minipage}{17zw}
+上余白28mm，下余白20mm  \par
+左余白20mm，右余白20mm
+\end{minipage}  \\
+\hline
+タイトル  &
+\begin{minipage}{17zw}
+1段組，所属，著者氏名，emailを明記
+\end{minipage}  \\
+\hline
+本文  &
+\begin{minipage}{17zw}
+2段組，1段80mm，段間隔余白10mm
+\end{minipage}  \\
+\hline
+活字  &
+\begin{minipage}{17zw}
+10ポイント(10×0.3514mm) \par
+タイトル \par
+\qquad   \textsf{MSゴシック体} \par
+所属，著者氏名 \par
+\qquad   \textsf{MSゴシック体} \par
+著者email \par
+\qquad   {\fontfamily{phv}\fontseries{m}\fontshape{n}\selectfont Arial} \par
+本文  \par
+\qquad   {\mc MS明朝体} \par
+見出し \par
+\qquad   \textsf{MSゴシック体} \par
+英文字・数字 \par
+\qquad   \textrm{Times New Roman}\par
+\qquad   または\textrm{Symbol}
+\end{minipage}  \\
+\hline
+1行の字数  &  1段あたり23文字程度  \\
+\hline
+行送り  &
+\begin{minipage}{17zw}
+15ポイント(15×0.3514=5.271mm)\par
+1ページあたり45行
+\end{minipage}  \\
+\hline
+\end{tabular}
+\label{format-table}
+\end{table}
+
+
+\subsection{見出しなど}
+見出しは\textgt{ゴシック体}を用い，大見出しは左寄せして前に1行空ける．中見出しは2.2などのように番号をつけ左寄せする．見出しの数字は半角とする．行の始めに，括弧
+やハイフン等がこないように禁則処理を行うこと．
+\\
+
+\subsection{句読点}
+句読点は　，および　．を用い，　、や　。は避けること．
+\\
+
+\subsection{図について}
+図中のフォントは本文中のフォントと同じものを用いること．図や表はなるべく上側か下側の隅に固めること．
+\\
+
+\subsection{参考文献について}
+\subsubsection{番号の付け方}
+参考文献は本文中の該当する個所に\cite{ueda}，\cite{ueda,metropolis}，
+\cite{ueda,alder,metropolis,allen}のように番号を入れて示す．
+\\
+%それぞれ [1],[1,3],[1-4]のように表示される
+
+\subsubsection{参考文献の引き方}
+著者名，誌名，巻，頁，年の順とする．毎号頁の改まる雑誌は巻-号数のようにして号数
+も入れる．著者名は，名前のイニシャル．名字，のように記述する．雑誌名の省略法は科学技術文献速報(JICST)に準拠する．文献の表題は省略する．日本語の雑誌・書籍の場合
+は著者名・書名とも省略しない．
+\\
+
+\section{TeX で執筆する場合}
+TeX で原稿を執筆する場合はアンサンブル用のスタイルファイル ensemble.sty を使用すること.  
+\begin{verbatim}
+\documentclass[twocolumn,10pt]{jarticle}
+\usepackage[option]{ensemble}	
+\end{verbatim}
+\verb|option| に指定できるコマンド一覧を表~\ref{option}に示す.
+執筆する記事の内容（著者表示の有無, 著者紹介の有無, 概要・キーワードの有無）にあわせて使い分けること.
+\verb|option| を省略すると \verb|noauther| と同じになる.
+よく使用される \verb|amsmath|, \verb|amssymb|, \verb|cite|, \verb|color|, \verb|graphicx|, \verb|here|  は \verb|ensemble.sty| の中で読み込まれるため, \verb|\usepackage{...}| を使用して定義する必要はない.
+
+
+
+\begin{table}[H]
+\caption{オプション一覧.}
+\begin{tabular}{|c|l|}
+\hline
+ \verb|option| & 用途\\
+\hline\hline
+ \verb|review| & 研究紹介（単著用） \\
+\hline
+ \verb|reviewb| & 研究紹介（著者2人用） \\
+\hline
+ \verb|intro| & 研究以外の記事 (概要・キーワード無し)\\
+\hline
+ \verb|introb| & 研究以外の記事（同上, 著者2人用） \\
+\hline
+ \verb|report| & 夏の学校等(著者有, 著者紹介無し)\\
+\hline
+ \verb|noauther| & 幹事会報告, 事務局連絡(タイトル\&本文)\\
+\hline
+\end{tabular}  
+\label{option}
+\end{table}
+
+
+
+
+
+% 謝辞
+\acknowledgement{○○氏に感謝します．}
+
+% 参考文献
+\begin{thebibliography}{9}
+\bibitem{ueda}
+上田顕，分子シミュレーション—古典系から量子系手法まで−，裳華房 (2003)．
+\bibitem{alder} B. J. Alder and T. E. Wainwright, \textit{J. Chem. Phys.}, {\bf 27}, 1208 (1957).
+\bibitem{metropolis} N. Metropolis, A. W. Rosenbluth, M. N. Rosenbluth, A. H. Teller and E. Teller, \textit{J. Chem. Phys.}, {\bf 21}, 1087 (1953).
+\bibitem{allen} M. P. Allen and D. J. Tildesley, \textit{Computer Simulation of Liquids}, Oxford University Press Inc., New York (1987).
+\end{thebibliography}
+
+%------------------------------------------------------------------------
+% 原稿ここまで
+%------------------------------------------------------------------------
+
+% 著者紹介出力
+\profile
+
+
+
+
+\end{document}
+

@@ -23,13 +23,7 @@ class Collision : public Collision0 {
             N_frag = std::atoi(value.c_str());
         }
     }
-    static void showParameter() {
-        std::cout << std::fixed<<std::setprecision(5)
-                  << "a_frag        = " << a_frag << std::endl
-                  << "N_frag        = " << N_frag << std::endl;
-                  
-    }
-    static void showParameter(std::ofstream & fout) {
+    static void showParameter(std::ostream & fout = std::cout) {
         fout << std::fixed<<std::setprecision(5)
              << "a_frag        = " << a_frag << std::endl
              << "N_frag        = " << N_frag << std::endl;
@@ -43,8 +37,8 @@ PS::S32 Collision::N_frag = 10;
 template <class Tp>
 inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 {
-    const PS::F64 dens  = FPGrav::dens;
-    const PS::F64 eps2  = FPGrav::eps2;
+    const PS::F64 dens  = FP_t::dens;
+    const PS::F64 eps2  = FP_t::eps2;
     
     //Number of Fragments
     n_frag = (PS::S32)floor(a_frag * mass_imp / m_min);
@@ -63,9 +57,9 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         PS::F64vec ximp = pos_imp - pos_tar;
         PS::F64vec vimp = vel_imp - vel_tar;
         PS::F64    f_frag        = f_imp;
-        PS::F64    r_planet_frag = pow(0.75*mass_frag/n_frag/(M_PI*dens), 1./3.);
+        PS::F64    r_planet_frag = pow(0.75*mass_frag/n_frag/(MY_PI*dens), 1./3.);
         PS::F64    r_planet_rem  = pow(mass_rem/mass_tar, 1./3.) * r_planet_tar;
-        //PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(M_PI*dens), 1./3.);
+        //PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(MY_PI*dens), 1./3.);
         PS::F64 r_frag = 2. * std::max(f_tar, f_frag) * (r_planet_frag + r_planet_rem);
         PS::F64 r2_frag = r_frag*r_frag + eps2;
         PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
@@ -133,19 +127,7 @@ class Collision : public Collision0 {
             eps_t = getvalue(value, 1., 1.);
         } 
     }
-    static void showParameter() {
-        const PS::F64 L = 14959787070000;
-        const PS::F64 M = 1.9884e33;
-        std::cout << std::scientific << std::setprecision(15)
-                  << "N_frag        = " << N_frag << std::endl
-                  << "dens_imp      = " << dens << "\t(" << dens*M/(L*L*L) << " g/cm^3)"<< std::endl
-                  << "c_s           = " << c_s << std::endl
-                  << "mu_           = " << mu_ << std::endl
-                  << "eta_          = " << eta_ << std::endl
-                  << "eps_n         = " << eps_n << std::endl
-                  << "eps_t         = " << eps_t << std::endl;
-    }
-    static void showParameter(std::ofstream & fout) {
+    static void showParameter(std::ostream & fout = std::cout) {
         const PS::F64 L = 14959787070000;
         const PS::F64 M = 1.9884e33;
         fout << std::scientific << std::setprecision(15)
@@ -170,7 +152,7 @@ PS::F64 Collision::eps_t  = 1.;
 template <class Tp>
 inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 {
-    const PS::F64 eps2  = FPGrav::eps2;    
+    const PS::F64 eps2  = FP_t::eps2;    
     const PS::F64 c1 = 2.43;
     const PS::F64 c2 = -0.0408;
     const PS::F64 c3 = 1.86;
@@ -178,11 +160,11 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
     const PS::F64vec ximp = pos_imp - pos_tar;
     const PS::F64vec vimp = vel_imp - vel_tar;
 
-    //PS::F64 R_tar = pow(0.75*mass_tar/(M_PI*FPGrav::dens), 1./3.);
-    //PS::F64 R_imp = pow(0.75*mass_imp/(M_PI*FPGrav::dens), 1./3.);
+    //PS::F64 R_tar = pow(0.75*mass_tar/(MY_PI*FP_t::dens), 1./3.);
+    //PS::F64 R_imp = pow(0.75*mass_imp/(MY_PI*FP_t::dens), 1./3.);
     PS::F64 R_tar = r_planet_tar;
     PS::F64 R_imp = r_planet_imp;
-    PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(M_PI*dens), 1./3.);
+    PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(MY_PI*dens), 1./3.);
     PS::F64 b0 = sin(col_angle);
     PS::F64 b  = b0;
     PS::F64 vel_impact = sqrt(vimp*vimp); // impact velocity corrected for enhancement factor
@@ -206,14 +188,14 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 #endif
 
     PS::F64 dens_mean = 0.75 * (mass_imp + mass_tar)
-        /(M_PI * (r_planet_imp*r_planet_imp*r_planet_imp + r_planet_tar*r_planet_tar*r_planet_tar));
+        /(MY_PI * (r_planet_imp*r_planet_imp*r_planet_imp + r_planet_tar*r_planet_tar*r_planet_tar));
     
     PS::F64 gamma = mass_imp / mass_tar;
     PS::F64 Gamma = (1.-gamma)*(1.-gamma)/((1.+gamma)*(1.+gamma));
 
     PS::F64 mu = mass_imp * mass_tar / ( mass_imp + mass_tar );
     PS::F64 Q = mu * vel_impact*vel_impact / (2.*(mass_imp+mass_tar));
-    PS::F64 Q_0 = c_s * 0.8 * M_PI * dens * R*R;
+    PS::F64 Q_0 = c_s * 0.8 * MY_PI * dens * R*R;
 
     PS::F64 l = (R_tar + R_imp)*(1.-b);
     PS::F64 alpha = ( l < 2.*R_imp ) ? (3.*R_imp*l*l-l*l*l)/(4.*R_imp*R_imp*R_imp) : 1.;
@@ -247,7 +229,7 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         if ( n_frag ) {
             PS::F64vec ximp = pos_imp - pos_tar;
             PS::F64vec vimp = vel_imp - vel_tar;
-            PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(M_PI*dens_mean), 1./3.);
+            PS::F64 r_frag = 2. * f * pow(0.75*mass_rem/(MY_PI*dens_mean), 1./3.);
             PS::F64 r2_frag = r_frag*r_frag + eps2;
             PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
             PS::F64 v_frag = 1.05 * sqrt( 2. * mass_rem * r_frag_inv );
@@ -282,8 +264,8 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         PRC(l/R_imp);PRL(beta);
         //assert ( 0. <= beta && beta <= 1. );
         gamma = beta * mass_tar / mass_imp;
-        R = pow(0.75*(mass_imp + beta*mass_tar)/(M_PI*dens_mean), 1./3.);
-        Q_0 = c_s * 0.8 * M_PI * dens * R*R;
+        R = pow(0.75*(mass_imp + beta*mass_tar)/(MY_PI*dens_mean), 1./3.);
+        Q_0 = c_s * 0.8 * MY_PI * dens * R*R;
         Q_s = pow(0.25*(gamma+1.)*(gamma+1.)/gamma, 2./(3.*mu_)-1.) * Q_0;
 
         mu = mass_imp * beta*mass_tar / ( mass_imp + beta*mass_tar );
@@ -313,7 +295,7 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
         if ( n_frag ) {
             PS::F64vec ximp = pos_imp - pos_tar;
             PS::F64vec vimp = vel_imp - vel_tar;
-            PS::F64 r_frag = 2. * f * pow(0.75*(mass_tar+mass_rem)/(M_PI*dens_mean), 1./3.);
+            PS::F64 r_frag = 2. * f * pow(0.75*(mass_tar+mass_rem)/(MY_PI*dens_mean), 1./3.);
             PS::F64 r2_frag = r_frag*r_frag + eps2;
             PS::F64 r_frag_inv = sqrt( 1. / r2_frag );
             PS::F64 v_frag = 1.05 * sqrt( 2. * mass_rem * r_frag_inv );
@@ -369,6 +351,135 @@ inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
 #if 1
     }
 #endif
+    
+    return n_frag;
+}
+
+#elif defined(SHIBATA)
+
+class Collision : public Collision0 {
+ public:
+    static PS::F64 eps_n;
+    static PS::F64 eps_t;
+
+    template <class Tp>
+    PS::S32 collisionOutcome(std::vector<Tp> & pfrag);
+
+    static void readParameter(std::string name,
+                              std::string value){
+        //const PS::F64 L_MKS = 149597870700;
+        //const PS::F64 L_CGS = 14959787070000;
+        //const PS::F64 M_MKS = 1.9884e30;
+        //const PS::F64 M_CGS = 1.9884e33;
+        if ( name == "eps_n" ){
+            eps_n = getvalue(value, 1., 1.);
+        } else if ( name == "eps_t" ){
+            eps_t = getvalue(value, 1., 1.);
+        } 
+    }
+    static void showParameter(std::ostream & fout = std::cout) {
+        //const PS::F64 L = 14959787070000;
+        //const PS::F64 M = 1.9884e33;
+        fout << std::scientific << std::setprecision(15)
+             << "eps_n         = " << eps_n << std::endl
+             << "eps_t         = " << eps_t << std::endl;
+    }
+};
+
+PS::F64 Collision::eps_n  = 1.;
+PS::F64 Collision::eps_t  = 1.;
+
+template <class Tp>
+inline PS::S32 Collision::collisionOutcome(std::vector<Tp> & pfrag)
+{
+    const PS::F64 eps2  = FP_t::eps2;    
+    //const PS::F64 c1 = 2.43;
+    //const PS::F64 c2 = -0.0408;
+    //const PS::F64 c3 = 1.86;
+    //const PS::F64 c4 = 1.08;
+    const PS::F64 c1 = -0.00863;
+    const PS::F64 c2 = -0.107;
+    const PS::F64 c3 = 1.73;
+    const PS::F64 c4 = 1.11;
+    const PS::F64 c5 = 1.94;
+    const PS::F64vec ximp = pos_imp - pos_tar;
+    const PS::F64vec vimp = vel_imp - vel_tar;
+
+    PS::F64 R_tar = r_planet_tar;
+    PS::F64 R_imp = r_planet_imp;
+    //PS::F64 R = pow(0.75*(mass_imp + mass_tar)/(MY_PI*dens), 1./3.);
+    PS::F64 b0 = sin(col_angle);
+    PS::F64 b  = b0;
+    PS::F64 vel_impact = sqrt(vimp*vimp); // impact velocity corrected for enhancement factor
+    PS::F64 vel_escf = sqrt(2.*(mass_imp + mass_tar)/sqrt(ximp*ximp));
+    
+    // Correction for enhancement factor
+#if 1
+    PS::F64 f = (f_imp * r_planet_imp + f_tar * r_planet_tar) / (r_planet_imp + r_planet_tar);
+    if ( f > 1. ) {
+        PS::F64 vel_impactf = vel_impact;
+        PS::F64 theta2 = vel_escf*vel_escf / (vel_impactf*vel_impactf-vel_escf*vel_escf);
+        PS::F64 h = f * sqrt((1.+theta2) / (1.+f*theta2));
+      
+        vel_impact = sqrt(vel_impactf*vel_impactf + (f-1.)*vel_escf*vel_escf);
+        b = f/h * vel_impactf/vel_impact * b;
+        if ( b > 1. ) b = 1.;
+    }
+#endif
+    
+    PS::F64 gamma = mass_imp / mass_tar;
+    PS::F64 Gamma = (1.-gamma)*(1.-gamma)/((1.+gamma)*(1.+gamma));
+
+     mass_frag = 0.;
+     n_frag = 0;
+
+    if ( sqrt(vimp*vimp)/vel_escf < (c1*Gamma+c3)*pow(1.-b0, c5) + c2*Gamma+c4 ){ // Merge
+        
+        //Position & Velocity
+        pos_imp_new = pos_tar_new = (mass_imp*pos_imp + mass_tar*pos_tar)/(mass_imp+mass_tar);
+        vel_imp_new = vel_tar_new = (mass_imp*vel_imp + mass_tar*vel_tar)/(mass_imp+mass_tar);
+        //HitAndRun = false;
+        flag_merge = 1;
+        
+    } else { // Hit-and-Run
+        flag_merge = 0;
+
+        PS::F64vec e_n = ximp/sqrt(ximp*ximp);
+        PS::F64vec e_t = vimp - (vimp*e_n) * e_n;
+        e_t /= sqrt(e_t*e_t);
+        
+        PS::F64 vel_imp_n = (vel_imp-vel_g)*e_n;
+        PS::F64 vel_tar_n = (vel_tar-vel_g)*e_n;
+        PS::F64 vel_imp_t = (vel_imp-vel_g)*e_t;
+        PS::F64 vel_tar_t = (vel_tar-vel_g)*e_t;
+        
+        PS::F64 vel_imp_new_n = -eps_n * mass_tar * (vel_imp_n - vel_tar_n);
+        PS::F64 vel_tar_new_n =  eps_n * mass_imp * (vel_imp_n - vel_tar_n);
+        PS::F64 vel_imp_new_t =  eps_t * mass_tar * (vel_imp_t - vel_tar_t);
+        PS::F64 vel_tar_new_t = -eps_t * mass_imp * (vel_imp_t - vel_tar_t);
+        vel_imp_new_n /= (mass_imp+mass_tar);
+        vel_tar_new_n /= (mass_imp+mass_tar);
+        vel_imp_new_t /= (mass_imp+mass_tar);
+        vel_tar_new_t /= (mass_imp+mass_tar);
+        //assert( vel_imp_new_n > 0. );
+        //assert( vel_imp_tar_n < 0. );
+
+        pos_tar_new = pos_tar;
+        pos_imp_new = pos_imp;
+#if 1
+        PS::F64vec pos_g_new = (mass_imp*pos_imp_new + mass_tar*pos_tar_new) / (mass_imp+mass_tar);
+        PS::F64vec ximp_new  = pos_imp_new - pos_tar_new;
+        PS::F64    rimp_new  = sqrt(ximp_new*ximp_new);
+        PS::F64    f_rimp    = vel_imp_new_n/std::abs(vel_imp_new_n) * std::max(1., 1.01 * f*(R_tar+R_imp)/rimp_new);
+        pos_imp_new = pos_g_new
+            + f_rimp * mass_tar/(mass_imp+mass_tar) * ximp_new;
+        pos_tar_new = pos_g_new
+            - f_rimp * mass_imp/(mass_imp+mass_tar) * ximp_new;
+#endif
+        
+        vel_tar_new = vel_g + vel_tar_new_n*e_n + vel_tar_new_t*e_t;
+        vel_imp_new = vel_g + vel_imp_new_n*e_n + vel_imp_new_t*e_t;
+    }
     
     return n_frag;
 }

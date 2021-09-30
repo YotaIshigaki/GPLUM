@@ -1,0 +1,11 @@
+# The elapsed time against the number of particles per process.
+# - measured at K-computer
+# - n_proc = 1024, n_threads = 8, \theta = 0.5
+# - SPJQuadrupoleGeometricCenter
+# - dipole and quadrupole are taken into account to calculate force
+# - elapsed time is averaged over 64 steps.
+
+1.0e3    0.0715715036203619
+1.0e4    0.226303444884252
+1.0e5    2.07483834470622
+1.0e6    24.1971577755176

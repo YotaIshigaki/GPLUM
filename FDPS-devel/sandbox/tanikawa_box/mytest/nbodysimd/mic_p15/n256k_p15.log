@@ -1,0 +1,95 @@
+n_tot = n_tot = n_tot = 262288
+262288
+262288
+n_tot = n_tot = n_tot = 262288
+n_tot = 262288
+262288
+     //==================================\\
+     ||                                  ||
+     || ::::::: ::::::. ::::::. .::::::. ||
+     || ::      ::    : ::    : ::       ||
+     || ::::::  ::    : ::::::'  `:::::. ||
+     || ::      ::::::' ::      `......' ||
+     ||     Framework for Developing     ||
+     ||        Particle Simulator        ||
+     ||     Version 1.1 (2015/08)        ||
+     \\==================================//
+
+       Home   : https://github.com/fdps/fdps 
+       E-mail : fdps-support@mail.jmlab.jp
+       Licence: MIT (see, https://github.com/FDPS/FDPS/blob/master/LICENSE)
+       Note   : Please cite Iwasawa et al. (in prep.)
+
+       Copyright (C) 2015 
+         Masaki Iwasawa, Ataru Tanigawa, Natsuki Hosono,262288
+n_tot = 262288
+n_tot = 262288
+
+         Keigo Nitadori, Takayuki Muranushi, Junichiro Makino
+         and many others
+******** FDPS has successfully begun. ********
+n_tot = 262288
+n_tot = ./result/t-de.dat
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+n_tot = 262288n_tot = 262288
+./result/t-de.dat
+./result/t-de.dat
+262288
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+
+./result/t-de.dat
+./result/t-de.dat
+./result/t-de.dat
+Directory "./result" is successfully made.
+./result/t-de.dat
+n_tot = 262288
+./result/t-de.dat
+Number of processes: 15
+Number of threads per process: 16
+np_ave=17485
+used mem size for tree=56246560
+used mem size for tree(0)=0.05624656
+time:  0.0000000 energy: -2.000069e-01 energy error: -0.000000e+00 wtime: +5.740e+00 +inf
+time:  0.0000000 energy: -2.000069e-01 energy error: -0.000000e+00 wtime: +5.740e+00 +inf
+time:  0.1250000 energy: -2.000063e-01 energy error: -2.776710e-06 wtime: +4.014e+00 +2.509e-01
+time:  0.1250000 energy: -2.000063e-01 energy error: -2.776710e-06 wtime: +4.014e+00 +2.509e-01
+time:  0.2500000 energy: -2.000059e-01 energy error: -5.049070e-06 wtime: +3.998e+00 +2.499e-01
+time:  0.2500000 energy: -2.000059e-01 energy error: -5.049070e-06 wtime: +3.998e+00 +2.499e-01
+time:  0.3750000 energy: -2.000049e-01 energy error: -1.006501e-05 wtime: +3.946e+00 +2.466e-01
+time:  0.3750000 energy: -2.000049e-01 energy error: -1.006501e-05 wtime: +3.946e+00 +2.466e-01
+time:  0.5000000 energy: -2.000036e-01 energy error: -1.666840e-05 wtime: +3.978e+00 +2.486e-01
+time:  0.5000000 energy: -2.000036e-01 energy error: -1.666840e-05 wtime: +3.978e+00 +2.486e-01
+time:  0.6250000 energy: -2.000017e-01 energy error: -2.587380e-05 wtime: +4.062e+00 +2.539e-01
+time:  0.6250000 energy: -2.000017e-01 energy error: -2.587380e-05 wtime: +4.062e+00 +2.539e-01
+time:  0.7500000 energy: -1.999995e-01 energy error: -3.690874e-05 wtime: +3.918e+00 +2.449e-01
+time:  0.7500000 energy: -1.999995e-01 energy error: -3.690874e-05 wtime: +3.918e+00 +2.449e-01
+time:  0.8750000 energy: -1.999970e-01 energy error: -4.953630e-05 wtime: +4.000e+00 +2.500e-01
+time:  0.8750000 energy: -1.999970e-01 energy error: -4.953630e-05 wtime: +4.000e+00 +2.500e-01
+time:  1.0000000 energy: -1.999940e-01 energy error: -6.469568e-05 wtime: +1.029e+01 +6.434e-01
+time:  1.0000000 energy: -1.999940e-01 energy error: -6.469568e-05 wtime: +1.029e+01 +6.434e-01
+time:  1.1250000 energy: -1.999904e-01 energy error: -8.247240e-05 wtime: +3.989e+00 +2.493e-01
+time:  1.1250000 energy: -1.999904e-01 energy error: -8.247240e-05 wtime: +3.989e+00 +2.493e-01
+time:  1.2500000 energy: -1.999865e-01 energy error: -1.018997e-04 wtime: +3.992e+00 +2.495e-01
+time:  1.2500000 energy: -1.999865e-01 energy error: -1.018997e-04 wtime: +3.992e+00 +2.495e-01
+time:  1.3750000 energy: -1.999820e-01 energy error: -1.244170e-04 wtime: +3.959e+00 +2.475e-01
+time:  1.3750000 energy: -1.999820e-01 energy error: -1.244170e-04 wtime: +3.959e+00 +2.475e-01
+time:  1.5000000 energy: -1.999770e-01 energy error: -1.495070e-04 wtime: +3.974e+00 +2.484e-01
+time:  1.5000000 energy: -1.999770e-01 energy error: -1.495070e-04 wtime: +3.974e+00 +2.484e-01
+time:  1.6250000 energy: -1.999715e-01 energy error: -1.769544e-04 wtime: +3.952e+00 +2.470e-01
+time:  1.6250000 energy: -1.999715e-01 energy error: -1.769544e-04 wtime: +3.952e+00 +2.470e-01
+time:  1.7500000 energy: -1.999656e-01 energy error: -2.065572e-04 wtime: +3.981e+00 +2.488e-01
+time:  1.7500000 energy: -1.999656e-01 energy error: -2.065572e-04 wtime: +3.981e+00 +2.488e-01
+time:  1.8750000 energy: -1.999591e-01 energy error: -2.391612e-04 wtime: +3.988e+00 +2.493e-01
+time:  1.8750000 energy: -1.999591e-01 energy error: -2.391612e-04 wtime: +3.988e+00 +2.493e-01
+time:  2.0000000 energy: -1.999517e-01 energy error: -2.757674e-04 wtime: +1.025e+01 +6.407e-01
+time:  2.0000000 energy: -1.999517e-01 energy error: -2.757674e-04 wtime: +1.025e+01 +6.407e-01
+time:  2.1250000 energy: -1.999440e-01 energy error: -3.146172e-04 wtime: +3.962e+00 +2.476e-01
+time:  2.1250000 energy: -1.999440e-01 energy error: -3.146172e-04 wtime: +3.962e+00 +2.476e-01
+[mpiexec@cognac0-mic0] Sending Ctrl-C to processes as requested
+[mpiexec@cognac0-mic0] Press Ctrl-C again to force abort

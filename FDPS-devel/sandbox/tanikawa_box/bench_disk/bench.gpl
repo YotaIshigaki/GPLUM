@@ -1,0 +1,76 @@
+set lmargin 7
+set rmargin 2
+set tmargin 2
+set bmargin 3
+
+set size ratio 1
+set size 0.5
+
+set term po eps enhanced font "TimesNewRoman"
+set output "tmp.eps"
+
+set multiplot
+dx=0.27
+dy=0.37
+
+set grid
+
+sinv=1e-9
+
+black="#000000"
+col00="#0000ff"        
+col01="#0080ff"
+col02="#00ffff"
+col03="#00ff80"
+col04="#00ff00"
+col05="#80ff00"
+col06="#ffff00"
+col07="#ff8000"
+col08="#ff0000"
+
+ncore=8
+
+#============================================
+
+set origin dx*0, dy*1
+
+set log x
+set xrange [1e2:1e5]
+set format x ""
+
+set log y
+set yrange [2e0:1e4]
+set format y "10^{%T}"
+set ylabel "Performance [TFLOPS]"
+
+set key bottom right
+
+pl \
+"data/disk_bench_flops.log" u 1:2 ti "MW" w lp lw 3 lt 1 pt 6 lc 7, \
+"data/pl_bench_flops.log"   u 1:2 ti "PL" w lp lw 3 lt 1 pt 2 lc 7, \
+0.5*128*1e-3*x title "50% of TPP" w l lc 1 lt 1 lw 2
+
+#============================================
+
+set origin dx*0, dy*0
+
+set format x "10^{%T}"
+set xlabel "# of nodes"
+
+set yrange [1e-1:1e2]
+set format y "10^{%T}"
+set ylabel "Wallclock time [sec]"
+
+set key top left
+
+pl \
+"data/disk_bench_time.log" u 1:2       noti "DD+EP" w lp lw 2 lt 1 pt 6 lc 3, \
+"data/pl_bench_time.log" u 1:2         noti "DD+EP" w lp lw 2 lt 1 pt 2 lc 3, \
+"data/disk_bench_time.log" u 1:($3+$4) noti "IC"    w lp lw 2 lt 1 pt 6 lc 1, \
+"data/pl_bench_time.log" u 1:($3+$4)   noti "IC"    w lp lw 2 lt 1 pt 2 lc 1, \
+"data/disk_bench_time.log" u 1:6       noti "Total" w lp lw 3 lt 1 pt 6 lc 7, \
+"data/pl_bench_time.log" u 1:6         noti "Total" w lp lw 3 lt 1 pt 2 lc 7, \
+1e-4 ti "Total" w l lw 2 lt 1 lc 7, \
+1e-4 ti "IC"    w l lw 2 lt 1 lc 1, \
+1e-4 ti "DD+EP" w l lw 2 lt 1 lc 3
+

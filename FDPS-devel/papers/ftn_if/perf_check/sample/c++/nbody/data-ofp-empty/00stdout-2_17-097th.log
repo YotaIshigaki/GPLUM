@@ -1,0 +1,30 @@
+     //==================================\\
+     ||                                  ||
+     || ::::::: ::::::. ::::::. .::::::. ||
+     || ::      ::    : ::    : ::       ||
+     || ::::::  ::    : ::::::'  `:::::. ||
+     || ::      ::::::' ::      `......' ||
+     ||     Framework for Developing     ||
+     ||        Particle Simulator        ||
+     ||     Version 4.0 (2017/11)        ||
+     \\==================================//
+
+       Home   : https://github.com/fdps/fdps 
+       E-mail : fdps-support@mail.jmlab.jp
+       Licence: MIT (see, https://github.com/FDPS/FDPS/blob/master/LICENSE)
+       Note   : Please cite Iwasawa et al. (2016, Publications of the Astronomical Society of Japan, 68, 54)
+
+       Copyright (C) 2015 
+         Masaki Iwasawa, Ataru Tanikawa, Natsuki Hosono,
+         Keigo Nitadori, Takayuki Muranushi, Daisuke Namekata,
+         Kentaro Nomura, Junichiro Makino and many others
+******** FDPS has successfully begun. ********
+n_tot = 131072
+Directory "./result" is successfully made.
+This is a sample program of N-body simulation on FDPS!
+Number of processes: 1
+Number of threads per process: 1
+n_loop = 32
+wtime  = 21.2512900829315 [s]
+wtime  = 0.66410281509161 [s/step]
+******** FDPS has successfully finished. ********

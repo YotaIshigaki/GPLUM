@@ -77,13 +77,22 @@ public:
     //PS::F64 edisp;
     Energy e_init;
     Energy e_now;
+
+    void copy(const FileHeader fh) {
+        n_body  = fh.n_body;
+        id_next = fh.id_next;
+        time    = fh.time;
+        e_init  = fh.e_init;
+        e_now   = fh.e_now;
+    }
+    
     PS::S32 readAscii(FILE * fp) {
         if ( !fscanf(fp, "%lf\t%d\t%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\n",
                      &time, &n_body, &id_next,
                      &e_init.etot, &e_init.ekin, &e_init.ephi_sun, &e_init.ephi_planet, &e_init.edisp,
                      &e_now.etot,  &e_now.ekin,  &e_now.ephi_sun,  &e_now.ephi_planet,  &e_now.edisp) ) {
             
-            errorMessage("The header has NOT been correctly written.");
+            errorMessage("The header has NOT been correctly read.");
             PS::Abort();
         }
         return n_body;
@@ -95,7 +104,24 @@ public:
                       e_init.etot, e_init.ekin, e_init.ephi_sun, e_init.ephi_planet, e_init.edisp,
                       e_now.etot,  e_now.ekin,  e_now.ephi_sun,  e_now.ephi_planet,  e_now.edisp) ) {
             
+            errorMessage("The header has NOT been correctly written.");
+            PS::Abort();
+        }
+    }
+    PS::S32 readBinary(FILE * fp) {
+        FileHeader buf;
+        if ( !fread(&buf, sizeof(buf), 1, fp) ) {
             errorMessage("The header has NOT been correctly read.");
+            PS::Abort();
+        }
+        copy(buf);
+        return n_body;
+    }
+    void writeBinary(FILE* fp) const {
+        FileHeader buf;
+        buf.copy(*this);
+        if ( !fwrite(&buf, sizeof(buf), 1, fp) ) {
+            errorMessage("The header has NOT been correctly written.");
             PS::Abort();
         }
     }

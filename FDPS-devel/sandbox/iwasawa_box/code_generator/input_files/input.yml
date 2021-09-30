@@ -1,0 +1,39 @@
+FP:
+- NAME: Star
+  INTERACTION:
+  - Grav
+  OTHERVALS:
+  - PS::S64 id
+  - PS::F64vec vel
+  - PS::F64 age
+- NAME: Gas
+  INTERACTION:
+  - Grav
+  - Dens
+  OTHERVALS:
+  - PS::S64 id
+  - PS::F64vec vel
+  
+INTERACTION:
+- NAME: Grav
+  EPIVALS:
+  - PS::F64vec pos
+  - static PS::F64 eps
+  EPJVALS:
+  - PS::F64vec pos
+  - PS::F64 mass  
+  FORCEVALS:
+  - PS::F64vec acc
+  - PS::F64    pot
+
+- NAME: Dens
+  EPIVALS:
+  - PS::F64vec pos
+  - PS::F64 len
+  EPJVALS:
+  - PS::F64vec pos
+  - PS::F64 mass
+  FORCEVALS:
+  - PS::F64 dens
+
+

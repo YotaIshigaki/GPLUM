@@ -1,140 +1,127 @@
 #pragma once
 
+#define SAFTY_FACTOR 1.05
+
+
+/////////////
+/// Force ///
+/////////////
+
 class ForceGrav{
 public:
     PS::F32vec acc;
     PS::F32    phi;
-    PS::S32 neighbor;
+    PS::S32    neighbor;
+    PS::S32    DUMMY_;
 
-    PS::S32 id_neighbor;
+#ifdef FOR_PIKG01
+    PS::S32    id_neighbor; 
+    PS::S32    id_neighbor_dmmy; 
+#else
+    PS::S64    id_neighbor;        
+#endif
     
     void clear(){
-        acc = 0.;
-        phi = 0.;
-        neighbor = 0;
+        acc         = 0.;
+        phi         = 0.;
+        neighbor    = 0;
 
         id_neighbor = -1;
     }
 };
 
-#define SAFTY_FACTOR 1.05
 
-class EPGrav{
-public:
-    PS::F64vec pos;   // position
-    PS::F64vec vel;   // velocity
-    PS::F64vec acc;   // acceleration for soft part
-    PS::F64vec acc_s; // acceleration of sun for hard part
-    PS::F64vec acc_d; // acceleration of planets for hard part
+//////////////////////////
+/// Essential Particle ///
+//////////////////////////
 
-    PS::F64 mass;     // mass
-    
-    PS::S32 id;       // id number
-    PS::S32 id_local; // local id number
-    PS::S32 myrank;   // MPI rank number
+class EPIGrav{
+public:    
+    PS::F64vec pos;     // position in cartesian
+#ifdef USE_POLAR_COORDINATE
+    PS::F64vec pos_pol; // position in polar
+#endif
 
-    PS::S32 neighbor; // the number of neighbors
+#ifdef FOR_PIKG01
+    PS::S32 id;
+    PS::S32 id_dmmy;
+#else
+    PS::S64 id;           // id number
+#endif
 
 #ifdef USE_INDIVIDUAL_CUTOFF
-    PS::F64 r_out;
-    PS::F64 r_out_inv;
-    PS::F64 r_search;
-#else //USE_INDIVIDUAL_CUTOFF
+    PS::F64 r_out;        // cut-off radius
+    PS::F64 r_search;     // search radius
+#else
     static PS::F64 r_out;
-    static PS::F64 r_out_inv;
     static PS::F64 r_search;
-#endif //USE_INDIVIDUAL_CUTOFF
+#endif
 
-    static PS::F64 eps2;
-    static PS::F64 R_cut0;
-    static PS::F64 R_cut1;
-    static PS::F64 R_search0;
-    static PS::F64 R_search1;
-#ifdef USE_RE_SEARCH_NEIGHBOR
-    static PS::F64 R_search2;
-    static PS::F64 R_search3;
+    PS::F64vec getPos() const {
+#ifdef USE_POLAR_COORDINATE
+        return pos_pol;
+#else
+        return pos;
 #endif
-    static PS::F64 gamma;
-    static PS::F64 g_1_inv;  // 1/(g-1)
-    static PS::F64 g_1_inv7; // 1/(g-1)^7
-    static PS::F64 w_y;      // dW/dy if  y<g
-    static PS::F64 f1;       // f(1;g)
+    }
+    PS::F64vec getPosCar() const { return pos; }
+    PS::F64 getRSearch() const {
+#ifdef USE_POLAR_COORDINATE
+        return SAFTY_FACTOR * r_search / sqrt(pos*pos);
+#else
+        return SAFTY_FACTOR * r_search;
+#endif
+    }
     
-    static void setGamma(PS::F64 g){
-        gamma  = g;
-        g_1_inv  = 1./(g - 1.);
+    void copyFromFP(const EPIGrav & fp){
+        pos      = fp.pos;
+#ifdef USE_POLAR_COORDINATE
+        pos_pol  = fp.pos_pol;
+#endif
 
-        PS::F64 g2 = g*g;
-        PS::F64 g_1_inv3 = g_1_inv * g_1_inv * g_1_inv;
-        
-        g_1_inv7 = g_1_inv3 * g_1_inv3 * g_1_inv;
-        w_y = 7./3. * ((((((g- 9.)*g +45.)*g -60.*log(g))*g -45.)*g +9.)*g -1.) * g_1_inv7;
-        f1 = (-10./3. + 14.*(g+1.) - 21.*((g+3.)*g+1.)
-              + 35./3.*(((g+9.)*g+9.)*g+1.)
-              - 70.*((g+3.)*g+1.)*g
-              + 210.*(g+1.)*g2
-              + (((g-7.)*g+21.)*g-35.)*g2*g2 ) * g_1_inv7;
-    }
-    PS::F64 getGamma() const{ return gamma; }
-    PS::F64 getEps2() const{ return eps2;}
-    
-    PS::F64 getROut() const {
-#ifdef TEST_PTCL
-        static PS::F64 R_OUT_MIN = sqrt((PS::F64)std::numeric_limits<PS::F32>::min());
-        return ( r_out == 0. ) ? R_OUT_MIN : r_out;    
-#else
-        return r_out;
-#endif
-    }
-    PS::F64 getROut_inv() const { return r_out_inv; }
-    PS::F64 getRSearch() const { return SAFTY_FACTOR * r_search; }
-    
-    PS::F64vec getPos() const { return pos; }
-    PS::F64 getCharge() const {
-#ifdef TEST_PTCL
-        static PS::F64 MASS_MIN = (PS::F64)std::numeric_limits<PS::F32>::min();
-        return ( mass == 0. ) ? MASS_MIN : mass;      
-#else
-        return mass;
-#endif
-    }
-    PS::F64 getIdReal() const { return (PS::F64)id; }
-    
-    void copyFromFP(const EPGrav & fp){
-        pos   = fp.pos;
-        vel   = fp.vel;
-        acc   = fp.acc;
-        acc_s = fp.acc_s;
-        acc_d = fp.acc_d;
-    
-        mass = fp.mass;
-    
-        id = fp.id;
-        id_local = fp.id_local;
-        myrank = fp.myrank;
-    
+        id       = fp.id;
+
 #ifdef USE_INDIVIDUAL_CUTOFF
-        r_out     = fp.r_out;
-        r_out_inv = fp.r_out_inv;
-        r_search  = fp.r_search;
+        r_out    = fp.r_out;
+        r_search = fp.r_search;
 #endif
     }
 };
 
-#ifdef USE_QUAD
-#ifdef USE_INDIVIDUAL_CUTOFF
-typedef PS::SPJQuadrupoleInAndOut SPGrav;
-#else
-typedef PS::SPJQuadrupoleScatter SPGrav;
+#ifndef USE_INDIVIDUAL_CUTOFF
+PS::F64 EPIGrav::r_out;
+PS::F64 EPIGrav::r_search;
 #endif
-#else //USE_QUAD  
-#ifdef USE_INDIVIDUAL_CUTOFF
-typedef PS::SPJMonopoleInAndOut SPGrav;
-#else
-typedef PS::SPJMonopoleScatter SPGrav;
-#endif
-#endif //USE_QUAD
 
+
+class EPJGrav : public EPIGrav {
+public:
+    PS::F64 mass;         // mass
+
+    PS::F64vec vel;       // valocity
+    PS::F64vec acc_d;     // acceleration for hard part
+
+    PS::S32 id_local;     // local id number
+    PS::S32 myrank;       // rank number
+
+    PS::F64 getCharge() const { return mass; }
+
+    void copyFromFP(const EPJGrav & fp){
+        EPIGrav::copyFromFP(fp);
+        mass     = fp.mass;
+        
+        vel      = fp.vel;
+        acc_d    = fp.acc_d;
+
+        id_local = fp.id_local;
+        myrank   = fp.myrank;
+    }
+};
+
+
+/////////////////////
+/// Full Particle ///
+/////////////////////
 
 #define SECONDORDER  5.e-1
 #define THIRDORDER   1.6666666666666667e-1
@@ -207,16 +194,40 @@ inline PS::F64 calcDt6th(PS::F64 eta,
 }
 
 
-class FPGrav : public EPGrav {
+class FPGrav : public EPJGrav {
 public:
+    PS::F64vec acc;    // acceleration for soft part
+    PS::F64vec acc_s;  // acceleration by sun
+    PS::F64vec jerk_d; // jerk by planet
+    PS::F64vec jerk_s; // jerk by sun
 #ifdef INTEGRATE_6TH_SUN
     PS::F64vec acc_;
     PS::F64vec snap_s;
 #endif
-    
-    PS::F64vec acc_gd;
-    PS::F64vec jerk_s;
-    PS::F64vec jerk_d;
+    PS::F64vec acc_gd; // acceleration by gas drag
+
+    PS::F64 phi;       // potential for soft part
+    PS::F64 phi_d;     // potential by planets
+    PS::F64 phi_s;     // potential by sun
+    static PS::F64 m_sun;
+    static PS::F64 dens;
+
+    static PS::F64 eps2;
+    static PS::F64 eps2_sun;
+    static PS::F64 R_cut0;
+    static PS::F64 R_cut1;
+    static PS::F64 R_search0;
+    static PS::F64 R_search1;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+    static PS::F64 R_search2;
+    static PS::F64 R_search3;
+#endif
+    static PS::F64 gamma;
+    static PS::F64 g_1_inv;  // 1/(g-1)
+    static PS::F64 g_1_inv7; // 1/(g-1)^7
+    static PS::F64 w_y;      // dW/dy if  y<g
+    static PS::F64 f1;       // f(1;g)
+
     
 #ifdef INDIRECT_TERM
     static PS::F64vec acc_indirect;
@@ -224,17 +235,7 @@ public:
     static PS::F64vec vel_g;
     static PS::F64    mass_tot;
 #endif
-
-    PS::F64 phi_s;
-    PS::F64 phi_d;
-    PS::F64 phi;
-    static PS::F64 m_sun;
-    static PS::F64 dens;
-
-#ifdef CORRECT_NEIGHBOR
-    PS::F64    phi_correct;
-    PS::F64vec acc_correct;
-#endif
+    
 
 #ifdef USE_INDIVIDUAL_CUTOFF
 #ifndef CONSTANT_RANDOM_VELOCITY
@@ -242,6 +243,12 @@ public:
 #else
     static PS::F64 v_disp;
 #endif
+#endif
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+    PS::F64 r_out_inv;
+#else
+    static PS::F64 r_out_inv;
 #endif
     
     PS::F64 time;
@@ -262,13 +269,12 @@ public:
     static PS::F64 p_cut;
     static PS::F64 increase_factor;
 
-    PS::S32 id_cluster;
-    PS::S32 n_cluster;
-#ifdef CHECK_NEIGHBOR
-    PS::S32 true_neighbor;
-#endif
+    PS::S64 id_neighbor;
     
-    PS::S32 id_neighbor;
+    PS::S64 id_cluster;
+    PS::S32 n_cluster;
+
+    PS::S32 neighbor;
     
     bool inDomain;
     bool isSent;
@@ -277,6 +283,37 @@ public:
 #ifdef MERGE_BINARY
     bool isBinary;
     static PS::F64 R_merge;
+#endif
+
+    static void setGamma(PS::F64 g){
+        gamma  = g;
+        g_1_inv  = 1./(g - 1.);
+        
+        PS::F64 g2 = g*g;
+        PS::F64 g_1_inv3 = g_1_inv * g_1_inv * g_1_inv;
+        
+        g_1_inv7 = g_1_inv3 * g_1_inv3 * g_1_inv;
+        w_y = 7./3. * ((((((g- 9.)*g +45.)*g -60.*log(g))*g -45.)*g +9.)*g -1.) * g_1_inv7;
+        f1 = (-10./3. + 14.*(g+1.) - 21.*((g+3.)*g+1.)
+              + 35./3.*(((g+9.)*g+9.)*g+1.)
+              - 70.*((g+3.)*g+1.)*g
+              + 210.*(g+1.)*g2
+              + (((g-7.)*g+21.)*g-35.)*g2*g2 ) * g_1_inv7;
+    }
+    PS::F64 getGamma() const{ return gamma; }
+    PS::F64 getEps2() const{ return eps2;}
+    PS::F64 getEps2_sun() const{ return eps2_sun;}
+
+    PS::F64 getROut() const { return r_out; }
+    PS::F64 getROut_inv() const { return r_out_inv; }
+
+#ifdef USE_POLAR_COORDINATE
+    void setPosPolar() {
+        PS::F64 r = sqrt(pos*pos);
+        pos_pol.x = atan2(pos.y, pos.x);
+        pos_pol.y = log(r);
+        pos_pol.z = asin(pos.z / r);
+    }
 #endif
 
     static PS::F64 getSolarMass() { return m_sun; }
@@ -339,14 +376,6 @@ public:
     void setAcc_() { acc_ = acc_s + acc_d; }
 #endif
     
-    //#ifdef INDIRECT_TERM
-    //static PS::F64 getKineticEnergyOfSystem(){
-    //    return 0.5 * mass_tot * vel_g * vel_g;
-    //}
-    //static PS::F64 getKineticEnergyOfStar(){
-    //    return 0.5 * m_sun * vel_g * vel_g;
-    //}
-    //#endif
     
 #ifdef USE_INDIVIDUAL_CUTOFF
     
@@ -357,41 +386,17 @@ public:
 
         PS::F64 r_out_i = std::max(R_cut0*pow(ax,-p_cut)*rHill, R_cut1*v_disp*dt_tree);
 #else
+        PS::F64 rHill = 0.;
         PS::F64 r_out_i = std::max(R_cut0*pow(mass * dt_tree * dt_tree, 1./3.), R_cut1*v_disp*dt_tree);
 #endif
         
-        if ( r_cut_max <= 0. ) {
-            r_out = std::max(r_out_i, r_cut_min);
-        } else {
-            r_out = std::min(r_cut_max, std::max(r_out_i, r_cut_min) );
-        }
-        
-#ifdef TEST_PTCL
-        if ( r_out != 0. ) {
-            r_out_inv = 1. / r_out;
-        } else {
-            r_out_inv = (PS::F64)std::numeric_limits<PS::F32>::max();
-        }
-#else
-        r_out_inv = 1. / r_out;
-#endif
-            
-        r_search  = R_search0*r_out + R_search1*v_disp*dt_tree;
-
-#ifdef TEST_PTCL
-        if ( r_out == 0. ) r_search = 0.;
-
-        assert ( ( r_out > 0. && r_search > 0. && r_search > r_out ) ||
-                 ( r_out == 0. && r_search == 0. && mass == 0. ) );
-#else    
+        r_out = std::max(r_out_i, r_cut_min);
+        if ( r_cut_max > 0. ) r_out = std::min(r_cut_max, r_out);
+        r_out_inv = 1. / r_out;    
+        r_search  = R_search0*r_out + R_search1*v_disp*dt_tree;   
         assert ( r_out > 0. && r_search > 0. && r_search > r_out );
-#endif
-
-#ifndef WITHOUT_SUN
+        
         return rHill;
-#else
-        return 0.;
-#endif
     }
     
 #else //USE_INDIVIDUAL_CUTOFF
@@ -405,82 +410,137 @@ public:
         PS::F64 r_out_i = std::max(R_cut0*pow(rHill_a_glb * dt_tree * dt_tree, 1./3.), R_cut1*v_disp_glb*dt_tree);
 #endif
         
-        if ( r_cut_max <= 0 ) {
-            r_out = std::max(r_out_i, r_cut_min);
-        } else {
-            r_out = std::min(r_cut_max, std::max(r_out_i, r_cut_min) );
-        }
-        
-#ifdef TEST_PTCL
-        if ( r_out != 0. ) {
-            r_out_inv = 1. / r_out;
-        } else {
-            r_out_inv = (PS::F64)std::numeric_limits<PS::F32>::max();
-        }
-#else
-        r_out_inv = 1. / r_out;
-#endif
-        
+        r_out = std::max(r_out_i, r_cut_min);
+        if ( r_cut_max > 0. ) r_out = std::min(r_cut_max, r_out);
+        r_out_inv = 1. / r_out;       
         r_search  = R_search0*r_out + R_search1*v_disp_glb*dt_tree;
-
-#ifdef TEST_PTCL
-        if ( r_out == 0. ) r_search = 0.;
-        
-        assert ( ( r_out > 0. && r_search > 0. ) ||
-                 ( r_out == 0. && r_search == 0. ) );
-#else    
         assert ( r_out > 0. && r_search > 0. );
-#endif
     }
     
 #endif //USE_INDIVIDUAL_CUTOFF
     
+<<<<<<< HEAD
     //void setRPlanet(PS::F64 m) {
     //    //r_planet = pow(0.75*m/(M_PI*dens), 1./3.);
     //    PS::F64 pi_dens = 0.75*mass/(r_planet*r_planet*r_planet);
     //    r_planet = pow(0.75*m/pi_dens, 1./3.);
     //}
+=======
+>>>>>>> develop
     void setRPlanet() {
-        r_planet = pow(0.75*mass/(M_PI*dens), 1./3.);
+        r_planet = pow(0.75*mass/(MY_PI*dens), 1./3.);
     }
     
     void copyFromForce(const ForceGrav & force){
         acc = force.acc;
         phi = force.phi;
         neighbor = force.neighbor;
-
         id_neighbor = force.id_neighbor;
     }
 
-    void writeAscii(FILE* fp) const {
-        PS::S32 Flag = 0;
-#ifdef MERGE_BINARY
-        Flag |= ((PS::S32)isBinary)<<0;
+    void copy(const FPGrav & fp){
+        EPJGrav::copyFromFP(fp);
+        acc       = fp.acc;
+        acc_s     = fp.acc_s;
+        jerk_d    = fp.jerk_d;
+        jerk_s    = fp.jerk_s;
+#ifdef INTEGRATE_6TH_SUN
+        acc_      = fp.acc_;
+        snap_s    = fp.snap_s;
 #endif
-        if ( !fprintf(fp, "%d\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%d\t%d\n",
-                      this->id, this->mass, this->r_planet, this->f, 
-                      this->pos.x, this->pos.y, this->pos.z,
-                      this->vel.x, this->vel.y, this->vel.z,
-                      this->neighbor, Flag) ) {
-            //this->r_out, this->r_search) ){
-            errorMessage("The particle data has NOT been correctly written.");
-            PS::Abort();
-        }   
+        acc_gd    = fp.acc_gd;
+        
+        phi       = fp.phi;
+        phi_d     = fp.phi_d;
+        phi_s     = fp.phi_s;
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+#ifndef CONSTANT_RANDOM_VELOCITY
+        v_disp    = fp.v_disp;
+#endif
+#endif
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out_inv = fp.r_out_inv;
+#endif
+
+        time      = fp.time;
+        dt        = fp.dt;
+        acc0      = fp.acc0;
+        r_planet  = fp.r_planet;
+        f         = fp.f;
+
+        id_neighbor = fp.id_neighbor;
+        id_cluster  = fp.id_cluster;
+        n_cluster   = fp.n_cluster;
+        neighbor    = fp.neighbor;
+    
+        inDomain    = fp.inDomain;
+        isSent      = fp.isSent;
+        isDead      = fp.isDead;
+        isMerged    = fp.isMerged;
+#ifdef MERGE_BINARY
+        isBinary    = fp.isBinary;
+#endif
     }
+
+    void dump(std::ostream & fout = std::cout) const {
+        fout<<"id= "<<id<<std::endl;
+        fout<<"mass= "<<mass<<std::endl;
+        fout<<"pos= "<<pos<<std::endl;
+#ifdef USE_POLAR_COORDINATE
+        fout<<"pos_pol="<<pos_pol<<std::endl;
+#endif
+        fout<<"vel= "<<vel<<std::endl;
+        fout<<"acc="<<acc<<std::endl;
+        fout<<"phi="<<phi<<std::endl;
+    }
+
     void readAscii(FILE* fp) {
         PS::S32 Flag;
-        if ( !fscanf(fp, "%d\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\n",
+        if ( !fscanf(fp, "%lld\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%lf\t%d\t%d\n",
                      &this->id, &this->mass, &this->r_planet, &this->f, 
                      &this->pos.x, &this->pos.y, &this->pos.z,
                      &this->vel.x, &this->vel.y, &this->vel.z,
                      &this->neighbor,  &Flag) ) {
             //&this->r_out, &this->r_search) ) {
-            errorMessage("The particle data has NOT been correctly read.");
+            errorMessage("The particle data have NOT been correctly read.");
             PS::Abort();
         }
 #ifdef MERGE_BINARY
         isBinary = (bool)(Flag & (1<<0));
 #endif
+    }
+    void writeAscii(FILE* fp) const {
+        PS::S32 Flag = 0;
+#ifdef MERGE_BINARY
+        Flag |= ((PS::S32)isBinary)<<0;
+#endif
+        if ( !fprintf(fp, "%lld\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%20.15e\t%d\t%d\n",
+                      this->id, this->mass, this->r_planet, this->f, 
+                      this->pos.x, this->pos.y, this->pos.z,
+                      this->vel.x, this->vel.y, this->vel.z,
+                      this->neighbor, Flag) ) {
+            //this->r_out, this->r_search) ){
+            errorMessage("The particle data have NOT been correctly written.");
+            PS::Abort();
+        }   
+    }
+    void readBinary(FILE* fp) {
+        FPGrav buf;
+        if ( !fread(&buf, sizeof(buf), 1, fp) ) {
+            errorMessage("The particle data have NOT been correctly read.");
+            PS::Abort();
+        }
+        copy(buf);
+    }
+    void writeBinary(FILE* fp) const {
+        FPGrav buf;
+        buf.copy(*this);
+        if ( !fwrite(&buf, sizeof(buf), 1, fp) ) {
+            errorMessage("The particle data have NOT been correctly written.");
+            PS::Abort();
+        }
     }
 
     void velKick(){
@@ -490,15 +550,6 @@ public:
         vel += 0.5*dt_tree*acc;
 #endif
     }
-#ifdef CORRECT_NEIGHBOR
-    void velKick2nd(){
-#ifdef INDIRECT_TERM
-        vel += 0.5*dt_tree*(acc + acc_correct + acc_indirect);
-#else
-        vel += 0.5*dt_tree*(acc + acc_correct);
-#endif
-    }
-#endif
     
     void calcDeltatInitial(){
         PS::F64 dt_next = 0.5*dt_tree;
@@ -531,6 +582,56 @@ public:
     }
 };
 
+PS::F64 FPGrav::m_sun     = 1.;
+PS::F64 FPGrav::dens      = 5.049667e6;
+
+PS::F64 FPGrav::eps2     = 0.;
+PS::F64 FPGrav::eps2_sun = 0.;
+PS::F64 FPGrav::R_cut0    = 2.;
+PS::F64 FPGrav::R_cut1    = 8.;
+PS::F64 FPGrav::R_search0 = 1.;
+PS::F64 FPGrav::R_search1 = 4.;
+#ifdef USE_RE_SEARCH_NEIGHBOR
+PS::F64 FPGrav::R_search2 = 1.;
+PS::F64 FPGrav::R_search3 = 4.;
+#endif
+PS::F64 FPGrav::gamma     = 0.5;
+PS::F64 FPGrav::g_1_inv   = -2.;   // 1/(gamma-1)
+PS::F64 FPGrav::g_1_inv7  = -128.; // 1/(gamma-1)^7
+PS::F64 FPGrav::w_y;               // dW/dy when y<g
+PS::F64 FPGrav::f1;                // f(1;g)
+
+#ifdef INDIRECT_TERM
+PS::F64vec FPGrav::acc_indirect = 0.;
+PS::F64vec FPGrav::pos_g        = 0.;
+PS::F64vec FPGrav::vel_g        = 0.;
+PS::F64    FPGrav::mass_tot     = 0.;
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+PS::F64 FPGrav::v_disp    = 0.;
+#endif
+
+#ifndef USE_INDIVIDUAL_CUTOFF
+PS::F64 FPGrav::r_out_inv;
+#endif
+
+PS::F64 FPGrav::dt_tree   = pow2(-5);
+PS::F64 FPGrav::dt_min    = pow2(-13);
+PS::F64 FPGrav::eta       = 0.01;
+PS::F64 FPGrav::eta_0     = 0.001;
+PS::F64 FPGrav::eta_sun   = 0.01;
+PS::F64 FPGrav::eta_sun0  = 0.001;
+PS::F64 FPGrav::alpha2    = 1.;
+
+PS::F64 FPGrav::r_cut_min = 0.;
+PS::F64 FPGrav::r_cut_max = 0.;
+PS::F64 FPGrav::p_cut     = 0.;
+PS::F64 FPGrav::increase_factor = 1.;
+
+#ifdef MERGE_BINARY
+PS::F64 FPGrav::R_merge   = 0.2;
+#endif
+
 
 
 class FPHard : public FPGrav {
@@ -561,19 +662,21 @@ public:
     
     PS::F64 time_c;
     
-    std::vector<PS::S32> n_list;
+    std::vector<PS::S64> n_list;
     std::vector<PS::S32> n_hard_list;
     
     void clearList(){
-        std::vector<PS::S32> tmp0, tmp1;
-        tmp0.swap(n_list);
-        tmp1.swap(n_hard_list);
+        //std::vector<PS::S32> tmp0, tmp1;
+        //tmp0.swap(n_list);
+        //tmp1.swap(n_hard_list);
+        n_list.clear();
+        n_hard_list.clear();
     }
-    void copyList(std::vector<PS::S32> list){
+    void copyList(std::vector<PS::S64> list){
         n_list.resize(list.size());
         std::copy(list.begin(),list.end(),n_list.begin());
     }
-    void copyList(PS::S32 * list){
+    void copyList(PS::S64 * list){
         n_list.clear();
         n_list.reserve(neighbor);
         for ( PS::S32 i=0; i<neighbor; i++ ) n_list.push_back(list[i]);
@@ -587,7 +690,7 @@ public:
         n_hard_list.reserve(neighbor);
         for ( PS::S32 i=0; i<neighbor; i++ ) n_hard_list.push_back(list[i]);
     }
-    void makeHardList(std::map<PS::S32,PS::S32> & id_map){
+    void makeHardList(std::map<PS::S64,PS::S32> & id_map){
         n_hard_list.clear();
         n_hard_list.reserve(neighbor);
         for ( PS::S32 i=0; i<neighbor; i++){
@@ -595,7 +698,7 @@ public:
         }
     }
     template <class Tpsys>
-    void makeHardList(std::map<PS::S32,PS::S32> & id_map,
+    void makeHardList(std::map<PS::S64,PS::S32> & id_map,
                       Tpsys & pp){
         n_hard_list.clear();
         for ( PS::S32 i=0; i<neighbor; i++){
@@ -1134,3 +1237,164 @@ void setCutoffRadii(Tpsys & pp)
 }
 
 #endif //USE_INDIVIDUAL_CUTOFF
+
+
+
+//////////////////////
+/// Super Particle ///
+//////////////////////
+
+class MyMomentMonopole : public PS::MomentMonopole {
+public:
+#ifdef USE_POLAR_COORDINATE
+    PS::F64vec pos_car;
+    
+    MyMomentMonopole() {
+        pos_car = 0.;
+    }
+    MyMomentMonopole(const PS::F64 m, const PS::F64vec & p, const PS::F64vec & p_car) : PS::MomentMonopole(m, p) {
+        pos_car = p_car;
+    }
+    void init(){
+        PS::MomentMonopole::init();
+        pos_car = 0.;
+    }
+    template<class Tepj>
+    void accumulateAtLeaf(const Tepj & epj){
+        PS::MomentMonopole::accumulateAtLeaf(epj);
+        pos_car += epj.getCharge() * epj.getPosCar();
+    }
+    template<class Tepj>
+    void accumulateAtLeaf2(const Tepj & epj){}
+    void accumulate(const MyMomentMonopole & mom){
+        PS::MomentMonopole::accumulate(mom);
+        pos_car += mom.mass * mom.pos_car;
+    }
+    void accumulate2(const MyMomentMonopole & mom){}
+    // for DEBUG 
+    void dump(std::ostream & fout = std::cout) const {
+        fout<<"mass="<<mass<<std::endl;
+        fout<<"pos="<<pos<<std::endl;
+        fout<<"pos_car="<<pos_car<<std::endl;
+    }
+#endif
+    void set(){
+        pos     = (mass != 0.) ? pos / mass : 0.;
+#ifdef USE_POLAR_COORDINATE
+        pos_car = (mass != 0.) ? pos_car / mass : 0.;
+#endif
+    }
+};
+
+
+class MySPJMonopole : public PS::SPJMonopole {
+public:
+#ifdef USE_POLAR_COORDINATE
+    PS::F64vec pos_car;
+    
+    template<class Tmom>
+    void copyFromMoment(const Tmom & mom){
+        PS::SPJMonopole::copyFromMoment(mom);
+        this->pos_car  = mom.pos_car;
+    }
+    void clear(){
+        PS::SPJMonopole::clear();
+        pos_car = 0.0;
+    }
+    PS::F64vec getPosCar() const { return pos_car; }
+    MyMomentMonopole convertToMoment() const {
+        return MyMomentMonopole(mass, pos, pos_car);
+    }
+#endif
+};
+
+class MyMomentQuadrupole : public PS::MomentQuadrupole {
+public:
+#ifdef USE_POLAR_COORDINATE
+    PS::F64vec pos_car;
+    
+    MyMomentQuadrupole(){
+        pos_car = 0.;
+    }
+    MyMomentQuadrupole(const PS::F64 m, const PS::F64vec & p, const PS::F64mat & q, const PS::F64vec & p_car) : PS::MomentQuadrupole(m, p, q) {
+        pos_car = p_car;
+    }
+    void init(){
+        PS::MomentQuadrupole::init();
+        pos_car = 0.;
+    }
+    template<class Tepj>
+    void accumulateAtLeaf(const Tepj & epj){
+        PS::MomentQuadrupole::accumulateAtLeaf(epj);
+        pos_car += epj.getCharge() * epj.getPosCar();
+    }
+    template<class Tepj>
+    void accumulateAtLeaf2(const Tepj & epj){
+        PS::F64 ctmp = epj.getCharge();
+        PS::F64vec ptmp = epj.getPosCar() - this->pos_car;
+        
+        PS::F64 cx = ctmp * ptmp.x;
+        PS::F64 cy = ctmp * ptmp.y;
+        PS::F64 cz = ctmp * ptmp.z;
+        this->quad.xx += cx * ptmp.x;
+        this->quad.yy += cy * ptmp.y;
+        this->quad.zz += cz * ptmp.z;
+        this->quad.xy += cx * ptmp.y;
+        this->quad.xz += cx * ptmp.z;
+        this->quad.yz += cy * ptmp.z;
+    }
+    void accumulate(const MyMomentQuadrupole & mom){
+        PS::MomentQuadrupole::accumulate(mom);
+        pos_car += mom.mass * mom.pos_car;
+    }
+    void accumulate2(const MyMomentQuadrupole & mom){
+        PS::F64 mtmp = mom.mass;
+        PS::F64vec ptmp = mom.pos_car - this->pos_car;
+        
+        PS::F64 cx = mtmp * ptmp.x;
+        PS::F64 cy = mtmp * ptmp.y;
+        PS::F64 cz = mtmp * ptmp.z;
+        this->quad.xx += cx * ptmp.x + mom.quad.xx;
+        this->quad.yy += cy * ptmp.y + mom.quad.yy;
+        this->quad.zz += cz * ptmp.z + mom.quad.zz;
+        this->quad.xy += cx * ptmp.y + mom.quad.xy;
+        this->quad.xz += cx * ptmp.z + mom.quad.xz;
+        this->quad.yz += cy * ptmp.z + mom.quad.yz;
+    }
+    void dump(std::ostream & fout = std::cout) const {
+        fout<<"mass= "<<mass<<std::endl;
+        fout<<"pos= "<<pos<<std::endl;
+        fout<<"pos_car="<<pos_car<<std::endl;
+        fout<<"quad= "<<quad<<std::endl;
+    }
+#endif
+    void set(){
+        pos     = (mass != 0.) ? pos / mass : 0.;
+#ifdef USE_POLAR_COORDINATE
+        pos_car = (mass != 0.) ? pos_car / mass : 0.;
+#endif
+    }
+};
+
+class MySPJQuadrupole : public PS::SPJQuadrupole {
+public:
+#ifdef USE_POLAR_COORDINATE
+    PS::F64vec pos_car;
+
+    PS::F64 getCharge() const { return mass; }
+    PS::F64vec getPos() const { return pos; }
+    PS::F64vec getPosCar() const { return pos_car; }
+    void copyFromMoment(const MyMomentQuadrupole & mom){
+        PS::SPJQuadrupole::copyFromMoment(mom);
+        pos_car = mom.pos_car;
+    }
+    MyMomentQuadrupole convertToMoment() const {
+        return MyMomentQuadrupole(mass, pos, quad, pos_car);
+    }
+    void clear(){
+        PS::SPJQuadrupole::clear();
+        pos_car = 0.0;
+    }
+#endif
+};
+

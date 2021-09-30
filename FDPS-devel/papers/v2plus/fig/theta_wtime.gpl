@@ -1,0 +1,44 @@
+set term post eps color enhanced 20
+
+set style line  1 linetype 1 linewidth 4 pointtype  6 pointsize 3 linecolor 7
+set style line  2 linetype 2 linewidth 4 pointtype  4 pointsize 3 linecolor 1
+set style line  3 linetype 3 linewidth 4 pointtype  8 pointsize 3 linecolor 2
+set style line  4 linetype 4 linewidth 4 pointtype 10 pointsize 3 linecolor 3
+set style line  5 linetype 5 linewidth 4 pointtype 12 pointsize 3 linecolor 4
+set style line  6 linetype 6 linewidth 4 pointtype 14 pointsize 3 linecolor 5
+
+set style line  7 linetype 7 linewidth 4 pointtype  7 pointsize 3 linecolor 5
+set style line  8 linetype 8 linewidth 4 pointtype  5 pointsize 3 linecolor 8
+set style line  9 linetype 9 linewidth 4 pointtype  9 pointsize 3 linecolor 9
+
+set output "theta_wtime.eps"
+
+set log x
+set log y
+set grid
+set key right top
+set xlabel "{/Symbol q}"
+set ylabel "wall clock time[s]"
+#set format x "10^{%L}"
+set format y "10^{%L}"
+set xrange [0.2:1.0]
+set yrange [0.07:4]
+
+pl"../data/reduction/theta_wtime.dat" eve ::0::2   u 1:2 ti "C1" w lp ls 7, \
+"" eve ::3::5   u 1:2 ti "G1" w lp ls 8 , \
+"" eve ::6::8   u 1:2 ti "G2" w lp ls 9, \
+"" eve ::9::11 u 1:2 ti "G3, n_{reuse}=2" w lp ls 1, \
+"" eve ::12::14 u 1:2 ti "G3, n_{reuse}=4"  w lp ls 2, \
+"" eve ::18::20 u 1:2 ti "G3, n_{reuse}=16"  w lp ls 3, \
+"" eve ::21::23 u 1:2 ti "G3, reusing step only"  w lp ls 5
+
+
+#pl"../data/reduction/theta_wtime.dat" eve ::9::11 u 1:2 ti "G2, n_{reuse}=2" w lp ls 1, \
+#"" eve ::12::14 u 1:2 ti "G2, n_{reuse}=4"  w lp ls 2, \
+#"" eve ::18::20 u 1:2 ti "G2, n_{reuse}=16"  w lp ls 3, \
+#"" eve ::21::23 u 1:2 ti "G2, reusing step only"  w lp ls 4, \
+#"" eve ::0::2   u 1:2 ti "C1" w lp ls 7, \
+#"" eve ::3::5   u 1:2 ti "G1" w lp ls 8 
+
+
+

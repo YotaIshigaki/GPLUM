@@ -1,0 +1,675 @@
+\def\badot{{\bf \dot a}}
+\def\batwo{{\bf a}^{(2)}}
+\def\bathree{{\bf a}^{(3)}}
+\def\bx{\mbox{\boldmath $x$}}
+\def\bk{{\bf k}}
+\def\bv{\mbox{\boldmath $v$}}
+\def\br{\mbox{\boldmath $r$}}
+\def\ba{\mbox{\boldmath $a$}}
+\def\bbf{\mbox{\boldmath $f$}}
+\def\calE{{\cal E}}
+\def\sub#1{_{\rm #1}}
+\def\sup#1{^{\rm #1}}
+
+%% \def\mum{\mu {\rm m}}
+%% \def\bx{{\bf x}}
+%% \def\bv{{\bf v}}
+%% \def\barv{{\bar{ v}}}
+%% \def\bP{{\bf P}}
+%% \def\calE{{\cal E}}
+\def\erf{{\rm erf}}
+%% \def\sub#1{_{\rm #1}}
+%% \def\sup#1{^{\rm #1}}
+
+%
+% lmak_ohp.tex
+%
+% macros for OHP style
+%
+
+\def\pagehead#1{
+\newpage
+\Huge
+\noindent
+{\bf \black #1}
+
+\bigskip
+
+\Large
+
+\bf
+
+\boldmath
+
+}
+\def\pageheadl#1{
+\newpage
+\Huge
+\noindent
+{\bf \black #1}
+
+\bigskip
+
+\large
+
+\bf
+
+\boldmath
+
+}
+ 
+\def\pageheadll#1{
+\newpage
+\Huge
+\noindent
+{\bf \black #1}
+
+\bigskip
+
+\LARGE
+
+\bf
+
+\boldmath
+
+}
+ 
+\def\pageheadm#1{
+\newpage
+\LARGE
+\noindent
+{\bf \black #1}
+
+%\large
+\normalsize
+
+\bf
+
+\boldmath
+
+}
+ 
+\def\bwpagehead#1{
+\newpage
+
+{
+\Huge
+\noindent
+{\bf  #1}
+}
+\bigskip
+
+\bf
+
+}
+ 
+
+
+%\input ../lmak_ohp
+
+\documentclass[12pt,dvipdfmx]{article}
+\usepackage[dvips]{color}
+\usepackage[dvipdfm]{hyperref}
+\usepackage{mathabx}
+\usepackage{graphics}
+\usepackage{graphicx}
+\usepackage{epsf}
+\usepackage{psfig}
+\usepackage{ascmac_ntt}
+%\documentstyle[12pt,psfig,epsf,eclcolor,ascmac_ntt]{article}
+%\documentstyle[12pt,epsf,eclcolor,ascmac]{article}
+\pagestyle{empty}
+
+\raggedright
+
+%set dimensions of columns, gap between columns, and space between paragraphs
+\setlength{\textheight}{12cm}
+\setlength{\columnsep}{2.0pc}
+\setlength{\textwidth}{16cm}
+%\setlength{\footheight}{0.0in}
+\setlength{\topmargin}{0.0in}
+\setlength{\headheight}{0.0in}
+\setlength{\headsep}{0.0in}
+\setlength{\oddsidemargin}{-.19in}
+\setlength{\parindent}{1pc}
+
+%I copied stuff out of art10.sty and modified them to conform to IEEE format
+
+\makeatletter
+%as Latex considers descenders in its calculation of interline spacing,
+%to get 12 point spacing for normalsize text, must set it to 10 points
+\def\@normalsize{\@setsize\normalsize{12pt}\xpt\@xpt
+\abovedisplayskip 10pt plus2pt minus5pt\belowdisplayskip \abovedisplayskip
+\abovedisplayshortskip \z@ plus3pt\belowdisplayshortskip 6pt plus3pt
+minus3pt\let\@listi\@listI} 
+
+%need an 11 pt font size for subsection and abstract headings
+\def\subsize{\@setsize\subsize{12pt}\xipt\@xipt}
+
+%make section titles bold and 12 point, 2 blank lines before, 1 after
+\def\section{\@startsection {section}{1}{\z@}{24pt plus 2pt minus 2pt}
+{12pt plus 2pt minus 2pt}{\LARGE\bf}}
+
+%make subsection titles bold and 11 point, 1 blank line before, 1 after
+\def\subsection{\@startsection {subsection}{2}{\z@}{12pt plus 2pt minus 2pt}
+{12pt plus 2pt minus 2pt}{\LARGE\bf}}
+\makeatother
+\def\black{\color{black}}
+\def\red{\color{red}}
+\def\blue{\color{blue}}
+\def\green{\color{green}}
+\def\mossgreen{\color{green}} 
+\def\purple{\color{purple}}
+\def\yellow{\color{yellow}}
+
+%\input ../lmak_ohp
+
+\begin{document}
+
+\LARGE
+
+\baselineskip 32 pt
+\lineskip 10 pt
+
+%don't want date printed
+\date{}
+
+
+
+\pagehead{FDPS 講習会 イントロダクション}
+
+
+{\large
+
+\begin{center}
+牧野淳一郎\\
+理化学研究所 計算科学研究センター\\
+フラッグシップ2020プロジェクト\\
+コデザイン推進チーム\\
+兼 粒子系シミュレータ開発チーム
+
+\leavevmode
+
+
+\end{center}
+
+}
+
+\vfill
+
+\hfill 2018/08/03  FDPS 講習会
+ 
+
+
+\pageheadl{今日の予定}
+
+\begin{itemize}
+
+\item 共通部分  (セミナー室)
+\begin{itemize}
+\item 13:30-13:35 1. イントロダクション（牧野）
+\item 13:35-13:50 2. FDPSの概要説明（岩澤）
+\item 13:50-14:10 3. FDPSのAPIと内部構造（岩澤）
+\end{itemize}
+
+\item  C++パート (セミナー室)
+\begin{itemize}
+\item 14:10-14:25  4. C++について（似鳥）
+\item 14:25-14:45  5. サンプルコード C++（野村）
+\end{itemize}
+
+\item  Fortranパート (サロン)
+\begin{itemize}
+\item 14:10-14:25  4. Fortranについて（行方）
+\item 14:25-14:45  5. サンプルコード Fortran（行方）
+\end{itemize}
+\end{itemize}
+
+\pageheadl{今日の予定(続き)}
+
+\begin{itemize}
+\item 共通 (セミナー室)
+\begin{itemize}
+\item 14:45-14:55  休憩
+\item 14:55-16:25　6．実習
+\item 16:25-16:30  7. 結び（牧野）
+\end{itemize}
+
+\end{itemize}
+
+\pagehead{イントロダクション残り:\\FDPS は何をするか？}
+
+
+というよりむしろ、何がしたくない(やったことがない)人のためのものか:
+
+\begin{itemize}
+
+\item MPI でプログラム書いたことない
+
+\item キャッシュ再利用のためのわけのわからないループ分割とかしたくない
+
+\item 通信量減らすためにわけのわからない最適化とかするのも勘弁して欲し
+い
+
+\item SIMD 命令がでるようにコードをいじりまわすとか無理
+
+\item 機械毎にどういう最適化すればいいか全然違うとか、それ以前に言語から違うとかはもういやだ
+
+\end{itemize}
+
+\pageheadl{そうはいっても---ではどうするか？}
+
+昔からある考え方はこんな感じ？
+
+\begin{itemize}
+
+\item 並列化コンパイラになんとかしてもらう
+
+\item 共有メモリハードウェアになんとかしてもらう
+
+\item 並列言語とコンパイラの組み合わせになんとかしてもらう
+
+\end{itemize}
+
+しかし……
+\begin{itemize}
+
+\item 若い人はそういう考え方があったことも既に知らないような気がする。「スパ
+コンとはそういうものだ」みたいな。
+
+\item つまり、こういうアプローチはほぼ死滅した。
+
+\item 理由は簡単: 性能がでない。安価なハードウェアで高い性能がでるものがプロ
+グラミングが大変でも長期的には生き残る。
+
+\end{itemize}
+
+\pageheadl{じゃあ本当のところどうするか？}
+
+\begin{enumerate}
+
+\item 人生そういうものだと諦めて MPI でプログラム書いて最適化もする\\
+難点: 普通の人の場合性能がでない。難しいことをしようとすると無限に時間
+がかかって人生が終わってしまう。
+
+
+\item 他人(学生、ポスドク、外注、ベンダ等)にMPI でプログラム書かせて最
+適化もさせる\\
+難点: 他人が普通の人の場合、やはり性能でない。無限に人と時間とお金がかかる。
+あとでいじるにも無限に人と時間とお金がかかる。
+
+\end{enumerate}
+
+\begin{itemize}
+\item どちらも今一つというか今百くらいである。
+
+\item もちろん、「普通でない人」を確保できればなんとかなるがこれは希少
+資源である。
+
+\end{itemize}
+
+
+\begin{shadebox}
+原理的には、「普通でない人」を有効利用すればいい？
+\end{shadebox}
+
+
+%% \pagehead{どうやって有効利用するか？}
+
+%% 色々な考え方がありえるが、我々の(というか私の)考え方:
+
+%% \begin{itemize}
+
+%% \item 「普通でない人」がやった方法を一般化して、色々な問題に適用する。
+%% \item 例えば「粒子系一般」という程度
+%% \item DRY (Don't Repeat Yourself) の原則の徹底
+
+
+%% \end{itemize}
+
+
+\pagehead{どうやって有効利用するか？}
+
+色々な考え方がありえるが、我々の考え方:
+
+\begin{itemize}
+
+\item 「普通でない人」がやった方法を一般化して、色々な問題に適用する。
+\item 例えば「粒子系一般」という程度
+\item DRY (Don't Repeat Yourself) の原則の徹底
+\item 理研CCS粒子系シミュレータ開発チームで詳細仕様策定及び実装
+
+\end{itemize}
+
+%% \newpage
+
+%% \includegraphics[width=12cm]{../sph/teamphoto.eps}
+
+%% \large
+
+%% 細野\ \ \ 村主\ \ \ 岩澤\ \ \ 丸山\ \ \ 似鳥\\
+%% 山本\ \ \ Barnes\ \ \ 牧野\ \ \ 谷川\ \ \ Rieder
+
+%% +坪内(テクニカルスタッフ)、若松(アシスタント)
+
+\pagehead{もうちょっと具体的には？}
+
+色々な粒子系計算
+
+\begin{itemize}
+
+\item 重力多体系
+
+\item 分子動力学
+
+\item 粒子法による流体(SPH、MPS、MLS、その他)
+\item 構造解析等のメッシュフリー法
+
+\end{itemize}
+
+計算のほとんどは近傍粒子との相互作用(遠距離力: Tree, FMM, PME その他)
+
+
+\pagehead{もうちょっと具体的には？}
+
+なので、粒子と相互作用の定義を与えると
+
+\begin{itemize}
+
+\item 領域分割(ロードバランスも考慮した)
+
+\item 粒子の移動
+
+\item 相互作用の計算(そのために必要な通信も)
+
+\end{itemize}
+
+を高い効率(実行効率・並列化効率)でやってくれるプログラムを「自動生成」
+できればいい。時間積分とかは自分で書く。
+
+(独立時間刻み? PENTACLE もあります)
+
+ということで、詳しくはこれからの説明をどぞ。
+\end{document}
+
+\pagehead{実装方針}
+
+\begin{itemize}
+
+\item API は C++ で定義
+
+\item ユーザーは
+
+\begin{itemize}
+
+\item 粒子データクラス
+
+\item 粒子間相互作用を計算する関数(現在のところ、ユーザーが機種毎に最
+適化。この自動生成は並行して開発中)
+
+\end{itemize}
+
+を用意。さらにドライバープログラム(I/Oライブラリコール等も含む)、時間
+積分関数とかも書く 
+
+\item 全体をコンパイルすると空間分割して粒子再配置して時間積分して、、、
+というプログラムになる
+
+\end{itemize}
+
+
+\pagehead{開発の現状}
+
+\begin{itemize}
+
+\item 公開した (https://github.com/FDPS/FDPS/)
+
+\item 同一のユーザープログラムで、シングルスレッドでもマルチスレッドで
+もMPI並列でも動く。
+
+\item 動くだけでなく、並列化効率は「非常に良い」
+
+\item 重力多体(Barnes-Hut ツリー)、重力+SPH が「京」全ノードくらい(計
+算時間が、、、)までで動作、重力(遠距離相互作用)は数万ノードでも実行効率高い。SPH(近
+距離相互作用)は改良中
+
+
+\item 多数のユーザーから喜びのお手紙を(ちょっと嘘)
+
+\item GPU 対応、 Fortran 対応を公開
+
+\end{itemize}
+
+\href{file:///home2/home/makino/src/fdps/fdps/doc/doc_tutorial.pdf}{チュートリアル}
+
+
+\pagehead{空間分割と並列化}
+
+\begin{minipage}[b]{9cm}
+\begin{center}
+\includegraphics[width=8.6cm]{/home2/home/makino/papers/ishiyama/treepm/fig1.ps}
+\end{center}
+\end{minipage}
+\begin{minipage}[b]{6.5cm}
+空間分割して計算ノードに割り当て
+
+Recursive Multisection (JM 2004)
+
+\bigskip
+
+
+「京」の Tofu ネットワークに適した方法
+
+\bigskip
+
+
+計算時間が均等になるよう領域サイズ調整(石山他 2009、2012)
+
+\bigskip
+
+
+
+\end{minipage}
+
+領域サイズ調整アルゴリズムを数万ノードでもボトルネックにならないよう改
+良(岩澤他 2015)
+
+\pagehead{重力多体計算のサンプルユーザーコード(C++版)}
+
+1. ヘッダと粒子クラス
+
+\begin{verbatim}
+#include <particle_simulator.hpp> //必須
+using namespace PS;  //コードを簡潔に、、、、
+
+class Nbody{            //名前は自由
+public:
+    F64    mass, eps;   //名前は自由
+    F64vec pos, vel, acc; //名前は自由
+    F64vec getPos() const {return pos;} //必須
+    F64 getCharge() const {return mass;}//必須
+    void copyFromFP(const Nbody &in){   //必須
+        mass = in.mass;
+        pos  = in.pos;
+        eps  = in.eps;
+    }
+    void copyFromForce(const Nbody &out) { //必須
+        acc = out.acc;
+    }    
+\end{verbatim}
+
+\pagehead{粒子クラス(2)}
+
+\begin{verbatim}
+    void clear() { //必須
+        acc = 0.0;
+    }
+    void readAscii(FILE *fp) {//FDPSのI/O使うなら
+        fscanf(fp,
+               "%lf%lf%lf%lf%lf%lf%lf%lf",
+               &mass, &eps,
+               &pos.x, &pos.y, &pos.z,
+               &vel.x, &vel.y, &vel.z);
+    }
+    void predict(F64 dt) { //ユーザー利用
+        vel += (0.5 * dt) * acc;
+        pos += dt * vel;
+    }
+    void correct(F64 dt) { //ユーザー利用
+        vel += (0.5 * dt) * acc;
+    }
+};
+\end{verbatim}    
+
+
+\pagehead{相互作用関数}
+\begin{verbatim}
+template <class TPJ>
+struct CalcGrav{
+    void operator () (const Nbody * ip,
+                      const S32 ni,
+                      const TPJ * jp,
+                      const S32 nj,
+                      Nbody * force) {
+        for(S32 i=0; i<ni; i++){
+            F64vec xi  = ip[i].pos;
+            F64    ep2 = ip[i].eps
+                * ip[i].eps;
+            F64vec ai = 0.0;
+\end{verbatim}    
+\pagehead{相互作用関数(続き)}
+\begin{verbatim}
+            for(S32 j=0; j<nj;j++){
+                F64vec xj = jp[j].pos;
+                F64vec dr = xi - xj;
+                F64 mj  = jp[j].mass;
+                F64 dr2 = dr * dr + ep2;
+                F64 dri = 1.0 / sqrt(dr2);                
+                ai -= (dri * dri * dri
+                       * mj) * dr;
+            }
+            force[i].acc += ai;
+        }
+    }
+};
+\end{verbatim}    
+\pagehead{時間積分(ユーザープログラム内)}
+\begin{verbatim}
+
+template<class Tpsys>
+void predict(Tpsys &p,
+             const F64 dt) {
+    S32 n = p.getNumberOfParticleLocal();
+    for(S32 i = 0; i < n; i++)
+        p[i].predict(dt);
+}
+
+template<class Tpsys>
+void correct(Tpsys &p,
+             const F64 dt) {
+    S32 n = p.getNumberOfParticleLocal();
+    for(S32 i = 0; i < n; i++)
+        p[i].correct(dt);
+}
+\end{verbatim}
+
+
+
+\pagehead{ユーザーの相互作用計算関数}
+\begin{verbatim}
+template <class TDI, class TPS, class TTFF>
+void calcGravAllAndWriteBack(TDI &dinfo,
+                             TPS &ptcl,
+                             TTFF &tree) {
+    dinfo.decomposeDomainAll(ptcl);
+    ptcl.exchangeParticle(dinfo);    
+    tree.calcForceAllAndWriteBack
+        (CalcGrav<Nbody>(),
+         CalcGrav<SPJMonopole>(),
+         ptcl, dinfo);    
+}
+\end{verbatim}
+
+ここで FDPS の関数群を使っている。
+\pagehead{ユーザープログラム本体}
+\begin{verbatim}
+int main(int argc, char *argv[]) {
+    F32 time  = 0.0;
+    const F32 tend  = 10.0;
+    const F32 dtime = 1.0 / 128.0;
+    // FDPS 初期化
+    PS::Initialize(argc, argv);
+    PS::DomainInfo dinfo;
+    dinfo.initialize();
+    PS::ParticleSystem<Nbody> ptcl;
+    ptcl.initialize();
+    // FDPS に相互作用関数を渡す
+    PS::TreeForForceLong<Nbody, Nbody,
+        Nbody>::Monopole grav;
+    grav.initialize(0);
+    // 粒子データ読み込み
+    ptcl.readParticleAscii(argv[1]);
+\end{verbatim}    
+\pagehead{ユーザープログラム本体}
+\begin{verbatim}
+    // 相互作用計算
+    calcGravAllAndWriteBack(dinfo,
+                            ptcl,
+                            grav);
+    while(time < tend) {
+        predict(ptcl, dtime);        
+        calcGravAllAndWriteBack(dinfo,
+                                ptcl,
+                                grav);
+        correct(ptcl, dtime);        
+        time += dtime;
+    }
+    PS::Finalize();
+    return 0;
+}
+\end{verbatim}    
+
+\pagehead{コメント等}
+
+\begin{itemize}
+
+\item 粒子クラスに謎関数があるのは、本来の粒子クラスと相互作用計算に最
+    適化した粒子クラスを別に定義できるようにするため。
+\item 粒子種も複数定義可能(ダークマターと流体等)。このために
+相互作用を定義するところが若干複雑
+
+\item ユーザー定義の相互作用計算は今のところアーキテクチャ向け最適化が
+性能出すためには
+必須。
+
+\item 高度に最適化された並列化ツリーアルゴリズムを 150行くらいのユーザー
+プログラムで使える。
+
+
+\end{itemize}
+
+\pagehead{まとめ}
+
+\begin{itemize}
+
+\item 粒子法は天体物理・惑星科学で色々使われている
+
+\item が、問題点も結構沢山ある。
+\begin{itemize}
+
+\item 接触不連続で適合的でない
+\item 並列化が結構困難
+\end{itemize}
+
+\item 前者は「改善」するスキームを開発したがまだ問題は残る
+
+\item 後者は「汎用フレームワーク」で解決した(?)
+
+\item 高粘性流体にも適用できる計算スキームを開発した。これからもうちょっと実験。
+
+
+\end{itemize}
+
+
+\end{document}
+

@@ -1,12 +1,13 @@
-PS_PATH_FDPS = ../FDPS-5.0g/src/
+#PS_PATH_FDPS = ../FDPS/src/
+PS_PATH_FDPS = ../fdps-devel/src/
 PS_PATH_PIKG = ../PIKG/inc/
+#PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
 
 ####################
 ###   Compiler   ###
 ####################
 CC = clang++ -std=c++11
-#CC = g++ -std=c++11
 #CC = mpic++ -std=c++11
 #CC = time FCCpx -Nclang
 #CC = time mpiFCCpx -Nclang
@@ -28,38 +29,50 @@ CC = clang++ -std=c++11
 ###   Other Options   ###
 #########################
 individual_cutoff = yes
-quad = yes
+quadrupole = yes
+#polar_coordinate = yes
 #isotropic = yes
-gas_drag = yes
+#gas_drag = yes
 #integrate_6th = yes
 #absorb_particle = yes
 #test_particle = yes
 
-#collision = yes
+collision = yes
 #Kominami = yes
 #Chembers = yes
-#merge_binary = yes
+#Shibata = yes
+merge_binary = yes
 
 #without_sun = yes
 #constant_random_velocity = yes
+#correct_interaction_gravity = yes
 
-#output_detail = yes
+output_detail = yes
 #calc_time = yes
+
+p2p_fast = yes
 
 
 CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
+CFLAGS += -DFOR_PIKG01
+CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
+
 ifeq ($(use_OpenMP),yes)
+<<<<<<< HEAD
+=======
+#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
+>>>>>>> develop
 CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
 endif
 ifeq ($(use_MPI),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
 endif
 
-CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPGrav --epj-name EPGrav --force-name ForceGrav
-CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPGrav --epj-name SPGrav --force-name ForceGrav
+CFLAGS_KERNEL_EPEP = --kernel-name CalcForceLongEPEP --epi-name EPI_t --epj-name EPJ_t --force-name Force_t
+CFLAGS_KERNEL_EPSP = --kernel-name CalcForceLongEPSP --epi-name EPI_t --epj-name SPJ_t --force-name Force_t
 
 ifeq ($(use_AVX2),yes)
 #CFLAGS += -march=core-avx2
@@ -83,32 +96,14 @@ endif
 
 
 ifeq ($(individual_cutoff),yes)
-
 CFLAGS += -DUSE_INDIVIDUAL_CUTOFF
-KERNEL_EPEP = gravity_kernel_EPEP_individual.pikg
-ifeq ($(quad),yes)
+endif
+ifeq ($(quadrupole),yes)
 CFLAGS += -DUSE_QUAD
-KERNEL_EPSP = gravity_kernel_EPSP_quad_individual.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleInAndOut
-else
-KERNEL_EPSP = gravity_kernel_EPSP_mono_individual.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJMonopoleInAndOut
 endif
-
-else
-
-KERNEL_EPEP = gravity_kernel_EPEP_shared.pikg
-ifeq ($(quad),yes)
-CFLAGS += -DUSE_QUAD
-KERNEL_EPSP = gravity_kernel_EPSP_quad_shared.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJQuadrupoleScatter
-else
-KERNEL_EPSP = gravity_kernel_EPSP_mono_shared.pikg
-#CFLAGS_KERNEL_EPSP += --epj-name PS::SPJMonopoleScatter
+ifeq ($(polar_coordinate),yes)
+CFLAGS += -DUSE_POLAR_COORDINATE
 endif
-
-endif
-
 ifeq ($(isotropic),yes)
 CFLAGS += -DISOTROPIC
 endif
@@ -133,6 +128,10 @@ CFLAGS += -DKOMINAMI
 else
 ifeq ($(Chambers),yes)
 CFLAGS += -DCHAMBERS
+else
+ifeq ($(Shibata),yes)
+CFLAGS += -DSHIBATA
+endif
 endif
 endif
 ifeq ($(merge_binary),yes)
@@ -144,12 +143,19 @@ endif
 ifeq ($(constant_random_velocity),yes)
 CFLAGS += -DCONSTANT_RANDOM_VELOCITY
 endif
+ifeq ($(correct_interaction_gravity),yes)
+CFLAGS += -DCORRECT_INTERACTION_GRAVITY
+endif
 
 ifeq ($(output_detail),yes)
 CFLAGS += -DOUTPUT_DETAIL
 endif
 ifeq ($(calc_time),yes)
 CFLAGS += -DCALC_WTIME
+endif
+
+ifeq ($(p2p_fast),yes)
+CFLAGS += -DUSE_P2P_FAST
 endif
 
 CFLAGS += -DMONAR
@@ -160,23 +166,25 @@ PROGRAM = gplum.out
 HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
 
-$(PROGRAM): $(SRC) gravity_kernel_EPEP.hpp gravity_kernel_EPSP.hpp
+$(PROGRAM): $(SRC) gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
 	$(CC) -MMD $(INC) $(CFLAGS) -o $@ $(SRC)
 
-gravity_kernel_EPEP.hpp: $(KERNEL_EPEP)
-	../PIKG/bin/pikg -i $(KERNEL_EPEP) -o gravity_kernel_EPEP.hpp $(CFLAGS_KERNEL_EPEP)
-	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_EPEP.hpp
-	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_EPEP.hpp	
+gravity_kernel_epep.hpp: gravity_kernel_epep.pikg
+	./removeif.sh gravity_kernel_epep.pikg gravity_kernel_epep_noif.pikg $(CFLAGS)
+	../PIKG/bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
+#	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
+#	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
 
-gravity_kernel_EPSP.hpp: $(KERNEL_EPSP)
-	../PIKG/bin/pikg -i $(KERNEL_EPSP) -o gravity_kernel_EPSP.hpp $(CFLAGS_KERNEL_EPSP)
-	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_EPSP.hpp
-	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_EPSP.hpp
-	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_EPSP.hpp	
+gravity_kernel_epsp.hpp: gravity_kernel_epsp.pikg
+	./removeif.sh gravity_kernel_epsp.pikg gravity_kernel_epsp_noif.pikg $(CFLAGS)
+	../PIKG/bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
+	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_epsp.hpp
+#	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
+#	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
 
 all: clean $(PROGRAM)
 
 clean:
 	rm -f *.out *.o *.d *~
-	rm -f gravity_kernel*.hpp*
+	rm -f gravity_kernel*.hpp* gravity_kernel*_noif.pikg*
 

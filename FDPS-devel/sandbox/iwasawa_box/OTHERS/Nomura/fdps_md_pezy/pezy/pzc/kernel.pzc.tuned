@@ -1,0 +1,70 @@
+#include<pzc_builtin.h>
+#include"../class_device.hpp"
+
+void pzc_ForceKernel(const int * j_disp,
+                     const EpiDev * epi,
+                     const EpjDev * epj,
+                     ForceDev * force,
+                     const int n_total){
+    const float cut_off2 = 4.5f*4.5f;
+
+    const int tid = get_tid();
+    const int pid = get_pid();
+
+    //double4 *f = (double4*)0x2000; // stack size must be 0x4000
+    double *lmd = (double*)0x2000; // stack size must be 0x4000
+    float  *lmf =  (float*)0x2000; // stack size must be 0x4000
+
+    const int index_offset = pid;
+    const int index_base = get_maxpid();
+    for(int index=index_offset; index<n_total; index += index_base){
+      double ax,ay,az,pot;
+      ax = ay = az = pot = 0.0;
+      sync_L1();
+      const EpiDev ip   = epi[index];
+      const int id_walk = ip.id_walk;
+      const int j_head  = j_disp[id_walk];
+      const int j_tail  = j_disp[id_walk+1];
+      chgthread();
+      for(int j=j_head+tid; j<j_tail; j+=get_maxtid()){
+	const EpjDev jp = epj[j];
+	chgthread();
+	const float dx = ip.px - jp.px;
+	const float dy = ip.py - jp.py;
+	const float dz = ip.pz - jp.pz;
+	const float r2 = (dx*dx + dy*dy) + dz*dz;
+
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  ax  += (double)(dphi * dx);
+	  ay  += (double)(dphi * dy);
+	  az  += (double)(dphi * dz);
+	  pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+      }
+      // assuming maxtid == 8
+      lmd[4*tid+0] = ax;
+      lmd[4*tid+1] = ay;
+      lmd[4*tid+2] = az;
+      lmd[4*tid+3] = pot;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<8;i++){
+	  lmd[0] += lmd[4*i+0];
+	  lmd[1] += lmd[4*i+1];
+	  lmd[2] += lmd[4*i+2];
+	  lmd[3] += lmd[4*i+3];
+	}
+	force[index].ax  = lmd[0];
+	force[index].ay  = lmd[1];
+	force[index].az  = lmd[2];
+	force[index].pot = lmd[3];
+      }
+      sync_L1();
+    }
+    flush();
+}

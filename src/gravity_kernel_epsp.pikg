@@ -1,0 +1,109 @@
+EPI F64vec xi:pos
+#ifdef USE_POLAR_COORDINATE
+EPI F64vec xi_pol:pos_pol
+#endif
+#ifdef FOR_PIKG01
+EPI S32    idi:id
+EPI S32    idi_dmmy:id_dmmy
+#else
+EPI S64    idi:id
+#endif
+#ifdef USE_INDIVIDUAL_CUTOFF
+EPI F64    routi:r_out
+EPI F64    rsearchi:r_search
+#endif
+F32 eps2
+
+EPJ F64    mj:mass
+EPJ F64vec xj:pos
+#ifdef USE_QUAD
+EPJ F64    qj_xx:quad__DOT__xx
+EPJ F64    qj_yy:quad__DOT__yy
+EPJ F64    qj_zz:quad__DOT__zz
+EPJ F64    qj_xy:quad__DOT__xy
+EPJ F64    qj_zx:quad__DOT__xz
+EPJ F64    qj_yz:quad__DOT__yz
+#endif
+#ifdef USE_POLAR_COORDINATE
+EPJ F64vec xj_car:pos_car
+#endif
+
+FORCE F32vec af:acc
+FORCE F32    pf:phi
+FORCE S32    ngb:neighbor
+FORCE S32    DUMMY_:DUMMY_
+#ifdef FOR_PIKG01
+FORCE S32    idngb:id_neighbor
+FORCE S32    idngb_dmmy:id_neighbor_dmmy
+#else
+FORCE S64    idngb:id_neighbor
+#endif
+
+
+EPI local F32vec xiloc
+EPJ local F32vec xjloc
+EPJ local F32    mjloc
+#ifdef USE_QUAD
+EPJ local F32    qj_xxloc
+EPJ local F32    qj_yyloc
+EPJ local F32    qj_zzloc
+EPJ local F32    qj_xyloc
+EPJ local F32    qj_yzloc
+EPJ local F32    qj_zxloc
+#endif
+
+xiloc = xi - xi[0]
+#ifdef USE_POLAR_COORDINATE
+xjloc = xj_car - xi[0]
+#else
+xjloc = xj - xi[0]
+#endif
+mjloc = mj
+#ifdef USE_QUAD
+qj_xxloc = qj_xx
+qj_yyloc = qj_yy
+qj_zzloc = qj_zz
+qj_xyloc = qj_xy
+qj_yzloc = qj_yz
+qj_zxloc = qj_zx
+#endif
+
+rij = xjloc - xiloc
+r2  = rij * rij + eps2
+r_inv  = rsqrt(r2)
+tmp    = 3.0f - r2*(r_inv*r_inv)
+r_inv *= (tmp * 0.5f)
+
+#ifdef USE_QUAD
+r2_inv  = r_inv  * r_inv
+r3_inv  = r2_inv * r_inv
+r4_inv  = r2_inv * r2_inv
+r5_inv  = r2_inv * r3_inv
+
+tr  = qj_xxloc + qj_yyloc + qj_zzloc
+qxx = 3.0f * qj_xxloc - tr
+qyy = 3.0f * qj_yyloc - tr
+qzz = 3.0f * qj_zzloc - tr
+qxy = 3.0f * qj_xyloc
+qyz = 3.0f * qj_yzloc
+qzx = 3.0f * qj_zxloc
+mtr = -(eps2 * tr)
+
+qr.x = qxx*rij.x + qxy*rij.y + qzx*rij.z
+qr.y = qyy*rij.y + qyz*rij.z + qxy*rij.x
+qr.z = qzz*rij.z + qzx*rij.x + qyz*rij.y
+rqr  = mtr + qr * rij
+rqr_r4_inv = rqr * r4_inv
+
+meff  =  mjloc + 0.5f * rqr_r4_inv
+meff3 = (mjloc + 2.5f * rqr_r4_inv) * r3_inv
+
+pf -= meff * r_inv
+af = af - r5_inv * qr + meff3 * rij
+#else
+m_r    = mjloc * r_inv
+m_r3   = m_r * r_inv * r_inv
+
+af += m_r3 * rij 
+pf -= m_r
+#endif

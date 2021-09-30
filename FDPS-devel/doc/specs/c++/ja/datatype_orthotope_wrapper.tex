@@ -1,0 +1,24 @@
+オルソトープ型のラッパーの定義を以下に示す。
+\begin{lstlisting}[caption=Orthotope Wrapper]
+namespace ParticleSimulator{
+    typedef Orthotope2<F32> F32ort2;
+    typedef Orthotope3<F32> F32ort3;
+    typedef Orthotope2<F64> F64ort2;
+    typedef Orthotope3<F64> F64ort3;
+#ifdef PARTICLE_SIMULATOR_TWO_DIMENSION
+    typedef F32ort2 F32ort;
+    typedef F64ort2 F64ort;
+#else
+    typedef F32ort3 F32ort;
+    typedef F64ort3 F64ort;
+#endif
+}
+\end{lstlisting}
+
+すなわちPS::F32ort2, PS::F32ort3, PS::F64ort2, PS::F64ort3はそれぞれ単
+精度2次元オルソトープ、倍精度2次元オルソトープ、単精度3次元オルソトープ、
+倍精度3次元オルソトープである。FDPSで扱う空間座標系を2次元とした場合、
+PS::F32ortとPS::F64ortはそれぞれ単精度2次元オルソトープ、倍精度2次元オルソトープとなる。
+一方、FDPSで扱う空間座標系を3次元とした場合、PS::F32ortとPS::F64ortは
+それぞれ単精度3次元オルソトープ、倍精度3次元オルソトープとなる。
+

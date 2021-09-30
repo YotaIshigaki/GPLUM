@@ -1,0 +1,18 @@
+set term post enh color eps 24
+
+set logscale
+set xrange [:100]
+set key bottom
+set format "10^{%L}"
+
+set output "diff.eps"
+p "diff.dat" u 2:($5-$2) ti "poly",\
+  "diff.dat" u 2:($4-$2) ti "double",\
+  "diff.dat" u 2:($3-$2) ti "single"
+unset logscale x
+set xrange [0:12]
+set format x "%2g"
+set output "diff_r.eps"
+p "diff.dat" u (sqrt($1)):($5-$2) ti "poly",\
+  "diff.dat" u (sqrt($1)):($4-$2) ti "double",\
+  "diff.dat" u (sqrt($1)):($3-$2) ti "single"

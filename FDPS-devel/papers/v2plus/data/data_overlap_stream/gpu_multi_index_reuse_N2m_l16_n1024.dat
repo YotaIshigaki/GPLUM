@@ -1,0 +1,645 @@
+This is a sample program of N-body simulation on FDPS!
+Number of processes: 1
+Number of threads per process: 24
+BIG STEP START
+n_loop= 0
+wtime_loop= 3.64376712962985 wtime_tot= 3.6437184587121
+ni_ave= 605 nj_ave= 6552 n_walk= 3466
+sum= 3.63670973107219
+  collect_sample_particle= 1.03060156106949e-05
+  decompose_domain= 1.28522515296936e-07
+  exchange_particle= 4.09781932830811e-08
+  set_particle_local_tree= 0.0274180993437767
+  set_particle_global_tree= 8.30739736557007e-06
+  make_local_tree= 0.0799451563507318
+    morton_key_local_tree= 0.00306575559079647
+    morton_sort_local_tree= 0.0272869691252708
+    link_cell_local_tree= 0.0177299305796623
+  make_global_tree= 0.0625847540795803
+    morton_key_global_tree= 2.45869159698486e-07
+    morton_sort_global_tree= 0.0347944125533104
+    link_cell_global_tree= 0.0177782587707043
+  set_root_cell= 0.00136684253811836
+  calc_force= 3.4335216190666
+    calc_force__core__walk_tree= -1.99176951223925e+307
+  calc_moment_local_tree= 0.00317581370472908
+  calc_moment_global_tree= 0.00425280444324017
+  make_LET_1st= 1.97086483240128e-05
+  make_LET_2nd= 0
+  exchange_LET_1st= 8.44709575176239e-06
+  exchange_LET_2nd= 0
+  write_back= 0.0177726056426764
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.00503396987915039
+  make_ipg= 0.00159112736582756
+ WTIME_KICK_DRIFT= 0.00700872763991356
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00681567192077637 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00261425971984863 WTIME_SEND_EPJ= 0.000242710113525391 WTIME_COPY_FOR_SEND_EPJ= 0.0086672306060791 sum= 0.0183398723602295
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00261425971984863 WTIME_COMM_JP= 0.000242710113525391 WTIME_COPY_JP= 0.0086672306060791 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 140592252331438 n_spj_tot= 140592246932781
+n_let_ep_glb= 18445027807821037568 n_let_sp_glb= 140724394284720
+n_int_ep_ep= 9275446228 n_int_ep_sp= 4465615015
+speed(force+walk)= 152.077192214083 [Gflops], speed(total)= 143.302332080438 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 165022332.943344 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 38.5054687702676 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 143.302332080438 [Gflops]
+
+n_loop= 1
+wtime_loop= 0.0957184471189976 wtime_tot= 0.0956987272948027
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0886757094413042
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00768247991800308
+  set_particle_global_tree= 8.05407762527466e-06
+  make_local_tree= 4.26545739173889e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.66358256340027e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0181150138378143
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0181146673858166
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0461224652826786
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00343364290893078
+  calc_moment_global_tree= 0.00454971008002758
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.26734375953674e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00801507011055946
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000736173242330551
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00702301785349846
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00645875930786133 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00264096260070801 WTIME_SEND_EPJ= 0.000293970108032227 WTIME_COPY_FOR_SEND_EPJ= 0.00571608543395996 sum= 0.0151097774505615
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00264096260070801 WTIME_COMM_JP= 0.000293970108032227 WTIME_COPY_JP= 0.00571608543395996 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 14.9650922119988 [Gflops], speed(total)= 7.2110127856745 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.987955736003 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 38.1161384008291 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.2110127856745 [Gflops]
+
+n_loop= 2
+wtime_loop= 0.0930252708494663 wtime_tot= 0.0930062308907509
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0859700664877892
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00766729936003685
+  set_particle_global_tree= 8.15652310848236e-06
+  make_local_tree= 6.83590769767761e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 5.21540641784668e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169293824583292
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169290360063314
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0445449706166983
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.0034729577600956
+  calc_moment_global_tree= 0.00456484779715538
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 9.78633761405945e-06
+  exchange_LET_2nd= 0
+  write_back= 0.0080341212451458
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000737860798835754
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00703616440296173
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00755906105041504 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00324654579162598 WTIME_SEND_EPJ= 0.000298976898193359 WTIME_COPY_FOR_SEND_EPJ= 0.00444507598876953 sum= 0.0155496597290039
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00324654579162598 WTIME_COMM_JP= 0.000298976898193359 WTIME_COPY_JP= 0.00444507598876953 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 15.4950589582668 [Gflops], speed(total)= 7.41977894498073 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 11.0974206241388 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 31.00627635059 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.41977894498073 [Gflops]
+
+n_loop= 3
+wtime_loop= 0.0947041120380163 wtime_tot= 0.0946840029209852
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0873630233108997
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00764243490993977
+  set_particle_global_tree= 8.34278762340546e-06
+  make_local_tree= 3.59490513801575e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.42143869400024e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0168949048966169
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0168945603072643
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0446816682815552
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00343408063054085
+  calc_moment_global_tree= 0.00579888001084328
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.06971710920334e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00815948471426964
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000732170417904854
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00732097961008549
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00649285316467285 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00390386581420898 WTIME_SEND_EPJ= 0.000295639038085938 WTIME_COPY_FOR_SEND_EPJ= 0.00442385673522949 sum= 0.0151162147521973
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00390386581420898 WTIME_COMM_JP= 0.000295639038085938 WTIME_COPY_JP= 0.00442385673522949 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 15.4476538711722 [Gflops], speed(total)= 7.28824684743285 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.9197562107854 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 25.785542021863 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.28824684743285 [Gflops]
+
+n_loop= 4
+wtime_loop= 0.0926998425275087 wtime_tot= 0.0926806200295687
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0856470260769129
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00760787539184093
+  set_particle_global_tree= 7.94790685176849e-06
+  make_local_tree= 3.46451997756958e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.25380063056946e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.016939016059041
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169386714696884
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.042188847437501
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00557640939950943
+  calc_moment_global_tree= 0.00456167571246624
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.04978680610657e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00801608897745609
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000738320872187614
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00703359395265579
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.0065000057220459 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00375032424926758 WTIME_SEND_EPJ= 0.000304222106933594 WTIME_COPY_FOR_SEND_EPJ= 0.00575780868530273 sum= 0.0163123607635498
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00375032424926758 WTIME_COMM_JP= 0.000304222106933594 WTIME_COPY_JP= 0.00575780868530273 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 16.3604124768402 [Gflops], speed(total)= 7.44582652117424 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.905539408294 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 26.8412247340104 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.44582652117424 [Gflops]
+
+n_loop= 5
+wtime_loop= 0.0893636345863342 wtime_tot= 0.0893443282693624
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0823269095271826
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00770356692373753
+  set_particle_global_tree= 8.34092497825623e-06
+  make_local_tree= 4.41446900367737e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.84984707832336e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169388782233
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169383175671101
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0408782530575991
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00347200408577919
+  calc_moment_global_tree= 0.00455215387046337
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.0274350643158e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00802459754049778
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000738399103283882
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00701741874217987
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00755167007446289 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00292634963989258 WTIME_SEND_EPJ= 0.000306844711303711 WTIME_COPY_FOR_SEND_EPJ= 0.00446605682373047 sum= 0.0152509212493896
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00292634963989258 WTIME_COMM_JP= 0.000306844711303711 WTIME_COPY_JP= 0.00446605682373047 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 16.8849423439755 [Gflops], speed(total)= 7.72380117701202 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 11.1082818996123 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 34.398929857095 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.72380117701202 [Gflops]
+
+n_loop= 6
+wtime_loop= 0.0905484408140182 wtime_tot= 0.0905295331031084
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0835045091807842
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00761714018881321
+  set_particle_global_tree= 7.71880149841309e-06
+  make_local_tree= 3.93018126487732e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.40281224250793e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169104058295488
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169099438935518
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0421461258083582
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00344230607151985
+  calc_moment_global_tree= 0.00458461046218872
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 9.99867916107178e-06
+  exchange_LET_2nd= 0
+  write_back= 0.00804612599313259
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000739684328436852
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00702502392232418
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00652575492858887 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00261044502258301 WTIME_SEND_EPJ= 0.00029301643371582 WTIME_COPY_FOR_SEND_EPJ= 0.00574827194213867 sum= 0.0151774883270264
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00261044502258301 WTIME_COMM_JP= 0.00029301643371582 WTIME_COPY_JP= 0.00574827194213867 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 16.3769962899678 [Gflops], speed(total)= 7.62273695488242 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.8546169627825 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 38.5617376076339 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.62273695488242 [Gflops]
+
+n_loop= 7
+wtime_loop= 0.0898222774267197 wtime_tot= 0.0898024570196867
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0827559493482113
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00771381705999374
+  set_particle_global_tree= 8.58865678310394e-06
+  make_local_tree= 3.65078449249268e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.12341547012329e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169090516865253
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169087089598179
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0412885304540396
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00342748314142227
+  calc_moment_global_tree= 0.00458643771708012
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.01234763860703e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00808235071599483
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.00072920136153698
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00704650767147541
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00759649276733398 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00315642356872559 WTIME_SEND_EPJ= 0.000297784805297852 WTIME_COPY_FOR_SEND_EPJ= 0.00445055961608887 sum= 0.0155012607574463
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00315642356872559 WTIME_COMM_JP= 0.000297784805297852 WTIME_COPY_JP= 0.00445055961608887 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11750158 n_int_ep_sp= 6413709
+speed(force+walk)= 16.7171594244152 [Gflops], speed(total)= 7.68436256320836 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 11.0427380857548 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 31.891567721579 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.68436256320836 [Gflops]
+
+BIG STEP START
+n_loop= 8
+wtime_loop= 0.217627104371786 wtime_tot= 0.217586014419794
+ni_ave= 605 nj_ave= 6552 n_walk= 3466
+sum= 0.2098244484514
+  collect_sample_particle= 1.67638063430786e-07
+  decompose_domain= 1.30385160446167e-07
+  exchange_particle= 6.70552253723145e-08
+  set_particle_local_tree= 0.0076157059520483
+  set_particle_global_tree= 8.46944749355316e-06
+  make_local_tree= 0.0349343977868557
+    morton_key_local_tree= 0.00271131657063961
+    morton_sort_local_tree= 0.0274306032806635
+    link_cell_local_tree= 0.00479104928672314
+  make_global_tree= 0.0442417114973068
+    morton_key_global_tree= 2.86847352981567e-07
+    morton_sort_global_tree= 0.0361293349415064
+    link_cell_global_tree= 0.00482518225908279
+  set_root_cell= 0.00134737230837345
+  calc_force= 0.0927349962294102
+    calc_force__core__walk_tree= 0.050963282585144
+  calc_moment_local_tree= 0.00318886525928974
+  calc_moment_global_tree= 0.00430632755160332
+  make_LET_1st= 2.18842178583145e-05
+  make_LET_2nd= 0
+  exchange_LET_1st= 8.98353755474091e-06
+  exchange_LET_2nd= 0
+  write_back= 0.0183290280401707
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.00183754973113537
+  make_ipg= 0.0012487918138504
+ WTIME_KICK_DRIFT= 0.00776156596839428
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.0076291561126709 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00265049934387207 WTIME_SEND_EPJ= 0.000300407409667969 WTIME_COPY_FOR_SEND_EPJ= 0.0044257640838623 sum= 0.0150058269500732
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00265049934387207 WTIME_COMM_JP= 0.000300407409667969 WTIME_COPY_JP= 0.0044257640838623 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 11749518 n_spj_tot= 6413968
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 9274965682 n_int_ep_sp= 4465814477
+speed(force+walk)= 5630.5566104763 [Gflops], speed(total)= 2399.28591408347 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 20.5186552337041 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 37.978992989654 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 2399.28591408347 [Gflops]
+
+n_loop= 9
+wtime_loop= 0.0910906139761209 wtime_tot= 0.0910717770457268
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0838642213493586
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00762609019875526
+  set_particle_global_tree= 8.14534723758698e-06
+  make_local_tree= 4.06056642532349e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.49594449996948e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169960185885429
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169956684112549
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0421512685716152
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00344830937683582
+  calc_moment_global_tree= 0.00457213446497917
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.07455998659134e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00831598602235317
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000735117122530937
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00720755569636822
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00650191307067871 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.0026555061340332 WTIME_SEND_EPJ= 0.000308990478515625 WTIME_COPY_FOR_SEND_EPJ= 0.00577092170715332 sum= 0.0152373313903809
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.0026555061340332 WTIME_COMM_JP= 0.000308990478515625 WTIME_COPY_JP= 0.00577092170715332 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.3746546993556 [Gflops], speed(total)= 7.57720733094341 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.9017535436295 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 37.9073859818625 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.57720733094341 [Gflops]
+
+n_loop= 10
+wtime_loop= 0.0918651763349771 wtime_tot= 0.0918459445238113
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0846253037452698
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00770203769207001
+  set_particle_global_tree= 8.78795981407166e-06
+  make_local_tree= 3.42726707458496e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.30967998504639e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169879049062729
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169875584542751
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0417981557548046
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.0044941920787096
+  calc_moment_global_tree= 0.00456445664167404
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.08592212200165e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00832856073975563
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000730006024241447
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00722064077854156
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00760340690612793 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00366926193237305 WTIME_SEND_EPJ= 0.000304460525512695 WTIME_COPY_FOR_SEND_EPJ= 0.00445914268493652 sum= 0.0160362720489502
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00366926193237305 WTIME_COMM_JP= 0.000304460525512695 WTIME_COPY_JP= 0.00445914268493652 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.512988564589 [Gflops], speed(total)= 7.51332001457451 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 11.0326963998721 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 27.4342082563992 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.51332001457451 [Gflops]
+
+n_loop= 11
+wtime_loop= 0.0911434553563595 wtime_tot= 0.0911238007247448
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0838740281760693
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00763783231377602
+  set_particle_global_tree= 7.82497227191925e-06
+  make_local_tree= 3.66941094398499e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.55182385444641e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169714037328959
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169709790498018
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0421952102333307
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00342795997858047
+  calc_moment_global_tree= 0.00456025823950768
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 9.50321555137634e-06
+  exchange_LET_2nd= 0
+  write_back= 0.00833708420395851
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.00072658434510231
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00724977254867554
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00647115707397461 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00336289405822754 WTIME_SEND_EPJ= 0.000295400619506836 WTIME_COPY_FOR_SEND_EPJ= 0.00568985939025879 sum= 0.0158193111419678
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00336289405822754 WTIME_COMM_JP= 0.000295400619506836 WTIME_COPY_JP= 0.00568985939025879 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.3576023009073 [Gflops], speed(total)= 7.57281436501783 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.9630727613411 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 29.9335317310162 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.57281436501783 [Gflops]
+
+n_loop= 12
+wtime_loop= 0.0897624772042036 wtime_tot= 0.0897362753748894
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0825036913156509
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00772569887340069
+  set_particle_global_tree= 7.72066414356232e-06
+  make_local_tree= 5.30853867530823e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.40281224250793e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0169854536652565
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0169851165264845
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0406959559768438
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00343743525445461
+  calc_moment_global_tree= 0.00456626527011395
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.05705112218857e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00833761505782604
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000736445188522339
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00723258405923843
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00752949714660645 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00288176536560059 WTIME_SEND_EPJ= 0.000326871871948242 WTIME_COPY_FOR_SEND_EPJ= 0.00448870658874512 sum= 0.0152268409729004
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00288176536560059 WTIME_COMM_JP= 0.000326871871948242 WTIME_COPY_JP= 0.00448870658874512 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.9602224946561 [Gflops], speed(total)= 7.68932063260479 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 11.140993663542 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 34.9311214582596 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.68932063260479 [Gflops]
+
+n_loop= 13
+wtime_loop= 0.0906751323491335 wtime_tot= 0.0906559694558382
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0834296233952045
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00762979686260223
+  set_particle_global_tree= 7.89202749729156e-06
+  make_local_tree= 3.66941094398499e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.42143869400024e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.017093488946557
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0170930586755276
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0415867585688829
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00340784341096878
+  calc_moment_global_tree= 0.00458464212715626
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.04606151580811e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00836979597806931
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000738577917218208
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00722634606063366
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00649929046630859 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00346922874450684 WTIME_SEND_EPJ= 0.00029754638671875 WTIME_COPY_FOR_SEND_EPJ= 0.00439190864562988 sum= 0.0146579742431641
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00346922874450684 WTIME_COMM_JP= 0.00029754638671875 WTIME_COPY_JP= 0.00439190864562988 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.5969287280891 [Gflops], speed(total)= 7.61192677770154 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.9069596804226 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 29.0160446062803 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.61192677770154 [Gflops]
+
+n_loop= 14
+wtime_loop= 0.0898054465651512 wtime_tot= 0.089785423129797
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0825306065380573
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.0077230092138052
+  set_particle_global_tree= 8.04848968982697e-06
+  make_local_tree= 3.94880771636963e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.47731804847717e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0170733593404293
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0170727483928204
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0406424589455128
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00343131646513939
+  calc_moment_global_tree= 0.00457613170146942
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 1.05798244476318e-05
+  exchange_LET_2nd= 0
+  write_back= 0.00831840746104717
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000746900215744972
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00725481659173965
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00753331184387207 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00288009643554688 WTIME_SEND_EPJ= 0.000308990478515625 WTIME_COPY_FOR_SEND_EPJ= 0.004486083984375 sum= 0.0152084827423096
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00288009643554688 WTIME_COMM_JP= 0.000308990478515625 WTIME_COPY_JP= 0.004486083984375 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.9825469695456 [Gflops], speed(total)= 7.68564151061006 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 11.1353521185024 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 34.951363002151 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.68564151061006 [Gflops]
+
+n_loop= 15
+wtime_loop= 0.0906390305608511 wtime_tot= 0.0906192418187857
+ni_ave= 605 nj_ave= 8 n_walk= 3466
+sum= 0.0833406839519739
+  collect_sample_particle= 0
+  decompose_domain= 0
+  exchange_particle= 0
+  set_particle_local_tree= 0.00764183886349201
+  set_particle_global_tree= 8.71717929840088e-06
+  make_local_tree= 6.51925802230835e-07
+    morton_key_local_tree= 0
+    morton_sort_local_tree= 2.3283064365387e-07
+    link_cell_local_tree= 0
+  make_global_tree= 0.0170331969857216
+    morton_key_global_tree= 0
+    morton_sort_global_tree= 0.0170327741652727
+    link_cell_global_tree= 0
+  set_root_cell= 0
+  calc_force= 0.0415563825517893
+    calc_force__core__walk_tree= 0
+  calc_moment_local_tree= 0.00343135371804237
+  calc_moment_global_tree= 0.00461076945066452
+  make_LET_1st= 0
+  make_LET_2nd= 0
+  exchange_LET_1st= 9.70438122749329e-06
+  exchange_LET_2nd= 0
+  write_back= 0.00831020995974541
+  add_moment_as_sp_local= 0
+  add_moment_as_sp_glboal= 0.000737858936190605
+  make_ipg= 0
+ WTIME_KICK_DRIFT= 0.00727855786681175
+WTIME_KERNEL= 0 WTIME_H2D= 0 WTIME_COPY_FOR_H2D= 0.00651931762695312 WTIME_D2H= 0 WTIME_COPY_FOR_D2H= 0.00383257865905762 WTIME_SEND_EPJ= 0.000293731689453125 WTIME_COPY_FOR_SEND_EPJ= 0.00439095497131348 sum= 0.0150365829467773
+WTIME_COMM_IP= 0 WTIME_COPY_IP= 0.00383257865905762 WTIME_COMM_JP= 0.000293731689453125 WTIME_COPY_JP= 0.00439095497131348 WTIME_COMM_ID= 0 WTIME_COPY_ID= 0
+n_epi_tot= 2097152 n_epj_tot= 0 n_spj_tot= 0
+n_let_ep_glb= 0 n_let_sp_glb= 0
+n_int_ep_ep= 11749518 n_int_ep_sp= 6413968
+speed(force+walk)= 16.609060404616 [Gflops], speed(total)= 7.61495863017446 [Gflops]
+BW_H2D= inf [GB/s] BW_COPY_FOR_H2D= 12.867309862797 [GB/s] BW_D2H= inf [GB/s] BW_COPY_FOR_D2H= 26.2651611238559 [GB/s]
+speed(kernel only)= inf [Gflops], speed(total)= 7.61495863017446 [Gflops]
+

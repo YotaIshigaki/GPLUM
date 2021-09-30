@@ -1,0 +1,801 @@
+\subsection{$N$体シミュレーション}
+\label{sec:Nbody}
+
+本節では、PSLの使用例を記述する。サンプルコードには省略したものだけを示
+した。
+
+$N$体シミュレーションの時間積分のループは以下の手順で実行される。ここで
+時間積分法はリープフロッグ法を使用する。
+\begin{enumerate}
+\item $m_i$, $\bm{x}_i^{(0)}$, $\bm{v}_i^{(0)}$, $\bm{a}_i^{(0)}$は既知。
+  上付き添字``$(0)$''は時刻を表す。
+\item $\bm{x}_i^{(1)}$を以下の式で導出し、
+  \begin{align}
+    \bm{x}_i^{(1)} &= \bm{x}_i^{(0)} + \Delta t \bm{v}_i^{(0)} + 0.5
+    \Delta t^2 \bm{a}_i^{(0)} \label{eq:ipos}
+  \end{align}
+  $\bm{v}_i^{(1/2)}$を以下の式で導出($X=\bm{v}$)。
+  \begin{align}
+    X_i^{(1/2)} &= X_i^{(0)} + 0.5 \Delta t
+    \dot{X}_i^{(0)} \label{eq:half}
+  \end{align}
+\item $m_i$と$\bm{x}_i^{(1)}$を用いて$\bm{a}_i^{(1)}$を導出。
+\item 以下の式を用いて$\bm{v}_i^{(1)}$を導出($X=\bm{v}$)。
+  \begin{align}
+    X_i^{(1)} = X_i^{(1/2)} + 0.5 \Delta t \dot{X}_i^{(1)} \label{eq:corr}
+  \end{align}
+\item 計算領域の分割と粒子の分配を実行。
+\item ステップ1に戻る。
+\end{enumerate}
+
+以上の手順をPSLを用いて実装すると以下のようなコードとなる。
+
+\begin{lstlisting}[caption=$N$体シミュレーションのサンプルコード]
+#include<particle_simulator.h> // 必須
+
+class ForceGrav{
+public:
+    PS::F64vec acc;
+    PS::F64 pot;
+    void clear(){
+        acc = 0.0;
+        pot = 0.0;
+    }
+};
+
+class FPGrav{
+public:
+    PS::S64 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    PS::F64vec vel;
+    PS::F64vec acc;
+    PS::F64 pot;
+    PS::F64vec getPos() const { return pos; }
+    void copyFromForce(const ForceGrav & force){
+        acc = force.acc;
+        pot = force.pot;
+    }
+};
+
+class EPIGrav{
+public:
+    PS::S64 id;
+    PS::F64vec pos;
+    static PS::F64 eps;
+    PS::F64vec getPos() const {pos;}
+    void copyFromFP(const FPGrav & fp){ 
+        pos = fp.pos;
+        id = fp.id;
+    }
+};
+
+PS::F64 EPIGrav::eps = 1.0/32.0;
+
+class EPJGrav{
+public:
+    PS::S64 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    void copyFromFP(const FPGrav & fp){ 
+        mass = fp.mass;
+        pos = fp.pos;
+        id = fp.id;
+    }
+    PS::F64vec getPos() const { return pos; }
+    PS::F64 getCharge() const { return mass; }
+};
+
+struct CalcForceEpEp{
+    void operator () (const EPIGrav * ep_i,
+                      const PS::S32 n_ip,
+                      const EPJGrav * ep_j,
+                      const PS::S32 n_jp,
+                      ForceGrav * force){
+        PS::F64 eps2 = EPIGrav::eps * EPIGrav::eps;
+        for(PS::S32 i=0; i<n_ip; i++){
+            PS::F64vec xi = ep_i[i].pos;
+            PS::F64vec ai = 0.0;
+            PS::F64 poti = 0.0;
+            PS::S64 idi = ep_i[i].id;
+            for(PS::S32 j=0; j<n_jp; j++){
+                if( idi == ep_j[j].id ) continue;
+                PS::F64vec rij = xi - ep_j[j].pos;
+                PS::F64 r3_inv = rij * rij + eps2;
+                PS::F64 r_inv = 1.0/sqrt(r3_inv);
+                r3_inv = r_inv * r_inv;
+                r_inv *= ep_j[j].mass;
+                r3_inv *= r_inv;
+                ai -= r3_inv * rij;
+                poti -= r_inv;
+            }
+            force[i].acc += ai;
+            force[i].pot += poti;
+        }
+    }
+};
+
+struct CalcForceSpEp{
+    void operator () (const EPIGrav * ep_i,
+                      const PS::S32 n_ip,
+                      const PS::SPJMonoPole * sp_j,
+                      const PS::S32 n_jp,
+                      ForceGrav * force){
+        PS::F64 eps2 = EPIGrav::eps * EPIGrav::eps;
+        for(PS::S32 i=0; i<n_ip; i++){
+            PS::F64vec xi = ep_i[i].pos;
+            PS::F64vec ai = 0.0;
+            PS::F64 poti = 0.0;
+            for(PS::S32 j=0; j<n_jp; j++){
+                PS::F64vec rij = xi - sp_j[j].pos;
+                PS::F64 r3_inv = rij * rij + eps2;
+                PS::F64 r_inv = 1.0/sqrt(r3_inv);
+                r3_inv = r_inv * r_inv;
+                r_inv *= sp_j[j].mass;
+                r3_inv *= r_inv;
+                ai -= r3_inv * rij;
+                poti -= r_inv;
+            }
+            force[i].acc += ai;
+            force[i].pot += poti;
+        }
+    }
+};
+
+template<class Tpsys>
+void Kick(Tpsys & system,
+          const PS::F64 dt){
+    PS::S32 n = system.getNumberOfParticleLocal();
+    for(int i=0; i<n; i++){
+        system[i].vel  += system[i].acc * dt;
+    }
+}
+
+template<class Tpsys>
+void Drift(Tpsys & system,
+           const PS::F64 dt){
+    PS::S32 n = system.getNumberOfParticleLocal();
+    for(int i=0; i<n; i++){
+        system[i].pos  += system[i].vel * dt;
+    }
+}
+
+int main(int argc, char *argv[]){
+    std::cout<<std::setprecision(15);
+    std::cerr<<std::setprecision(15);
+    PS::Initialize(argc, argv);
+
+    char sinput[1024];
+    int c;
+    while((c=getopt(argc,argv,"i:h")) != -1){
+        switch(c){
+        case 'i':
+            sprintf(sinput,optarg);
+            break;
+        case 'h':
+            std::cerr<<"i: input file name (nemo ascii)"<<std::endl;
+            return 0;
+        }
+    }
+
+    const PS::F32 dt = 1.0/128.0;
+    const PS::F32 time_end = 10.0;
+    PS::ParticleSystem<FPGrav> system_grav;
+    system_grav.initialize();
+    PS::S32 n_grav_glb, n_grav_loc;
+    PS::F32 time_sys;
+    ReadNemoAscii(system_grav, n_grav_glb, n_grav_loc, time_sys, sinput);
+
+    PS::F32 coef_ema = 0.7;
+    PS::DomainInfo dinfo;
+    dinfo.initialize(coef_ema);
+    dinfo.decomposeDomainAll();
+
+    system_grav.exchangeParticle(dinfo);
+    n_grav_loc = system_grav.getNumberOfParticleLocal();
+
+    PS::TreeType<ForceGrav, EPIGrav, EPJGrav>::TreeForMonoPole tree_grav;
+
+    PS::F32 theta = 0.5;
+    tree_grav.initialize(n_grav_glb, theta);
+
+    tree_grav.calcForceAllAndWriteBack(CalcForceEpEp(), CalcForceSpEp(), system_grav, dinfo);
+
+    Kick(system_grav, dt*0.5);
+
+    while(time_sys < time_end){
+        time_sys += dt;
+        Drift(system_grav, dt);
+        if( fmod(time_sys, 1.0/32.0) == 0.0){
+            dinfo.decomposeDomainAll();
+        }
+        system_grav.exchangeParticle(dinfo);
+        tree_grav.calcForceAllAndWriteBack(CalcForceEpEp(), CalcForceSpEp(), system_grav, dinfo);
+        Kick(system_grav, dt);
+    }
+
+    PS::Finalize();
+    return 0;
+}
+
+\end{lstlisting}
+
+
+\subsection{stdSPHシミュレーション}
+\label{sec:stdsph}
+
+stdSPHシミュレーションは以下の手順で実行される。時間積分法は先の$N$体シ
+ミュレーションと同様にリープフロッグ法である。
+\begin{enumerate}
+\item $m_i$, $\bm{x}_i^{(0)}$, $\bm{v}_i^{(0)}$, $\bm{a}_i^{(0)}$,
+  $u_i^{(0)}$, $\dot{u}_i^{(0)}$, $\alpha_i^{(0)}$,
+  $\dot{\alpha}_i^{(0)}$, $h_i^{(0)}$は既知。$u$は内部エネルギー、
+  $\alpha$は人工粘性に用いる変数である。
+\item $\bm{x}_i^{(1)}$を式(\ref{eq:ipos})で導出、$\bm{v}_i^{(1/2)}$,
+  $u_i^{(1/2)}$ $\alpha_i^{(1/2)}$を式(\ref{eq:half})で導出、
+  $h_i^{({\rm p})}=h_i^{(0)}$とし、$\bm{v}_i^{({\rm p})}$, $u_i^{({\rm
+    p})}$, $\alpha_i^{({\rm p})}$は以下のように導出($X=\bm{v}$, $u$,
+  $\alpha$)。ここで上付き添字$({\rm p})$は予測値であることを示す。
+  \begin{align}
+    X_i^{({\rm p})} &= X_i^{(0)} + \Delta t
+    \dot{X}_i^{(0)} \label{eq:pred}
+  \end{align}
+\item 以下のループにより$\rho_i^{(1)}$, $h_i^{(1)}$, $(\partial \rho_i
+  / \partial h_i)^{(1)}$, $(\nabla \cdot \bm{v}_i)^{(1)}$, $(\nabla
+  \times \bm{v}_i)^{(1)}$を導出。
+  \label{proc:lpsph}
+  \begin{enumerate}
+    \renewcommand{\labelenumii}{\ref{proc:lpdisph}.\arabic{enumii}.}
+  \item 以下の式を用いて$\rho_i^{(1)}$, $(\partial \rho_i / \partial
+    h_i)^{(1)}$, $(\nabla \cdot \bm{v}_i)^{(1)}$, $(\nabla \times
+    \bm{v}_i)^{(1)}$を導出(上付き添字``$(1)$''は省略。以下、式中は同様)。
+    このとき近傍粒子数$N_{{\rm n},i}$($j$粒子数と同義)もカウント。
+    \begin{align}
+      \rho_i &= \sum_j m_j W(\bm{x}_{ij},h_i^{({\rm
+          p})}) \label{eq:rhoi} \\ \left( \frac{\partial
+        \rho_i}{\partial h_i} \right) &= \sum_j m_j \frac{\partial
+        W}{\partial h_i}(\bm{x}_{ij}, h_i^{({\rm p})}) \\ \rho_i
+      \left( \nabla \cdot \bm{v}_i \right) &= - \sum_j m_j
+      \bm{v}_{ij}^{({\rm p})} \cdot \nabla W(\bm{x}_{ij}, h_i^{({\rm
+          p})}) \\ \rho_i \left( \nabla \times \bm{v}_i \right) &= -
+      \sum_j m_j \bm{v}_{ij}^{({\rm p})} \times \nabla W(\bm{x}_{ij},
+      h_i^{({\rm p})})
+    \end{align}
+  \item $\rho_i^{(1)}$, $m_i$, $h_i^{({\rm p})}$, $N_{{\rm n},i}$が拘束
+    式を満たしたら、$h_i^{(1)}=h_i^{({\rm p})}$として次ステップへ。そう
+    でなければ、$h_i^{({\rm p})}$を$\rho_i^{(1)}$と$m_i$から導出してス
+    テップ3.1へ戻る。
+  \end{enumerate}
+\item 圧力$p_i^{(1)}$と音速$c_{{\rm s},i}^{(1)}$を$\rho_i^{(1)}$と
+  $u_i^{({\rm p})}$から導出。
+\item $\bm{a}_i^{(1)}$と$\dot{u}_i^{(1)}$を以下の式を用いて導出。
+  \begin{align}
+    \bm{a}_i &= - \sum_j m_j \left\{ f_i^{\rm grad}
+    \frac{p_i}{\rho_i^2} \nabla W(\bm{x}_{ij},h_i) + f_j^{\rm grad}
+    \frac{p_j}{\rho_j^2} \nabla W(\bm{x}_{ij},h_j) + \Pi_{ij} \nabla
+    W(\bm{x}_{ij},h_{ij}) \right\} \\ \dot{u}_i &= f_i^{\rm grad}
+    \frac{p_i}{ \rho_i^2} \sum_j m_j \bm{v}_{ij}^{({\rm p})} \cdot
+    \nabla W(\bm{x}_{ij},h_i) + \frac{1}{2} \sum_j m_j \Pi_{ij}
+    \bm{v}_{ij}^{({\rm p})} \cdot \nabla W(\bm{x}_{ij},h_{ij})
+  \end{align}
+  ここで、
+  \begin{align}
+    f_i^{\rm grad} &= \left( 1 + \frac{1}{3} \frac{h_i}{\rho_i}
+    \frac{\partial \rho_i}{\partial h_i} \right)^{-1} \\
+    \Pi_{ij} &= \left\{
+    \begin{array}{cc}
+      \displaystyle F_i \frac{-\alpha_i c_{{\rm s},ij} \mu_{ij} +
+        \beta_i \mu_{ij}^2}{\rho_{ij}} & (\bm{x}_{ij} \cdot
+      \bm{v}_{ij} < 0) \\ 0 & (\mbox{otherwise})
+    \end{array}
+    \right. \\
+  \end{align}
+  さらに
+  \begin{align}
+    \mu_{ij} &= \frac{h_{ij} \bm{x}_{ij} \cdot
+      \bm{v}_{ij}}{|\bm{r}_{ij}|^2+\varepsilon h_{ij}^2} \\ F_i &=
+    \frac{\nabla \cdot \bm{v}_i}{|\nabla \cdot \bm{v}_i| + |\nabla
+      \times \bm{v}_i| + \varepsilon_{\rm b} c_{{\rm s}, i}/h_i} \\
+    \beta_i &\propto \alpha_i
+  \end{align}
+\item $\dot{\alpha}_i^{(1)}$を以下の式から導出。
+  \begin{align}
+    \dot{\alpha}_i = - \frac{\alpha_i - \alpha_{\rm min}}{\tau_i} +
+    \max \left[ -(\nabla \cdot \bm{v}_i) (\alpha_{\rm max} -
+      \alpha_i), 0 \right] \label{eq:alphai}
+  \end{align}
+  ここで
+  \begin{align}
+    \tau_i = \frac{h_i}{\xi c_{{\rm s},i}}
+  \end{align}
+\item $\bm{v}_i^{(1)}$, $u_i^{(1)}$, $\alpha_i^{(1)}$を式
+  (\ref{eq:corr})から導出。
+\item 計算領域の分割と粒子の分配を実行。
+\item ステップ1に戻る。
+\end{enumerate}
+
+以下のサンプルはステップ3の密度とカーネル半径を求めるコードである。
+拘束条件はカーネル半径内の粒子数を一定とした。
+
+\begin{lstlisting}[caption=stdSPHシミュレーションのサンプルコード]
+#include<particle_simulator.h> // 必須
+
+class ResultDens{
+public:
+    void clear(){ //絶対必要。名前固定。
+        density = 0.0;
+        r_search_next = 0.0;
+        n_neighbour = 0;
+        kernel_length = 0.0;
+    }
+    PS::F64 density;
+    PS::F64 r_search_next;
+    PS::S32 n_neighbour;
+    PS::F64 kernel_length;
+};
+
+class FullPtcl{
+public:
+    PS::F64 getCharge() const { //絶対必要。名前固定。
+        return this->mass;
+    }
+    PS::F64vec getPos() const { //絶対必要。名前固定。
+        return this->pos;
+    }
+    PS::F64 getRSearch() const { //絶対必要。名前固定。
+        return this->r_search;
+    }
+    void copyFromForce(const ResultDens & _dens){//絶対必要。名前固定。
+        this->density = _dens.density;
+        this->kernel_length = _dens.kernel_length;
+    }
+
+    //以下名前含めユーザー適宜。
+    PS::S64 id;
+    PS::F64 mass;
+    PS::F64 kernel_length;
+    PS::F64 r_search;
+    PS::F64 density;
+    PS::F64vec pos;
+    PS::F64vec vel;
+    PS::S32 loadOneParticle(FILE * fp) {
+        PS::S32 ret = 0;
+        ret = fscanf(fp, "%ld%lf%lf%lf%lf%lf%lf%lf%lf",
+                     &this->id, &this->mass, &this->kernel_length,
+                     &this->pos.x, &this->pos.y, &this->pos.z,
+                     &this->vel.x, &this->vel.y, &this->vel.z);
+        return ret;
+    }
+    void dumpOneParticle(FILE * fp){
+        fprintf(fp, "%lf   %lf   %lf   %lf   %lf   %lf   %lf   \n", 
+                this->mass,
+                this->pos.x, this->pos.y, this->pos.z,
+                this->vel.x, this->vel.y, this->vel.z);
+    }
+};
+
+class EPIDens{
+public:
+    enum{
+        n_neighbour_crit = 50,
+    };
+    PS::F64vec pos;
+    PS::F64 r_search;
+
+    void copyFromFP(const FullPtcl & rp){
+        this->r_search = rp.getRSearch();
+        this->pos = rp.getPos();
+    }
+};
+
+class EPJDens{
+public:
+    PS::F64 mass;
+    PS::F64vec pos;
+    void copyFromFP(const FullPtcl & rp){
+        this->mass = rp.getCharge();
+        this->pos = rp.getPos();
+    }
+};
+
+PS::F64 CubicSpline(const PS::F64 r_sq, 
+                    const PS::F64 h_inv){
+    PS::F64 xi = sqrt(r_sq)*h_inv;
+    PS::F64 xi10 = (1.0-xi > 0.0) ? 1.0-xi : 0.0;
+    PS::F64 xi05 = (0.5-xi > 0.0) ? 0.5-xi : 0.0;
+    return xi10*xi10*xi10 - 4.0*xi05*xi05*xi05;
+}
+
+void CalcDensityEpEp(const EPIDens * ep_i,
+                     const PS::S32   n_ip,
+                     const EPJDens * ep_j,
+                     const PS::S32   n_jp,
+                     ResultDens * dens)
+{
+    std::vector < std::pair < PS::F64, PS::F64 > > r_neighbour_sq_with_mass;
+    r_neighbour_sq_with_mass.reserve(EPIDens::n_neighbour_crit*3+100);
+    for(PS::S32 i=0; i<n_ip; i++){
+        if (ep_i[i].r_search == 0.0) continue; 
+        r_neighbour_sq_with_mass.clear();
+        const PS::F64 rsearch2 = ep_i[i].r_search*ep_i[i].r_search;
+        for(PS::S32 j=0; j<n_ip; j++){
+            const PS::F64vec dr = ep_i[i].pos - ep_j[j].pos;
+            const PS::F64 r_sq = dr * dr;
+            const PS::F64 mj = ep_j[j].mass;
+            if( r_sq < rsearch2 ){
+                r_neighbour_sq_with_mass.push_back( std::make_pair(r_sq, mj) );
+            }
+        }
+        const size_t ncrit = EPIDens::n_neighbour_crit;
+        if( r_neighbour_sq_with_mass.size() <=  ncrit ){
+            // search radius was too small !!
+            dens[i].r_search_next = ep_i[i].r_search * cbrt(2.0);
+            continue;
+        }
+        else{
+            dens[i].r_search_next = 0.0; // DON'T need to search next
+
+            std::sort(r_neighbour_sq_with_mass.begin(), r_neighbour_sq_with_mass.end());
+            dens[i].kernel_length = sqrt( r_neighbour_sq_with_mass[ncrit-1].first );
+            PS::F64 tmp_dens = 0.0;
+            PS::F64 h_inv = 1.0/dens[i].kernel_length;
+            PS::F64 Cnorm = (16.0/M_PI) * (h_inv * h_inv * h_inv);
+            for(PS::S32 k=0; k<PS::S32(ncrit); k++){
+                tmp_dens += r_neighbour_sq_with_mass[k].second * CubicSpline(r_neighbour_sq_with_mass[k].first, h_inv);
+            }
+            dens[i].density = Cnorm * tmp_dens;
+        }
+    }
+}
+
+int main(int argc, char *argv[]){
+
+    PS::Initialize(argc, argv); //初期化
+
+    PS::TreeType<ResultDens, EPIDens, EPJDens>::TreeForGatherSearch tree_dens; // for density
+
+    PS::ParticleSystem<FullPtcl> sph_system; //粒子種の数だけ生成
+
+    sph_system.loadParticleSingle(argv[1], "r", &FullPtcl::loadOneParticle); //単一ファイル用
+
+    PS::DomainInfo dinfo;
+    dinfo.initialize("domain_info.para");
+    tree_dens.initialize(sph_system.getNumberOfParticleTotal()); //引数は配列の領域確保に使う。
+
+    dinfo.decomposeDomainAll(sph_system);
+
+    PS::S32 nloc = sph_system.getNumberOfParticleLocal();
+    //探査する半径を膨らます。
+    for(PS::S32 i=0; i<nloc; i++){
+        sph_system[i].r_search = sph_system[i].kernel_length;
+    }
+    for(bool repeat = true; repeat; ){
+        tree_dens.calcForceAll(CalcDensityEpEp, dinfo, sph_system);
+        PS::S32 nploc = tree_dens.getNumberOfParticleLocal();
+        repeat = false;
+
+        for(PS::S32 i=0; i<nploc; i++){
+            ResultDens dens_tmp = tree_dens.getForce(i);
+            sph_system[i].r_search    = dens_tmp.r_search_next;
+            sph_system[i].density     = dens_tmp.density;
+            sph_system[i].kernel_length = dens_tmp.kernel_length;
+            if(dens_tmp.r_search_next > 0.0){
+                repeat = true;
+            }
+        }
+        repeat = PS::Comm::synchronizeConditionalBranch(repeat);
+    }
+    PS::Finalize();
+    return 0;
+}
+\end{lstlisting}
+
+相互作用クラスは、{\tt tree\_dens}であり、ツリークラスのタイプは{\tt
+TreeForSearch}を使っている。for文の内側はカーネル半径(\tt
+kernel\_length)を求めるためのループである。LET交換時に、推定されるカー
+ネル半径よりやや大きめの値(\tt r\_search)を使ってLETをとってくることで、
+通信が頻繁に起こるのを防いている。もし、(\tt r\_search)より内側にいる粒
+子数が拘束条件を下回ったら、再び通信からやり直す。この際拘束条件を満た
+した粒子は{\tt r\_search}に0を代入することで、無駄な通信を減らす。
+
+\subsection{複数種類のシミュレーション}
+
+$N$体＋SPHシミュレーションを行う場合(sphは密度のみ求めてる)、以下のよう
+に実装される。
+
+\begin{lstlisting}[caption=$N$体＋SPHシミュレーションのサンプルコード]
+#include<particle_simulator.h> // 必須
+
+// Gravity //
+class ResultForce{ //名前自由。
+public:
+    void clear(){ //絶対必要。名前固定。
+        acc = 0.0;
+        pot = 0.0;
+    }
+
+    //以下名前含めユーザー定義。
+    PS::F64vec acc;
+    PS::F64 pot;
+};
+
+class GravFP{ //絶対必要。名前自由。
+public:
+    PS::F64vec getPos() const { //絶対必要。名前固定。
+        return this->pos;
+    }
+    PS::F64 getCharge() const { //絶対必要。名前固定。
+        return this->mass;
+    }
+    void copyFromForce(const ResultForce & _force){//絶対必要。名前固定。
+        this->acc = _force.acc;
+        this->pot = _force.pot;
+    }
+
+    //以下名前含めユーザー定義。
+    PS::S64 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+    PS::F64vec vel;
+    PS::F64vec acc;
+    PS::F64 pot;
+    PS::S32 loadOneParticle(FILE * fp) {
+        PS::S32 ret = 0;
+        ret = fscanf(fp, "%lf%lf%lf%lf%lf%lf%lf",
+                     &this->mass,
+                     &this->pos[0], &this->pos[1], &this->pos[2],
+                     &this->vel[0], &this->vel[1], &this->vel[2]);
+        std::cout<<"this->mass"<<this->mass<<std::endl;
+        return ret;
+    }
+    void dumpOneParticle(FILE * fp){
+        fprintf(fp, "%lf   %lf   %lf   %lf   %lf   %lf   %lf   \n", 
+                this->mass,
+                this->pos[0], this->pos[1], this->pos[2],
+                this->vel[0], this->vel[1], this->vel[2]);
+    }
+};
+
+class GravEPI{
+public:
+    void copyFromFP(const GravFP & rp){ //絶対必要。名前固定。
+        pos = rp.pos;
+        id = rp.id;
+    }
+
+    //以下名前含めユーザー定義。
+    PS::F64vec pos;
+    PS::S64 id;
+};
+
+class GravEPJ{
+public:
+    void copyFromFP(const GravFP & rp){ //絶対必要。名前固定。
+        mass = rp.mass;
+        pos = rp.pos;
+        id = rp.id;
+    }
+
+    //以下名前含めユーザー定義。
+    PS::S64 id;
+    PS::F64 mass;
+    PS::F64vec pos;
+};
+
+//相互作用関数
+void CalcGravEpEp(const GravEPI * ep_i,
+                   const PS::S32 n_ip,
+                   const GravEPJ * ep_j,
+                   const PS::S32 n_jp,
+                   ResultForce * force){
+    for(PS::S32 i=0; i<n_ip; i++){
+        PS::F64vec xi = ep_i[i].pos;
+        PS::F64vec ai = 0.0;
+        PS::F64 poti = 0.0;
+        PS::S64 idi = ep_i[i].id;
+        for(PS::S32 j=0; j<n_jp; j++){
+            if( idi == ep_j[j].id ) continue;
+            PS::F64vec rij = xi - ep_j[j].pos;
+            PS::F64 r3_inv = rij * rij;
+            PS::F64 r_inv = 1.0/sqrt(r3_inv);
+            r3_inv = r_inv * r_inv;
+            r_inv *= ep_j[j].mass;
+            r3_inv *= r_inv;
+            ai -= r3_inv * rij;
+            poti -= r_inv;
+        }
+        force[i].acc = ai;
+        force[i].pot = poti;
+    }
+}
+
+// SPH //
+class ResultDens{
+public:
+    void clear(){ //絶対必要。名前固定。
+        density = 0.0;
+        r_search_next = 0.0;
+        n_neighbour = 0;
+        kernel_length = 0.0;
+    }
+    PS::F64 density;
+    PS::F64 r_search_next;
+    PS::S32 n_neighbour;
+    PS::F64 kernel_length;
+};
+
+class DensFP{
+public:
+    PS::F64 getCharge() const { //絶対必要。名前固定。
+        return this->mass;
+    }
+    PS::F64vec getPos() const { //絶対必要。名前固定。
+        return this->pos;
+    }
+    PS::F64 getRSearch() const { //絶対必要。名前固定。
+        return this->r_search;
+    }
+    void copyFromForce(const ResultDens & _dens){//絶対必要。名前固定。
+        this->density = _dens.density;
+        this->kernel_length = _dens.kernel_length;
+    }
+
+    //以下名前含めユーザー定義。
+    PS::S64 id;
+    PS::F64 mass;
+    PS::F64 kernel_length;
+    PS::F64 r_search;
+    PS::F64 density;
+    PS::F64vec pos;
+    PS::F64vec vel;
+    PS::S32 loadOneParticle(FILE * fp) {
+        PS::S32 ret = 0;
+        ret = fscanf(fp, "%ld%lf%lf%lf%lf%lf%lf%lf%lf",
+                     &this->id, &this->mass, &this->kernel_length,
+                     &this->pos.x, &this->pos.y, &this->pos.z,
+                     &this->vel.x, &this->vel.y, &this->vel.z);
+        return ret;
+    }
+    void dumpOneParticle(FILE * fp){
+        fprintf(fp, "%lf   %lf   %lf   %lf   %lf   %lf   %lf   \n", 
+                this->mass,
+                this->pos.x, this->pos.y, this->pos.z,
+                this->vel.x, this->vel.y, this->vel.z);
+    }
+};
+
+class EPIDens{
+public:
+    void copyFromFP(const DensFP & rp){//絶対必要。名前固定。
+        this->r_search = rp.getRSearch();
+        this->pos = rp.getPos();
+    }
+    //以下名前含めユーザー定義。
+    enum{
+        n_neighbour_crit = 50,
+    };
+    PS::F64vec pos;
+    PS::F64 r_search;
+
+};
+
+class EPJDens{
+public:
+    void copyFromFP(const GravFP & rp){//絶対必要。名前固定。
+        this->mass = rp.getCharge();
+        this->pos = rp.getPos();
+    }
+    //以下名前含めユーザー定義。
+    PS::F64 mass;
+    PS::F64vec pos;
+
+};
+
+// 相互作用関数（密度）
+PS::F64 CubicSpline(const PS::F64 r_sq, 
+                    const PS::F64 h_inv){
+    PS::F64 xi = sqrt(r_sq)*h_inv;
+    PS::F64 xi10 = (1.0-xi > 0.0) ? 1.0-xi : 0.0;
+    PS::F64 xi05 = (0.5-xi > 0.0) ? 0.5-xi : 0.0;
+    return xi10*xi10*xi10 - 4.0*xi05*xi05*xi05;
+}
+
+void CalcDensityEpEp(const EPIDens * ep_i,
+                     const PS::S32   n_ip,
+                     const EPJDens * ep_j,
+                     const PS::S32   n_jp,
+                     ResultDens * dens)
+{
+    std::vector < std::pair < PS::F64, PS::F64 > > r_neighbour_sq_with_mass;
+    r_neighbour_sq_with_mass.reserve(EPIDens::n_neighbour_crit*3+100);
+    for(PS::S32 i=0; i<n_ip; i++){
+        if (ep_i[i].r_search == 0.0) continue; 
+        r_neighbour_sq_with_mass.clear();
+        const PS::F64 rsearch2 = ep_i[i].r_search*ep_i[i].r_search;
+        for(PS::S32 j=0; j<n_ip; j++){
+            const PS::F64vec dr = ep_i[i].pos - ep_j[j].pos;
+            const PS::F64 r_sq = dr * dr;
+            const PS::F64 mj = ep_j[j].mass;
+            if( r_sq < rsearch2 ){
+                r_neighbour_sq_with_mass.push_back( std::make_pair(r_sq, mj) );
+            }
+        }
+        const size_t ncrit = EPIDens::n_neighbour_crit;
+        if( r_neighbour_sq_with_mass.size() <=  ncrit ){
+            // search radius was too small !!
+            dens[i].r_search_next = ep_i[i].r_search * cbrt(2.0);
+            continue;
+        }
+        else{
+            dens[i].r_search_next = 0.0; // DON'T need to search next
+
+            std::sort(r_neighbour_sq_with_mass.begin(), r_neighbour_sq_with_mass.end());
+            dens[i].kernel_length = sqrt( r_neighbour_sq_with_mass[ncrit-1].first );
+            PS::F64 tmp_dens = 0.0;
+            PS::F64 h_inv = 1.0/dens[i].kernel_length;
+            PS::F64 Cnorm = (16.0/M_PI) * (h_inv * h_inv * h_inv);
+            for(PS::S32 k=0; k<PS::S32(ncrit); k++){
+                tmp_dens += r_neighbour_sq_with_mass[k].second * CubicSpline(r_neighbour_sq_with_mass[k].first, h_inv);
+            }
+            dens[i].density = Cnorm * tmp_dens;
+        }
+    }
+}
+
+int main(int argc, char *argv[]){
+
+    PS::Initialize(argc, argv); //初期化
+
+    //領域分割クラスは1つ。
+    PS::DomainInfo dinfo;
+    dinfo.initialize("domain_info.para");
+
+    // 粒子群クラス2種類生成
+    PS::ParticleSystem<GravFP> nbody_system; 
+    PS::ParticleSystem<DensFP> sph_system; 
+    //ファイル読み込み。
+    nbody_system.loadParticleSingle(argv[1], "r", &GravFP::loadOneParticle); 
+    sph_system.loadParticleSingle(argv[2], "r", &DensFP::loadOneParticle); 
+
+    // 相互作用クラス2種類生成
+    PS::TreeType<ResultDens, EPIDens, EPJDens>::TreeForGahterSearch tree_dens; // 流体（密度計算）用
+    PS::TreeType<ResultForce, GravEPI, GravEPJ>::TreeForMonoBaryCenter grav_tree; // 重力用
+    // 領域確保
+    tree_dens.initialize(sph_system.getNumberOfParticleTotal()); 
+    grav_tree.initialize( nbody_system.getNumberOfParticleTotal() + sph_system.getNumberOfParticleTotal() ); 
+
+    //複数種あるので、decomposeDomainAllは呼べない。
+    dinfo.sampleParticle(nbody_system, true);
+    dinfo.sampleParticle(sph_system, false);
+    dinfo.decomposeDomain();
+
+    //重力計算。
+    grav_tree.calcForce(CalcGravEpEp, dinfo, nbody_system);
+
+    //以下、密度計算。
+    //探査する半径を膨らます。
+    PS::S32 nloc = sph_system.getNumberOfParticleLocal();
+    for(PS::S32 i=0; i<nloc; i++){
+        sph_system[i].r_search = sph_system[i].kernel_length*1.2;
+    }
+    for(bool repeat = true; repeat; ){
+        tree_dens.calcForceAll(CalcDensityEpEp, dinfo, sph_system);
+        PS::S32 nploc = tree_dens.getNumberOfParticleLocal();
+        repeat = false;
+        for(PS::S32 i=0; i<nploc; i++){
+            ResultDens dens_tmp = tree_dens.getForce(i);
+            sph_system[i].r_search    = dens_tmp.r_search_next;
+            sph_system[i].density     = dens_tmp.density;
+            sph_system[i].kernel_length = dens_tmp.kernel_length;
+            if(dens_tmp.r_search_next > 0.0){
+                repeat = true;
+            }
+        }
+        repeat = PS::Comm::synchronizeConditionalBranch(repeat);
+    }
+
+    PS::Finalize();
+    return 0;
+}
+
+\end{lstlisting}

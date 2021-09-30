@@ -1,0 +1,17 @@
+!==================================
+!   MODULE: FDPS orthotope
+!==================================
+module fdps_orthotope
+   use, intrinsic :: iso_c_binding
+   use fdps_vector
+   implicit none
+
+   type, public, bind(c) :: fdps_f32ort
+      type(fdps_f32vec) :: low,high
+   end type fdps_f32ort
+
+   type, public, bind(c) :: fdps_f64ort
+      type(fdps_f64vec) :: low,high
+   end type fdps_f64ort
+
+end module fdps_orthotope

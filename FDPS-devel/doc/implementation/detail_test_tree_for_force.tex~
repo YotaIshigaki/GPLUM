@@ -1,0 +1,84 @@
+\subsubsection{相互作用ツリークラス}
+
+\subsubsubsection{ソート}
+
+\begin{lstlisting}[caption=radix sortのテスト]
+
+int main(int argc, char *argv[]){
+
+    if(argc < 3){
+        std::cerr<<"too few args.; arg1: problem size, arg2: repeat count"<<std::endl;
+        return 1;
+    }
+
+    PS::RadixSort<PS::U64, 8> RS;
+
+    PS::S32 n_size = std::atoi(argv[1]);
+    PS::S32 n_repeat = std::atoi(argv[2]);
+    PS::TreeParticle * data = new PS::TreeParticle[n_size];
+    PS::TreeParticle * data_buf = new PS::TreeParticle[n_size];
+    PS::S32 err = 0;
+
+    for(PS::S32 i=0; i<n_repeat; i++){
+        for(int j=0; j<n_size; j++){
+            data[j].setKey(PS::U64(abs(rand()))<<32 | PS::U64(abs(rand())));
+        }
+        RS.lsdSort(data, data_buf, 0, n_size-1);
+        for(PS::S32 j=1; j<n_size; j++){
+            if(data[j].getKey() < data[j-1].getKey() ){
+                err++;
+            }
+        }
+    }
+
+    if(err){
+        std::cout<<"FAIL, err="<<err<<std::endl;
+    }
+    else{
+        std::cout<<"PASS"<<err<<std::endl;
+    }
+
+    return 0;
+}
+
+\end{lstlisting}
+
+コマンドラインから第一引数が問題サイズ、第二引数が繰り返し回数。ソート
+された配列を先頭から見ていき、常に次の値が現在の値より大きいかをチェッ
+クする。成功、失敗は標準出力で返す。
+
+\subsubsubsection{ローカルツリー}
+
+ローカルツリー内の全てのセルについて、各セルの持つ粒子がそのセルの境界
+に入っているかをチェックする。セルの辿り方はツリーウォークと同じ方法で
+行う。このテストは以下の関数によって行われる。第一引数{\tt tolerance}は
+粒子がボックスから外れていた時に許容する大きさ。これは、ツリーの構築時
+に使ったセルの大きさの定義とこの関数内での定義が丸め誤差の範囲では違い、
+セル境界付近の粒子がボックスから出ていることがある為。
+
+\begin{screen}
+\begin{verbatim}
+void checkMakeLocalTree(const F32 tolerance = 1e-6, std::ostream & fout = std::cout);
+\end{verbatim}
+\end{screen}
+
+
+
+
+\subsubsubsection{モーメント計算}
+
+全粒子の質量と重心を求め、それをツリーのルートセルのもつ質量、重心と比
+較する。このテストは以下の関数によって行われる。引数の意味は{\tt
+checkMakeLocalTree}と同じ、
+
+\begin{screen}
+\begin{verbatim}
+void checkCalcMomentLocalTree(const F32 tolerance = 1e-6, std::ostream & fout = std::cout);
+\end{verbatim}
+\end{screen}
+
+\subsubsubsection{LET交換}
+
+短距離力の場合は
+
+\subsubsubsection{グローバルツリー}

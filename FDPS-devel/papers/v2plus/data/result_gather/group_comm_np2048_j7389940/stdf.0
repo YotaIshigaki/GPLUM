@@ -1,0 +1,14 @@
+n_proc= 2048 size(B)= 2 time_gather.getAvg()= 5.32785e-05 time_gather.getNCnt()= 20 time_gather.getMax()= 6.02324e-05 time_gather.getMin()= 4.93266e-05
+n_proc= 2048 size(B)= 4 time_gather.getAvg()= 5.27673e-05 time_gather.getNCnt()= 20 time_gather.getMax()= 6.39353e-05 time_gather.getMin()= 4.87259e-05
+n_proc= 2048 size(B)= 8 time_gather.getAvg()= 5.51184e-05 time_gather.getNCnt()= 20 time_gather.getMax()= 0.000113461 time_gather.getMin()= 5.1328e-05
+n_proc= 2048 size(B)= 16 time_gather.getAvg()= 5.85427e-05 time_gather.getNCnt()= 20 time_gather.getMax()= 8.12439e-05 time_gather.getMin()= 5.57303e-05
+n_proc= 2048 size(B)= 32 time_gather.getAvg()= 6.64747e-05 time_gather.getNCnt()= 20 time_gather.getMax()= 7.38399e-05 time_gather.getMin()= 6.27339e-05
+n_proc= 2048 size(B)= 64 time_gather.getAvg()= 8.09936e-05 time_gather.getNCnt()= 20 time_gather.getMax()= 8.47457e-05 time_gather.getMin()= 7.71414e-05
+n_proc= 2048 size(B)= 128 time_gather.getAvg()= 0.000109531 time_gather.getNCnt()= 20 time_gather.getMax()= 0.000115463 time_gather.getMin()= 0.000105657
+n_proc= 2048 size(B)= 256 time_gather.getAvg()= 0.000263448 time_gather.getNCnt()= 20 time_gather.getMax()= 0.000310768 time_gather.getMin()= 0.000256638
+n_proc= 2048 size(B)= 512 time_gather.getAvg()= 0.000429081 time_gather.getNCnt()= 20 time_gather.getMax()= 0.00044484 time_gather.getMin()= 0.000419826
+n_proc= 2048 size(B)= 1024 time_gather.getAvg()= 0.00046818 time_gather.getNCnt()= 20 time_gather.getMax()= 0.000478458 time_gather.getMin()= 0.000462149
+n_proc= 2048 size(B)= 2048 time_gather.getAvg()= 0.000579501 time_gather.getNCnt()= 20 time_gather.getMax()= 0.000598923 time_gather.getMin()= 0.000569708
+n_proc= 2048 size(B)= 4096 time_gather.getAvg()= 0.000879096 time_gather.getNCnt()= 20 time_gather.getMax()= 0.000898384 time_gather.getMin()= 0.00087167
+n_proc= 2048 size(B)= 8192 time_gather.getAvg()= 0.00161281 time_gather.getNCnt()= 20 time_gather.getMax()= 0.00163438 time_gather.getMin()= 0.00160526
+n_proc= 2048 size(B)= 16384 time_gather.getAvg()= 0.00310289 time_gather.getNCnt()= 20 time_gather.getMax()= 0.00311118 time_gather.getMin()= 0.00309517

@@ -1,0 +1,31 @@
+%このファイルは日本語文字を含みます.
+\BOOKMARK [0][-]{chapter.1}{はじめに}{}% 1
+\BOOKMARK [1][-]{section.1.1}{この文書の目的}{chapter.1}% 2
+\BOOKMARK [0][-]{chapter.2}{測定環境など}{}% 3
+\BOOKMARK [1][-]{section.2.1}{A64FX}{chapter.2}% 4
+\BOOKMARK [1][-]{section.2.2}{理研シミュレータ}{chapter.2}% 5
+\BOOKMARK [2][-]{subsection.2.2.1}{実機とシミュレータの差異}{section.2.2}% 6
+\BOOKMARK [2][-]{subsection.2.2.2}{シミュレーション結果の可視化}{section.2.2}% 7
+\BOOKMARK [0][-]{chapter.3}{GENESIS}{}% 8
+\BOOKMARK [1][-]{section.3.1}{短距離相互作用}{chapter.3}% 9
+\BOOKMARK [2][-]{subsection.3.1.1}{スイッチング関数を乗じたLennard-Jones相互作用}{section.3.1}% 10
+\BOOKMARK [2][-]{subsection.3.1.2}{Ewald法を用いた静電相互作用の短距離成分}{section.3.1}% 11
+\BOOKMARK [1][-]{section.3.2}{短距離力カーネルの実装}{chapter.3}% 12
+\BOOKMARK [1][-]{section.3.3}{Kernel\137June1のシミュレータおよび実機での測定状況}{chapter.3}% 13
+\BOOKMARK [0][-]{chapter.4}{区間多項式近似カーネル}{}% 14
+\BOOKMARK [1][-]{section.4.1}{MDシミュレーションパッケージでの短距離力カーネルの実装}{chapter.4}% 15
+\BOOKMARK [1][-]{section.4.2}{512 bit SIMDに適応した多項式近似の方法}{chapter.4}% 16
+\BOOKMARK [1][-]{section.4.3}{最適化カーネルでの前提条件}{chapter.4}% 17
+\BOOKMARK [2][-]{subsection.4.3.1}{入力データ}{section.4.3}% 18
+\BOOKMARK [2][-]{subsection.4.3.2}{入力データの性質}{section.4.3}% 19
+\BOOKMARK [2][-]{subsection.4.3.3}{粒子データの並べ方}{section.4.3}% 20
+\BOOKMARK [2][-]{subsection.4.3.4}{排除リストの取り扱い}{section.4.3}% 21
+\BOOKMARK [1][-]{section.4.4}{シミュレータを用いた最適化}{chapter.4}% 22
+\BOOKMARK [1][-]{section.4.5}{各種測定}{chapter.4}% 23
+\BOOKMARK [2][-]{subsection.4.5.1}{N2計算の場合のパフォーマンス}{section.4.5}% 24
+\BOOKMARK [2][-]{subsection.4.5.2}{SIMD幅ネイバーリストを用いたベンチマーク系\(Apoa1\)の場合のパフォーマンス}{section.4.5}% 25
+\BOOKMARK [0][-]{chapter.5}{おわりに}{}% 26
+\BOOKMARK [0][-]{chapter*.2}{参考文献}{}% 27
+\BOOKMARK [1][-]{section.5.1}{Skylake Xeon\(実機\)とA64FX\(理研シミュレータ\)の比較}{chapter*.2}% 28
+\BOOKMARK [1][-]{section.5.2}{使用したSollyaスクリプト}{chapter*.2}% 29
+\BOOKMARK [1][-]{section.5.3}{最適化による演算順序の変更によるコンパイラのバグ}{chapter*.2}% 30

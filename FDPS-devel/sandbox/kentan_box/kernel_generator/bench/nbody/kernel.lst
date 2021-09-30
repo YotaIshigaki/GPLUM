@@ -1,0 +1,282 @@
+Fujitsu C/C++ Version 4.1.0   Thu Jan 30 09:49:39 2020
+Compilation information
+  Current directory : /home/users/go19/go0011/kernel_generator/bench/nbody
+  Source file       : kernel.cpp
+(line-no.)(optimize)
+        1             #include <arm_sve.h>
+        2             #include "user_defined_class.h"
+        3             struct CalcForceLongEpEp{
+        4             CalcForceLongEpEp(){}
+        5             void operator()(const EPI* epi,const int ni,const EPJ* epj,const int nj,Force *force){
+        6             svbool_t pg0 = svptrue_b32();
+        7             svfloat32x3_t rij;
+        8             svfloat32_t r2;
+        9             svfloat32_t rinv;
+       10             svfloat32_t mrinv;
+       11             svfloat32_t __fkg_tmp0;
+       12             for(int i=0;i<((ni+15)/16)*16;i+=16){
+       13             pg0 = svwhilelt_b32_s32(i,ni);
+       14             svfloat32x4_t __fkg_tmp_pos = svld4_f32(pg0,(float*)&epi[i]);
+       15             svfloat32x3_t xi;
+       16             xi.v0 = __fkg_tmp_pos.v0;
+       17             xi.v1 = __fkg_tmp_pos.v1;
+       18             xi.v2 = __fkg_tmp_pos.v2;
+       19             svfloat32_t eps2i = __fkg_tmp_pos.v3;
+       20             svfloat32x4_t __fkg_tmp_force = svld4_f32(pg0,(float*)&force[i]);
+       21             svfloat32x3_t f;
+       22             f.v0 = __fkg_tmp_force.v0;
+       23             f.v1 = __fkg_tmp_force.v1;
+       24             f.v2 = __fkg_tmp_force.v2;
+       25             svfloat32_t phi = __fkg_tmp_force.v3;
+       26             #pragma loop loop_fission
+       27             #pragma loop loop_fission_stripmining L1
+       28             for(int j=0;j<nj;j++){
+       29             svfloat32x3_t xj;
+       30             xj.v0 = svdup_f32(epj[j].pos.x);
+       31             xj.v1 = svdup_f32(epj[j].pos.y);
+       32             xj.v2 = svdup_f32(epj[j].pos.z);
+       33             svfloat32_t mj;
+       34             mj = svdup_f32(epj[j].mass);
+       35             svfloat32_t eps2j;
+       36             eps2j = svdup_f32(epj[j].eps2);
+       37             rij.v0 = svsub_f32_z(pg0,xi.v0,xj.v0);
+       38             rij.v1 = svsub_f32_z(pg0,xi.v1,xj.v1);
+       39             rij.v2 = svsub_f32_z(pg0,xi.v2,xj.v2);
+       40             r2 = svmad_f32_z(pg0,rij.v2,rij.v2,svmad_f32_z(pg0,rij.v1,rij.v1,svmad_f32_z(pg0,rij.v0,rij.v0,svadd_f32_z(pg0,eps2i,eps2j))));
+       41             #pragma statement fission_point
+       42             rinv = rsqrt(pg0,r2);
+       43             #pragma statement fission_point
+       44             mrinv = svmul_f32_z(pg0,mj,rinv);
+       45             __fkg_tmp0 = svmul_f32_z(pg0,svmul_f32_z(pg0,mrinv,rinv),rinv);
+       46             f.v0 = svnmad_f32_z(pg0,__fkg_tmp0,rij.v0,svneg_f32_z(pg0,f.v0));
+       47             f.v1 = svnmad_f32_z(pg0,__fkg_tmp0,rij.v1,svneg_f32_z(pg0,f.v1));
+       48             f.v2 = svnmad_f32_z(pg0,__fkg_tmp0,rij.v2,svneg_f32_z(pg0,f.v2));
+       49             phi = svsub_f32_z(pg0,phi,mrinv);
+       50             }
+       51             __fkg_tmp_force.v0 = f.v0;
+       52             __fkg_tmp_force.v1 = f.v1;
+       53             __fkg_tmp_force.v2 = f.v2;
+       54             __fkg_tmp_force.v3 = phi;
+       55             svst4_f32(pg0,(float*)&force[i],__fkg_tmp_force);
+       56             }
+       57             }
+       58             svfloat32_t rsqrt(svbool_t pg,svfloat32_t op){
+       59             svfloat32_t rinv = svrsqrte_f32(op);
+       60             svfloat32_t h = svmul_f32_z(pg,op,rinv);
+       61             h = svmsb_n_f32_z(pg,h,rinv,1.f);
+       62             svfloat32_t poly = svmad_n_f32_z(pg,h,svdup_f32(0.375f),0.5f);
+       63             poly = svmul_f32_z(pg,poly,h);
+       64             rinv = svmad_f32_z(pg,rinv,poly,rinv);
+       65             return rinv;
+       66             }
+       67             svfloat32_t sqrt(svbool_t pg,svfloat32_t op){ return svsqrt_f32_z(pg,op); }
+       68             svfloat32_t inv(svbool_t pg,svfloat32_t op){
+       69             svfloat32_t x1 = svrecpe_f32(op);
+       70             svfloat32_t x2 = svmsb_n_f32_z(pg,op,x1,2.f);
+       71             x2 = svmul_f32_z(pg,x2,x1);
+       72             svfloat32_t ret = svmsb_n_f32_z(pg,op,x2,2.f);
+       73             ret = svmul_f32_z(pg,ret,x2);
+       74             return ret;
+       75             }
+       76             svfloat32_t max(svbool_t pg,svfloat32_t a,svfloat32_t b){ return svmax_f32_z(pg,a,b);}
+       77             svfloat32_t min(svbool_t pg,svfloat32_t a,svfloat32_t b){ return svmin_f32_z(pg,a,b);}
+       78             void transpose4x4(svfloat32x4_t& v){
+       79             const unsigned int tmp[16] = { 0, 2, 1, 3, 4, 6, 5, 7, 8,10, 9,11,12,14,13,15};
+       80             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+       81             v.v0 = svtbl_f32(v.v0,index);
+       82             v.v1 = svtbl_f32(v.v1,index);
+       83             v.v2 = svtbl_f32(v.v2,index);
+       84             v.v3 = svtbl_f32(v.v3,index);
+       85             svfloat64_t xy0 = svreinterpret_f64_f32(svtrn1_f32(v.v0,v.v1));
+       86             svfloat64_t xy1 = svreinterpret_f64_f32(svtrn2_f32(v.v0,v.v1));
+       87             svfloat64_t zw0 = svreinterpret_f64_f32(svtrn1_f32(v.v2,v.v3));
+       88             svfloat64_t zw1 = svreinterpret_f64_f32(svtrn2_f32(v.v2,v.v3));
+       89             v.v0 = svreinterpret_f32_f64(svtrn1_f64(xy0,zw0));
+       90             v.v1 = svreinterpret_f32_f64(svtrn2_f64(xy0,zw0));
+       91             v.v2 = svreinterpret_f32_f64(svtrn1_f64(xy1,zw1));
+       92             v.v3 = svreinterpret_f32_f64(svtrn2_f64(xy1,zw1));
+       93             }
+       94             void gather8(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+       95             const unsigned int tmp[16] = {  0,  8,  1,  9,  2, 10,  3, 11, 4, 12,  5, 13,  6, 14,  7, 15};
+       96             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+       97             svfloat64_t a = svreinterpret_f64_f32(svtbl_f32(v0,index));
+       98             svfloat64_t b = svreinterpret_f64_f32(svtbl_f32(v1,index));
+       99             svfloat64_t c = svreinterpret_f64_f32(svtbl_f32(v2,index));
+      100             svfloat64_t d = svreinterpret_f64_f32(svtbl_f32(v3,index));
+      101             svfloat64_t e = svreinterpret_f64_f32(svtbl_f32(v4,index));
+      102             svfloat64_t f = svreinterpret_f64_f32(svtbl_f32(v5,index));
+      103             svfloat64_t g = svreinterpret_f64_f32(svtbl_f32(v6,index));
+      104             svfloat64_t h = svreinterpret_f64_f32(svtbl_f32(v7,index));
+      105             svfloat64_t ae0 = svzip1_f64(a,e);
+      106             svfloat64_t ae1 = svzip2_f64(a,e);
+      107             svfloat64_t bf0 = svzip1_f64(b,f);
+      108             svfloat64_t bf1 = svzip2_f64(b,f);
+      109             svfloat64_t cg0 = svzip1_f64(c,g);
+      110             svfloat64_t cg1 = svzip2_f64(c,g);
+      111             svfloat64_t dh0 = svzip1_f64(d,h);
+      112             svfloat64_t dh1 = svzip2_f64(d,h);
+      113             svfloat64_t aceg0 = svzip1_f64(ae0,cg0);
+      114             svfloat64_t aceg1 = svzip2_f64(ae0,cg0);
+      115             svfloat64_t aceg2 = svzip1_f64(ae1,cg1);
+      116             svfloat64_t aceg3 = svzip2_f64(ae1,cg1);
+      117             svfloat64_t bdfh0 = svzip1_f64(bf0,dh0);
+      118             svfloat64_t bdfh1 = svzip2_f64(bf0,dh0);
+      119             svfloat64_t bdfh2 = svzip1_f64(bf1,dh1);
+      120             svfloat64_t bdfh3 = svzip2_f64(bf1,dh1);
+      121             v0 = svreinterpret_f32_f64(svzip1_f64(aceg0,bdfh0));
+      122             v1 = svreinterpret_f32_f64(svzip2_f64(aceg0,bdfh0));
+      123             v2 = svreinterpret_f32_f64(svzip1_f64(aceg1,bdfh1));
+      124             v3 = svreinterpret_f32_f64(svzip2_f64(aceg1,bdfh1));
+      125             v4 = svreinterpret_f32_f64(svzip1_f64(aceg2,bdfh2));
+      126             v5 = svreinterpret_f32_f64(svzip2_f64(aceg2,bdfh2));
+      127             v6 = svreinterpret_f32_f64(svzip1_f64(aceg3,bdfh3));
+      128             v7 = svreinterpret_f32_f64(svzip2_f64(aceg3,bdfh3));
+      129             }
+      130             void gather5(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      131             const unsigned int tmp[16] = {0,1,2,3,4,10,11,12,5,6,7,8,9,13,14,15};
+      132             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+      133             gather8(v0,v1,v2,v3,v4,v5,v6,v7);
+      134             }
+      135             void gather6(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      136             const unsigned int tmp[16] = {0,1,2,3,4,5,12,13,6,7,8,9,10,11,14,15};
+      137             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+      138             gather8(v0,v1,v2,v3,v4,v5,v6,v7);
+      139             }
+      140             void gather7(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      141             const unsigned int tmp[16] = {0,1,2,3,4,5,6,14,7,8,9,10,11,12,13,15};
+      142             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+      143             gather8(v0,v1,v2,v3,v4,v5,v6,v7);
+      144             }
+      145             void scatter8(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      146             svfloat32_t ae0 = svzip1_f32(v0,v4);
+      147             svfloat32_t ae1 = svzip2_f32(v0,v4);
+      148             svfloat32_t bf0 = svzip1_f32(v1,v5);
+      149             svfloat32_t bf1 = svzip2_f32(v1,v5);
+      150             svfloat32_t cg0 = svzip1_f32(v2,v6);
+      151             svfloat32_t cg1 = svzip2_f32(v2,v6);
+      152             svfloat32_t dh0 = svzip1_f32(v3,v7);
+      153             svfloat32_t dh1 = svzip2_f32(v3,v7);
+      154             svfloat32_t aceg0 = svzip1_f32(ae0,cg0);
+      155             svfloat32_t aceg1 = svzip2_f32(ae0,cg0);
+      156             svfloat32_t aceg2 = svzip1_f32(ae1,cg1);
+      157             svfloat32_t aceg3 = svzip2_f32(ae1,cg1);
+      158             svfloat32_t bdfh0 = svzip1_f32(bf0,dh0);
+      159             svfloat32_t bdfh1 = svzip2_f32(bf0,dh0);
+      160             svfloat32_t bdfh2 = svzip1_f32(bf1,dh1);
+      161             svfloat32_t bdfh3 = svzip2_f32(bf1,dh1);
+      162             v0 = svzip1_f32(aceg0,bdfh0);
+      163             v1 = svzip2_f32(aceg0,bdfh0);
+      164             v2 = svzip1_f32(aceg1,bdfh1);
+      165             v3 = svzip2_f32(aceg1,bdfh1);
+      166             v4 = svzip1_f32(aceg2,bdfh2);
+      167             v5 = svzip2_f32(aceg2,bdfh2);
+      168             v6 = svzip1_f32(aceg3,bdfh3);
+      169             v7 = svzip2_f32(aceg3,bdfh3);
+      170             }
+      171             void scatter5(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      172             scatter8(v0,v1,v2,v3,v4,v5,v6,v7);
+      173             const unsigned int tmp[16] = {0,1,2,3,4,8,9,10,11,12,5,6,7,13,14,15};
+      174             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+      175             v0 = svtbl_f32(v0,index);
+      176             v1 = svtbl_f32(v1,index);
+      177             v2 = svtbl_f32(v2,index);
+      178             v3 = svtbl_f32(v3,index);
+      179             v4 = svtbl_f32(v4,index);
+      180             v5 = svtbl_f32(v5,index);
+      181             v6 = svtbl_f32(v6,index);
+      182             v7 = svtbl_f32(v7,index);
+      183             }
+      184             void scatter6(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      185             scatter8(v0,v1,v2,v3,v4,v5,v6,v7);
+      186             const unsigned int tmp[16] = {0,1,2,3,4,5,8,9,10,11,12,13,6,7,14,15};
+      187             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+      188             v0 = svtbl_f32(v0,index);
+      189             v1 = svtbl_f32(v1,index);
+      190             v2 = svtbl_f32(v2,index);
+      191             v3 = svtbl_f32(v3,index);
+      192             v4 = svtbl_f32(v4,index);
+      193             v5 = svtbl_f32(v5,index);
+      194             v6 = svtbl_f32(v6,index);
+      195             v7 = svtbl_f32(v7,index);
+      196             }
+      197             void scatter7(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7){
+      198             scatter8(v0,v1,v2,v3,v4,v5,v6,v7);
+      199             const unsigned int tmp[16] = {0,1,2,3,4,5,6,8,9,10,11,12,13,14,7,15};
+      200             const svuint32_t index = svld1_u32(svptrue_b32(),tmp);
+      201             v0 = svtbl_f32(v0,index);
+      202             v1 = svtbl_f32(v1,index);
+      203             v2 = svtbl_f32(v2,index);
+      204             v3 = svtbl_f32(v3,index);
+      205             v4 = svtbl_f32(v4,index);
+      206             v5 = svtbl_f32(v5,index);
+      207             v6 = svtbl_f32(v6,index);
+      208             }
+      209             void transpose16x16(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7,svfloat32_t& v8,svfloat32_t& v9,svfloat32_t& v10,svfloat32_t& v11,svfloat32_t& v12,svfloat32_t& v13,svfloat32_t& v14,svfloat32_t& v15){
+      210             svfloat32_t ai0 = svzip1_f32(v0,v8);
+      211             svfloat32_t ai1 = svzip2_f32(v0,v8);
+      212             svfloat32_t bj0 = svzip1_f32(v1,v9);
+      213             svfloat32_t bj1 = svzip2_f32(v1,v9);
+      214             svfloat32_t ck0 = svzip1_f32(v2,v10);
+      215             svfloat32_t ck1 = svzip2_f32(v2,v10);
+      216             svfloat32_t dl0 = svzip1_f32(v3,v11);
+      217             svfloat32_t dl1 = svzip2_f32(v3,v11);
+      218             svfloat32_t em0 = svzip1_f32(v4,v12);
+      219             svfloat32_t em1 = svzip2_f32(v4,v12);
+      220             svfloat32_t fn0 = svzip1_f32(v5,v13);
+      221             svfloat32_t fn1 = svzip2_f32(v5,v13);
+      222             svfloat32_t go0 = svzip1_f32(v6,v14);
+      223             svfloat32_t go1 = svzip2_f32(v6,v14);
+      224             svfloat32_t hp0 = svzip1_f32(v7,v15);
+      225             svfloat32_t hp1 = svzip2_f32(v7,v15);
+      226             svfloat32_t aeim0 = svzip1_f32(ai0,em0);
+      227             svfloat32_t aeim1 = svzip2_f32(ai0,em0);
+      228             svfloat32_t aeim2 = svzip1_f32(ai1,em1);
+      229             svfloat32_t aeim3 = svzip2_f32(ai1,em1);
+      230             svfloat32_t bfjn0 = svzip1_f32(bj0,fn0);
+      231             svfloat32_t bfjn1 = svzip2_f32(bj0,fn0);
+      232             svfloat32_t bfjn2 = svzip1_f32(bj1,fn1);
+      233             svfloat32_t bfjn3 = svzip2_f32(bj1,fn1);
+      234             svfloat32_t cgko0 = svzip1_f32(ck0,go0);
+      235             svfloat32_t cgko1 = svzip2_f32(ck0,go0);
+      236             svfloat32_t cgko2 = svzip1_f32(ck1,go1);
+      237             svfloat32_t cgko3 = svzip2_f32(ck1,go1);
+      238             svfloat32_t dhlp0 = svzip1_f32(dl0,hp0);
+      239             svfloat32_t dhlp1 = svzip2_f32(dl0,hp0);
+      240             svfloat32_t dhlp2 = svzip1_f32(dl1,hp1);
+      241             svfloat32_t dhlp3 = svzip2_f32(dl1,hp1);
+      242             svfloat32_t acegikmo0 = svzip1_f32(aeim0,cgko0);
+      243             svfloat32_t acegikmo1 = svzip2_f32(aeim0,cgko0);
+      244             svfloat32_t acegikmo2 = svzip1_f32(aeim1,cgko1);
+      245             svfloat32_t acegikmo3 = svzip2_f32(aeim1,cgko1);
+      246             svfloat32_t acegikmo4 = svzip1_f32(aeim2,cgko2);
+      247             svfloat32_t acegikmo5 = svzip2_f32(aeim2,cgko2);
+      248             svfloat32_t acegikmo6 = svzip1_f32(aeim3,cgko3);
+      249             svfloat32_t acegikmo7 = svzip2_f32(aeim3,cgko3);
+      250             svfloat32_t bdfhjlnp0 = svzip1_f32(bfjn0,dhlp0);
+      251             svfloat32_t bdfhjlnp1 = svzip2_f32(bfjn0,dhlp0);
+      252             svfloat32_t bdfhjlnp2 = svzip1_f32(bfjn1,dhlp1);
+      253             svfloat32_t bdfhjlnp3 = svzip2_f32(bfjn1,dhlp1);
+      254             svfloat32_t bdfhjlnp4 = svzip1_f32(bfjn2,dhlp2);
+      255             svfloat32_t bdfhjlnp5 = svzip2_f32(bfjn2,dhlp2);
+      256             svfloat32_t bdfhjlnp6 = svzip1_f32(bfjn3,dhlp3);
+      257             svfloat32_t bdfhjlnp7 = svzip2_f32(bfjn3,dhlp3);
+      258             v0  = svzip1_f32(acegikmo0,bdfhjlnp0);
+      259             v1  = svzip2_f32(acegikmo0,bdfhjlnp0);
+      260             v2  = svzip1_f32(acegikmo1,bdfhjlnp1);
+      261             v3  = svzip2_f32(acegikmo1,bdfhjlnp1);
+      262             v4  = svzip1_f32(acegikmo2,bdfhjlnp2);
+      263             v5  = svzip2_f32(acegikmo2,bdfhjlnp2);
+      264             v6  = svzip1_f32(acegikmo3,bdfhjlnp3);
+      265             v7  = svzip2_f32(acegikmo3,bdfhjlnp3);
+      266             v8  = svzip1_f32(acegikmo4,bdfhjlnp4);
+      267             v9  = svzip2_f32(acegikmo4,bdfhjlnp4);
+      268             v10 = svzip1_f32(acegikmo5,bdfhjlnp5);
+      269             v11 = svzip2_f32(acegikmo5,bdfhjlnp5);
+      270             v12 = svzip1_f32(acegikmo6,bdfhjlnp6);
+      271             v13 = svzip2_f32(acegikmo6,bdfhjlnp6);
+      272             v14 = svzip1_f32(acegikmo7,bdfhjlnp7);
+      273             v15 = svzip2_f32(acegikmo7,bdfhjlnp7);
+      274             }
+      275             void gather16(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7,svfloat32_t& v8,svfloat32_t& v9,svfloat32_t& v10,svfloat32_t& v11,svfloat32_t& v12,svfloat32_t& v13,svfloat32_t& v14,svfloat32_t& v15){ transpose16x16(v0,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15); };
+      276             void scatter16(svfloat32_t& v0,svfloat32_t& v1,svfloat32_t& v2,svfloat32_t& v3,svfloat32_t& v4,svfloat32_t& v5,svfloat32_t& v6,svfloat32_t& v7,svfloat32_t& v8,svfloat32_t& v9,svfloat32_t& v10,svfloat32_t& v11,svfloat32_t& v12,svfloat32_t& v13,svfloat32_t& v14,svfloat32_t& v15){ transpose16x16(v0,v1,v2,v3,v4,v5,v6,v7,v8,v9,v10,v11,v12,v13,v14,v15); };
+      277             };

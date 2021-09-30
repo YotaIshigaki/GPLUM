@@ -1,0 +1,18 @@
+In this chapter, we describe the limitation and the restriction of FDPS and FDPS Fortran/C interface. Because FDPS Fortran interface are unconditionally restricted by the specification of FDPS, we first summarize the limitation of FDPS. Then, we describe the limitation specific to FDPS Fortran/C interface.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS}
+\label{sec:limitation:FDPS}
+\input{../../c++/en/limitation.tex}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FDPS Fortran/C interface}
+\label{sec:limitation:FDPS_ftn_if}
+
+As of writing this, FDPS Fortran/C interface has the following limitations and restrictions:
+\begin{itemize}[leftmargin=*,itemsep=-1ex]
+\item Some low-level APIs and APIs about I/O implemented in FDPS are not supported in Fortran/C interface.
+\item Execution on GPUs (Graphics Processing Units) is not supported yet.
+\item When user uses FDPS from C++ codes, the user can freely customize or design the moment information of superparticle, where the moment information is defined as the quantities that are required in the calculation of particle-superparticle interaction and that are calculated from physical quantities of the particles that consist of that superparticle. Examples of the moment information include monopole moment, dipole moment, and high-order multipole moments, etc. FDPS Fortran/C interface only supports the moment informations prepared by FDPS (see Chap.~\ref{chap:data_types} \S~\ref{sec:super_particle_types} and Chap.~\ref{chap:API_spec_list} \S~\ref{sec:tree_APIs}).
+\end{itemize}

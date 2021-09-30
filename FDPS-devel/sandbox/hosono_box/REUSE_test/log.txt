@@ -1,0 +1,9 @@
+[1487785757.931838] [t1n123:18873:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1300.00
+[1487785757.932243] [t1n121:20969:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1400.00
+[1487785757.933788] [t1n121:20970:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1300.00
+[1487785757.933908] [t1n123:18874:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1300.00
+[1487785757.936530] [t1n121:20971:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1400.00
+[1487785757.938093] [t1n121:20972:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1400.00
+[1487785757.937800] [t1n123:18876:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1300.00
+[1487785757.936610] [t1n123:18875:0]         sys.c:719  MXM  WARN  Conflicting CPU frequencies detected, using: 1300.00
+16 3.3446407318115234e-01 5.4043722152709961e-01 1.2738471031188965e+00 0.0000000000000000e+00

@@ -1,0 +1,32 @@
+Continuing.
+[New Thread 0x7ffff44dd700 (LWP 23472)]
+
+Program received signal SIGSEGV, Segmentation fault.
+0x000000000043209c in ParticleSimulator::LinkCell<ParticleSimulator::TreeCell<ParticleSimulator::MomentSearchInOnly> > (tc_array=..., 
+    adr_tc_level_partition=0x7fffffffc440, tp=0x1539b220, 
+    lev_max=@0x7fffffffc49c: 2, n_tot=15, n_leaf_limit=8)
+    at /home/kawai/local/FDPS_2.0_20160302/src/tree_for_force_utils.hpp:322
+322	                tc_array[adr[n_cnt-1]].n_ptcl_ = n_ptcl_tmp - n_ptcl_cum;
+#0  0x000000000043209c in ParticleSimulator::LinkCell<ParticleSimulator::TreeCell<ParticleSimulator::MomentSearchInOnly> > (tc_array=..., 
+    adr_tc_level_partition=0x7fffffffc440, tp=0x1539b220, 
+    lev_max=@0x7fffffffc49c: 2, n_tot=15, n_leaf_limit=8)
+    at /home/kawai/local/FDPS_2.0_20160302/src/tree_for_force_utils.hpp:322
+#1  0x000000000042de77 in ParticleSimulator::TreeForForce<ParticleSimulator::SEARCH_MODE_GATHER, ForceCoulomb, EPI_coulomb, EPJ_coulomb, ParticleSimulator::MomentSearchInAndOut, ParticleSimulator::MomentSearchInOnly, ParticleSimulator::SuperParticleBase>::linkCellGlobalTreeOnly (this=0x7fffffffc270)
+    at /home/kawai/local/FDPS_2.0_20160302/src/tree_for_force_impl.hpp:2977
+#2  0x00000000004288c6 in ParticleSimulator::TreeForForce<ParticleSimulator::SEARCH_MODE_GATHER, ForceCoulomb, EPI_coulomb, EPJ_coulomb, ParticleSimulator::MomentSearchInAndOut, ParticleSimulator::MomentSearchInOnly, ParticleSimulator::SuperParticleBase>::calcForceAll<void (*)(EPI_coulomb const*, int, EPJ_coulomb const*, int, ForceCoulomb*), ParticleSimulator::ParticleSystem<FP> > (
+    this=0x7fffffffc270, 
+    pfunc_ep_ep=0x42281d <CalcForceCoulomb_perm<EPI_coulomb, EPJ_coulomb>(EPI_coulomb const*, int, EPJ_coulomb const*, int, ForceCoulomb*)>, psys=..., 
+    dinfo=..., clear_force=true)
+    at /home/kawai/local/FDPS_2.0_20160302/src/tree_for_force.hpp:641
+#3  0x0000000000422b6e in ParticleSimulator::TreeForForce<ParticleSimulator::SEARCH_MODE_GATHER, ForceCoulomb, EPI_coulomb, EPJ_coulomb, ParticleSimulator::MomentSearchInAndOut, ParticleSimulator::MomentSearchInOnly, ParticleSimulator::SuperParticleBase>::calcForceAllAndWriteBack<void (*)(EPI_coulomb const*, int, EPJ_coulomb const*, int, ForceCoulomb*), ParticleSimulator::ParticleSystem<FP> > (
+    this=0x7fffffffc270, 
+    pfunc_ep_ep=0x42281d <CalcForceCoulomb_perm<EPI_coulomb, EPJ_coulomb>(EPI_coulomb const*, int, EPJ_coulomb const*, int, ForceCoulomb*)>, psys=..., 
+    dinfo=..., clear_force=true)
+    at /home/kawai/local/FDPS_2.0_20160302/src/tree_for_force.hpp:715
+#4  0x000000000040c63b in main (argc=1, argv=0x7fffffffd8a8)
+    at atsevb_main.cpp:175
+A debugging session is active.
+
+	Inferior 1 [process 23460] will be killed.
+
+Quit anyway? (y or n) 

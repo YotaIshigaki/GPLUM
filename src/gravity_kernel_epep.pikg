@@ -1,0 +1,107 @@
+EPI F64vec xi:pos
+#ifdef USE_POLAR_COORDINATE
+EPI F64vec xi_pol:pos_pol
+#endif
+#ifdef FOR_PIKG01
+EPI S32    idi:id
+EPI S32    idi_dmmy:id_dmmy
+#else
+EPI S64    idi:id
+#endif
+#ifdef USE_INDIVIDUAL_CUTOFF
+EPI F64    routi:r_out
+EPI F64    rsearchi:r_search
+#endif
+F32 eps2
+#ifndef USE_INDIVIDUAL_CUTOFF
+F32 rout
+F32 rsearch
+#endif
+
+EPJ F64vec xj:pos
+#ifdef USE_POLAR_COORDINATE
+EPJ F64vec xj_pol:pos_pol
+#endif
+#ifdef FOR_PIKG01
+EPJ S32    idj:id
+EPJ S32    idj_dmmy:id_dmmy
+#else
+EPJ S64    idj:id
+#endif
+#ifdef USE_INDIVIDUAL_CUTOFF
+EPJ F64    routj:r_out
+EPJ F64    rsearchj:r_search
+#endif
+EPJ F64    mj:mass
+EPJ F64vec vj:vel
+EPJ F64vec aj_d:acc_d
+EPJ S32    id_locj:id_local
+EPJ S32    myrankj:myrank
+
+FORCE F32vec af:acc
+FORCE F32    pf:phi
+FORCE S32    nngb:neighbor
+FORCE S32    DUMMY_:DUMMY_
+#ifdef FOR_PIKG01
+FORCE S32    idngb:id_neighbor
+FORCE S32    idngb_dmmy:id_neighbor_dmmy
+#else
+FORCE S64    idngb:id_neighbor
+#endif
+
+
+EPI local F32vec xiloc
+#ifdef USE_INDIVIDUAL_CUTOFF
+EPI local F32    rsearchiloc
+EPI local F32    routiloc
+#endif
+
+EPJ local F32vec xjloc
+EPJ local F32    mjloc
+#ifdef USE_INDIVIDUAL_CUTOFF
+EPJ local F32    rsearchjloc
+EPJ local F32    routjloc
+#endif
+
+xiloc = xi - xi[0]
+#ifdef USE_INDIVIDUAL_CUTOFF
+rsearchiloc = rsearchi
+routiloc = routi
+#endif
+
+xjloc = xj - xi[0]
+mjloc = mj
+#ifdef USE_INDIVIDUAL_CUTOFF
+rsearchjloc = rsearchj
+routjloc = routj
+#endif
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+rout     = max(routjloc, routiloc)
+rsearch  = max(rsearchjloc, rsearchiloc)
+#endif
+rout2    = rout * rout
+rsearch2 = rsearch * rsearch * 1.1025f
+
+rij     = xjloc - xiloc
+r2_real = rij*rij + eps2
+r2      = r2_real
+r2      = max(r2_real, rout2)
+
+if r2_real < rsearch2
+   nngb  = nngb + 1
+   if idi != idj
+      idngb = max(idngb, idj)
+      //idngb = idj
+   endif
+endif
+
+r_inv   = rsqrt(r2)
+tmp     = 3.0f - r2*(r_inv*r_inv)
+r_inv  *= (tmp * 0.5f)
+r2_inv  = r_inv * r_inv
+mr_inv  = mjloc * r_inv
+mr3_inv = r2_inv * mr_inv
+
+af    += mr3_inv * rij
+pf    -= mr_inv

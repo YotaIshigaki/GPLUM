@@ -1,0 +1,107 @@
+\subsubsection{概要}
+
+本節では、PS::TimeProfile型について記述する。PS::TimeProfile型はFDPSで
+使われる３つのクラス、領域分割クラス、粒子群クラス、相互作用ツリークラ
+ス、各メソッドの計算時間を格納するクラスである。これら３つのクラスには
+{\tt PS::TimeProfile getTimeProfile()}というメソッドが存在し、このメソッ
+ドをつかって、ユーザーは各メソッドの計算時間を取得出来る。
+
+このクラスは以下のように記述されている。
+
+\begin{lstlisting}[caption=TimeProfile]
+namespace ParticleSimulator{
+    class TimeProfile{
+    publid:
+        F64 collect_sample_particle;
+        F64 decompose_domain;
+        F64 exchange_particle;
+        F64 make_local_tree;
+        F64 make_global_tree;
+        F64 calc_force;
+        F64 calc_moment_local_tree;
+        F64 calc_moment_global_tree;
+        F64 make_LET_1st;
+        F64 make_LET_2nd;        
+        F64 exchange_LET_1st;
+        F64 exchange_LET_2nd;
+    };
+}    
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{加算}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+PS::TimeProfile PS::TimeProfile::operator + 
+               (const PS::TimeProfile & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+{rhs}: 入力。{const TimeProfile \&}型。
+
+\item{{\bf 返り値}}
+
+{PS::TimeProfile}型。{rhs}のすべてのメンバ変数の値と自身のメンバ変数の
+値の和を取った値を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{縮約}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+PS::F64 PS::TimeProfile::getTotalTime() const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+{PS::F64}型。すべてのメンバ変数の値の和を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{初期化}
+\mbox{}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{screen}
+\begin{verbatim}
+void PS::TimeProfile::clear();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf 引数}}
+
+なし。
+
+\item{{\bf 返り値}}
+
+なし。
+
+\item{{\bf 機能}}
+
+すべてのメンバ変数に0を代入する。
+
+\end{itemize}

@@ -1,0 +1,194 @@
+\subsubsection{{\tt PS::Vector2}型} 
+
+x,yの2要素を持つ。それらの要素の型は
+{PS::S32},{PS::S64},{PS::U32},{PS::U64},{PS::F32},{PS::F64}に限られる。
+外積演算も定義しており、結果はスカラーとして返す。このクラスは以下の様
+に記述される。
+
+\begin{lstlisting}[caption=Vector2]
+namespace ParticleSimulator{
+    template <typename T>
+    class Vector2{
+    public:
+        //メンバ変数は以下の二つのみ。
+        T x, y;
+
+        //コンストラクタ
+        Vector2() : x(T(0)), y(T(0)) {}
+        Vector2(const T _x, const T _y) : x(_x), y(_y) {}
+        Vector2(const T s) : x(s), y(s) {}
+        Vector2(const Vector2 & src) : x(src.x), y(src.y) {}
+
+        //代入演算子
+        const Vector2 & operator = (const Vector2 & rhs){
+            x = rhs.x;
+            y = rhs.y;
+            return (*this);
+        }
+
+        //加減算
+        Vector2 operator + (const Vector2 & rhs) const{
+            return Vector2(x + rhs.x, y + rhs.y);
+        }
+        const Vector2 & operator += (const Vector2 & rhs){
+            (*this) = (*this) + rhs;
+            return (*this);
+        }
+        Vector2 operator - (const Vector2 & rhs) const{
+            return Vector2(x - rhs.x, y - rhs.y);
+        }
+        const Vector2 & operator -= (const Vector2 & rhs){
+            (*this) = (*this) - rhs;
+            return (*this);
+        }
+
+        //ベクトルスカラ積
+        Vector2 operator * (const T s) const{
+            return Vector2(x * s, y * s);
+        }
+        const Vector2 & operator *= (const T s){
+            (*this) = (*this) * s;
+            return (*this);
+        }
+        friend Vector2 operator * (const T s, const Vector2 & v){
+            return (v * s);
+        }
+        Vector2 operator / (const T s) const{
+            return Vector2(x / s, y / s);
+        }
+        const Vector2 & operator /= (const T s){
+            (*this) = (*this) / s;
+            return (*this);
+        }
+
+        //内積
+        T operator * (const Vector2 & rhs) const{
+            return (x * rhs.x) + (y * rhs.y);
+        }
+
+        //外積(返り値はスカラ!!)
+        T operator ^ (const Vector2 & rhs) const{
+            const T z = (x * rhs.y) - (y * rhs.x);
+            return z;
+        }
+
+        //Vector2<U>への型変換
+        template <typename U>
+        operator Vector2<U> () {
+            return Vector2<U> (static_cast<U>(x),
+                               static_cast<U>(y));
+        }
+    };
+
+
+    template <>
+    inline Vector2<float> Vector2<float>::operator / (const float s) const {
+        const float inv_s = 1.0f/s;
+        return Vector2(x * inv_s, y * inv_s);
+    }
+    template <>
+    inline Vector2<double> Vector2<double>::operator / (const double s) const {
+        const double inv_s = 1.0/s;
+        return Vector2(x * inv_s, y * inv_s);
+    }
+
+}
+\end{lstlisting}
+
+\subsubsection{{\tt PS::Vector3}型}
+
+x,y,zの3要素を持つ。それらの要素の型は
+{PS::S32},{PS::S64},{PS::U32},{PS::U64},{PS::F32},{PS::F64}に限られる。
+定義されているメソッド等は{\tt Vector2}型と同じであるが外積は{\tt
+Vector2}型と違い{\tt Vector3}型で返す。このクラスは以下の様に記述される。
+
+\begin{lstlisting}[caption=Vector3]
+namespace ParticleSimulator{
+    template<class T>
+    class Vector3{
+    public:
+        //メンバ変数は以下の三つのみ。
+        T x, y, z;
+
+        //コンストラクタ
+        Vector3() : x(T(0)), y(T(0)) {}
+        Vector3(const T _x, const T _y) : x(_x), y(_y), z(_z) {}
+        Vector3(const T s) : x(s), y(s), z(s) {}
+        Vector3(const Vector3 & src) : x(src.x), y(src.y), z(src.z) {}
+
+        //代入演算子
+        const Vector3 & operator = (const Vector3 & rhs){
+            x = rhs.x;
+            y = rhs.y;
+            z = rhs.z;
+            return (*this);
+        }
+
+        //加減算
+        Vector3 operator + (const Vector3 & rhs) const{
+            return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);
+        }
+        const Vector3 & operator += (const Vector3 & rhs){
+            (*this) = (*this) + rhs;
+            return (*this);
+        }
+        Vector3 operator - (const Vector3 & rhs) const{
+            return Vector2(x - rhs.x, y - rhs.y, z - rhs.z);
+        }
+        const Vector3 & operator -= (const Vector3 & rhs){
+            (*this) = (*this) - rhs;
+            return (*this);
+        }
+
+        //ベクトルスカラ積
+        Vector3 operator * (const T s) const{
+            return Vector3(x * s, y * s, z * s);
+        }
+        const Vector3 & operator *= (const T s){
+            (*this) = (*this) * s;
+            return (*this);
+        }
+        friend Vector3 operator * (const T s, const Vector3 & v){
+            return (v * s);
+        }
+        Vector3 operator / (const T s) const{
+            return Vector3(x / s, y / s, z / s);
+        }
+        const Vector3 & operator /= (const T s){
+            (*this) = (*this) / s;
+            return (*this);
+        }
+
+        //内積
+        T operator * (const Vector3 & rhs) const{
+            return (x * rhs.x) + (y * rhs.y) + (z * rhs.z);
+        }
+
+        //外積
+        Vector3 operator ^ (const Vector3 & rhs) const{
+            return Vector3( (y * rhs.z - z * rhs.y),
+                            (z * rhs.x - x * rhs.z),
+                            (x * rhs.y - y * rhs.x) );
+        }
+
+        //Vector2<U>への型変換
+        template <typename U>
+        operator Vector3<U> () {
+            return Vector3<U> (static_cast<U>(x),
+                               static_cast<U>(y),
+                               static_cast<U>(z));
+        }
+    };
+    template <>
+    inline Vector3<float> Vector3<float>::operator / (const float s) const {
+        const float inv_s = 1.0f/s;
+        return Vector3(x * inv_s, y * inv_s, z * inv_s);
+    }
+    template <>
+    inline Vector3<double> Vector3<double>::operator / (const double s) const {
+        const double inv_s = 1.0/s;
+        return Vector3(x * inv_s, y * inv_s, z * inv_s);
+    }
+}
+\end{lstlisting}
+

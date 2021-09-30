@@ -1,0 +1,28 @@
+# (i) Compiler, compile options, etc.
+FC	= time -p mpif90-openmpi-gcc8 
+FCFLAGS = -std=f2003 -O3 -ffast-math -funroll-loops -fopenmp
+LDFLAGS = 
+
+# (ii) Job submission variables
+WORKDIR = ./work-macports/
+
+# (iii) executable
+TARGET	= a.out
+
+# Default rule
+%.o : %.F90
+	$(FC) $(FCFLAGS) -c $<
+
+all: $(TARGET)
+
+$(TARGET): main.o
+	$(FC) $(FCFLAGS) -o $@ $^ $(LDFLAGS)
+	mkdir -p $(WORKDIR)
+	mv $@ $(WORKDIR)
+
+clean:
+	rm -f *.o
+
+distclean: clean
+	rm -f $(TARGET)
+	rm -f *.txt

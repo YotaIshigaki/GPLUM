@@ -1,0 +1,345 @@
+\texttt{PS::MatrixSym3} has six components: \texttt{xx}, \texttt{yy}, \texttt{zz}, \texttt{xy}, \texttt{xz}, and \texttt{yz}.
+We define various APIs and operators for these components.
+In the following, we list them.
+%%PS::MatrixSym3はxx, yy, zz, xy, xz, yzの6要素を持つ。これらに対する様々
+%%なAPIや演算子を定義した。それらの宣言を以下に記述する。この節ではこれ
+%%らについて詳しく記述する。
+\begin{lstlisting}[caption=MatrixSym3]
+namespace ParticleSimulator{
+    template<class T>
+    class MatrixSym3{
+    public:
+        // Six member variables
+        T xx, yy, zz, xy, xz, yz;
+
+        // Constructors
+        MatrixSym3() : xx(T(0)), yy(T(0)), zz(T(0)),
+                       xy(T(0)), xz(T(0)), yz(T(0)) {}
+        MatrixSym3(const T _xx, const T _yy, const T _zz,
+                   const T _xy, const T _xz, const T _yz )
+                       : xx(_xx), yy(_yy), zz(_zz),
+                       xy(_xy), xz(_xz), yz(_yz) {}
+        MatrixSym3(const T s) : xx(s), yy(s), zz(s),
+                                xy(s), xz(s), yz(s) {}
+        MatrixSym3(const MatrixSym3 & src) :
+            xx(src.xx), yy(src.yy), zz(src.zz),
+            xy(src.xy), xz(src.xz), yz(src.yz) {}
+
+        // Assignment operator
+        const MatrixSym3 & operator = (const MatrixSym3 & rhs);
+
+        // Addition and subtraction
+        MatrixSym3 operator + (const MatrixSym3 & rhs) const;
+        const MatrixSym3 & operator += (const MatrixSym3 & rhs) const;
+        MatrixSym3 operator - (const MatrixSym3 & rhs) const;
+        const MatrixSym3 & operator -= (const MatrixSym3 & rhs) const;
+
+        // Trace
+        T getTrace() const;
+
+        // Typecast to MatrixSym3<U>
+        template <typename U>
+        operator MatrixSym3<U> () const;
+    }
+}
+namespace PS = ParticleSimulator;
+\end{lstlisting}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Constructor}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::MatrixSym3<T>::MatrixSym3();
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+
+\item{{\bf Feature}}
+
+Default constructor. All the member variables are initialized as 0.
+%デフォルトコンストラクタ。６要素は0で初期化される。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::MatrixSym3<T>::MatrixSym3(const T _xx,
+                              const T _yy,
+                              const T _zz,
+                              const T _xy,
+                              const T _xz,
+                              const T _yz);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{\_xx}: Input. Type \texttt{const T}.
+%%{\_xx}: 入力。{const T}型。
+
+\texttt{\_yy}: Input. Type \texttt{const T}.
+%{\_yy}: 入力。{const T}型。
+
+\texttt{\_zz}: Input. Type \texttt{const T}.
+%{\_zz}: 入力。{const T}型。
+
+\texttt{\_xy}: Input. Type \texttt{const T}.
+%{\_xy}: 入力。{const T}型。
+
+\texttt{\_xz}: Input. Type \texttt{const T}.
+%{\_xz}: 入力。{const T}型。
+
+\texttt{\_yz}: Input. Type \texttt{const T}.
+%{\_yz}: 入力。{const T}型。
+
+\item{{\bf Feature}}
+
+Values of members \texttt{xx}, \texttt{yy}, \texttt{zz}, \texttt{xy},
+\texttt{xz} and \texttt{yz} are set to values of arguments \texttt{\_xx},
+\texttt{\_yy}, \texttt{\_zz}, \texttt{\_xy}, \texttt{xz} and \texttt{\_yz},
+respectively.
+%%メンバ{xx}、{yy}、{zz}、{xy}、{xz}、{yz}をそれぞれ{\_xx}、{\_yy}、
+%%{\_zz}、{\_xy}、{\_xz}、{\_yz}で初期化する。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::MatrixSym3<T>::MatrixSym3(const T s);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{s}: Input. Type \texttt{const T}.
+%{s}: 入力。{const T}型。
+
+\item{{\bf Feature}}
+
+Values of members are set to the value of argument \texttt{s}.
+%６要素すべてを{s}の値で初期化する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Copy constructor}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::MatrixSym3<T>::MatrixSym3(const PS::MatrixSym3<T> & src)
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{src}: Input. Type const \texttt{PS::MatrixSym3$<$T$>$ \&}.
+%{src}: 入力。{const PS::MatrixSym3$<$T$>$ \&}型。
+
+\item{{\bf Feature}}
+
+Copy constructor. The new variable will have the same value as \texttt{src}.
+%コピーコンストラクタ。{src}で初期化する。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Assignment operator}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::MatrixSym3<T> & PS::MatrixSym3<T>::operator = 
+                       (const PS::MatrixSym3<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::MatrixSym3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::MatrixSym3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::MatrixSym3$<$T$>$ \&}. Assigns the values of components of \texttt{rhs}
+to its components, and returns the vector itself.
+%%{const PS::MatrixSym3$<$T$>$ \&}型。{rhs}の６要素それぞれの値を自身の
+%%６要素それぞれに代入し自身の参照を返す。代入演算子。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Addition and subtraction}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::MatrixSym3<T> PS::MatrixSym3<T>::operator + 
+               (const PS::MatrixSym3<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::MatrixSym3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::MatrixSym3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::MatrixSym3$<$T$>$}. Add the components of \texttt{rhs} and its
+components, and return the results.
+%%{PS::MatrixSym3$<$T$>$ }型。{rhs}の６要素それぞれの値と自身の６要素の
+%%値の和を取った値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::MatrixSym3<T> & PS::MatrixSym3<T>::operator += 
+                       (const PS::MatrixSym3<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::MatrixSym3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::MatrixSym3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::MatrixSym3$<$T$>$ \&}. Add the components of \texttt{rhs} to its
+components, and return itself (lhs is changed).
+%%{const PS::MatrixSym3$<$T$>$ \&}型。{rhs}の６要素それぞれの値を自身の
+%%６要素それぞれに足し、自身を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+PS::MatrixSym3<T> PS::MatrixSym3<T>::operator - 
+               (const PS::MatrixSym3<T> & rhs) const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::MatrixSym3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::MatrixSym3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{PS::MatrixSym3$<$T$>$}. Subtract the components of \texttt{rhs} from its
+components, and return the results.
+%%{PS::MatrixSym3$<$T$>$}型。{rhs}の６要素それぞれの値と自身の６要素そ
+%%れぞれの値の差を取った値を返す。
+
+\end{itemize}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+const PS::MatrixSym3<T> & PS::MatrixSym3<T>::operator -= 
+                       (const PS::MatrixSym3<T> & rhs);
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+\texttt{rhs}: Input. Type \texttt{const PS::MatrixSym3$<$T$>$ \&}.
+%{rhs}: 入力。{const PS::MatrixSym3$<$T$>$ \&}型。
+
+\item{{\bf Return value}}
+
+Type \texttt{const PS::MatrixSym3$<$T$>$ \&}. Subtract the components of \texttt{rhs} from
+its components, and return itself (lhs is changed).
+%%{const PS::MatrixSym3$<$T$>$ \&}型。自身の６要素それぞれから{rhs}の６
+%%要素それぞれを引き自身を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Trace}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+T PS::MatrixSym3<T>::getTrace() const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+
+\item{{\bf Return value}}
+
+  Type \texttt{T}.
+
+\item{{\bf Feature}}
+
+  Calculate the trace, and return the result.
+%  トレースを計算し、その結果を返す。
+
+\end{itemize}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsubsection{Typecast to MatrixSym3$<$U$>$}
+
+\begin{screen}
+\begin{verbatim}
+template<typename T>
+template<typename U>
+PS::MatrixSym3<T>::operator PS::MatrixSym3<U> () const;
+\end{verbatim}
+\end{screen}
+
+\begin{itemize}
+
+\item{{\bf Argument}}
+
+  None.
+
+\item{{\bf Return value}}
+
+  Type \texttt{const PS::MatrixSym3$<$U$>$}.
+
+%{const PS::MatrixSym3$<$U$>$}型。
+
+\item{{\bf Feature}}
+
+  Typecast from type \texttt{const PS::MatrixSym3$<$T$>$} to \texttt{const
+  PS::MatrixSym3$<$U$>$}.
+%%  {const PS::MatrixSym3$<$T$>$}型を{const PS::MatrixSym3$<$U$>$}型に
+%%  キャ ストする
+
+\end{itemize}
+

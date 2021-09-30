@@ -1,0 +1,233 @@
+\subsubsection{領域クラス}
+\label{sec:detail_module_domain_info}
+
+この節では, 領域クラスの詳細記述を行う. 領域クラスの動作は, 初期化, ルー
+トドメインの分割である.
+
+領域クラスは以下の様に記述されている。\redtext{このクラスはグローバルに
+すべきか？}
+\begin{lstlisting}[caption=DomainInfo]
+    class DomainInfo{
+    private:
+        F32vec * pos_sample_tot_;
+        F32vec * pos_sample_loc_;
+        F32ort * pos_domain_;
+        F32ort * pos_domain_temp_;
+        F32 coef_ema_;
+        S32 target_number_of_sample_particle_;
+        S32 number_of_sample_particle_tot_;
+        S32 number_of_sample_particle_loc_;
+        S32 n_domain_[DIMENSION];
+        F32ort pos_root_domain_;
+        bool first_call_by_initialize;
+        bool first_call_by_decomposeDomain;
+        S32 boundary_condition_;
+        bool periodic_axis_[DIMENSION];
+\end{lstlisting}
+
+\subsubsubsection{初期化}
+
+領域クラスの初期化は, 以下の関数を全プロセスで呼び出すことで行われる.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::DomainInfo::initialize(const PS::F32 coefficient_EMA);
+\end{verbatim}
+\end{screen}
+
+{\tt coefficient\_EMA}は移動平均の係数である. ここでは移動平均の引数が設
+定される. 
+
+この関数は必ず呼び出す必要がある.
+
+\subsubsubsection{領域の分割数の設定}
+
+以下の関数を全プロセスで呼びだすことで, x, y, z軸方向の分割数が設定され
+る.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::DomainInfo::setDomain(const PS::S32 nx,
+                               const PS::S32 ny,
+                               const PS::S32 nz);
+\end{verbatim}
+\end{screen}
+
+{\tt nx}, {\tt ny}, {\tt nz}はそれぞれ, x, y, z軸方向の分割数である.
+{\tt nx}, {\tt ny}, {\tt nz}の積はMPIプロセス数でなければならない. 
+
+この関数は呼出さなくてもよい. この場合, {\tt nx}, {\tt ny}, {\tt nz}の
+デフォルト値が採用される. デフォルト値は, 以下のようになっている.  3つ
+の積がMPIプロセス数であり, かつそれぞれが最も近い値である. 大小関係は,
+{\tt nx >= ny >= nz}となっている.
+
+\subsubsubsubsection{境界条件の設定}
+
+境界条件の設定の設定は, 以下の関数を全プロセスで呼び出すことで行われる.
+\begin{screen}
+\begin{verbatim}
+void setBoundaryCondition(enum BOUNDARY_CONDITION bc);
+\end{verbatim}
+\end{screen}
+
+引数については、仕様書参照。この関数を呼び出すと、境界条件がメンバ{\tt
+boundary\_condition\_}に格納される。また、周期境界条件の場合は周期境界
+となる軸の{\tt periodic\_axis\_}が{\tt true}となる（開放境界の軸は{\tt
+false}）。
+
+以下の関数によって境界条件を得る。
+\begin{screen}
+\begin{verbatim}
+S32 getBoundaryCondition();
+\end{verbatim}
+\end{screen}
+
+\subsubsubsubsection{ルートドメインの設定}
+
+ルートドメインの設定の詳細記述を行う. ここでは, ルートドメインの形が直
+方体であるとする. これは, 開放境界条件と周期境界条件の場合にのみ対応で
+きる. 将来的には, この節の名前を「開放境界条件と周期境界条件の場合のルー
+トドメインの設定」などに変更する必要があるかもしれない.
+
+ルートドメインの設定は, 以下の関数を全プロセスで呼び出すことで行われる.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::DomainInfo::setRootDomain(const PS::F32ort particle_domain[]);
+\end{verbatim}
+\end{screen}
+
+引数{\tt particle\_domain}は, 直方体を表す変数である. この直方体がルー
+トドメインとなる. ルートドメインは, 最小値側で閉境界, 最大値側で開境界
+とする. 
+
+この関数は呼出さなくてもよい. この場合, ルートドメインにはデフォルト値
+が採用される.  ルートドメインのデフォルト値は, 単精度浮動小数の最大値と
+最小値である(それぞれ{\tt std::numeric\_limits<PS::F32>::max()}, {\tt
+- std::numeric\_limits<PS::F32>::max()})と与えられる).
+
+\subsubsubsection{ルートドメインの分割}
+
+この節では, ルートドメインの分割の詳細記述を行う. これは, ルートドメイ
+ンの設定, サンプル粒子の回収, 分割の実行の順に行われる.
+
+この動作は, ドメインの分割のために参照する粒子の種類が1つの場合, 以下の
+関数を呼び出すだけですむ.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::DomainInfo::decomposeDomainAll(not yet defined);
+\end{verbatim}
+\end{screen}
+
+以下, 続く.
+
+%%\subsubsubsubsection{前提}
+
+%%各プロセスの持つドメインは固有のID番号(id)を持つ. このID番号はMPIのプロ
+%%セスのランク番号と一致する. 番号付けのルールはz, y, x(2次元の場合はy,
+%%x)の順で付ける. また, 軸方向のID番号(idx, idy, idz)を持つ. ドメイン固有
+%%のID番号と, 軸方向のID番号には以下の関係がある.
+%%\begin{equation} 
+%%id = idx \times ny \times nz + idy \times nz + idz.
+%%\end{equation}
+%%ここで, nx, ny, nzはx, y, z軸方向の分割数である. MPIプロセスのランク番
+%%号と各軸方向のID番号は通信クラスが保持しており, それぞれ関数{\tt
+%%Comm::getRank()}と{\tt Comm::getRankXD(const S32 axis)}で取得できる.
+
+\subsubsubsubsection{サンプル粒子の回収}
+
+サンプル粒子の回収について記述する. 
+
+サンプル粒子の回収をするには, 以下の関数を全プロセスで呼び出すだけでよ
+い.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::DomainInfo::collectSampleParticle(const PS::ParticleSystem & psys,
+                                           const PS::F32 weight=1.0,
+                                           const bool clear=true);
+\end{verbatim}
+\end{screen}
+
+第1引数{\tt psys}は, サンプルの対象となる粒子の粒子群クラスである. 第2
+引数{\tt weight}は, 各プロセスでサンプルする粒子のウェイトである. 第3
+引数{\tt clear}はすでにサンプルした粒子のデータを消去するかしないかを決
+めるものである. {\tt clear}が, {\tt true}ならば消去し, {\tt false}なら
+ば消去しない.
+
+この関数の内部では, {\tt psys}からサンプルした粒子の位置座標を, 領域ク
+ラスのメンバ変数である{\tt F32vec}型の配列{\tt pos\_sample\_loc\_}に格
+納する. 各プロセスでサンプルする粒子の数の決定と, 実際のサンプルはこの
+関数が呼び出す関数{\tt PS::ParticleSystem::getSampleParticle}が行う.
+
+第3引数が{\tt true}だった場合は, {\tt pos\_sample\_loc\_}を空にしてから,
+上の動作を行う. 第2引数が{\tt false}だった場合は, {\tt
+pos\_sample\_loc\_}を空にせずに, 上の動作を行う.
+
+\redtext{サンプル粒子が全粒子のサブセットであることを
+   テスト. あと, インデックスの平均が3sigmaくらいに入ってるかどうか}
+
+\subsubsubsubsection{分割の実行}
+
+分割の実行に関する詳細記述を行う. 
+
+分割の実行を行うには, 全プロセスで, 以下の関数を呼び出すだけでよい.
+\begin{screen}
+\begin{verbatim}
+public:
+void PS::DomainInfo::decomposeDomain();
+\end{verbatim}
+\end{screen}
+
+この関数の内部では以下のことを行う. これらはすべてある1つのプロセス(こ
+の節ではルートプロセスと呼ぶ)で行う.  行うことは, Orthogonal Multi
+Section (Makino 2004)と同じである.
+
+ルートプロセスに全プロセスから配列{\tt pos\_sample\_loc\_}を集め, 配列
+{\tt pos\_sample\_tot\_}に格納する. 
+
+この配列{\tt pos\_sample\_tot\_} を使ってルートドメインを分割する. まず,
+ルートドメインをx軸方向に{\tt nx}個のスラブに分割する.  次にこのスラブ
+それぞれをy軸方向に{\tt ny}個のカラムに分割する. 最後にこのカラムそれぞ
+れをz軸方向に{\tt nz}個のドメインに分割する. これらのドメインの境界を配
+列{\tt pos\_domain\_temp\_}に格納する.
+
+配列{\tt pos\_domain\_temp\_}, 配列{\tt pos\_domain\_}, 変数{\tt
+coefficient\_EMA}を使って, 移動平均を取り, ドメインの境界を確定する.
+この確定したドメインの境界を配列{\tt pos\_domain\_}に格納する. ルート
+プロセスは, 配列{\tt pos\_domain\_}を全プロセスに放送する.
+
+\redtext{decomposeDomain: 分割したあとの粒子の分布がサンプル粒子の数に合ってるかどうか}
+
+%%ドメインを切っていく順番はx方向から切り、y、zと順番に切っ
+%%ていく。
+
+%%ルートプロセスの{\tt pos\_sample\_}に全プロセスからのサンプル粒子座標が
+%%格納されているとする。まず、x軸座標で粒子のソートを行い、各ドメインのx
+%%方向の座標を決める。次に、同じドメインに入る粒子のy軸座標でソートを行い、
+%%各ドメインのy座標を決める。同様にz軸方向も行う。こうして決まったドメイ
+%%ンの座標の配列{\tt pos\_domain\_}を全プロセルに放送する。x軸方向のドメ
+%%インの境界が決定した後、y,z軸のドメイン境界の計算は並列に実行する事も出
+%%来る。
+
+%%\paragraph{ルートプロセルに全プロセスの粒子を集めない方法}
+
+%%ルートドメイン分割の計算をルートプロセスに実行させると、一番最初のサン
+%%プリングやx軸方向のソートが重いと考えられる。そこで、ルートプロセスに全
+%%ての粒子を集めない方法を以下に記述する。ただし、この方法は前回のドメイ
+%%ンの情報を使っているので、一番最初から使う事は出来ない。
+
+%%\begin{enumerate} \item ドメインのx座標が同じプロセスで作るy-zスラブ
+%%内で粒子のサンプリングを行い、スラブ内のidが一番若いプロセスに集める。
+%%ここではこのプロセスをルートプロセスと呼ぶ。\item 前回求めたドメイ
+%%ンのx座標のみを考えて、収まるべきルートプロセスに粒子を移動させる。
+%%\item ルートプロセスのサンプル粒子数のprefix sumを求めておいて、ド
+%%メインの分割点を含むプロセスはその座標を計算し、全てのルートプロセ
+%%スに放送する。\item 新しく決まったドメイン境界のx座標を使って粒子を移
+%%動させる。\end{enumerate}
+
+%%これ以降は、同様の事をy,z軸方向で行ってもよいし、ルートプロセスのみで
+%%y,z方向のドメイン座標を計算してもよい。また、多くの場合、各プロセスが一
+%%つのドメイン境界を持つと考えられるので、プロセス内でソートせずに選択し
+%%てきた方が良いかもしれない。

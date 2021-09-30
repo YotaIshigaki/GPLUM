@@ -68,6 +68,7 @@ PS::S32 readParameter(const char * param_file,
                       PS::S32 & n_smp_ave,
                       PS::F64 & t_end,
                       PS::F64 & dt_snap,
+                      PS::F64 & dt_snap_tmp,
                       PS::F64 & r_max,
                       PS::F64 & r_min,
                       PS::S32 & seed,
@@ -85,7 +86,7 @@ PS::S32 readParameter(const char * param_file,
     const PS::F64 L_CGS = 14959787070000;
     const PS::F64 M_MKS = 1.9884e30;
     const PS::F64 M_CGS = 1.9884e33;
-    const PS::F64 T     = 365.25*24.*60.*60./(2.*M_PI);
+    const PS::F64 T     = 365.25*24.*60.*60./(2.*MY_PI);
     
     if ( ifs.fail() ) {
         errorMessage("The parameter file has FAILED to be successfully opened");
@@ -195,77 +196,84 @@ PS::S32 readParameter(const char * param_file,
             
         } else if ( name == "dt_snap" ){
             dt_snap = getvalue(value, T, T);
+
+        } else if ( name == "dt_snap_tmp" ){
+            dt_snap_tmp = getvalue(value, T, T);
             
         } else if ( name == "dt_tree" ){
-            FPGrav::dt_tree = getvalue(value, T, T);
+            FP_t::dt_tree = getvalue(value, T, T);
             
         } else if ( name == "dt_min" ){
-            FPGrav::dt_min = getvalue(value, T, T);
+            FP_t::dt_min = getvalue(value, T, T);
             
         } else if ( name == "eta" ){
-            FPGrav::eta = getvalue(value, 1., 1.);
+            FP_t::eta = getvalue(value, 1., 1.);
             
         } else if ( name == "eta_0" ){
-            FPGrav::eta_0 = getvalue(value, 1., 1.);
+            FP_t::eta_0 = getvalue(value, 1., 1.);
             
         } else if ( name == "eta_sun" ){
-            FPGrav::eta_sun = getvalue(value, 1., 1.);
+            FP_t::eta_sun = getvalue(value, 1., 1.);
             
         } else if ( name == "eta_sun0" ){
-            FPGrav::eta_sun0 = getvalue(value, 1., 1.);
+            FP_t::eta_sun0 = getvalue(value, 1., 1.);
             
         } else if ( name == "alpha" ){
             PS::F64 alpha = getvalue(value, 1., 1.);
-            FPGrav::alpha2 = alpha*alpha;
+            FP_t::alpha2 = alpha*alpha;
             
         } else if ( name == "m_sun" ){
-            FPGrav::m_sun = getvalue(value, M_MKS, M_CGS);
+            FP_t::m_sun = getvalue(value, M_MKS, M_CGS);
 
         } else if ( name == "dens" ){
-            FPGrav::dens = getvalue(value, M_MKS/(L_MKS*L_MKS*L_MKS), M_CGS/(L_CGS*L_CGS*L_CGS));
+            FP_t::dens = getvalue(value, M_MKS/(L_MKS*L_MKS*L_MKS), M_CGS/(L_CGS*L_CGS*L_CGS));
             
         } else if ( name == "eps" ){
             PS::F64 eps = getvalue(value, L_MKS, L_CGS);
-            EPGrav::eps2 = eps*eps;
+            FP_t::eps2 = eps*eps;
+
+        } else if ( name == "eps_sun" ){
+            PS::F64 eps_sun = getvalue(value, L_MKS, L_CGS);
+            FP_t::eps2_sun = eps_sun*eps_sun;
             
         } else if ( name == "R_cut0" ){
-            EPGrav::R_cut0 = getvalue(value, 1., 1.);
+            FP_t::R_cut0 = getvalue(value, 1., 1.);
 
         } else if ( name == "R_cut1" ){
-            EPGrav::R_cut1 = getvalue(value, 1., 1.);
+            FP_t::R_cut1 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search0" ){
-            EPGrav::R_search0 = getvalue(value, 1., 1.);
+            FP_t::R_search0 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search1" ){
-            EPGrav::R_search1 = getvalue(value, 1., 1.);
+            FP_t::R_search1 = getvalue(value, 1., 1.);
             
 #ifdef USE_RE_SEARCH_NEIGHBOR
         } else if ( name == "R_search2" ){
-            EPGrav::R_search2 = getvalue(value, 1., 1.);
+            FP_t::R_search2 = getvalue(value, 1., 1.);
             
         } else if ( name == "R_search3" ){
-            EPGrav::R_search3 = getvalue(value, 1., 1.);
+            FP_t::R_search3 = getvalue(value, 1., 1.);
 #endif
 #ifdef MERGE_BINARY
         } else if ( name == "R_merge" ){
-            FPGrav::R_merge = getvalue(value, 1., 1.);
+            FP_t::R_merge = getvalue(value, 1., 1.);
 #endif
 #ifdef CONSTANT_RANDOM_VELOCITY
         } else if ( name == "v_disp" ){
-            FPGrav::v_disp = getvalue(value, L_MKS/T, L_CGS/T);
+            FP_t::v_disp = getvalue(value, L_MKS/T, L_CGS/T);
 #endif
         } else if ( name == "gamma" ){
-            EPGrav::setGamma(getvalue(value, 1., 1.));
+            FP_t::setGamma(getvalue(value, 1., 1.));
 
         } else if ( name == "r_cut_min" ){
-            FPGrav::r_cut_min = getvalue(value, L_MKS, L_CGS);
+            FP_t::r_cut_min = getvalue(value, L_MKS, L_CGS);
             
         } else if ( name == "r_cut_max" ){
-            FPGrav::r_cut_max = getvalue(value, L_MKS, L_CGS);
+            FP_t::r_cut_max = getvalue(value, L_MKS, L_CGS);
 
         } else if ( name == "p_cut" ){
-            FPGrav::p_cut = getvalue(value, 1., 1.);
+            FP_t::p_cut = getvalue(value, 1., 1.);
             
         } else if ( name == "r_max" ){
             r_max = getvalue(value, L_MKS, L_CGS);
@@ -276,7 +284,7 @@ PS::S32 readParameter(const char * param_file,
         } else if ( name == "f" ){
             //HardSystem::f = getvalue(value, 1., 1.);
             //Collision0::f = getvalue(value, 1., 1.);
-            FPGrav::increase_factor = getvalue(value, 1., 1.);
+            FP_t::increase_factor = getvalue(value, 1., 1.);
 
         } else if ( name == "m_min" ){
            Collision0::m_min = getvalue(value, M_MKS, M_CGS);
@@ -291,7 +299,7 @@ PS::S32 readParameter(const char * param_file,
     ifs.close();
 
 #ifdef TEST_PTCL
-    EPGrav::eps2 = std::max(EPGrav::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
+    FP_t::eps2 = std::max(FP_t::eps2, (PS::F64)std::numeric_limits<PS::F32>::min());
 #endif
 
     return 0;
@@ -312,66 +320,73 @@ PS::S32 checkParameter(char * init_file,
                        PS::S32 n_smp_ave,
                        PS::F64 t_end,
                        PS::F64 dt_snap,
+                       PS::F64 dt_snap_tmp,
                        PS::F64 r_max,
                        PS::F64 r_min,
                        PS::S32 seed,
                        PS::S32 reset_step)
 {
-    if ( !isPowerOf2(FPGrav::dt_tree) ){
+    if ( !isPowerOf2(FP_t::dt_tree) ){
         errorMessage("dt_tree has NOT been set to be power of 2",
-                     "(dt_tree =" + std::to_string(FPGrav::dt_tree ) + ")." );
+                     "(dt_tree =" + std::to_string(FP_t::dt_tree ) + ")." );
         return 1;
-    } else if ( !isPowerOf2(FPGrav::dt_min) ){
+    } else if ( !isPowerOf2(FP_t::dt_min) ){
         errorMessage("dt_min has NOT been set to be power of 2",
-                     "(dt_min = " + std::to_string(FPGrav::dt_min) + ").");
+                     "(dt_min = " + std::to_string(FP_t::dt_min) + ").");
         return 1;
-    } else if ( FPGrav::dt_min > 0.5*FPGrav::dt_tree ){
+    } else if ( FP_t::dt_min > 0.5*FP_t::dt_tree ){
         errorMessage("dt_min has NOT been set to be satisfy dt_min <= 0.5 dt_tree",
-                     "(dt_min = " + std::to_string(FPGrav::dt_min)
-                     + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
+                     "(dt_min = " + std::to_string(FP_t::dt_min)
+                     + ", dt_tree = " + std::to_string(FP_t::dt_tree) + ").");
         return 1;
-    } else if ( fmod(dt_snap, FPGrav::dt_tree) != 0 ){
+    } else if ( fmod(dt_snap, FP_t::dt_tree) != 0 ){
         errorMessage("dt_snap has NOT been set to be multiples of dt_tree",
                      "(dt_snap = " + std::to_string(dt_snap)
-                     + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
+                     + ", dt_tree = " + std::to_string(FP_t::dt_tree) + ").");
         return 1;
-    } else if ( FPGrav::dt_tree > FPGrav::dt_min * pow2(51) ){
+
+    } else if ( fmod(dt_snap_tmp, FP_t::dt_tree) != 0 ){
+        errorMessage("dt_snap_tmp has NOT been set to be multiples of dt_tree",
+                     "(dt_snap_tmp = " + std::to_string(dt_snap)
+                     + ", dt_tree = " + std::to_string(FP_t::dt_tree) + ").");
+        return 1;
+    } else if ( FP_t::dt_tree > FP_t::dt_min * pow2(51) ){
         errorMessage("dt_min has NOT been set to satisfy dt_tree * 2^-51 <= dt_min",
-                     "(dt_snap = " + std::to_string(dt_snap)
-                     + ", dt_tree = " + std::to_string(FPGrav::dt_tree) + ").");
+                     "(dt_min = " + std::to_string(FP_t::dt_min)
+                     + ", dt_tree = " + std::to_string(FP_t::dt_tree) + ").");
         return 1;
     } else if ( makeInit && SolidDisk::n_init == 0 && SolidDisk::m_init == 0. ){
         errorMessage("Both n_init & m_init have NOT been set.");
         return 1;
-    } else if ( FPGrav::r_cut_min > FPGrav::r_cut_max && FPGrav::r_cut_max > 0 ){
+    } else if ( FP_t::r_cut_min > FP_t::r_cut_max && FP_t::r_cut_max > 0 ){
         errorMessage("r_cut_max & r_cut_min have NOT been set to satisfy r_cut_max >= r_cut_min",
-                     "(r_cut_max = " + std::to_string(FPGrav::r_cut_max)
-                     + ", r_cut_min = " + std::to_string(FPGrav::r_cut_min) + ").");
+                     "(r_cut_max = " + std::to_string(FP_t::r_cut_max)
+                     + ", r_cut_min = " + std::to_string(FP_t::r_cut_min) + ").");
         return 1;
-    } else if ( EPGrav::R_cut0 < 0. ){
+    } else if ( FP_t::R_cut0 < 0. ){
         errorMessage("R_cut0 has NOT been set to satisfy R_cut0 >= 0",
-                     "(R_cut0 = " + std::to_string(EPGrav::R_cut0) + ").");
+                     "(R_cut0 = " + std::to_string(FP_t::R_cut0) + ").");
         return 1;
-    } else if ( EPGrav::R_cut1 < 0. ){
+    } else if ( FP_t::R_cut1 < 0. ){
         errorMessage("R_cut1 has NOT been set to satisfy R_cut1 >= 0",
-                     "(R_cut1 = " + std::to_string(EPGrav::R_cut1) + ").");
+                     "(R_cut1 = " + std::to_string(FP_t::R_cut1) + ").");
         return 1;
-    } else if ( EPGrav::R_search0 < 1. ){
+    } else if ( FP_t::R_search0 < 1. ){
         errorMessage("R_search0 has NOT been set to satisfy R_search0 >= 1",
-                     "(R_search0 = " + std::to_string(EPGrav::R_search0) + ").");
+                     "(R_search0 = " + std::to_string(FP_t::R_search0) + ").");
         return 1;
-    } else if ( EPGrav::R_search1 < 0. ){
+    } else if ( FP_t::R_search1 < 0. ){
         errorMessage("R_search1 has NOT been set to satisfy R_search1 >= 0",
-                     "(R_search1 = " + std::to_string(EPGrav::R_search1) + ").");
+                     "(R_search1 = " + std::to_string(FP_t::R_search1) + ").");
         return 1;
 #ifdef USE_RE_SEARCH_NEIGHBOR
-    } else if ( EPGrav::R_search2 < 1. ){
+    } else if ( FP_t::R_search2 < 1. ){
         errorMessage("R_search2 has NOT been set to satisfy R_search2 >= 1",
-                     "(R_search2 = " + std::to_string(EPGrav::R_search2) + ").");
+                     "(R_search2 = " + std::to_string(FP_t::R_search2) + ").");
         return 1;
-    } else if ( EPGrav::R_search3 < 0. ){
+    } else if ( FP_t::R_search3 < 0. ){
         errorMessage("R_search3 has NOT been set to satisfy R_search0 >= 0",
-                     "(R_search3 = " + std::to_string(EPGrav::R_search3) + ").");
+                     "(R_search3 = " + std::to_string(FP_t::R_search3) + ").");
         return 1;
 #endif
     } else if ( r_max < r_min ){
@@ -402,6 +417,7 @@ void showParameter(char * init_file,
                    PS::S32 n_smp_ave,
                    PS::F64 t_end,
                    PS::F64 dt_snap,
+                   PS::F64 dt_snap_tmp,
                    PS::F64 r_max,
                    PS::F64 r_min,
                    PS::S32 seed,
@@ -409,7 +425,7 @@ void showParameter(char * init_file,
 {
     const PS::F64 L = 14959787070000;
     const PS::F64 M = 1.9884e33;
-    const PS::F64 T = 365.25*24.*60.*60./(2.*M_PI);
+    const PS::F64 T = 365.25*24.*60.*60./(2.*MY_PI);
     
     if ( PS::Comm::getRank() == 0 ){
         std::cout << "Number Of Processes:\t" << PS::Comm::getNumberOfProc() << std::endl;
@@ -439,7 +455,7 @@ void showParameter(char * init_file,
                   << "alpha_gas     = " << GasDisk::alpha_gas << std::endl
                   << "beta_gas      = " << GasDisk::beta_gas << std::endl
                   << "f_gas         = " << GasDisk::f_gas << std::endl
-                  << "tau_gas       = " << GasDisk::tau_gas << "\t(" << GasDisk::tau_gas/(2.*M_PI) << " year)" << std::endl
+                  << "tau_gas       = " << GasDisk::tau_gas << "\t(" << GasDisk::tau_gas/(2.*MY_PI) << " year)" << std::endl
                   << "C_d           = " << GasDisk::C_d << std::endl
                   << "mu            = " << GasDisk::mu << std::endl;
 #endif
@@ -452,43 +468,45 @@ void showParameter(char * init_file,
                   << "n_group_limit = " << n_group_limit << std::endl
                   << "n_smp_ave     = " << n_smp_ave << std::endl
                   << std::scientific << std::setprecision(15)
-                  << "t_begin       = " << time_sys << "\t(" << time_sys/(2.*M_PI) << " year)" << std::endl
-                  << "t_end         = " << t_end << "\t(" << t_end/(2.*M_PI) << " year)" << std::endl
-                  << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*M_PI) << " year)" << std::endl
-                  << "dt_tree       = " << FPGrav::dt_tree << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_tree) << ", " << FPGrav::dt_tree/(2.*M_PI) << " year)" << std::endl
-                  << "dt_min        = " << FPGrav::dt_min << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_min) << ", " << FPGrav::dt_min/(2.*M_PI) << " year)" << std::endl
-                  << "eta           = " << FPGrav::eta  << std::endl
-                  << "eta_0         = " << FPGrav::eta_0 << std::endl
-                  << "eta_sun       = " << FPGrav::eta_sun << std::endl
-                  << "eta_sun0      = " << FPGrav::eta_sun0 << std::endl
-                  << "alpha         = " << sqrt(FPGrav::alpha2) << std::endl
-                  << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
-                  << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
-                  << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
+                  << "t_begin       = " << time_sys << "\t(" << time_sys/(2.*MY_PI) << " year)" << std::endl
+                  << "t_end         = " << t_end << "\t(" << t_end/(2.*MY_PI) << " year)" << std::endl
+                  << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*MY_PI) << " year)" << std::endl
+                  << "dt_snap_tmp   = " << dt_snap_tmp << "\t(" << dt_snap_tmp/(2.*MY_PI) << " year)" << std::endl
+                  << "dt_tree       = " << FP_t::dt_tree << "\t(2^" << (PS::S32)std::log2(FP_t::dt_tree) << ", " << FP_t::dt_tree/(2.*MY_PI) << " year)" << std::endl
+                  << "dt_min        = " << FP_t::dt_min << "\t(2^" << (PS::S32)std::log2(FP_t::dt_min) << ", " << FP_t::dt_min/(2.*MY_PI) << " year)" << std::endl
+                  << "eta           = " << FP_t::eta  << std::endl
+                  << "eta_0         = " << FP_t::eta_0 << std::endl
+                  << "eta_sun       = " << FP_t::eta_sun << std::endl
+                  << "eta_sun0      = " << FP_t::eta_sun0 << std::endl
+                  << "alpha         = " << sqrt(FP_t::alpha2) << std::endl
+                  << "m_sun         = " << FP_t::m_sun << "\t(" << FP_t::m_sun*M << " g)" << std::endl
+                  << "dens          = " << FP_t::dens << "\t(" << FP_t::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
+                  << "eps           = " << sqrt(FP_t::eps2) << "\t(" << sqrt(FP_t::eps2)*L << " cm)"<< std::endl
+                  << "eps_sun       = " << sqrt(FP_t::eps2_sun) << "\t(" << sqrt(FP_t::eps2_sun)*L << " cm)"<< std::endl
                   << std::fixed << std::setprecision(5)
-                  << "R_cut0        = " << EPGrav::R_cut0 << std::endl
-                  << "R_cut1        = " << EPGrav::R_cut1 << std::endl
-                  << "R_search0     = " << EPGrav::R_search0 << std::endl
-                  << "R_search1     = " << EPGrav::R_search1 << std::endl
+                  << "R_cut0        = " << FP_t::R_cut0 << std::endl
+                  << "R_cut1        = " << FP_t::R_cut1 << std::endl
+                  << "R_search0     = " << FP_t::R_search0 << std::endl
+                  << "R_search1     = " << FP_t::R_search1 << std::endl
 #ifdef USE_RE_SEARCH_NEIGHBOR
-                  << "R_search2     = " << EPGrav::R_search2 << std::endl
-                  << "R_search3     = " << EPGrav::R_search3 << std::endl
+                  << "R_search2     = " << FP_t::R_search2 << std::endl
+                  << "R_search3     = " << FP_t::R_search3 << std::endl
 #endif
 #ifdef MERGE_BINARY
-                  << "R_merge       = " << FPGrav::R_merge << std::endl
+                  << "R_merge       = " << FP_t::R_merge << std::endl
 #endif
 #ifdef CONSTANT_RANDOM_VELOCITY
-                  << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
+                  << "v_disp        = " << FP_t::v_disp << "\t(" << FP_t::v_disp*L/T << " cm/s)"<< std::endl
 #endif
-                  << "gamma         = " << EPGrav::gamma << std::endl
+                  << "gamma         = " << FP_t::gamma << std::endl
                   << std::scientific << std::setprecision(15)
-                  << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
-                  << "r_cut_min     = " << FPGrav::r_cut_min << "\t(" << FPGrav::r_cut_min*L << " cm)"<< std::endl
-                  << "p_cut         = " << FPGrav::p_cut << std::endl
+                  << "r_cut_max     = " << FP_t::r_cut_max << "\t(" << FP_t::r_cut_max*L << " cm)"<< std::endl
+                  << "r_cut_min     = " << FP_t::r_cut_min << "\t(" << FP_t::r_cut_min*L << " cm)"<< std::endl
+                  << "p_cut         = " << FP_t::p_cut << std::endl
                   << std::fixed << std::setprecision(5)
                   << "r_max         = " << r_max << std::endl
                   << "r_min         = " << r_min << std::endl
-                  << "f             = " << FPGrav::increase_factor << std::endl
+                  << "f             = " << FP_t::increase_factor << std::endl
                   << std::scientific << std::setprecision(15)
                   << "m_min         = " << Collision0::m_min << "\t(" << Collision0::m_min*M << " g)" << std::endl;
 
@@ -562,7 +580,7 @@ void showParameter(char * init_file,
                    << "alpha_gas     = " << GasDisk::alpha_gas << std::endl
                    << "beta_gas      = " << GasDisk::beta_gas << std::endl
                    << "f_gas         = " << GasDisk::f_gas << std::endl
-                   << "tau_gas       = " << GasDisk::tau_gas << "\t(" << GasDisk::tau_gas/(2.*M_PI) << " year)" << std::endl
+                   << "tau_gas       = " << GasDisk::tau_gas << "\t(" << GasDisk::tau_gas/(2.*MY_PI) << " year)" << std::endl
                    << "C_d           = " << GasDisk::C_d << std::endl
                    << "mu            = " << GasDisk::mu << std::endl;
 #endif
@@ -575,43 +593,45 @@ void showParameter(char * init_file,
                    << "n_group_limit = " << n_group_limit << std::endl
                    << "n_smp_ave     = " << n_smp_ave << std::endl
                    << std::scientific << std::setprecision(15)
-                   << "t_begin       = " << time_sys << "\t(" << time_sys/(2.*M_PI) << " year)" << std::endl
-                   << "t_end         = " << t_end << "\t(" << t_end/(2.*M_PI) << " year)" << std::endl
-                   << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*M_PI) << " year)" << std::endl
-                   << "dt_tree       = " << FPGrav::dt_tree << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_tree) << ", " << FPGrav::dt_tree/(2.*M_PI) << " year)" << std::endl
-                   << "dt_min        = " << FPGrav::dt_min << "\t(2^" << (PS::S32)std::log2(FPGrav::dt_min) << ", " << FPGrav::dt_min/(2.*M_PI) << " year)" << std::endl
-                   << "eta           = " << FPGrav::eta << std::endl
-                   << "eta_0         = " << FPGrav::eta_0 << std::endl
-                   << "eta_sun       = " << FPGrav::eta_sun << std::endl
-                   << "eta_sun0      = " << FPGrav::eta_sun0 << std::endl
-                   << "alpha         = " << sqrt(FPGrav::alpha2) << std::endl
-                   << "m_sun         = " << FPGrav::m_sun << "\t(" << FPGrav::m_sun*M << " g)" << std::endl
-                   << "dens          = " << FPGrav::dens << "\t(" << FPGrav::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
-                   << "eps           = " << sqrt(EPGrav::eps2) << "\t(" << sqrt(EPGrav::eps2)*L << " cm)"<< std::endl
+                   << "t_begin       = " << time_sys << "\t(" << time_sys/(2.*MY_PI) << " year)" << std::endl
+                   << "t_end         = " << t_end << "\t(" << t_end/(2.*MY_PI) << " year)" << std::endl
+                   << "dt_snap       = " << dt_snap << "\t(" << dt_snap/(2.*MY_PI) << " year)" << std::endl
+                   << "dt_snap_tmp   = " << dt_snap_tmp << "\t(" << dt_snap_tmp/(2.*MY_PI) << " year)" << std::endl
+                   << "dt_tree       = " << FP_t::dt_tree << "\t(2^" << (PS::S32)std::log2(FP_t::dt_tree) << ", " << FP_t::dt_tree/(2.*MY_PI) << " year)" << std::endl
+                   << "dt_min        = " << FP_t::dt_min << "\t(2^" << (PS::S32)std::log2(FP_t::dt_min) << ", " << FP_t::dt_min/(2.*MY_PI) << " year)" << std::endl
+                   << "eta           = " << FP_t::eta << std::endl
+                   << "eta_0         = " << FP_t::eta_0 << std::endl
+                   << "eta_sun       = " << FP_t::eta_sun << std::endl
+                   << "eta_sun0      = " << FP_t::eta_sun0 << std::endl
+                   << "alpha         = " << sqrt(FP_t::alpha2) << std::endl
+                   << "m_sun         = " << FP_t::m_sun << "\t(" << FP_t::m_sun*M << " g)" << std::endl
+                   << "dens          = " << FP_t::dens << "\t(" << FP_t::dens*M/(L*L*L) << " g/cm^3)"<< std::endl
+                   << "eps           = " << sqrt(FP_t::eps2) << "\t(" << sqrt(FP_t::eps2)*L << " cm)"<< std::endl
+                   << "eps_sun       = " << sqrt(FP_t::eps2_sun) << "\t(" << sqrt(FP_t::eps2_sun)*L << " cm)"<< std::endl
                    << std::fixed << std::setprecision(5)
-                   << "R_cut0        = " << EPGrav::R_cut0 << std::endl
-                   << "R_cut1        = " << EPGrav::R_cut1 << std::endl
-                   << "R_search0     = " << EPGrav::R_search0 << std::endl
-                   << "R_search1     = " << EPGrav::R_search1 << std::endl
+                   << "R_cut0        = " << FP_t::R_cut0 << std::endl
+                   << "R_cut1        = " << FP_t::R_cut1 << std::endl
+                   << "R_search0     = " << FP_t::R_search0 << std::endl
+                   << "R_search1     = " << FP_t::R_search1 << std::endl
 #ifdef USE_RE_SEARCH_NEIGHBOR
-                   << "R_search2     = " << EPGrav::R_search2 << std::endl
-                   << "R_search3     = " << EPGrav::R_search3 << std::endl
+                   << "R_search2     = " << FP_t::R_search2 << std::endl
+                   << "R_search3     = " << FP_t::R_search3 << std::endl
 #endif
 #ifdef MERGE_BINARY
-                   << "R_merge       = " << FPGrav::R_merge << std::endl
+                   << "R_merge       = " << FP_t::R_merge << std::endl
 #endif
 #ifdef CONSTANT_RANDOM_VELOCITY
-                   << "v_disp        = " << FPGrav::v_disp << "\t(" << FPGrav::v_disp*L/T << " cm/s)"<< std::endl
+                   << "v_disp        = " << FP_t::v_disp << "\t(" << FP_t::v_disp*L/T << " cm/s)"<< std::endl
 #endif
-                   << "gamma         = " << EPGrav::gamma << std::endl
+                   << "gamma         = " << FP_t::gamma << std::endl
                    << std::scientific << std::setprecision(15)
-                   << "r_cut_max     = " << FPGrav::r_cut_max << "\t(" << FPGrav::r_cut_max*L << " cm)"<< std::endl
-                   << "r_cut_min     = " << FPGrav::r_cut_min << "\t(" << FPGrav::r_cut_min*L << " cm)"<< std::endl
-                   << "p_cut         = " << FPGrav::p_cut << std::endl
+                   << "r_cut_max     = " << FP_t::r_cut_max << "\t(" << FP_t::r_cut_max*L << " cm)"<< std::endl
+                   << "r_cut_min     = " << FP_t::r_cut_min << "\t(" << FP_t::r_cut_min*L << " cm)"<< std::endl
+                   << "p_cut         = " << FP_t::p_cut << std::endl
                    << std::fixed << std::setprecision(5)
                    << "r_max         = " << r_max << std::endl
                    << "r_min         = " << r_min << std::endl
-                   << "f             = " << FPGrav::increase_factor << std::endl
+                   << "f             = " << FP_t::increase_factor << std::endl
                    << std::scientific << std::setprecision(15)
                    << "m_min         = " << Collision0::m_min << "\t(" << Collision0::m_min*M << " g)" << std::endl;
 

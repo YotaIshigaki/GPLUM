@@ -1,0 +1,360 @@
+\documentclass[12pt,a4paper,dvipdfmx]{book} % pLaTeX
+%%% LaTeXパッケージのインクルード %%%
+\usepackage[utf8]{inputenc}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{ascmac}
+\usepackage{bm}
+\usepackage[x11names,table]{xcolor} % dvipdfmxオプションは必須
+\usepackage{graphicx}
+\usepackage{spverbatim} % 折り返し可能なverbを使える
+\usepackage{fancyvrb} % verbatim環境の中でitalicを使用するため
+\usepackage{wrapfig}
+\usepackage{lscape}
+\usepackage{setspace}
+\usepackage{listings}
+\usepackage{here} % 図表をその場に強制的に表示させるため.
+\usepackage{hyperref}
+\usepackage{pxjahyper}
+\usepackage{enumitem}
+\usepackage{titlesec}
+\usepackage[htt]{hyphenat}
+\usepackage[normalem]{ulem}
+\usepackage{udline}
+\usepackage{fancyhdr}
+\usepackage{authblk} % タイトル表示のカスタマイズ
+\usepackage{makeidx} % 索引作成
+\usepackage{multirow} % 表の行を結合するのに必要
+\usepackage{tabularx,booktabs} % 可変サイズの表作成に必要
+\usepackage{pdflscape} % Landscape の表の作成のため
+\makeindex % 索引作成命令発行
+
+\newcommand{\underbold}[1]{\underline{\bf #1}}
+\newcommand{\redtext}[1]{\textcolor{red}{#1}}
+
+%%% ページサイズの設定 %%%
+\topmargin=-5mm
+\oddsidemargin=-5mm
+\evensidemargin=-5mm
+\textheight=235mm
+\textwidth=165mm
+
+%%% ページのヘッダー・フッターの設定 %%%
+% (fancyhdrパッケージが必要)
+\pagestyle{fancy}
+\lhead{\rightmark}
+\chead{}
+\rhead{\leftmark}
+
+%%% fancyvrb 環境でitalic体を使用するコマンドを定義 %%%
+\newcommand\vrbbf[1]{\textbf{#1}}
+\newcommand\vrbit[1]{\textit{#1}}
+% <使用方法>
+% \begin{Verbatim}[commandchars=\\\{\}]
+% \vrbbf{echo foo}
+% \vrbit{echo foo} 
+% \end{Verbatim}
+% ここで、[]のcommandcharsはコマンドに使用する文字列を指定している。
+% ここの例だと、\,{,}である。これらの3つの文字の前に\をつけて並べている。
+% 詳細は http://tex.stackexchange.com/questions/114942/how-do-i-get-selective-bold-in-verbatim を参照。
+
+%%% カウンター付きのdescription %%%
+\newcommand\litem[1]{\item{\bfseries #1\\}}
+% <補足>
+% 番号はenumerateで生成するので、enumerate環境を使う。
+% 番号のスタイルはenumitemパッケージのlabelオプションで変更可能。
+
+%%% subsubsubsection等を定義 %%%
+\setcounter{secnumdepth}{5}
+\makeatletter
+\newcommand{\subsubsubsection}{\@startsection{paragraph}{4}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\bfseries}
+}
+\newcommand{\subsubsubsubsection}{\@startsection{subparagraph}{5}{\z@}%
+{1.5\baselineskip \@plus.5\dp0 \@minus.2\dp0}%
+{.5\baselineskip \@plus2.3\dp0}%
+{\reset@font\normalsize\itshape}
+}
+\makeatother
+\setcounter{tocdepth}{5}
+
+%%% footnote の設定 %%%
+\renewcommand{\thefootnote}{$\ast$\arabic{footnote})}
+
+%%% udline の設定 %%%
+%\newcommand{\uwave}[1]{{\setnami\uc{#1}}}
+\newcommand{\usaw}[1]{{\setnoko\uc{#1}}}
+
+%%% hyperref 環境の設定 %%%
+\hypersetup{%
+setpagesize=false,%
+bookmarksnumbered=true,%
+bookmarksopen=true,%
+colorlinks=true,%
+linkcolor=blue,%
+citecolor=red,%
+}
+
+%%% lstlisting 環境の設定 %%%
+\lstdefinelanguage[03fdps]{Fortran}[03]{Fortran}{%
+numbers = left,%
+numbersep = 8pt,%
+numberstyle = \ttfamily\footnotesize,
+breaklines = true,%
+breakindent = 40pt,%
+frame = lines,%
+escapeinside={||},%
+mathescape=false,%
+moredelim=*[directive]\#,%
+directives={define,elif,else,endif,error,if,ifdef,ifndef,line,include,pragma,undef,warning},%
+basicstyle = \ttfamily\footnotesize,% 基本スタイル
+commentstyle=\color[rgb]{0,0,0.8}\ttfamily\footnotesize,% コメント
+directivestyle=\color[rgb]{0.83,0.26,0.82}\ttfamily\footnotesize,% マクロ定義
+stringstyle=\color[rgb]{0.76,0.22,0.16}\ttfamily\footnotesize,% 文字列
+keywordstyle=\color[rgb]{0.05,0.49,0.07}\ttfamily\footnotesize,% void,struct等のキーワード
+emph = {c_int,c_short,c_long,c_long_long,c_signed_char,c_size_t,c_int8_t,c_int16_t,c_int32_t,c_int64_t,c_int_least8_t,c_int_least16_t,c_int_least32_t,c_int_least64_t,c_int_fast8_t,c_int_fast16_t,c_int_fast32_t,c_int_fast64_t,c_intmax_t,c_intptr_t,c_float,c_double,c_long_double,c_float_double,c_double_complex,c_long_double_complex,c_bool,c_char,c_null_char,c_alert,c_backspace,c_form_feed,c_new_line,c_carriage_return,c_horizontal_tab,c_vertical_tab,c_null_ptr,c_null_funptr}, %
+emphstyle=\color[rgb]{0.83,0.18,0.18}\ttfamily\footnotesize,% その他のキーワード
+}[keywords,comments,strings,directives]%
+\lstset{%
+language = [03fdps]Fortran,%
+}
+
+%%% API仕様記述のためのマクロ(牧野さん作成) %%%
+\newcommand{\apitop}[1]{
+\subsection{#1}
+\begin{screen}
+}  
+
+\newcommand{\apibottom}[3]{
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{cXcX}
+\toprule
+\rowcolor{Snow2}
+Name & Data type & I/O Characteristics & Definition \\
+\midrule
+#1
+\bottomrule
+\end{tabularx}
+\end{table}
+
+
+% 返り値
+\subsubsection*{Returned value}
+#2
+
+
+% 機能
+\subsubsection*{Function}
+#3
+
+}  
+\newcommand{\apibottomnoarg}[2]{
+\end{screen}
+
+\subsubsection*{Dummy argument specification}
+
+None.
+
+% 返り値
+\subsubsection*{Returned value}
+#1
+% 機能
+\subsubsection*{Function}
+#2
+
+}  
+
+% タイトル、著者、作成日の情報
+\title{FDPS Fortran/C Interface Specification}
+\author{Daisuke Namekata}
+\author{Masaki Iwasawa}
+\author{Keigo Nitadori}
+\author{Ataru Tanikawa}
+\author{Takayuki Muranushi}
+\author{Long Wang}
+\author{Natsuki Hosono}
+\author{Junichiro Makino}
+\affil{Particle Simulator Research Team, RIKEN Center for Computational Science, RIKEN}
+\date{}
+
+
+% 文書の開始
+\begin{document}
+
+% タイトルと目次の出力
+\maketitle
+\tableofcontents
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{About this document}
+\label{chap:about}
+%%%
+\section{Structure of the document}
+\label{sec:structure}
+\input{structure.tex}
+\newpage
+%%%
+\section{Lisence}
+\label{sec:license}
+\input{../../c++/en/license.tex}
+\newpage
+%%%
+\section{User support}
+\label{sec:user_support}
+\input{user_support.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{FDPS}
+\label{chap:overview}
+\input{overview.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Fortran/C Interface}
+\label{chap:file_str_and_ftn_if_overview}
+\input{file_str_and_ftn_if_overview.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Data Types in FDPS}
+\label{chap:data_types}
+\input{data_types.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{User-defined Types and User-defined Functions}
+\label{chap:user_defined}
+\chaptermark{Things users should define}
+\input{user_defined.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Generating Fortran/C Interface}
+\label{chap:script_spec}
+\input{script_spec.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Compiling Fortran/C Interface}
+\label{chap:compile_and_macro}
+\input{compile_and_macro.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{List of API specifications}
+\label{chap:API_spec_list}
+\chaptermark{API list}
+In this chapter, we describe the specifications of all the APIs in FDPS Fortran/C interface. In Fortran interface, all the APIs are implemented as the member functions of an object of the Fortran 2003 class \texttt{fdps\_controller} as described in Chap.~\ref{chap:file_str_and_ftn_if_overview}. In the following, we assume that the name of an instance of this class is \texttt{fdps\_ctrl}. {\setnoko\Euc{Also, in most of explanations of APIs, we describe data types of dummy arguments or returned value for Fortran case only for brevity}}. Users can obtain corresponding data types in C by using the table shown below.
+\clearpage
+
+\begin{table}[H]
+\begin{tabularx}{\linewidth}{XX}
+\toprule
+\rowcolor{Snow2}
+Data type in Fortran & Data type in C \\
+\midrule
+\texttt{integer(kind=c\_int)}                   & \texttt{int}\\
+\texttt{integer(kind=c\_short)}                 & \texttt{short int}\\
+\texttt{integer(kind=c\_long)}                  & \texttt{long int}\\
+\texttt{integer(kind=c\_long\_long)}            & \texttt{long long int}\\
+\texttt{integer(kind=c\_signed\_char)}          & \texttt{signed char/unsigned char}\\
+\texttt{integer(kind=c\_size\_t)}               & \texttt{size\_t}\\
+\texttt{integer(kind=c\_int8\_t)}               & \texttt{int8\_t}\\
+\texttt{integer(kind=c\_int16\_t)}              & \texttt{int16\_t}\\
+\texttt{integer(kind=c\_int32\_t)}              & \texttt{int32\_t}\\
+\texttt{integer(kind=c\_int64\_t)}              & \texttt{int64\_t}\\
+\texttt{integer(kind=c\_int\_least8\_t)}        & \texttt{int\_least8\_t}\\
+\texttt{integer(kind=c\_int\_least16\_t)}       & \texttt{int\_least16\_t}\\
+\texttt{integer(kind=c\_int\_least32\_t)}       & \texttt{int\_least32\_t}\\
+\texttt{integer(kind=c\_int\_least64\_t)}       & \texttt{int\_least64\_t}\\
+\texttt{integer(kind=c\_int\_fast8\_t)}         & \texttt{int\_fast8\_t}\\
+\texttt{integer(kind=c\_int\_fast16\_t)}        & \texttt{int\_fast16\_t}\\
+\texttt{integer(kind=c\_int\_fast32\_t)}        & \texttt{int\_fast32\_t}\\
+\texttt{integer(kind=c\_int\_fast64\_t)}        & \texttt{int\_fast64\_t}\\
+\texttt{integer(kind=c\_intmax\_t)}             & \texttt{intmax\_t}\\
+\texttt{integer(kind=c\_intptr\_t)}             & \texttt{intptr\_t}\\
+\texttt{real(kind=c\_float)}                    & \texttt{float}\\
+\texttt{real(kind=c\_double)}                   & \texttt{double}\\
+\texttt{real(kind=c\_long\_double)}             & \texttt{long double}\\
+\texttt{complex(kind=c\_float\_complex)}        & \texttt{float \_Complex}\\
+\texttt{complex(kind=c\_double\_complex)}       & \texttt{double \_Complex}\\
+\texttt{complex(kind=c\_long\_double\_complex)} & \texttt{long double \_Complex}\\
+\texttt{logical(kind=c\_bool)}                  & \texttt{\_Bool}\\
+\texttt{character(kind=c\_char)}                & \texttt{char}\\
+\bottomrule
+\end{tabularx}
+\caption{Fortran data types that are interoperable with C and the corresponding C data types}
+\label{tbl:interoperable_data_types}
+\end{table}
+\clearpage
+
+%%%
+\section{APIs for initialization/finalization}
+\label{sec:initfin_APIs}
+\input{initfin_APIs.tex}
+\newpage
+%%%
+\section{APIs for ParticleSystem object}
+\label{sec:psys_APIs}
+\input{psys_APIs.tex}
+\newpage
+%%%
+\section{APIs for DomainInfo object}
+\label{sec:dinfo_APIs}
+\input{dinfo_APIs.tex}
+\newpage
+%%%
+\section{APIs for Tree object}
+\label{sec:tree_APIs}
+\input{tree_APIs.tex}
+\newpage
+%%%
+\section{APIs for handling MPI communicator}
+\label{sec:comminfo_APIs}
+\input{comminfo_APIs.tex}
+\newpage
+%%%
+\section{APIs for communication}
+\label{sec:comm_APIs}
+\input{comm_APIs.tex}
+\newpage
+%%%
+\section{APIs for ParticleMesh object}
+\label{sec:PM_APIs}
+\input{PM_APIs.tex}
+\newpage
+%%%
+\section{Other APIs}
+\label{sec:other_APIs}
+\input{other_APIs.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Error messages}
+\label{chap:error_messages}
+\input{error_messages.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Limitation}
+\label{chap:limitation}
+\input{limitation.tex}
+\newpage
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\chapter{Change Log}
+\label{chap:change_log}
+\input{change_log.tex}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% 索引
+\printindex
+
+\end{document}

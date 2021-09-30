@@ -1,0 +1,11 @@
+In this section, we present the overview of Framework for Developing Particle Simulator (FDPS)\describeForIF{and FDPS \progLangName interface}. FDPS is an application-development framework which helps the application programmers and researchers to develop simulation codes for particle systems. What FDPS does are calculation of the particle-particle interactions and all of the necessary  works to parallelize that part on distributed-memory parallel computers wit near-ideal load balancing, using hybrid parallel programming model (uses both MPI and OpenMP). Low-cost part of the simulation program, such as the integration of the orbits of particles using the calculated interaction, is taken care by the user-written part of the code.
+
+FDPS support two- and three-dimensional Cartesian coordinates. Supported boundary conditions are open and periodic. For each coordinate, the user can select  open or periodic boundary.
+
+The user should specify the functional form of the particle-particle interaction. FDPS divides the interactions into two categories: long-range and short-range. The difference between two categories is that if the grouping of distant particles is used to speedup calculation (long-range) or not (short range).
+
+The long-range force is further divided into two subcategories: with and without a cutoff scale. The long range force without cutoff is what is used for gravitational $N$-body simulations with open boundary. For periodic boundary, one would usually use TreePM, $\rm P^3M$, PME or other variant, for which the long-range force with cutoff can be used.
+
+The short-range force is divided to four subcategories. By definition, the short-range force has some cutoff length. If the cutoff length is a constant which does not depend on the identity of particles, the force belongs to ``constant'' class. If the cutoff depends on the source or receiver of the force, it is of ``scatter'' or ``gather'' classes. Finally,  if the cutoff depends on both the source and receiver in the symmetric way, its class is ``symmetric''. Example of a ``constant'' interaction is the Lennard-Jones potential. Other interactions appear, for example, SPH calculation with adaptive kernel size.
+
+The user writes the code for particle-particle interaction kernel and orbital integration using \describeForEach{C++ language}{Fortran 2003}{C language}. 

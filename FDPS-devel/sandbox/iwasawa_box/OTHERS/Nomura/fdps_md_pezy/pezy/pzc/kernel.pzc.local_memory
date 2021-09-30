@@ -1,0 +1,142 @@
+#include<pzc_builtin.h>
+#include"../class_device.hpp"
+
+void pzc_ForceKernel(const int * j_disp,
+                     const EpiDev * epi,
+                     const EpjDev * epj,
+                     ForceDev * force,
+                     const int n_total){
+    const int cut_off2 = 4.5f*4.5f;
+
+    const int tid = get_tid();
+    const int pid = get_pid();
+    int iw = -1;
+    // stack size must be 0x4000
+    EpjDev *epj_lm = (EpjDev*)(0x2000+0x03e0*tid);
+    double *lmd = (double*)(0x2000+0x03e0*8);
+    //double *lmd = (double*)(0x2000);
+    int jcount = 0;    
+
+#if 1
+    const int index_offset = pid;
+    const int index_base = get_maxpid();
+    for(int index=index_offset; index<n_total; index+=index_base){
+#else
+    const int index_offset = n_total / get_maxpid();
+    const int i_head = index_offset * pid;
+    const int i_tail = (pid == (get_maxpid()-1)) ? n_total : index_offset * (pid+1);
+    for(int index=i_head; index<i_tail; index++){
+#endif
+
+      double ax,ay,az,pot;
+      ax = ay = az = pot = 0.0;
+      sync_L1();
+      const EpiDev ip   = epi[index];
+      const int id_walk = ip.id_walk;
+      const int j_head  = j_disp[id_walk];
+      const int j_tail  = j_disp[id_walk+1];
+      chgthread();
+#if 0
+      if(iw != id_walk){
+	iw = id_walk;
+	jcount = 0;
+	for(int j=j_head+tid; j<j_tail; j+=get_maxtid()){
+	  sync_L1();
+	  epj_lm[jcount++] = epj[j];
+	  chgthread();
+	  if(jcount==82) break;
+	}
+      }
+      sync_L1();
+      for(int j=0; j<jcount; j++){
+	const float dx = ip.px - epj_lm[j].px;
+	const float dy = ip.py - epj_lm[j].py;
+	const float dz = ip.pz - epj_lm[j].pz;
+	const float r2 = (dx*dx + dy*dy) + dz*dz;
+
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  const float r6_inv = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  ax  += (double)(dphi * dx);
+	  ay  += (double)(dphi * dy);
+	  az  += (double)(dphi * dz);
+	  pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+      }
+#endif
+      for(int j=j_head+tid+jcount*get_maxtid(); j<j_tail; j+=get_maxtid()){
+	const EpjDev jp = epj[j];
+	chgthread();
+	const float dx = ip.px - jp.px;
+	const float dy = ip.py - jp.py;
+	const float dz = ip.pz - jp.pz;
+	const float r2 = (dx*dx + dy*dy) + dz*dz;
+
+	if(r2 <= cut_off2 && r2 != 0.f){
+	  const float r2_inv = 1.f / r2;
+	  chgthread(); // is it proper to put division before if statement?
+	  const float r6_inv = r2_inv*r2_inv*r2_inv;
+	  const float r12_inv = r6_inv*r6_inv;
+	  float dphi = (48.f*r12_inv - 24.f*r6_inv)*r2_inv;
+	  ax  += (double)(dphi * dx);
+	  ay  += (double)(dphi * dy);
+	  az  += (double)(dphi * dz);
+	  pot += (double)(4.f * (r12_inv - r6_inv));
+	}
+      }
+      // assuming maxtid == 8
+#if 1
+      lmd[tid] = ax;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<8;i++) lmd[0] += lmd[i];
+	force[index].ax  = lmd[0];
+      }
+      sync_L1();
+      lmd[tid] = ay;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<8;i++) lmd[0] += lmd[i];
+	force[index].ay  = lmd[0];
+      }
+      sync_L1();
+      lmd[tid] = az;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<8;i++) lmd[0] += lmd[i];
+	force[index].az  = lmd[0];
+      }
+      sync_L1();
+      lmd[tid] = pot;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<8;i++) lmd[0] += lmd[i];
+	force[index].pot  = lmd[0];
+      }
+      sync_L1();
+#else
+        // assuming maxtid == 8
+      lmd[4*tid+0] = ax;
+      lmd[4*tid+1] = ay;
+      lmd[4*tid+2] = az;
+      lmd[4*tid+3] = pot;
+      sync_L1();
+      if(tid==0){
+	for(int i=1;i<8;i++){
+	  lmd[0] += lmd[4*i+0];
+	  lmd[1] += lmd[4*i+1];
+	  lmd[2] += lmd[4*i+2];
+	  lmd[3] += lmd[4*i+3];
+	}
+	force[index].ax  = lmd[0];
+	force[index].ay  = lmd[1];
+	force[index].az  = lmd[2];
+	force[index].pot = lmd[3];
+      }
+      sync_L1();
+#endif
+    }
+    flush();
+}

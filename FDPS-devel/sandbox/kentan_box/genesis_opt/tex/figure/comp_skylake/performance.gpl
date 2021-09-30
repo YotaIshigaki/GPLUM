@@ -1,0 +1,22 @@
+set term post enh color eps 24
+
+set style fill solid border lc rgb "black"
+set boxwidth 0.2
+
+set yrange [0:]
+
+fact = 1.8/2.3
+
+set ylabel "Performance / GFlops"
+set output "../comp_skylake_performance.eps"
+p "performance.dat" i 0 u ($0+0.0):3:xtic(1) w boxes lw 2 ti "PPA",\
+  "performance.dat" i 1 u ($0+0.2):3         w boxes lw 2 ti "GROMACS",\
+  "performance.dat" i 1 u ($0+0.4):($3*fact) w boxes lw 2 ti "GROMACS normalized"
+set key left
+set ylabel "Elapsed time per interaction / ns"
+set output "../comp_skylake_elapsed_time.eps"
+p "performance.dat" i 0 u ($0+0.0):($2/$4*10**9):xtic(1) w boxes lw 2 ti "PPA",\
+  "performance.dat" i 1 u ($0+0.2):($2/$4*10**9)         w boxes lw 2 ti "GROMACS",\
+  "performance.dat" i 1 u ($0+0.4):($2/$4*10**9/fact)    w boxes lw 2 ti "GROMACS normalized"
+
+

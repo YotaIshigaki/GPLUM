@@ -57,12 +57,26 @@ void makeSnap(Tpsys & pp,
               Energy e_now,
               const char * dir_name,
               const PS::S32 isnap,
-              const PS::S32 id_next)
+              const PS::S64 id_next)
 {
     FileHeader header(pp.getNumberOfParticleGlobal(), id_next, time_sys, e_init, e_now);
     char filename[256];
     sprintf(filename, "%s/snap%06d.dat", dir_name, isnap);
     pp.writeParticleAscii(filename, header);
+}
+
+template <class Tpsys>
+void makeSnapTmp(Tpsys & pp,
+                  PS::F64 time_sys,
+                  Energy e_init,
+                  Energy e_now,
+                  const char * dir_name,
+                  const PS::S64 id_next)
+{
+    FileHeader header(pp.getNumberOfParticleGlobal(), id_next, time_sys, e_init, e_now);
+    char filename[256];
+    sprintf(filename, "%s/snap_tmp.dat", dir_name);
+    pp.writeParticleBinary(filename, header);
 }
 
 template <class Tpsys>
@@ -75,7 +89,7 @@ void outputStep(Tpsys & pp,
                 PS::S32 n_frag_tot,
                 const char * dir_name,
                 const PS::S32 isnap,
-                const PS::S32 id_next,
+                const PS::S64 id_next,
                 std::ofstream & fout_eng,
                 Wtime wtime,
                 PS::S32 n_largestcluster,
@@ -118,8 +132,8 @@ void outputStep(Tpsys & pp,
 }
 
 template <class Tpsys>
-void inputIDLocalAndMyrank(Tpsys & pp,
-                           NeighborList & NList)
+void setIDLocalAndMyrank(Tpsys & pp,
+                         NeighborList & NList)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
     PS::S32 myrank = PS::Comm::getRank();
@@ -133,6 +147,15 @@ void inputIDLocalAndMyrank(Tpsys & pp,
 
     NList.makeIdMap(pp);
 }
+
+#ifdef USE_POLAR_COORDINATE
+template <class Tpsys>
+void setPosPolar(Tpsys & pp)
+{
+    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    for(PS::S32 i=0; i<n_loc; i++) pp[i].setPosPolar();
+}
+#endif
 
 template <class Tpsys>
 void MergeParticle(Tpsys & pp,
@@ -184,11 +207,11 @@ void MergeParticle(Tpsys & pp,
 }
 
 template <class Tpsys>
-PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
-                                    PS::F64 & edisp,
-                                    const PS::F64 r_max,
-                                    const PS::F64 r_min,
-                                    std::ofstream & fout_rem)
+PS::S32 removeParticlesOutOfBoundary(Tpsys & pp,
+                                     PS::F64 & edisp,
+                                     const PS::F64 r_max,
+                                     const PS::F64 r_min,
+                                     std::ofstream & fout_rem)
 {
     const PS::F64 rmax2 = r_max*r_max;
     const PS::F64 rmin2 = r_min*r_min;
@@ -196,7 +219,14 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
     const PS::S32 n_proc = PS::Comm::getNumberOfProc();
 
-    std::vector<PS::S32> remove_list;
+    static std::vector<PS::S32> n_remove_list;
+    static std::vector<PS::S32> n_remove_adr;
+    static std::vector<FP_t> remove_list_loc;
+    static std::vector<FP_t> remove_list_glb;
+    n_remove_list.resize(n_proc);
+    n_remove_adr.resize(n_proc);
+
+    static std::vector<PS::S32> remove_list;
     remove_list.clear();
 
 #ifdef INDIRECT_TERM
@@ -245,21 +275,23 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
     
     if ( n_remove_glb ){
         
-        PS::S32 * n_remove_list   = nullptr;
-        PS::S32 * n_remove_adr    = nullptr;
-        FPGrav *  remove_list_loc = nullptr;
-        FPGrav *  remove_list_glb = nullptr;
+        //PS::S32 * n_remove_list   = nullptr;
+        //PS::S32 * n_remove_adr    = nullptr;
+        //FP_t *  remove_list_loc = nullptr;
+        //FP_t *  remove_list_glb = nullptr;
         
         if ( PS::Comm::getRank() == 0 ){
-            n_remove_list   = new PS::S32[n_proc];
-            n_remove_adr    = new PS::S32[n_proc];
-            remove_list_glb = new FPGrav[n_remove_glb];
+            //n_remove_list   = new PS::S32[n_proc];
+            //n_remove_adr    = new PS::S32[n_proc];
+            //remove_list_glb = new FP_t[n_remove_glb];
+            remove_list_glb.resize(n_remove_glb);
         }
-        remove_list_loc = new FPGrav[n_remove_loc];
+        //remove_list_loc = new FP_t[n_remove_loc];
+        remove_list_loc.resize(n_remove_loc);
         
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Gather(&n_remove_loc, 1, PS::GetDataType(n_remove_loc),
-                   n_remove_list, 1, PS::GetDataType(*n_remove_list),  0, MPI_COMM_WORLD);
+                   &n_remove_list[0], 1, PS::GetDataType(n_remove_list[0]),  0, MPI_COMM_WORLD);
 #else
         n_remove_list[0]  = n_remove_loc;
 #endif
@@ -279,8 +311,8 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
         }
 
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-        MPI_Gatherv(remove_list_loc, n_remove_loc,                PS::GetDataType(*remove_list_loc),
-                    remove_list_glb, n_remove_list, n_remove_adr, PS::GetDataType(*remove_list_glb), 0, MPI_COMM_WORLD);
+        MPI_Gatherv(&remove_list_loc[0], n_remove_loc,                        PS::GetDataType(remove_list_loc[0]),
+                    &remove_list_glb[0], &n_remove_list[0], &n_remove_adr[0], PS::GetDataType(remove_list_glb[0]), 0, MPI_COMM_WORLD);
 #else
         for(PS::S32 i=0; i<n_remove_loc; i++) remove_list_glb[i] = remove_list_loc[i];
 #endif
@@ -301,7 +333,7 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
                         PS::F64    massj = remove_list_glb[j].mass;
                         PS::F64vec posi  = remove_list_glb[i].pos;
                         PS::F64vec posj  = remove_list_glb[j].pos;
-                        PS::F64    eps2   = EPGrav::eps2;
+                        PS::F64    eps2   = FP_t::eps2;
                         
                         PS::F64vec dr = posi - posj;
                         PS::F64    rinv = 1./sqrt(dr*dr + eps2);
@@ -320,13 +352,13 @@ PS::S32 removeOutOfBoundaryParticle(Tpsys & pp,
                          << std::endl;
             }
             
-            delete [] n_remove_list;
-            delete [] n_remove_adr;
-            delete [] remove_list_glb;
+            //delete [] n_remove_list;
+            //delete [] n_remove_adr;
+            //delete [] remove_list_glb;
         
         }
         
-        delete [] remove_list_loc;
+        //delete [] remove_list_loc;
 
 #ifdef INDIRECT_TERM
         e_ind_before = calcIndirectEnergy(pp);
@@ -359,7 +391,7 @@ void correctEnergyForGas(Tpsys & pp,
 #pragma omp parallel for reduction(+:edisp_gd_loc)
     for(PS::S32 i=0; i<n_loc; i++){
         edisp_gd_loc += pp[i].mass * pp[i].acc_gd
-            * (pp[i].vel + coef * pp[i].acc_gd * FPGrav::dt_tree);
+            * (pp[i].vel + coef * pp[i].acc_gd * FP_t::dt_tree);
     }
-    edisp_gd += 0.5 * FPGrav::dt_tree * PS::Comm::getSum(edisp_gd_loc);
+    edisp_gd += 0.5 * FP_t::dt_tree * PS::Comm::getSum(edisp_gd_loc);
 }
