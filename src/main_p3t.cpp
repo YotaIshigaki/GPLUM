@@ -327,6 +327,9 @@ int main(int argc, char *argv[])
     id_next = PS::Comm::getMaxValue(id_next);
     id_next ++;
     setCutoffRadii(system_grav);
+#ifdef USE_POLAR_COORDINATE
+    setPosPolar(system_grav);
+#endif
         
     // Hard System
     HardSystem system_hard;
@@ -353,9 +356,6 @@ int main(int argc, char *argv[])
     dinfo.collectSampleParticle(system_grav, true);
     dinfo.decomposeDomain();
     
-#ifdef USE_POLAR_COORDINATE
-    setPosPolar(system_grav);
-#endif
     system_grav.exchangeParticle(dinfo);
     n_loc = system_grav.getNumberOfParticleLocal();
     

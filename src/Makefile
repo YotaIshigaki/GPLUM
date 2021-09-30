@@ -1,7 +1,6 @@
 PS_PATH_FDPS = ../FDPS/src/
-PS_PATH_PIKG = ../PIKG/inc/
-#PS_PATH_PIKG = ../FDPS-devel/pikg/inc/
-INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)
+PS_PATH_PIKG = ../PIKG/
+INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)inc
 
 ####################
 ###   Compiler   ###
@@ -40,7 +39,7 @@ collision = yes
 #Kominami = yes
 #Chembers = yes
 #Shibata = yes
-merge_binary = yes
+#merge_binary = yes
 
 #without_sun = yes
 #constant_random_velocity = yes
@@ -60,10 +59,6 @@ CFLAGS += -DFOR_PIKG01
 CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
 
 ifeq ($(use_OpenMP),yes)
-<<<<<<< HEAD
-=======
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
->>>>>>> develop
 CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
 endif
 ifeq ($(use_MPI),yes)
@@ -170,13 +165,13 @@ $(PROGRAM): $(SRC) gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
 
 gravity_kernel_epep.hpp: gravity_kernel_epep.pikg
 	./removeif.sh gravity_kernel_epep.pikg gravity_kernel_epep_noif.pikg $(CFLAGS)
-	../PIKG/bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
+	$(PS_PATH_PIKG)bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
 #	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
 #	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
 
 gravity_kernel_epsp.hpp: gravity_kernel_epsp.pikg
 	./removeif.sh gravity_kernel_epsp.pikg gravity_kernel_epsp_noif.pikg $(CFLAGS)
-	../PIKG/bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
+	$(PS_PATH_PIKG)bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
 	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_epsp.hpp
 #	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
 #	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
