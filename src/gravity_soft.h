@@ -2,6 +2,26 @@
 
 #include "cutfunc.h"
 
+template <class Tpsys>
+void velKick(Tpsys & pp){
+    const PS::S32 n = pp.getNumberOfParticleLocal();
+#pragma omp parallel for
+    for(PS::S32 i=0; i<n; i++){
+        pp[i].velKick();
+    }
+}
+
+#ifdef CORRECT_NEIGHBOR
+template <class Tpsys>
+void velKick2nd(Tpsys & pp){
+    const PS::S32 n = pp.getNumberOfParticleLocal();
+#pragma omp parallel for
+    for(PS::S32 i=0; i<n; i++){
+        pp[i].velKick2nd();
+    }
+}
+#endif
+
 template <class Tpsys, class Tptree>
 void correctForceLong(Tpsys & pp,
                       Tptree & tree_grav,

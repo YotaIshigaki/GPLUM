@@ -1,5 +1,15 @@
 #pragma once
 
+#ifdef PARTICLE_SIMULATOR_THREAD_PARALLEL
+#include "samplesortlib.hpp"
+#endif
+
+typedef struct boolint{
+    bool isin;
+    PS::S32 id;
+    PS::S32 cid;
+}BoolInt, *PBoolInt;
+
 class ParticleCluster{
 public:
     static std::vector<FPH_t> ptcl_hard;   
@@ -66,9 +76,11 @@ public:
     void reserve_hard(const PS::U32 n) { ParticleCluster::reserve_hard(n); }
 };
 
+#define NHARDTIMERS (16)
 class HardSystem{
 public:
     std::vector<PS::S32> list_iso;
+    PS::S32 list_iso_size;
     std::vector<std::vector<std::pair<bool,PS::S32> > > list_multi;
     //std::vector<std::vector<FPH_t> > ptcl_multi;
     ClusterSystem ptcl_multi;
@@ -91,6 +103,8 @@ public:
     std::vector<PS::S64>   id_frag_loc;
     std::vector<PS::S32>   col_recv;
     std::vector<PS::S32>   frag_recv;
+    PS::F64 timers[NHARDTIMERS];
+    PS::S32 n_hard_reserved;
     
 
     PS::S32 getNumberOfClusterLocal() const { return ptcl_multi.size(); }
@@ -102,20 +116,20 @@ public:
         return ptcl_multi.size();
 #endif
     }
-    PS::S32 getNumberOfIsolatedParticleLocal() const { return list_iso.size(); }
+    PS::S32 getNumberOfIsolatedParticleLocal() const { return list_iso_size; }
     PS::S32 getNumberOfIsolatedParticleGlobal() const {
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-        PS::S32 n_ptcl_loc = list_iso.size();
+        PS::S32 n_ptcl_loc = list_iso_size;
         return PS::Comm::getSum(n_ptcl_loc);
 #else
-        return list_iso.size();
+        return list_iso_size;
 #endif
     }
     PS::S32 getNumberOfParticleLocal(){
         PS::S32 n = 0;
         PS::S32 size = ptcl_multi.size();
         for ( PS::S32 i=0; i<size; i++ ) n += ptcl_multi[i].size();
-        n += list_iso.size();
+        n += list_iso_size;
         return n;
     }
     PS::S32 getNumberOfParticleGlobal() {
@@ -179,7 +193,17 @@ public:
 #endif
     }
 
+#if 0    
     void reserve_hard(const PS::U32 n) { ptcl_multi.reserve_hard(n); }
+#else
+    void reserve_hard(const PS::U32 n) {
+	if (n > n_hard_reserved){
+	    n_hard_reserved= n* 2;
+	    ptcl_multi.reserve_hard(n_hard_reserved);
+	}
+    }
+#endif    
+    
     
     void showParticleID() const {
         PS::S32 size = ptcl_multi.size();
@@ -197,8 +221,13 @@ public:
         }
     }
 
+    void initialize()
+    {
+	n_hard_reserved = 0;
+
+    }
     void clear(){
-        list_iso.clear();
+    //        list_iso.clear();
         list_multi.clear();        
         ptcl_multi.clear();
         mp_cluster.clear();
@@ -207,6 +236,8 @@ public:
 
         n_col = n_frag = 0;
         edisp = edisp_d = 0.;
+	for(auto i=0;i<NHARDTIMERS; i++)timers[i]=0;
+	timers[0]=PS::GetWtime();
     }
 
     template <class Tpsys, class Tpsys2>
@@ -232,24 +263,25 @@ public:
                                        std::ofstream & fp); 
 };
 
-
+#if 0
 template <class Tpsys, class Tpsys2>
-inline PS::S32 HardSystem::makeList(Tpsys & pp,
-                                    Tpsys2 & ex_pp)
+    inline PS::S32 HardSystem::makeList(Tpsys & pp,
+					Tpsys2 & ex_pp)
 {
     const PS::S32 n_pp    = pp.getNumberOfParticleLocal();
     const PS::S32 n_ex_pp = ex_pp.getNumberOfParticleLocal();
     PS::S32 n_ptcl_loc = 0;
     PS::S32 n_cluster_loc = 0;
     PS::U32 tmp = 0;
-        
+    PS::S32 isotmp[n_pp];
+    PS::S32 niso=0;
     for ( PS::S32 i=0; i<n_pp; i++ ){
         if ( pp[i].neighbor ){
             if ( pp[i].isSent ) continue;
             auto itr = mp_cluster.find(pp[i].id_cluster);                    
             if ( itr == mp_cluster.end() ){
                 mp_cluster[pp[i].id_cluster] = tmp;
-                list_multi.push_back(std::vector<std::pair<bool,PS::S32> >{std::make_pair(true, i)});
+		list_multi.push_back(std::vector<std::pair<bool,PS::S32> >{std::make_pair(true, i)});
                 tmp ++;
                 assert( list_multi.size() == tmp );
             } else {
@@ -263,29 +295,149 @@ inline PS::S32 HardSystem::makeList(Tpsys & pp,
         }
     }
     
+    
     for ( PS::S32 i=0; i<n_ex_pp; i++ ){
-        assert( ex_pp[i].neighbor > 0 );
-        assert( ex_pp[i].isSent );
-        assert( !ex_pp[i].inDomain );
-        auto itr = mp_cluster.find(ex_pp[i].id_cluster);                    
-        if ( itr == mp_cluster.end() ){
-            mp_cluster[ex_pp[i].id_cluster] = tmp;
-            list_multi.push_back(std::vector<std::pair<bool,PS::S32> >{std::make_pair(false, i)});
-            tmp ++;
-            assert( list_multi.size() == tmp );
-        } else {
-            assert( mp_cluster.at(ex_pp[i].id_cluster) == itr->second );
-            list_multi.at(itr->second).push_back(std::make_pair(false, i));
-        }
-        n_ptcl_loc ++;
+	assert( ex_pp[i].neighbor > 0 );
+	assert( ex_pp[i].isSent );
+	assert( !ex_pp[i].inDomain );
+	auto itr = mp_cluster.find(ex_pp[i].id_cluster);                    
+	if ( itr == mp_cluster.end() ){
+	    mp_cluster[ex_pp[i].id_cluster] = tmp;
+	    list_multi.push_back(std::vector<std::pair<bool,PS::S32> >{std::make_pair(false, i)});
+	    tmp ++;
+	    assert( list_multi.size() == tmp );
+	} else {
+	    assert( mp_cluster.at(ex_pp[i].id_cluster) == itr->second );
+	    list_multi.at(itr->second).push_back(std::make_pair(false, i));
+	}
+	n_ptcl_loc ++;
     }
     n_cluster_loc = tmp;
     assert( list_multi.size() == tmp );
     ptcl_multi.resize(n_cluster_loc);
-
+    
     return n_ptcl_loc;
 }
+#endif
+template <class Tpsys, class Tpsys2>
+    inline PS::S32 HardSystem::makeList(Tpsys & pp,
+					Tpsys2 & ex_pp)
+{
+    auto time0 = PS::GetWtime();
+    const PS::S32 n_pp    = pp.getNumberOfParticleLocal();
+    const PS::S32 n_ex_pp = ex_pp.getNumberOfParticleLocal();
+    PS::S32 n_ptcl_loc = 0;
+    PS::S32 n_cluster_loc = 0;
+    PS::U32 tmp = 0;
+    PS::S32 niso=0;
 
+#pragma omp parallel for reduction(+:niso,n_ptcl_loc) schedule(static)
+    for ( PS::S32 i=0; i<n_pp; i++ ){
+        if (! pp[i].neighbor ){
+	    niso++;
+	    n_ptcl_loc ++; 
+	}	    
+	
+    }
+    list_iso_size = niso;
+    auto time1 = PS::GetWtime();
+
+    
+    auto ncmax = n_pp - niso+ n_ex_pp+100;
+    BoolInt keys[ncmax];
+    PS::S32 nkeys=0;
+#ifndef PARTICLE_SIMULATOR_THREAD_PARALLEL
+    for ( PS::S32 i=0; i<n_pp; i++ ){
+        if ( pp[i].neighbor && ! pp[i].isSent ){
+	    keys[nkeys].isin=true;
+	    keys[nkeys].id=i;
+	    keys[nkeys].cid=pp[i].id_cluster;
+	    nkeys++;
+	}
+    }
+#else
+    auto n_threads = PS::Comm::getNumberOfThread();
+    auto ncpp = (n_pp + n_threads )/n_threads;
+    int workindex[n_threads][ncpp];
+    int nwork[n_threads];
+#pragma omp parallel for schedule(static)
+    for(auto ic = 0; ic < n_threads; ic++){
+	auto istart = ic*ncpp;
+	auto iend = istart + ncpp;
+	if (iend > n_pp) iend = n_pp;
+	auto ntmp=0;
+	for(auto j = istart; j<iend; j++){
+	    if ( pp[j].neighbor && ! pp[j].isSent ){
+		workindex[ic][ntmp]=j;
+		ntmp++;
+	    }
+	}
+	nwork[ic]=ntmp;
+    }
+    
+    for(auto ic = 0; ic < n_threads; ic++){
+	for(auto j = 0; j<nwork[ic]; j++){
+	    keys[nkeys].isin=true;
+	    keys[nkeys].id=workindex[ic][j];
+	    keys[nkeys].cid=pp[workindex[ic][j]].id_cluster;
+	    nkeys++;
+	}
+    }
+	    
+#endif
+    
+    for ( PS::S32 i=0; i<n_ex_pp; i++ ){
+	keys[nkeys].isin=false;
+	keys[nkeys].id=i;
+	keys[nkeys].cid=ex_pp[i].id_cluster;
+	nkeys++;
+    }
+
+
+    n_ptcl_loc +=nkeys;
+    SampleSortLib::samplesort(keys, nkeys,
+			      [](BoolInt & l) ->auto{return l.cid;});
+    PS::S32 nc = 0;
+    if (nkeys > 0) nc=1;
+    PS::S32 startloc[ncmax];
+    PS::S32 ccount[ncmax];
+    startloc[0]=0;
+    for(auto i=1; i<nkeys; i++){
+	if (keys[i].cid != keys[i-1].cid){
+	    startloc[nc]=i;
+	    nc++;
+	}
+    }
+    startloc[nc] = nkeys;
+    for(auto i=0; i<nc; i++){
+	ccount[i]= startloc[i+1]-startloc[i];
+    }
+    auto time2 = PS::GetWtime();
+
+    list_multi.resize(nc);
+    //#pragma omp parallel for schedule(static) become slower on A64fx
+    for(auto i=0;i<nc; i++){
+	list_multi[i].resize(ccount[i]);
+	for(auto j=0;j<ccount[i]; j++){
+	    list_multi[i][j]=std::make_pair(keys[startloc[i]+j].isin,
+					    keys[startloc[i]+j].id);
+	}
+    }
+
+    auto time3 = PS::GetWtime();
+
+    n_cluster_loc = nc;
+    assert( list_multi.size() == nc );
+
+    ptcl_multi.resize(n_cluster_loc);
+    timers[6]=time1-time0;
+    timers[7]=time2-time1;
+    timers[8]=time3-time2;
+
+    
+    return n_ptcl_loc;
+}
+ 
 #if 0
 template <class Tpsys, class Tpsys2, class NL, class NL2>
 inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
@@ -294,7 +446,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                                          NL2 & ex_NList,
                                          const PS::S32 istep)
 {
-    PS::S32 n_all = list_multi.size() + list_iso.size();
+    PS::S32 n_all = list_multi.size() + list_iso_size;
     PS::S32 n_ptcl_loc = 0;
     
 #pragma omp parallel for reduction(+:n_ptcl_loc) schedule (dynamic)
@@ -378,7 +530,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
         } else {
             PS::S32 i = ii - list_multi.size();
             //#pragma omp parallel for reduction(+:n_ptcl_loc)
-            //for ( PS::S32 i=0; i<list_iso.size(); i++ ){
+            //for ( PS::S32 i=0; i<list_iso_size; i++ ){
 #ifndef WITHOUT_SUN
             if ( pp[list_iso[i]].getEccentricity() < 0.8 && FP_t::eps2 == 0. ){
                 timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
@@ -411,6 +563,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
     const PS::S32 large_cluster_size = 64;
 
     PS::S32 size = list_multi.size();
+    auto time0 = PS::GetWtime();
     std::vector<PS::S32> small_cluster, large_cluster;
     small_cluster.clear();
     large_cluster.clear();
@@ -423,7 +576,7 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
     }
     PS::S32 n_small = small_cluster.size();
     PS::S32 n_large = large_cluster.size();
-    PS::S32 n_all = n_small + list_iso.size();
+    PS::S32 n_all = n_small + list_iso_size;
 
     ///////////////////////////////////
     ///   Integrate Large Cluster   ///
@@ -432,9 +585,9 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
         PS::S32 i = large_cluster.at(ii);
         PS::S32 n_p = list_multi.at(i).size();
         PS::S32 id_cluster = 0;
-        std::map<PS::S64, PS::S32> id_map;
+        //std::map<PS::S64, PS::S32> id_map;
         ptcl_multi[i].clear();
-        id_map.clear();
+        //id_map.clear();
         assert( large_cluster_size <= n_p );
         
         // Add Particle To Hard System
@@ -451,17 +604,17 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             }
             if ( j==0 ) id_cluster = ptcl_multi[i][j].id_cluster;
             assert ( ptcl_multi[i][j].id_cluster == id_cluster );
-            id_map[ptcl_multi[i][j].id] = j;
+            //id_map[ptcl_multi[i][j].id] = j;
         }
 
         // Make Neighbor List
-#ifdef TEST_PTCL
-#pragma omp parallel for
-        for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map, ptcl_multi[i]);
-#else
-#pragma omp parallel for
-        for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map);
-#endif
+        //#ifdef TEST_PTCL
+        //#pragma omp parallel for
+        //for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map, ptcl_multi[i]);
+        //#else
+        //#pragma omp parallel for
+        //for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map);
+        //#endif
         
         PS::S32 n_col_tmp  = 0;
         PS::S32 n_frag_tmp = 0;
@@ -504,111 +657,144 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
             n_ptcl_loc ++;
         }
     }
+    auto time1 = PS::GetWtime();
 
     //////////////////////////////////////////////////////
     ///   Integrate Small Cluster & Isolated Particle  ///
     //////////////////////////////////////////////////////
-#pragma omp parallel for reduction(+:n_ptcl_loc) schedule (dynamic)
-    for ( PS::S32 ii=0; ii<n_all; ii++ ){
-        if ( ii<n_small ){
-            PS::S32 i = small_cluster.at(ii);
-            PS::S32 n_p = list_multi.at(i).size();
-            PS::S32 id_cluster = 0;
-            std::map<PS::S64, PS::S32> id_map;
-            ptcl_multi[i].clear();
-            id_map.clear();
-            assert( large_cluster_size > n_p );
-            
-            // Add Particle To Hard System
-            ptcl_multi[i].reserve(n_p);
-            for ( PS::S32 j=0; j<n_p; j++ ){
-                std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
-                PS::S32 id_loc = adr.second;
-                if ( adr.first ) {
-                    ptcl_multi[i].push_back(FPH_t(pp[id_loc]));
-                    ptcl_multi[i][j].copyList(NList[id_loc]);
-                } else {
-                    ptcl_multi[i].push_back(FPH_t(ex_pp[id_loc]));
-                    ptcl_multi[i][j].copyList(ex_NList[id_loc]);
-                }
-                if ( j==0 ) id_cluster = ptcl_multi[i][j].id_cluster;
-                assert ( ptcl_multi[i][j].id_cluster == id_cluster );
-                id_map[ptcl_multi[i][j].id] = j;
-            }
+    //    printf("rank, nc = %d %d\n", PS::Comm::getRank(), n_small);
+    //std::map<PS::S64, PS::S32> id_map[n_small];
+    //for ( auto  ii=0; ii<n_small; ii++ )
+        //id_map[ii].clear();
 
-            // Make Neighbor List
-#ifdef TEST_PTCL
-            for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map, ptcl_multi[i]);
-#else
-            for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map);
-#endif
-
-            PS::S32 n_col_tmp  = 0;
-            PS::S32 n_frag_tmp = 0;
-            PS::F64 edisp_tmp   = 0.;
-            PS::F64 edisp_d_tmp = 0.;
-            std::vector<Collision> collision_list_tmp;
-            //timeIntegrate_multi(ptcl_multi[i], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree, f,
-            //                    n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
-            timeIntegrate_multi(ptcl_multi[i], 0., FP_t::dt_tree,
-                                n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
-            if ( n_col_tmp > 0 ){
-#pragma omp critical
-                {
-                    n_col  += n_col_tmp;
-                    n_frag += n_frag_tmp;
-                    edisp   += edisp_tmp;
-                    edisp_d += edisp_d_tmp;
-                    for ( PS::S32 j=0; j<n_col_tmp; j++ )
-                        collision_list.push_back(collision_list_tmp.at(j));
-                    for ( PS::S32 j=0; j<n_frag_tmp; j++ )
-                        frag_list.push_back(std::make_pair(i, ptcl_multi[i].size()-n_frag_tmp+j));
-                }
-            }
-
-            PS::S32 sizei = ptcl_multi[i].size();
-            for ( PS::S32 j=0; j<sizei; j++ ) {
-                ptcl_multi[i][j].n_cluster = ptcl_multi[i].size();
-                ptcl_multi[i][j].resetTime();
-            }
-                
-            for ( PS::S32 j=0; j<sizei-n_frag_tmp; j++ ){
-                std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
-                PS::S32 id_loc = adr.second;
-                if ( adr.first ) {
-                    if ( !ptcl_multi[i][j].isDead ) assert ( pp[id_loc].id == ptcl_multi[i][j].id );
-                    pp[id_loc] = FP_t(ptcl_multi[i][j]);
-                    pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
-                } else {
-                    if ( !ptcl_multi[i][j].isDead ) assert ( ex_pp[id_loc].id == ptcl_multi[i][j].id );
-                    ex_pp[id_loc] = FP_t(ptcl_multi[i][j]);
-                    ex_pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
-                }
-                n_ptcl_loc ++;
-            }
-            
-            
-        } else {
-            PS::S32 i = ii - n_small;
-#ifndef WITHOUT_SUN
-            if ( pp[list_iso[i]].getEccentricity() < 0.8 && FP_t::eps2 == 0. ){
-                timeIntegrateKepler_isolated(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
-            } else {
-                FPH_t pi = FPH_t(pp[list_iso[i]]);
-                timeIntegrate_isolated(pi, 0., FP_t::dt_tree);
-                //timeIntegrate_isolated(pi, (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
-                pi.resetTime();
-                pp[list_iso[i]] = FP_t(pi);
-            }
-#else
-            freeMotion(pp[list_iso[i]], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
-#endif
-            n_ptcl_loc ++;
-
-            pp[list_iso[i]].n_cluster = 1;
-        }
-    }
     
+#pragma omp parallel for reduction(+:n_ptcl_loc) schedule (dynamic,2)
+    for ( PS::S32 ii=0; ii<n_small; ii++ ){
+	PS::S32 i = small_cluster.at(ii);
+	PS::S32 n_p = list_multi.at(i).size();
+	PS::S32 id_cluster = 0;
+	ptcl_multi[i].clear();
+	assert( large_cluster_size > n_p );
+        
+	// Add Particle To Hard System
+	ptcl_multi[i].reserve(n_p);
+	for ( PS::S32 j=0; j<n_p; j++ ){
+	    std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
+	    PS::S32 id_loc = adr.second;
+	    if ( adr.first ) {
+		ptcl_multi[i].push_back(FPH_t(pp[id_loc]));
+		ptcl_multi[i][j].copyList(NList[id_loc]);
+	    } else {
+		ptcl_multi[i].push_back(FPH_t(ex_pp[id_loc]));
+		ptcl_multi[i][j].copyList(ex_NList[id_loc]);
+	    }
+	    if ( j==0 ) id_cluster = ptcl_multi[i][j].id_cluster;
+	    assert ( ptcl_multi[i][j].id_cluster == id_cluster );
+	    //id_map[ii][ptcl_multi[i][j].id] = j;
+	}
+    }	
+    auto time2 = PS::GetWtime();
+    //#pragma omp parallel for reduction(+:n_ptcl_loc) schedule (dynamic,2)
+    //for ( PS::S32 ii=0; ii<n_small; ii++ ){
+	//PS::S32 i = small_cluster.at(ii);
+	//PS::S32 n_p = list_multi.at(i).size();
+	// Make Neighbor List
+    //#ifdef TEST_PTCL
+	//for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map[ii], ptcl_multi[i]);
+    //#else
+	//for ( PS::S32 j=0; j<n_p; j++ ) ptcl_multi[i][j].makeHardList(id_map[ii]);
+    //#endif
+    //}
+    auto time3 = PS::GetWtime();
+#pragma omp parallel for reduction(+:n_ptcl_loc) schedule (dynamic,2)
+    for ( PS::S32 ii=0; ii<n_small; ii++ ){
+	PS::S32 i = small_cluster.at(ii);
+	PS::S32 n_p = list_multi.at(i).size();
+	
+	PS::S32 n_col_tmp  = 0;
+	PS::S32 n_frag_tmp = 0;
+	PS::F64 edisp_tmp   = 0.;
+	PS::F64 edisp_d_tmp = 0.;
+	std::vector<Collision> collision_list_tmp;
+	//timeIntegrate_multi(ptcl_multi[i], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree, f,
+	//                    n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
+	timeIntegrate_multi(ptcl_multi[i], 0., FP_t::dt_tree,
+			    n_col_tmp, n_frag_tmp, edisp_tmp, edisp_d_tmp, collision_list_tmp);
+
+	if ( n_col_tmp > 0 ){
+#pragma omp critical
+	    {
+		n_col  += n_col_tmp;
+		n_frag += n_frag_tmp;
+		edisp   += edisp_tmp;
+		edisp_d += edisp_d_tmp;
+		for ( PS::S32 j=0; j<n_col_tmp; j++ )
+		    collision_list.push_back(collision_list_tmp.at(j));
+		for ( PS::S32 j=0; j<n_frag_tmp; j++ )
+		    frag_list.push_back(std::make_pair(i, ptcl_multi[i].size()-n_frag_tmp+j));
+	    }
+	}
+
+	    
+	PS::S32 sizei = ptcl_multi[i].size();
+	for ( PS::S32 j=0; j<sizei; j++ ) {
+	    ptcl_multi[i][j].n_cluster = ptcl_multi[i].size();
+	    ptcl_multi[i][j].resetTime();
+	}
+	    
+	for ( PS::S32 j=0; j<sizei-n_frag_tmp; j++ ){
+	    std::pair<bool,PS::S32> adr = list_multi.at(i).at(j);
+	    PS::S32 id_loc = adr.second;
+	    if ( adr.first ) {
+		if ( !ptcl_multi[i][j].isDead ) assert ( pp[id_loc].id == ptcl_multi[i][j].id );
+		pp[id_loc] = FP_t(ptcl_multi[i][j]);
+		pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
+	    } else {
+		if ( !ptcl_multi[i][j].isDead ) assert ( ex_pp[id_loc].id == ptcl_multi[i][j].id );
+		ex_pp[id_loc] = FP_t(ptcl_multi[i][j]);
+		ex_pp[id_loc].neighbor = ptcl_multi[i][j].n_list.size();
+	    }
+	    n_ptcl_loc ++;
+	}
+    }
+            
+    auto time4= PS::GetWtime();
+    const PS::S32 n_pp    = pp.getNumberOfParticleLocal();
+	    
+#pragma omp parallel for schedule(static)
+#if USE_ISO_LIST    
+	for ( PS::S32 ii=n_small; ii<n_all; ii++ ){
+	    PS::S32 i = list_iso[ii - n_small];
+#else
+        for ( PS::S32 i=0; i<n_pp; i++ )if( !pp[i].neighbor ){
+#endif
+		
+	    
+#ifndef WITHOUT_SUN
+	    if ( pp[i].getEccentricity() < 0.8 && FP_t::eps2 == 0. ){
+	    timeIntegrateKepler_isolated(pp[i], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
+	} else {
+	    FPH_t pi = FPH_t(pp[i]);
+	    timeIntegrate_isolated(pi, 0., FP_t::dt_tree);
+	    //timeIntegrate_isolated(pi, (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
+	    pi.resetTime();
+                pp[i] = FP_t(pi);
+            }
+#else
+	freeMotion(pp[i], (istep-1)*FP_t::dt_tree, istep*FP_t::dt_tree);
+#endif
+	
+	pp[i].n_cluster = 1;
+    }
+    n_ptcl_loc += n_all - n_small;
+
+    auto time5 = PS::GetWtime();
+    timers[1]=time1-time0;
+    timers[2]=time2-time1;
+    timers[3]=time3-time2;
+    timers[4]=time4-time3;
+    timers[5]=time5-time4;
+    //    printf("Hard inegrate times=%g %g %g\n", time0, time1, time2);
     return n_ptcl_loc;
 }
 #endif

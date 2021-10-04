@@ -655,14 +655,14 @@ public:
     PS::F64 time_c;
     
     std::vector<PS::S64> n_list;
-    std::vector<PS::S32> n_hard_list;
+    //std::vector<PS::S32> n_hard_list;
     
     void clearList(){
         //std::vector<PS::S32> tmp0, tmp1;
         //tmp0.swap(n_list);
         //tmp1.swap(n_hard_list);
         n_list.clear();
-        n_hard_list.clear();
+        //n_hard_list.clear();
     }
     void copyList(std::vector<PS::S64> list){
         n_list.resize(list.size());
@@ -673,32 +673,32 @@ public:
         n_list.reserve(neighbor);
         for ( PS::S32 i=0; i<neighbor; i++ ) n_list.push_back(list[i]);
     }
-    void copyHardList(std::vector<PS::S32> list){
-        n_hard_list.resize(list.size());
-        std::copy(list.begin(),list.end(),n_hard_list.begin());
-    }
-    void copyHardList(PS::S32 * list){
-        n_hard_list.clear();
-        n_hard_list.reserve(neighbor);
-        for ( PS::S32 i=0; i<neighbor; i++ ) n_hard_list.push_back(list[i]);
-    }
-    void makeHardList(std::map<PS::S64,PS::S32> & id_map){
-        n_hard_list.clear();
-        n_hard_list.reserve(neighbor);
-        for ( PS::S32 i=0; i<neighbor; i++){
-            n_hard_list.push_back(id_map.at(n_list.at(i)));
-        }
-    }
-    template <class Tpsys>
-    void makeHardList(std::map<PS::S64,PS::S32> & id_map,
-                      Tpsys & pp){
-        n_hard_list.clear();
-        for ( PS::S32 i=0; i<neighbor; i++){
-            PS::S32 id_hard = id_map.at(n_list.at(i));
-            if ( pp[id_hard].mass > 0. ) n_hard_list.push_back(id_hard);
-        }
-        neighbor = n_hard_list.size();
-    }
+    //void copyHardList(std::vector<PS::S32> list){
+    //    n_hard_list.resize(list.size());
+    //    std::copy(list.begin(),list.end(),n_hard_list.begin());
+    //}
+    //void copyHardList(PS::S32 * list){
+    //    n_hard_list.clear();
+    //    n_hard_list.reserve(neighbor);
+    //    for ( PS::S32 i=0; i<neighbor; i++ ) n_hard_list.push_back(list[i]);
+    //}
+    //void makeHardList(std::map<PS::S64,PS::S32> & id_map){
+    //    n_hard_list.clear();
+    //    n_hard_list.reserve(neighbor);
+    //    for ( PS::S32 i=0; i<neighbor; i++){
+    //        n_hard_list.push_back(id_map.at(n_list.at(i)));
+    //    }
+    //}
+    //template <class Tpsys>
+    //void makeHardList(std::map<PS::S64,PS::S32> & id_map,
+    //                  Tpsys & pp){
+    //    n_hard_list.clear();
+    //    for ( PS::S32 i=0; i<neighbor; i++){
+    //        PS::S32 id_hard = id_map.at(n_list.at(i));
+    //        if ( pp[id_hard].mass > 0. ) n_hard_list.push_back(id_hard);
+    //    }
+    //    neighbor = n_hard_list.size();
+    //}
     FPHard(){
         x0   = v0   = 0.;
         a0_s = j0_s = 0.;
@@ -747,7 +747,7 @@ public:
         time_c = fp.time_c;
         
         copyList(fp.n_list);
-        copyHardList(fp.n_hard_list);
+        //copyHardList(fp.n_hard_list);
     }
     FPHard(const FPGrav & fp) : FPGrav(fp){
         x0   = v0   = 0.;
@@ -799,7 +799,7 @@ public:
             time_c = fp.time_c;
             
             copyList(fp.n_list);
-            copyHardList(fp.n_hard_list);
+            //copyHardList(fp.n_hard_list);
         }
         return *this;
     }

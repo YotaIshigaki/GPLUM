@@ -543,22 +543,23 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
     }
     
 #if 1
-    for ( PS::S32 i=0; i<pp[id_c_imp].neighbor; i++ ){
-        PS::S32 id_nei = pp[id_c_imp].n_hard_list.at(i);
-        if ( pp[id_nei].id == pp[id_c_imp].id || pp[id_nei].id == pp[id_c_tar].id ) continue;
-        PS::F64 m_nei = pp[id_nei].mass;
+    //for ( PS::S32 i=0; i<pp[id_c_imp].neighbor; i++ ){
+    //PS::S32 id_nei = pp[id_c_imp].n_hard_list.at(i);
+    for ( PS::S32 i=0; i<id_c_frag; i++ ){  
+        if ( pp[i].id == pp[id_c_imp].id || pp[i].id == pp[id_c_tar].id ) continue;
+        PS::F64 m_nei = pp[i].mass;
         
-        dr = pos_imp - pp[id_nei].pos;
+        dr = pos_imp - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv = sqrt(1./dr2);
-        dr = pp[id_c_imp].pos - pp[id_nei].pos;
+        dr = pp[id_c_imp].pos - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv_new = sqrt(1./dr2);
         dphi = m_nei * ( rinv - rinv_new );
         e_int   += m_nei * ( mass_i * rinv - pp[id_c_imp].mass * rinv_new );
         e_int_d += m_nei * ( mass_i * rinv - pp[id_c_imp].mass * rinv_new )
 #ifdef USE_INDIVIDUAL_CUTOFF
-            * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_nei].r_out_inv));
+            * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[i].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
@@ -567,42 +568,42 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             e_int   += pp[id_i].mass * dphi;
             e_int_d += pp[id_i].mass * dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-                * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_nei].r_out_inv));
+                * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[i].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
         for ( PS::S32 j=0; j<n_frag; j++ ){
             PS::S32 id_f = id_c_frag + j;
-            dr = pp[id_f].pos - pp[id_nei].pos;
+            dr = pp[id_f].pos - pp[i].pos;
             dr2 = dr*dr + eps2;
             rinv_new = sqrt(1./dr2);
             dphi = -m_nei * pp[id_f].mass * rinv_new;
             e_int   += dphi;
             e_int_d += dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-                * (1.-cutoff_W2(dr2, pp[id_f].r_out_inv, pp[id_nei].r_out_inv));
+                * (1.-cutoff_W2(dr2, pp[id_f].r_out_inv, pp[i].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
-    }
-    for ( PS::S32 i=0; i<pp[id_c_tar].neighbor; i++ ){
-        PS::S32 id_nei = pp[id_c_tar].n_hard_list.at(i);
-        if ( pp[id_nei].id == pp[id_c_imp].id || pp[id_nei].id == pp[id_c_tar].id ) continue;
-        PS::F64 m_nei = pp[id_nei].mass;
+        //}
+    //for ( PS::S32 i=0; i<pp[id_c_tar].neighbor; i++ ){
+    //PS::S32 i = pp[id_c_tar].n_hard_list.at(i);
+    //if ( pp[i].id == pp[id_c_imp].id || pp[i].id == pp[id_c_tar].id ) continue;
+    //PS::F64 m_nei = pp[i].mass;
         
-        dr = pos_tar - pp[id_nei].pos;
+        dr = pos_tar - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv = sqrt(1./dr2);
-        dr = pp[id_c_tar].pos - pp[id_nei].pos;
+        dr = pp[id_c_tar].pos - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv_new = sqrt(1./dr2);
         dphi = m_nei * ( rinv - rinv_new );
         e_int   += pp[id_c_tar].mass * dphi;
         e_int_d += pp[id_c_tar].mass * dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-            * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[id_nei].r_out_inv));
+            * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[i].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
@@ -611,7 +612,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             e_int   += pp[id_j].mass * dphi;
             e_int_d += pp[id_j].mass * dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-                * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[id_nei].r_out_inv));
+                * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[i].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
@@ -659,6 +660,7 @@ inline void Collision0::setNeighbors(Tpsys & pp)
     ///////////////////////
     /*   Set Neighbors   */
     ///////////////////////
+    /*
     for ( PS::S32 i=0; i<n_frag; i++ ){
         PS::S32 id_f = id_c_frag + i;
         pp[id_f].neighbor = pp[id_c_imp].neighbor + n_frag;
@@ -685,6 +687,7 @@ inline void Collision0::setNeighbors(Tpsys & pp)
         PS::S32 id_nei = pp[id_c_imp].n_hard_list.at(i);
         assert ( pp[id_nei].neighbor == (PS::S32)(pp[id_nei].n_hard_list.size()) );
     }
+    */
 }
 
 template <class Tp>
