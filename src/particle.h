@@ -1103,10 +1103,10 @@ void calcRandomVel(Tpsys & pp,
             PS::F64 ddr  = r_min + (j+0.5)*dr - sqrt(r2);
             PS::F64 expr = exp(-ddr*ddr * drinv*drinv);
             v_dispi += v_disp_glb[j] * expr;
-            ni      += (v_disp_glb[j] > 0) ? expr : 0.;
+            ni      += (n_ptcl_glb[j] > 0) ? expr : 0.;
         }
         pp[i].v_disp = v_dispi / ni;
-        assert ( pp[i].v_disp > 0. ); 
+        assert ( pp[i].v_disp >= 0. ); 
     } 
 }
 
