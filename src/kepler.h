@@ -57,11 +57,18 @@ void posVel2OrbitalElement(PS::F64vec pos,
     PS::F64 eccsinu = rv/sqrt(mu*ax);
     ecc = sqrt(ecccosu*ecccosu + eccsinu*eccsinu);
     n = sqrt(mu / (ax*ax*ax));
-    
-    u = atan2(eccsinu, ecccosu);
-    
-    PS::F64 cosu = ecccosu/ecc;
-    PS::F64 sinu = eccsinu/ecc;
+
+    PS::F64 cosu, sinu;
+    if ( ecc!=0 ) {
+        u = atan2(eccsinu, ecccosu);
+        cosu = ecccosu/ecc;
+        sinu = eccsinu/ecc;
+    } else {
+        u = 0.;
+        cosu = 1.;
+        sinu = 0.;
+    }
+
     PS::F64 aninv = sqrt(ax/mu);
     PS::F64 ecc_sq = sqrt(1.-ecc*ecc);
     P = rinv*cosu * pos - aninv*sinu * vel;

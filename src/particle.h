@@ -7,26 +7,143 @@
 /// Force ///
 /////////////
 
+class NeighborInfo{
+public:
+    PS::S32 number;
+    PS::S32 DUMMY_;
+    
+    PS::S32 id_local; 
+    PS::S32 rank;
+
+    PS::S32 id_local1;
+    PS::S32 id_local2;
+    PS::S32 id_local3;
+    PS::S32 id_local4;
+    PS::S32 id_local5;
+    PS::S32 id_local6;
+    PS::S32 id_local7;
+    PS::S32 rank1;
+    PS::S32 rank2;
+    PS::S32 rank3;
+    PS::S32 rank4;
+    PS::S32 rank5;
+    PS::S32 rank6;
+    PS::S32 rank7;
+
+    NeighborInfo(){
+        number   = 0;
+        id_local = -1;
+        rank     = -1;
+    }
+    NeighborInfo(const NeighborInfo & ni){
+        number   = ni.number;
+        id_local = ni.id_local;
+        rank     = ni.rank;
+        id_local1 = ni.id_local1;
+        id_local2 = ni.id_local2;
+        id_local3 = ni.id_local3;
+        id_local4 = ni.id_local4;
+        id_local5 = ni.id_local5;
+        id_local6 = ni.id_local6;
+        id_local7 = ni.id_local7;
+        rank1     = ni.rank1;
+        rank2     = ni.rank2;
+        rank3     = ni.rank3;
+        rank4     = ni.rank4;
+        rank5     = ni.rank5;
+        rank6     = ni.rank6;
+        rank7     = ni.rank7;
+    }
+    NeighborInfo &operator=(const NeighborInfo & ni){
+        if ( this != &ni ){
+            number   = ni.number;
+            id_local = ni.id_local;
+            rank     = ni.rank;
+            id_local1 = ni.id_local1;
+            id_local2 = ni.id_local2;
+            id_local3 = ni.id_local3;
+            id_local4 = ni.id_local4;
+            id_local5 = ni.id_local5;
+            id_local6 = ni.id_local6;
+            id_local7 = ni.id_local7;
+            rank1     = ni.rank1;
+            rank2     = ni.rank2;
+            rank3     = ni.rank3;
+            rank4     = ni.rank4;
+            rank5     = ni.rank5;
+            rank6     = ni.rank6;
+            rank7     = ni.rank7;
+        }
+        return *this;
+    }
+    
+    void clear(){
+        number = 0;
+        id_local = -1;
+        rank = -1;
+
+        id_local1 = id_local2 = id_local3 = id_local4 = id_local5 = id_local6 = id_local7 = -1;
+        rank1 = rank2 = rank3 = rank4 = rank5 = rank6 = rank7 = -1;
+    }
+    void copy(const NeighborInfo & ni){
+        number = ni.number;
+        id_local = ni.id_local;
+        rank = ni.rank;
+        
+        id_local1 = ni.id_local1;
+        id_local2 = ni.id_local2;
+        id_local3 = ni.id_local3;
+        id_local4 = ni.id_local4;
+        id_local5 = ni.id_local5;
+        id_local6 = ni.id_local6;
+        id_local7 = ni.id_local7;
+        rank1     = ni.rank1;
+        rank2     = ni.rank2;
+        rank3     = ni.rank3;
+        rank4     = ni.rank4;
+        rank5     = ni.rank5;
+        rank6     = ni.rank6;
+        rank7     = ni.rank7;
+    }
+    PS::S32 getId(const PS::S32 i) const {
+        if (i==0) return id_local;
+        if (i==1) return id_local1;
+        if (i==2) return id_local2;
+        if (i==3) return id_local3;
+        if (i==4) return id_local4;
+        if (i==5) return id_local5;
+        if (i==6) return id_local6;
+        if (i==7) return id_local7;
+        return -1;
+    }
+    PS::S32 getRank(const PS::S32 i) const {
+        if (i==0) return rank;
+        if (i==1) return rank1;
+        if (i==2) return rank2;
+        if (i==3) return rank3;
+        if (i==4) return rank4;
+        if (i==5) return rank5;
+        if (i==6) return rank6;
+        if (i==7) return rank7;
+        return -1;
+    }
+};
+
 class ForceGrav{
 public:
     PS::F32vec acc;
     PS::F32    phi;
-    PS::S32    neighbor;
-    PS::S32    DUMMY_;
+    //PS::S32    neighbor;
+    //PS::S32    DUMMY_;
 
-#ifdef FOR_PIKG01
-    PS::S32    id_neighbor; 
-    PS::S32    id_neighbor_dmmy; 
-#else
-    PS::S64    id_neighbor;        
-#endif
+    //PS::S32    id_neighbor; 
+    //PS::S32    rank_neighbor;
+    NeighborInfo neighbor;
     
     void clear(){
         acc         = 0.;
         phi         = 0.;
-        neighbor    = 0;
-
-        id_neighbor = -1;
+        neighbor.clear();
     }
 };
 
@@ -36,17 +153,13 @@ public:
 //////////////////////////
 
 class EPIGrav{
-public:    
+public:
+    PS::S32 id_local;     // local id number
+    PS::S32 myrank;       // rank number
+    
     PS::F64vec pos;     // position in cartesian
 #ifdef USE_POLAR_COORDINATE
     PS::F64vec pos_pol; // position in polar
-#endif
-
-#ifdef FOR_PIKG01
-    PS::S32 id;
-    PS::S32 id_dmmy;
-#else
-    PS::S64 id;           // id number
 #endif
 
 #ifdef USE_INDIVIDUAL_CUTOFF
@@ -72,14 +185,15 @@ public:
         return SAFTY_FACTOR * r_search;
 #endif
     }
-    
-    void copyFromFP(const EPIGrav & fp){
+    template <class Tp>
+    void copyFromFP(const Tp & fp){
+        id_local = fp.id_local;
+        myrank   = fp.myrank;
+        
         pos      = fp.pos;
 #ifdef USE_POLAR_COORDINATE
         pos_pol  = fp.pos_pol;
 #endif
-
-        id       = fp.id;
 
 #ifdef USE_INDIVIDUAL_CUTOFF
         r_out    = fp.r_out;
@@ -96,25 +210,126 @@ PS::F64 EPIGrav::r_search;
 
 class EPJGrav : public EPIGrav {
 public:
+    //PS::S64 id;
+    
     PS::F64 mass;         // mass
-
-    PS::F64vec vel;       // valocity
-    PS::F64vec acc_d;     // acceleration for hard part
-
-    PS::S32 id_local;     // local id number
-    PS::S32 myrank;       // rank number
 
     PS::F64 getCharge() const { return mass; }
 
-    void copyFromFP(const EPJGrav & fp){
+    template <class Tp>
+    void copyFromFP(const Tp & fp){
         EPIGrav::copyFromFP(fp);
         mass     = fp.mass;
+    }
+};
+
+class EPNgb{
+public:
+    PS::S32 myrank;
+    PS::S32 id_local;
+    PS::F64 id;
+    
+    PS::F64 mass;
+
+    PS::F64vec pos;     // position in cartesian
+    PS::F64vec vel;
+    PS::F64vec acc_d;
+    
+#ifdef USE_INDIVIDUAL_CUTOFF
+    PS::F64 r_out;        // cut-off radius
+    PS::F64 r_out_inv;    // cut-off radius
+    PS::F64 r_search;     // search radius
+#endif
+
+    EPNgb() {
+        id_local = -1;
+        myrank = -1;
+        id = -1;
+
+        mass  = 0.;
+        pos   = 0.;
+        vel   = 0.;
+        acc_d = 0.;
         
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = 0.;
+        r_out_inv = 0.;
+        r_search  = 0.;
+#endif
+    }
+
+    /*
+    EPNgb(const PS::S32 id_loc) {
+        id_local = id_loc;
+        myrank = -1;
+        id = -1;
+
+        mass  = 0.;
+        pos   = 0.;
+        vel   = 0.;
+        acc_d = 0.;
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = 0.;
+        r_out_inv = 0.;
+        r_search  = 0.;
+#endif
+    }
+
+    void setNeighbor(const PS::S32 id_loc){
+        id_local = id_loc;
+    }
+    template <class Tpsys>
+    void copyNeighbor(const Tpsys & pp){
+        myrank  = pp[id_local].myrank;
+        id    = pp[id_local].id;
+        mass  = pp[id_local].mass;
+        pos   = pp[id_local].pos;
+        vel   = pp[id_local].vel;
+        acc_d = pp[id_local].acc_d;
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = pp[id_local].r_out;
+        r_out_inv = pp[id_local].r_out_inv;
+        r_search  = pp[id_local].r_search;
+#endif
+        
+        //assert(pp[id_local].neighbor.number > 1);
+    }
+    */
+    template <class Tp>
+    EPNgb(const Tp & fp){
+        id_local = fp.id_local;
+        myrank   = fp.myrank;
+        id       = fp.id;
+        mass     = fp.mass;
+        pos      = fp.pos;
+        vel      = fp.vel;
+        acc_d    = fp.acc_d;
+        
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = fp.r_out;
+        r_out_inv = fp.r_out_inv;
+        r_search  = fp.r_search;
+#endif
+    }
+    template <class Tp>
+    void copyFromFP(const Tp & fp){
+        id_local = fp.id_local;
+        myrank   = fp.myrank;
+        id       = fp.id;
+        mass     = fp.mass;
+        pos      = fp.pos;
         vel      = fp.vel;
         acc_d    = fp.acc_d;
 
-        id_local = fp.id_local;
-        myrank   = fp.myrank;
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = fp.r_out;
+        r_out_inv = fp.r_out_inv;
+        r_search  = fp.r_search;
+#endif
+        
+        //assert(fp.neighbor.number > 1);
     }
 };
 
@@ -196,6 +411,10 @@ inline PS::F64 calcDt6th(PS::F64 eta,
 
 class FPGrav : public EPJGrav {
 public:
+    PS::S64 id;
+
+    PS::F64vec vel;       // valocity
+    PS::F64vec acc_d;     // acceleration for hard part
     PS::F64vec acc;    // acceleration for soft part
     PS::F64vec acc_s;  // acceleration by sun
     PS::F64vec jerk_d; // jerk by planet
@@ -269,12 +488,14 @@ public:
     static PS::F64 p_cut;
     static PS::F64 increase_factor;
 
-    PS::S64 id_neighbor;
+    //PS::S64 id_neighbor;
+    //PS::S64 rank_neighbor;
+    NeighborInfo neighbor;
     
     PS::S64 id_cluster;
     PS::S32 n_cluster;
 
-    PS::S32 neighbor;
+    //PS::S32 neighbor;
     
     bool inDomain;
     bool isSent;
@@ -285,6 +506,122 @@ public:
     static PS::F64 R_merge;
 #endif
 
+    static void readParameter(std::string name,
+                              std::string value){
+        if ( name == "dt_tree" ) dt_tree = getvalue(value, T_MKS, T_CGS);
+        if ( name == "dt_min" ) dt_min = getvalue(value, T_MKS, T_CGS);
+        if ( name == "eta" ) eta = getvalue(value, 1., 1.);
+        if ( name == "eta_0" ) eta_0 = getvalue(value, 1., 1.);
+        if ( name == "eta_sun" ) eta_sun = getvalue(value, 1., 1.);
+        if ( name == "eta_sun0" ) eta_sun0 = getvalue(value, 1., 1.);
+        if ( name == "alpha" ){
+            PS::F64 alpha = getvalue(value, 1., 1.);
+            alpha2 = alpha*alpha;
+        }
+        if ( name == "m_sun" ) m_sun = getvalue(value, M_MKS, M_CGS);
+        if ( name == "dens" ) dens = getvalue(value, M_MKS/(L_MKS*L_MKS*L_MKS), M_CGS/(L_CGS*L_CGS*L_CGS));
+        if ( name == "eps" ) {
+            PS::F64 eps = getvalue(value, L_MKS, L_CGS);
+            eps2 = eps*eps;
+        }
+        if ( name == "eps_sun" ){
+            PS::F64 eps_sun = getvalue(value, L_MKS, L_CGS);
+            eps2_sun = eps_sun*eps_sun;
+        }
+        if ( name == "R_cut0" ) R_cut0 = getvalue(value, 1., 1.);
+        if ( name == "R_cut1" ) R_cut1 = getvalue(value, 1., 1.);
+        if ( name == "R_search0" ) R_search0 = getvalue(value, 1., 1.);
+        if ( name == "R_search1" ) R_search1 = getvalue(value, 1., 1.);         
+#ifdef USE_RE_SEARCH_NEIGHBOR
+        if ( name == "R_search2" ) R_search2 = getvalue(value, 1., 1.);
+        if ( name == "R_search3" ) R_search3 = getvalue(value, 1., 1.);
+#endif
+#ifdef MERGE_BINARY
+        if ( name == "R_merge" ) R_merge = getvalue(value, 1., 1.);
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+        if ( name == "v_disp" ) v_disp = getvalue(value, L_MKS/T_MKS, L_CGS/T_CGS);
+#endif
+        if ( name == "gamma" ) setGamma(getvalue(value, 1., 1.));
+        if ( name == "r_cut_min" ) r_cut_min = getvalue(value, L_MKS, L_CGS);
+        if ( name == "r_cut_max" ) r_cut_max = getvalue(value, L_MKS, L_CGS);
+        if ( name == "p_cut" ) p_cut = getvalue(value, 1., 1.);
+        if ( name == "f" ) increase_factor = getvalue(value, 1., 1.);
+    }
+    static void broadcastParameter(){
+        PS::F64 param[20] = {dt_tree, dt_min, eta, eta_0, eta_sun, eta_sun0, alpha2, m_sun,
+            dens, eps2, eps2_sun, R_cut0, R_cut1, R_search0, R_search1, gamma,
+            r_cut_min, r_cut_max, p_cut, increase_factor};
+        PS::Comm::broadcast(param, 20);
+        dt_tree   = param[0];
+        dt_min    = param[1];
+        eta       = param[2];
+        eta_0     = param[3];
+        eta_sun   = param[4];
+        eta_sun0  = param[5];
+        alpha2    = param[6];
+        m_sun     = param[7];
+        dens      = param[8];
+        eps2      = param[9];
+        eps2_sun  = param[10];
+        R_cut0    = param[11];
+        R_cut1    = param[12];
+        R_search0 = param[13];
+        R_search1 = param[14];
+        gamma     = param[15];
+        r_cut_min = param[16];
+        r_cut_max = param[17];
+        p_cut     = param[18];
+        increase_factor = param[19];
+        
+#ifdef USE_RE_SEARCH_NEIGHBOR
+        PS::Comm::broadcast(&R_search2, 1);
+        PS::Comm::broadcast(&R_search3, 1);
+#endif
+#ifdef MERGE_BINARY
+        PS::Comm::broadcast(&R_merge, 1);
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+        PS::Comm::broadcast(&v_disp, 1);
+#endif
+    }
+    static void showParameter(std::ostream & fout = std::cout) {
+        fout << std::fixed << std::setprecision(5)
+             << "dt_tree       = " << dt_tree << "\t(2^" << (PS::S32)std::log2(dt_tree) << ", " << dt_tree/(2.*MY_PI) << " year)" << std::endl
+             << "dt_min        = " << dt_min << "\t(2^" << (PS::S32)std::log2(dt_min) << ", " << dt_min/(2.*MY_PI) << " year)" << std::endl
+             << "eta           = " << eta  << std::endl
+             << "eta_0         = " << eta_0 << std::endl
+             << "eta_sun       = " << eta_sun << std::endl
+             << "eta_sun0      = " << eta_sun0 << std::endl
+             << "alpha         = " << sqrt(alpha2) << std::endl
+             << "m_sun         = " << m_sun << "\t(" << m_sun*M_CGS << " g)" << std::endl
+             << "dens          = " << dens << "\t(" << dens*M_CGS/(L_CGS*L_CGS*L_CGS) << " g/cm^3)"<< std::endl
+             << "eps           = " << sqrt(eps2) << "\t(" << sqrt(eps2)*L_CGS << " cm)"<< std::endl
+             << "eps_sun       = " << sqrt(eps2_sun) << "\t(" << sqrt(eps2_sun)*L_CGS << " cm)"<< std::endl
+             << std::fixed << std::setprecision(5)
+             << "R_cut0        = " << R_cut0 << std::endl
+             << "R_cut1        = " << R_cut1 << std::endl
+             << "R_search0     = " << R_search0 << std::endl
+             << "R_search1     = " << R_search1 << std::endl
+#ifdef USE_RE_SEARCH_NEIGHBOR
+             << "R_search2     = " << R_search2 << std::endl
+             << "R_search3     = " << R_search3 << std::endl
+#endif
+#ifdef MERGE_BINARY
+             << "R_merge       = " << R_merge << std::endl
+#endif
+#ifdef CONSTANT_RANDOM_VELOCITY
+             << "v_disp        = " << v_disp << "\t(" << v_disp*L_CGS/T_CGS << " cm/s)"<< std::endl
+#endif
+             << "gamma         = " << gamma << std::endl
+             << std::scientific << std::setprecision(15)
+             << "r_cut_max     = " << r_cut_max << "\t(" << r_cut_max*L_CGS << " cm)"<< std::endl
+             << "r_cut_min     = " << r_cut_min << "\t(" << r_cut_min*L_CGS << " cm)"<< std::endl
+             << "p_cut         = " << p_cut << std::endl
+             << std::fixed << std::setprecision(5)
+             << "f             = " << increase_factor << std::endl;
+    }
+    
     static void setGamma(PS::F64 g){
         gamma  = g;
         g_1_inv  = 1./(g - 1.);
@@ -384,10 +721,12 @@ public:
         PS::F64 rHill = getRHill();
         PS::F64 ax    = getSemimajorAxis2();
 
-        PS::F64 r_out_i = std::max(R_cut0*pow(ax,-p_cut)*rHill, R_cut1*v_disp*dt_tree);
+        PS::F64 r_out_i = std::max(R_cut0*pow(ax,-p_cut)*rHill,
+                                   R_cut1*v_disp*dt_tree);
 #else
         PS::F64 rHill = 0.;
-        PS::F64 r_out_i = std::max(R_cut0*pow(mass * dt_tree * dt_tree, 1./3.), R_cut1*v_disp*dt_tree);
+        PS::F64 r_out_i = std::max(R_cut0*pow(mass * dt_tree * dt_tree, 1./3.),
+                                   R_cut1*v_disp*dt_tree);
 #endif
         
         r_out = std::max(r_out_i, r_cut_min);
@@ -405,9 +744,11 @@ public:
                                PS::F64 v_disp_glb){
       
 #ifndef WITHOUT_SUN
-        PS::F64 r_out_i = std::max(R_cut0*rHill_a_glb, R_cut1*v_disp_glb*dt_tree);
+        PS::F64 r_out_i = std::max(R_cut0*rHill_a_glb,
+                                   R_cut1*v_disp_glb*dt_tree);
 #else
-        PS::F64 r_out_i = std::max(R_cut0*pow(rHill_a_glb * dt_tree * dt_tree, 1./3.), R_cut1*v_disp_glb*dt_tree);
+        PS::F64 r_out_i = std::max(R_cut0*pow(rHill_a_glb*dt_tree*dt_tree, 1./3.),
+                                   R_cut1*v_disp_glb*dt_tree);
 #endif
         
         r_out = std::max(r_out_i, r_cut_min);
@@ -426,12 +767,13 @@ public:
     void copyFromForce(const ForceGrav & force){
         acc = force.acc;
         phi = force.phi;
-        neighbor = force.neighbor;
-        id_neighbor = force.id_neighbor;
+
+        neighbor.copy(force.neighbor);
     }
 
     void copy(const FPGrav & fp){
         EPJGrav::copyFromFP(fp);
+        id        = fp.id;
         acc       = fp.acc;
         acc_s     = fp.acc_s;
         jerk_d    = fp.jerk_d;
@@ -462,11 +804,9 @@ public:
         r_planet  = fp.r_planet;
         f         = fp.f;
 
-        id_neighbor = fp.id_neighbor;
-        id_cluster  = fp.id_cluster;
         n_cluster   = fp.n_cluster;
-        neighbor    = fp.neighbor;
-    
+        neighbor.copy(fp.neighbor);
+        
         inDomain    = fp.inDomain;
         isSent      = fp.isSent;
         isDead      = fp.isDead;
@@ -478,6 +818,7 @@ public:
 
     void dump(std::ostream & fout = std::cout) const {
         fout<<"id= "<<id<<std::endl;
+        fout<<"id_local= "<<id_local<<std::endl;
         fout<<"mass= "<<mass<<std::endl;
         fout<<"pos= "<<pos<<std::endl;
 #ifdef USE_POLAR_COORDINATE
@@ -486,6 +827,9 @@ public:
         fout<<"vel= "<<vel<<std::endl;
         fout<<"acc="<<acc<<std::endl;
         fout<<"phi="<<phi<<std::endl;
+        fout<<"r_out="<<r_out<<std::endl;
+        fout<<"r_search="<<r_search<<std::endl;
+        fout<<"time="<<time<<std::endl;
     }
 
     void readAscii(FILE* fp) {
@@ -494,7 +838,7 @@ public:
                      &this->id, &this->mass, &this->r_planet, &this->f, 
                      &this->pos.x, &this->pos.y, &this->pos.z,
                      &this->vel.x, &this->vel.y, &this->vel.z,
-                     &this->neighbor,  &Flag) ) {
+                     &this->neighbor.number,  &Flag) ) {
             //&this->r_out, &this->r_search) ) {
             errorMessage("The particle data have NOT been correctly read.");
             PS::Abort();
@@ -512,7 +856,7 @@ public:
                       this->id, this->mass, this->r_planet, this->f, 
                       this->pos.x, this->pos.y, this->pos.z,
                       this->vel.x, this->vel.y, this->vel.z,
-                      this->neighbor, Flag) ) {
+                      this->neighbor.number, Flag) ) {
             //this->r_out, this->r_search) ){
             errorMessage("The particle data have NOT been correctly written.");
             PS::Abort();
@@ -654,25 +998,27 @@ public:
     
     PS::F64 time_c;
     
-    std::vector<PS::S64> n_list;
+    //std::vector<PS::S64> n_list;
     //std::vector<PS::S32> n_hard_list;
     
-    void clearList(){
+    /*void clearList(){
         //std::vector<PS::S32> tmp0, tmp1;
         //tmp0.swap(n_list);
         //tmp1.swap(n_hard_list);
         n_list.clear();
         //n_hard_list.clear();
     }
-    void copyList(std::vector<PS::S64> list){
-        n_list.resize(list.size());
-        std::copy(list.begin(),list.end(),n_list.begin());
-    }
-    void copyList(PS::S64 * list){
+    void copyList(std::vector<NeighborId> list){
         n_list.clear();
-        n_list.reserve(neighbor);
-        for ( PS::S32 i=0; i<neighbor; i++ ) n_list.push_back(list[i]);
+        n_list.resize(list.size());
+        for ( PS::S32 i=0; i<neighbor.number; i++ ) n_list.push_back(list[i].id);
+        //std::copy(list.begin(),list.end(),n_list.begin());
     }
+    void copyList(NeighborId * list){
+        n_list.clear();
+        n_list.reserve(neighbor.number);
+        for ( PS::S32 i=0; i<neighbor.number; i++ ) n_list.push_back(list[i].id);
+        }*/
     //void copyHardList(std::vector<PS::S32> list){
     //    n_hard_list.resize(list.size());
     //    std::copy(list.begin(),list.end(),n_hard_list.begin());
@@ -718,7 +1064,7 @@ public:
 
         r_planet = f = 0.;
         
-        clearList();
+        //clearList();
     }
     FPHard(const FPHard & fp) : FPGrav(fp){
         x0   = fp.x0;
@@ -746,8 +1092,9 @@ public:
         
         time_c = fp.time_c;
         
-        copyList(fp.n_list);
+        //copyList(fp.n_list);
         //copyHardList(fp.n_hard_list);
+        //std::copy(fp.n_list.begin(),fp.n_list.end(),n_list.begin());
     }
     FPHard(const FPGrav & fp) : FPGrav(fp){
         x0   = v0   = 0.;
@@ -768,7 +1115,7 @@ public:
         time_c = fp.time;
         time = 0;
         
-        clearList();
+        //clearList();
     }
     FPHard &operator=(const FPHard & fp){
         FPGrav::operator=(fp);
@@ -798,8 +1145,9 @@ public:
             
             time_c = fp.time_c;
             
-            copyList(fp.n_list);
+            //copyList(fp.n_list);
             //copyHardList(fp.n_hard_list);
+            //std::copy(fp.n_list.begin(),fp.n_list.end(),n_list.begin());
         }
         return *this;
     }
@@ -824,7 +1172,7 @@ public:
             time_c = fp.time;
             time = 0;
 
-            clearList();
+            //clearList();
         }
         return *this;
     }
@@ -1103,10 +1451,10 @@ void calcRandomVel(Tpsys & pp,
             PS::F64 ddr  = r_min + (j+0.5)*dr - sqrt(r2);
             PS::F64 expr = exp(-ddr*ddr * drinv*drinv);
             v_dispi += v_disp_glb[j] * expr;
-            ni      += (v_disp_glb[j] > 0) ? expr : 0.;
+            ni      += (n_ptcl_glb[j] > 0) ? expr : 0.;
         }
         pp[i].v_disp = v_dispi / ni;
-        assert ( pp[i].v_disp > 0. ); 
+        assert ( pp[i].v_disp >= 0. ); 
     } 
 }
 

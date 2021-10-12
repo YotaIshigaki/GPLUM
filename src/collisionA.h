@@ -56,6 +56,18 @@ class Collision0{
     //static PS::F64 f;
     static PS::F64 m_min;
 
+    static void readParameter(std::string name,
+                              std::string value){
+        if ( name == "m_min" ) m_min = getvalue(value, M_MKS, M_CGS);
+    }
+    static void broadcastParameter(){
+        PS::Comm::broadcast(&m_min, 1);
+    }
+    static void showParameter(std::ostream & fout = std::cout) {
+        fout << std::scientific << std::setprecision(15)
+             << "m_min         = " << m_min << "\t(" << m_min*M_CGS << " g)" << std::endl;
+    }
+
     PS::S32 getNumberOfFragment() const { return n_frag; }
     PS::S64 getFragmentID() const { return id_frag; }
     PS::S32 getFragmentIDCluster() const { return id_c_frag; }
@@ -130,9 +142,6 @@ class Collision0{
            << std::endl;
     }
 
-    static void readParameter(std::string name,
-                              std::string value){}
-    static void showParameter(std::ostream & fout = std::cout) {}
 };
 
 PS::F64 Collision0::m_min = 9.426627927538057e-12;
@@ -660,6 +669,7 @@ inline void Collision0::setNeighbors(Tpsys & pp)
     ///////////////////////
     /*   Set Neighbors   */
     ///////////////////////
+    for ( PS::S32 i=0; i<n_frag; i++ ) pp[id_c_frag + i].neighbor.number = pp[id_c_imp].neighbor.number;
     /*
     for ( PS::S32 i=0; i<n_frag; i++ ){
         PS::S32 id_f = id_c_frag + i;

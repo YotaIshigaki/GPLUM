@@ -1,12 +1,20 @@
 #pragma once
 
+#define N_PROC_64 256
+
+#ifdef USE_SIMPLEMAP
+#include "simplemap.hpp"
+#endif
 class ExPair{
 public:
-    PS::S64 id_in;
-    PS::S64 id_out;
+    //PS::S64 id_in;
+    //PS::S64 id_out;
+    PS::S64 id_in_rank_local;
+    PS::S64 id_out_rank_local;
     PS::S64 id_cluster;
     
-    PS::S32 * rank_list;
+    //PS::S32 * rank_list;
+    PS::S64 rank_list[N_PROC_64];
     
     static PS::S32 size;
     static PS::S32 rem;
@@ -15,7 +23,7 @@ public:
     static void initialize() {
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         
-        n_bit = 8 * sizeof(PS::S32);
+        n_bit = 8 * sizeof(PS::S64);
         size = (PS::S32)std::ceil((PS::F64)n_proc/n_bit);
         rem  = n_bit*size - n_proc;
     }
@@ -23,36 +31,43 @@ public:
     
     ExPair(){
         //PS::S32 myrank = PS::Comm::getRank();
-        id_in = id_out = id_cluster = 0;
+        //id_in = id_out = id_cluster = 0;
+        id_in_rank_local = id_out_rank_local = id_cluster = 0;
         
-        rank_list = new PS::S32[size];
+        //rank_list = new PS::S32[size];
         for ( PS::S32 i=0; i<size; i++ ) rank_list[i] = 0;
         //setFlag(myrank);
     }
-    ExPair(PS::S64 id_in0,
-           PS::S64 id_out0,
+    ExPair(PS::S32 id_in_rank,
+           PS::S32 id_in_local,
+           PS::S32 id_out_rank,
+           PS::S32 id_out_local,
            PS::S64 id_cluster0){
         //PS::S32 myrank = PS::Comm::getRank();
-        id_in  = id_in0;
-        id_out = id_out0;
+        //id_in  = id_in0;
+        //id_out = id_out0;
+        id_in_rank_local  = ((PS::S64)id_in_rank) * ((PS::S64)1<<32) + (PS::S64)id_in_local;
+        id_out_rank_local = ((PS::S64)id_out_rank)* ((PS::S64)1<<32) + (PS::S64)id_out_local;
         id_cluster = id_cluster0;
-
-        rank_list = new PS::S32[size];
+        assert(id_in_rank > -1 && id_in_local > -1 );
+        assert(id_out_rank > -1 && id_out_local > -1 );
+        
+        //rank_list = new PS::S32[size];
         for ( PS::S32 i=0; i<size; i++ ) rank_list[i] = 0;
         //setFlag(myrank);
     }
     ExPair(const ExPair & ep){
-        id_in  = ep.id_in;
-        id_out = ep.id_out;
+        id_in_rank_local  = ep.id_in_rank_local;
+        id_out_rank_local = ep.id_out_rank_local;
         id_cluster = ep.id_cluster;
 
-        rank_list = new PS::S32[size];
+        //rank_list = new PS::S32[size];
         for ( PS::S32 i=0; i<size; i++ ) rank_list[i] = ep.rank_list[i];
     }
     ExPair &operator=(const ExPair & ep){
         if ( this != &ep ){
-            id_in  = ep.id_in;
-            id_out = ep.id_out;
+            id_in_rank_local  = ep.id_in_rank_local;
+            id_out_rank_local = ep.id_out_rank_local;
             id_cluster = ep.id_cluster;
         
             for ( PS::S32 i=0; i<size; i++ ) this->rank_list[i] = ep.rank_list[i];
@@ -60,15 +75,21 @@ public:
         return *this;
     }
     
-    ~ExPair(){
-        delete [] rank_list;
-    }
+    //~ExPair(){
+    //    delete [] rank_list;
+    //}
 
-    PS::S64 getId() const {
-        return id_in;
-    }
-    std::pair<PS::S64,PS::S64> getPair() const {
-        return std::make_pair(id_in, id_out);
+    PS::S32 getIdLocal() const { return (PS::S32)(id_in_rank_local % ((PS::S64)1<<32)); }
+    PS::S32 getRank() const { return (PS::S32)(id_in_rank_local / ((PS::S64)1<<32)); }
+    PS::S32 getIdJLocal() const { return (PS::S32)(id_out_rank_local % ((PS::S64)1<<32)); }
+    PS::S32 getJRank() const { return (PS::S32)(id_out_rank_local / ((PS::S64)1<<32)); }
+    
+    std::pair<std::pair<PS::S32,PS::S32>, std::pair<PS::S32,PS::S32> > getPair() const {
+        PS::S32 id_in_local  = (PS::S32)(id_in_rank_local  % ((PS::S64)1<<32));
+        PS::S32 rank_in      = (PS::S32)(id_in_rank_local  / ((PS::S64)1<<32));
+        PS::S32 id_out_local = (PS::S32)(id_out_rank_local % ((PS::S64)1<<32));
+        PS::S32 rank_out     = (PS::S32)(id_out_rank_local / ((PS::S64)1<<32));
+        return std::make_pair(std::make_pair(rank_in, id_in_local), std::make_pair(rank_out, id_out_local));
     }
     PS::S64 getIdCluster() const {
         return id_cluster;
@@ -77,16 +98,16 @@ public:
         return id_cluster = id_cluster0;
     }
 
-    PS::S32 input(PS::S32 * inp){
-        id_in  = inp[1];
-        id_out = inp[0];
+    PS::S32 input(PS::S64 * inp){
+        id_in_rank_local  = inp[1];
+        id_out_rank_local = inp[0];
         id_cluster = inp[2];
         for ( PS::S32 i=0; i<size; i++ ) rank_list[i] = inp[i+3];
         return size+3;
     }
-    PS::S32 output(PS::S32 * outp){
-        outp[0] = id_in;
-        outp[1] = id_out;
+    PS::S32 output(PS::S64 * outp){
+        outp[0] = id_in_rank_local;
+        outp[1] = id_out_rank_local;
         outp[2] = id_cluster;
         for ( PS::S32 i=0; i<size; i++ ) outp[i+3] = rank_list[i];
         return size+3;
@@ -94,17 +115,17 @@ public:
 
     bool checkFlag(const PS::S32 i) const {
         PS::S32 n = i / n_bit;
-        PS::S32 ii = i - n_bit * n;
+        PS::S32 ii = i % n_bit;
         return rank_list[n] & (1<<ii);
     }
     void setFlag(const PS::S32 i) {
         PS::S32 n = i / n_bit;
-        PS::S32 ii = i - n_bit * n;
+        PS::S32 ii = i % n_bit;
         rank_list[n] |= (1<<ii);
     }
     void unsetFlag(const PS::S32 i) {
         PS::S32 n = i / n_bit;
-        PS::S32 ii = i - n_bit * n;
+        PS::S32 ii = i % n_bit;
         rank_list[n] &= ~(1<<ii);
     }
     void resetFlag() {
@@ -138,9 +159,10 @@ public:
         return check;
     }
 
-    void show(){
+    void dump(){
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
-        std::cout << PS::Comm::getRank() << "\t" << id_in << "\t" << id_out << "\t" << id_cluster << "\t";
+        std::cout << PS::Comm::getRank() << "\t" << getRank() << "\t" << getIdLocal() << "\t"
+                  << getJRank() << "\t" << getIdJLocal() << id_cluster << "\t";
         for ( PS::S32 i=0; i<n_proc; i++ ) std::cout << (checkFlag(i));
         std::cout << std::endl;
     }
@@ -151,41 +173,78 @@ PS::S32 ExPair::rem;
 PS::S32 ExPair::n_bit;
 
 
+class NeighborId{
+public:
+    PS::S64 id;
+    PS::S32 rank;
+    PS::S32 id_local;
+
+    NeighborId() {
+        id       = -1;
+        id_local = -1;
+        rank     = -1;
+    }
+    NeighborId(PS::S32 myrank,
+               PS::S32 id_loc) {
+        id       = -1;
+        rank     = myrank;
+        id_local = id_loc;
+    }
+    NeighborId(PS::S64 id_0,
+               PS::S32 myrank,
+               PS::S32 id_loc) {
+        id       = id_0;
+        rank     = myrank;
+        id_local = id_loc;
+    }
+};
+
 class NeighborList{
 public:
-    std::vector<std::vector<PS::S64> > n_list;
-    std::map<PS::S64, PS::S32> id_map;
+    //std::vector<std::vector<PS::S64> > n_list
+    std::vector<std::vector<NeighborId> > n_list;
+    std::vector<std::vector<NeighborId> > n_list_tmp;
+    //#ifndef USE_SIMPLEMAP    
+    //std::map<PS::S64, PS::S32> id_map;
+    //#else
+    //SimpleMapLib::Map<PS::S64, PS::S32> id_map;
+    //#endif
+
+    std::vector<std::vector<EPNgb> > ngb_send;
+    std::vector<std::vector<EPNgb> > ngb_recv;
 
     std::vector<PS::S32> with_neighbor_list;
     std::vector<std::pair<PS::S32, PS::S32> > pair_list;
     
-    std::vector<std::pair<PS::S64,PS::S64> > ex_list;
+    //std::vector<std::pair<PS::S64,PS::S64> > ex_list;
+    std::vector<std::pair<PS::S32, std::pair<PS::S32, PS::S32> > > ex_list;
     std::vector<std::pair<PS::S32,PS::S32> > ex_adr_list;
     std::vector<PS::S32> connected_list;
     std::vector<std::vector<ExPair> > ex_data;
-    std::map<std::pair<PS::S32,PS::S32>, std::pair<PS::S32, PS::S32> > ex_data_map;
+    //std::map<std::pair<PS::S32,PS::S32>, std::pair<PS::S32, PS::S32> > ex_data_map;
 
     std::vector<std::vector<PS::S32> > recv_list;
     std::vector<std::vector<PS::S32> > send_list;
     std::vector<PS::S32> recv_rank_list;
     std::vector<PS::S32> send_rank_list;
 
-    std::vector<std::vector<PS::S32> > ex_data_send;
-    std::vector<std::vector<PS::S32> > ex_data_recv;
+    std::vector<std::vector<PS::S64> > ex_data_send;
+    std::vector<std::vector<PS::S64> > ex_data_recv;
 
-    std::vector<PS::S64> & operator[](PS::S32 i){ return n_list[i]; }
+    std::vector<NeighborId> & operator[](PS::S32 i){ return n_list[i]; }
     
     NeighborList() {
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         
         n_list.clear();
-        id_map.clear();
+        n_list_tmp.clear();
+        //id_map.clear();
         with_neighbor_list.clear();
         pair_list.clear();
         ex_list.clear();
         ex_adr_list.clear();
         connected_list.clear();
-        ex_data_map.clear();
+        //ex_data_map.clear();
         recv_rank_list.clear();
         send_rank_list.clear();
         ex_data_send.clear();
@@ -194,12 +253,18 @@ public:
         ex_data.resize(n_proc);
         recv_list.resize(n_proc);
         send_list.resize(n_proc);
+        ngb_send.resize(n_proc);
+        ngb_recv.resize(n_proc);
+        ex_data_send.resize(n_proc);
+        ex_data_recv.resize(n_proc);
         
 #pragma omp parallel for
         for (PS::S32 i=0; i<n_proc; i++){
             ex_data[i].clear();
             recv_list[i].clear();
             send_list[i].clear();
+            ngb_send[i].clear();
+            ngb_recv[i].clear();
         }
       
         ExPair::initialize();
@@ -211,32 +276,50 @@ public:
         const PS::S32 n_loc  = pp.getNumberOfParticleLocal();
 
         n_list.clear();
+        n_list_tmp.clear();
         //id_map.clear();
         with_neighbor_list.clear();
         pair_list.clear();
         ex_list.clear();
         ex_adr_list.clear();
         connected_list.clear();
-        ex_data_map.clear();
+        //ex_data_map.clear();
         recv_rank_list.clear();
         send_rank_list.clear();
-        ex_data_send.clear();
-        ex_data_recv.clear();
             
 #pragma omp parallel for
         for ( PS::S32 i=0; i<n_proc; i++ ){
             ex_data[i].clear();
             recv_list[i].clear();
             send_list[i].clear();
+            ngb_send[i].clear();
+            ngb_recv[i].clear();
         }
         
         n_list.resize(n_loc);
+        n_list_tmp.resize(n_loc);
 #pragma omp parallel for
-        for(PS::S32 i=0; i<n_loc; i++) n_list.at(i).clear();
+        for(PS::S32 i=0; i<n_loc; i++) {
+            n_list[i].clear();
+            n_list_tmp[i].clear();
+            n_list_tmp[i].resize(8);
+        }
     }
 
     ExPair & getExData(std::pair<PS::S32, PS::S32> adr) {
         return ex_data[adr.first][adr.second];
+    }
+    ExPair & getExData(const PS::S32 i_id_loc,
+                       const PS::S32 j_rank,
+                       const PS::S32 j_id_loc) {
+        const PS::U32 n_size = ex_data[j_rank].size();
+        
+        PS::S32 i = 0;
+        while ( ex_data[j_rank][i].getIdLocal() != i_id_loc
+                || ex_data[j_rank][i].getIdJLocal() != j_id_loc ) i++;
+        assert ( i < n_size );
+
+        return ex_data[j_rank][i];
     }
     
     PS::S32 getNumberOfParticlesWithNeighbor() const { return with_neighbor_list.size(); }
@@ -247,31 +330,89 @@ public:
     PS::S32 getNumberOfRankConnected() const { return connected_list.size(); }
     PS::S32 getNumberOfPairConnected(const PS::S32 ii) const { return ex_data[connected_list.at(ii)].size(); }
 
+    PS::U32 getNumberOfNeighbor(const PS::S32 i) const {return n_list[i].size(); }
+    PS::U32 getNumberOfTemporaryNeighbor(const PS::S32 i) const {return n_list_tmp[i].size(); }
+
+    EPNgb & getNeighborInfo(PS::S32 rank,
+                        PS::S32 id_loc) {
+        PS::S32 n = ngb_recv[rank].size();
+        PS::S32 i = 0;
+        bool flag = true;
+        while ( ngb_recv[rank][i].id_local != id_loc ) i++;
+        assert( i < n );
+        //assert( ngb_recv[rank][i].id_local == id_loc );
+        return ngb_recv[rank][i] ;
+    }
+
+    template <class Tpsys, class Tptree>
+    void makeTemporaryNeighborList(Tpsys & pp,
+                                   Tptree & tree_grav) {
+        const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+        
+#pragma omp parallel for
+        for (PS::S32 i=0; i<n_loc; i++){
+            PS::S32  neighbor = pp[i].neighbor.number - 1;
+            n_list_tmp[i].resize(neighbor);
+            assert( neighbor >= 0 );
+            
+            if ( neighbor <= 8 ) {
+                for (PS::S32 j=0; j<neighbor; j++) {
+                    assert(  pp[i].neighbor.getId(j) > -1 );
+                    PS::S32 rank   = pp[i].neighbor.getRank(j);
+                    PS::S32 id_loc = pp[i].neighbor.getId(j);
+
+                    //#pragma omp critical
+                    //{
+                    //n_list_tmp[i].push_back(NeighborId(rank, id_loc));
+                    n_list_tmp[i][j] = NeighborId(rank, id_loc);
+                    //}
+                } 
+                
+            } else if ( neighbor > 8 ) {
+                PS::S32 n_ngb = 0;
+                EPJ_t* next = NULL;
+                n_ngb = tree_grav.getNeighborListOneParticle(pp[i], next);
+                
+                for ( PS::S32 j=0; j<n_ngb; j++ ){
+                    PS::S32 rank   = next[j].myrank;
+                    PS::S32 id_loc = next[j].id_local;
+                    if ( pp[i].myrank == rank && pp[i].id_local == id_loc ) continue;
+                    
+                    //#pragma omp critical
+                    //{
+                    //n_list_tmp[i].push_back(NeighborId(rank, id_loc));
+                     n_list_tmp[i][j] = NeighborId(rank, id_loc);
+                    //}
+                }
+            }
+        }
+    }
+
     template <class Tpsys>
     void addNeighbor(Tpsys & pp,
                      PS::S32 i,
                      PS::S64 j_id,
                      PS::S32 j_rank,
-                     PS::S32 j_id_local=-1) {
-        n_list[i].push_back(j_id);
-        pp[i].neighbor ++;
+                     PS::S32 j_id_local) {
+        n_list[i].push_back(NeighborId(j_id, j_rank, j_id_local));
+        pp[i].neighbor.number ++;
 
         pp[i].id_cluster = std::min(pp[i].id_cluster, j_id);
 
         if ( j_rank != pp[i].myrank ) {
 #pragma omp critical
             {
-                ex_list.push_back(std::make_pair(pp[i].id, j_id));
+                ex_list.push_back(std::make_pair(i, std::make_pair(j_rank, j_id_local)));
                 ex_adr_list.push_back(std::make_pair(j_rank, ex_data.at(j_rank).size()));
-                ex_data_map[std::make_pair(pp[i].id, j_id)] = std::make_pair(j_rank, ex_data.at(j_rank).size());
-                ExPair ex_pair(pp[i].id, j_id, pp[i].id_cluster);
+                //ex_data_map[std::make_pair(pp[i].id, j_id)] = std::make_pair(j_rank, ex_data.at(j_rank).size());
+                ExPair ex_pair(pp[i].myrank, i, j_rank, j_id_local, pp[i].id_cluster);
                 ex_pair.setFlag(pp[i].myrank);
                 ex_pair.setFlag(j_rank);
                 ex_data.at(j_rank).push_back(ex_pair);
             }
             pp[i].inDomain = false;
         } else {
-            if ( j_id_local < 0 ) j_id_local = id_map.at(j_id);
+            //if ( j_id_local < 0 ) j_id_local = id_map.at(j_id);
             if ( i<j_id_local ) {
 #pragma omp critical
                 {
@@ -282,58 +423,164 @@ public:
     }
 
     template <class Tpsys>
+    void exchangeNeighborInfo(Tpsys & pp) {
+        const PS::S32 n_proc = PS::Comm::getNumberOfProc();
+        const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+        PS::S32 rank_c[n_proc];
+        //PS::S32 n_nei = 0;
+        PS::S32 n_send = 0;      
+        for (PS::S32 i=0; i<n_proc; i++) rank_c[i] = -1;
+        
+#pragma omp parallel for
+        for(PS::S32 i=0; i<n_loc; i++){
+            PS::U32 n_size = getNumberOfTemporaryNeighbor(i);
+            for ( PS::S32 j=0; j<n_size; j++ ){
+                PS::S32 rank   = n_list_tmp[i][j].rank;
+                PS::S32 id_loc = n_list_tmp[i][j].id_local;
+                if ( pp[i].myrank != rank ){
+                    rank_c[rank] = 1;
+#pragma omp critical
+                    {
+                        //ngb_send[rank].push_back(EPNgb(id_loc));
+                        ngb_send[rank].push_back(EPNgb(pp[i]));
+                    }
+                } 
+            }
+        }
+
+#pragma omp parallel for
+        for(PS::S32 i=0; i<n_proc; i++){
+            if ( rank_c[i] > -1 ) {
+                rank_c[i] = n_send;
+                n_send ++;
+                assert( i != PS::Comm::getRank() );
+                
+                ngb_recv[i].resize(ngb_send[i].size());
+            }
+        }
+        
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+        if ( n_send ) {
+            MPI_Request req0[n_send],  req1[n_send];
+            MPI_Status  stat0[n_send], stat1[n_send];
+            for ( PS::S32 i=0; i<n_proc; i++ ) if ( rank_c[i] > -1 ){
+                    PS::S32 ii = rank_c[i];
+                    PS::S32 rank = i;
+                    PS::S32 n_size = ngb_send[i].size();
+                    PS::S32 TAG = 1024;
+                    assert( n_size > 0 );
+                    
+                    MPI_Isend(&ngb_send[i][0], n_size, PS::GetDataType(ngb_send[i][0]), rank, TAG, MPI_COMM_WORLD, &req0[ii]);
+                    MPI_Irecv(&ngb_recv[i][0], n_size, PS::GetDataType(ngb_recv[i][0]), rank, TAG, MPI_COMM_WORLD, &req1[ii]);
+                }
+            //MPI_Waitall(n_send, req0, stat0);
+            MPI_Waitall(n_send, req1, stat1);
+        }
+#else
+        for ( PS::S32 i=0; i<n_proc; i++ ) assert ( ngb_send[i].size() == 0 );
+#endif
+
+        /*
+#pragma omp parallel for
+        for(PS::S32 i=0; i<n_proc; i++){
+            PS::S32 n_size = ngb_recv[i].size();
+            for(PS::S32 j=0; j<n_size; j++){
+                ngb_recv[i][j].copyNeighbor(pp);
+            }
+        }
+
+#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+        if ( n_send ) {
+            MPI_Request req0[n_send],  req1[n_send];
+            MPI_Status  stat0[n_send], stat1[n_send];
+            for ( PS::S32 i=0; i<n_proc; i++ ) if ( rank_c[i] > -1 ){
+                    PS::S32 ii = rank_c[i];
+                    PS::S32 rank = i;
+                    PS::S32 n_size = ngb_send[i].size();
+                    PS::S32 TAG = 1025;
+                    assert( n_size > 0 );
+                    
+                    MPI_Isend(&ngb_recv[i][0], n_size, PS::GetDataType(ngb_recv[i][0]), rank, TAG, MPI_COMM_WORLD, &req0[ii]);
+                    MPI_Irecv(&ngb_send[i][0], n_size, PS::GetDataType(ngb_send[i][0]), rank, TAG, MPI_COMM_WORLD, &req1[ii]);
+                }
+            //MPI_Waitall(n_send, req0, stat0);
+            MPI_Waitall(n_send, req1, stat1);
+        }
+#else
+        for ( PS::S32 i=0; i<n_proc; i++ ) assert ( ngb_send[i].size() == 0 );
+#endif 
+        */ 
+    }
+    
+    template <class Tpsys>
     void checkNeighbor(Tpsys & pp) {
         const PS::S32 n_loc = n_list.size();
         bool check = true;
         PS::S32 nei_tot = 0;
         
-        for ( PS::S32 i=0; i<n_loc; i++ ) {
-            if ( !pp[i].isDead )
-                assert ( id_map.at(pp[i].id) == i );
-        }
+        //for ( PS::S32 i=0; i<n_loc; i++ ) {
+        //    if ( !pp[i].isDead )
+                //assert ( id_map.at(pp[i].id) == i );
+        //}
 
         for ( PS::S32 i=0; i<n_loc; i++ ) {
             PS::S32 n_ngb = n_list.at(i).size();
-            //if ( pp[i].neighbor )
+            //if ( pp[i].neighbor.number )
             //   std::cout << pp[i].id << "\t";
             nei_tot += n_ngb;
             
             for ( PS::S32 jj=0; jj<n_ngb; jj++ ) {
-                PS::S32 j_id = n_list.at(i).at(jj);
-                //if ( pp[i].neighbor )
+                PS::S64 j_id = n_list.at(i).at(jj).id;
+                //if ( pp[i].neighbor.number )
                 //    std::cout << j_id << " ";
-                auto itr = id_map.find(j_id);
-                if ( itr == id_map.end() ) continue;
-                PS::S32 j    = itr->second;
+                //auto itr = id_map.find(j_id);
+                //if ( itr == id_map.end() ) continue;
+                //#ifndef USE_SIMPLEMAP		
+                //                PS::S32 j    = itr->second;
+                //#else		
+                //                PS::S32 j    = id_map.second(itr);
+                //#endif
+                PS::S32 j_rank = n_list.at(i).at(jj).rank;
+                PS::S32 j      = n_list.at(i).at(jj).id_local;
                 PS::S32 n_ngb_j = n_list.at(j).size();
+                if ( j_rank != pp[i].myrank ) continue;
 
                 PS::S32 n_p = 0;
-                for ( PS::S32 k=0; k<n_ngb_j; k++ ) {
-                    PS::S32 k_id = n_list.at(j).at(k);
-                    auto itr1 = id_map.find(k_id);
+                for ( PS::S32 kk=0; kk<n_ngb_j; kk++ ) {
+                    PS::S64 k_id = n_list.at(j).at(kk).id;
+                    /*                    auto itr1 = id_map.find(k_id);
                     if ( itr1 == id_map.end() ) continue;
-                    if ( (itr1->second) == i ) n_p ++ ;
+#ifndef USE_SIMPLEMAP		    
+		    auto ss = itr1->second;
+#else		    
+		    auto ss = id_map.second(itr1);
+#endif		    
+                    */
+                    PS::S32 k_rank = n_list.at(j).at(kk).rank;
+                    PS::S32 k = n_list.at(j).at(kk).id_local;
+                    if ( k_rank != pp[j].myrank ) continue;
+
+                    if ( k == i ) n_p ++ ;
                 }
-                if ( n_p != 1 ) {
-                    std::cout << i << "\t" << pp[i].id << "\t" << j << "\t" << j_id << std::endl;
+                if ( n_p != 1 && n_ngb > 0 ) {
+                    std::cout << i << "\t" << pp[i].id << "\t" << pp[i].myrank << "\t" << j << "\t" << j_id << "\t" << j_rank << std::endl;
                     std::cout << "Neighbor of " << pp[i].id << ": ";
-                    for (PS::S32 k=0; k<n_list.at(i).size(); k++) std::cout << n_list.at(i).at(k) << "\t";
+                    for (PS::S32 k=0; k<n_list.at(i).size(); k++) std::cout << n_list.at(i).at(k).id << "\t";
                     std::cout << std::endl;
                     std::cout << "Neighbor of " << j_id << ": ";
-                    for (PS::S32 k=0; k<n_list.at(j).size(); k++) std::cout << n_list.at(j).at(k) << "\t";
+                    for (PS::S32 k=0; k<n_list.at(j).size(); k++) std::cout << n_list.at(j).at(k).id << "\t";
                     std::cout << std::endl;
-                    check = check && false;
                     check = check && false;
                 }
             }
-            //if ( pp[i].neighbor )
+            //if ( pp[i].neighbor.number )
             //    std::cout << std::endl;
         }
 
         PS::S32 nei_tot_glb = PS::Comm::getSum(nei_tot);
         assert ( nei_tot_glb%2 == 0 );
 
-        if ( false ) {
+        if ( !check ) {
             PS::Abort();
         }
     }
@@ -353,8 +600,8 @@ public:
     void resizeExDataBuffer() {
         PS::S32 n_send = connected_list.size();
         
-        ex_data_send.resize(n_send);
-        ex_data_recv.resize(n_send);
+        //ex_data_send.resize(n_send);
+        //ex_data_recv.resize(n_send);
         for ( PS::S32 i=0; i<n_send; i++ ) {
             PS::S32 n_size = ex_data[connected_list.at(i)].size() * ExPair::getSize();
             ex_data_send.at(i).resize(n_size);
@@ -362,19 +609,35 @@ public:
         }
     }
 
-    template <class Tpsys>
+    /*    template <class Tpsys>
     void makeIdMap(Tpsys & pp){
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-        id_map.clear();
+        //id_map.clear();
         //assert( (PS::S32)(n_list.size()) == n_loc );
-        
+#ifdef USE_SIMPLEMAP
+	id_map.resize(n_loc);
+#pragma omp parallel for schedule(static)
+#endif	
         for(PS::S32 i=0; i<n_loc; i++){
-            //assert( pp[i].neighbor == (PS::S32)(n_list[i].size()) );
+            //assert( pp[i].neighbor.number == (PS::S32)(n_list[i].size()) );
             if ( !pp[i].isDead ) {
+#ifndef USE_SIMPLEMAP
                 id_map[pp[i].id] = i;
-            }
+#else
+		id_map.set(pp[i].id, i);
+#endif		
+            }else{
+#ifdef USE_SIMPLEMAP
+		id_map.set(-1, i);
+#endif		
+	    }
+		
         }
+#ifdef USE_SIMPLEMAP
+	id_map.makemap();
+#endif	
     }
+    */
 
 #if 1
     template <class Tpsys>
@@ -408,7 +671,8 @@ public:
             for(PS::S32 ii=0; ii<n_wngb; ii++){
                 PS::S32 i = with_neighbor_list.at(ii);
                 for(PS::S32 j=0; j<n_out; j++){
-                    PS::S32 i_out = id_map.at(ex_list.at(j).first);
+                    //PS::S32 i_out = id_map.at(ex_list.at(j).first);
+                    PS::S32 i_out = ex_list[j].first;
                     PS::S32 id_cluster_out = pp[i_out].id_cluster;
                     if( pp[i].id_cluster == id_cluster_out ) pp[i].inDomain = false;
                 }
@@ -430,14 +694,22 @@ public:
             for(PS::S32 i=0; i<n_loc; i++){
                 PS::S64 j_id = 0;
                 PS::S32 nei = 0;
-                nei = pp[i].neighbor;
+                nei = pp[i].neighbor.number;
                 id_cluster[i] = pp[i].id_cluster;
                 
                 if(nei == 0) continue;
                 for(PS::S32 j=0; j<nei; j++){
-                    auto itr = id_map.find(n_list[i].at(j));
+                    /*auto itr = id_map.find(n_list[i].at(j));
                     if ( itr == id_map.end() ) continue;
+#ifndef USE_SIMPLEMAP		
                     j_id = itr->second;
+#else		    
+                    j_id = id_map.second(itr);
+                    #endif		    */
+                    PS::S32 j_rank = n_list[i][j].rank;
+                    PS::S32 j_id   = n_list[i][j].id_local;
+                    if ( j_rank != pp[i].myrank ) continue;
+                    
                     j_id_cluster = pp[j_id].id_cluster;
                     if( id_cluster[i] > j_id_cluster ) id_cluster[i] = j_id_cluster;
                 }
@@ -473,10 +745,11 @@ public:
 
 #pragma omp parallel for
         for ( PS::S32 j=0; j<n_out; j++ ){
-            std::pair<PS::S64,PS::S64> pair = ex_list.at(j);
+            //std::pair<PS::S64,PS::S64> pair = ex_list.at(j);
+            PS::S32 ii = ex_list.at(j).first;
             std::pair<PS::S32,PS::S32> ex_adr = ex_adr_list.at(j);
-            assert( getExData(ex_adr).getId() == pair.first );
-            getExData(ex_adr).setIdCluster(pp[id_map.at(pair.first)].id_cluster);
+            //assert( getExData(ex_adr).getId() == pair.first );
+            getExData(ex_adr).setIdCluster(pp[ii].id_cluster);
         }
         
         for ( PS::S32 j=0; j<n_out; j++ ){
@@ -504,16 +777,16 @@ public:
         //PS::S32** & ex_data_recv){
         //const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         const PS::S32 n_send = connected_list.size();
-        //PS::S32 ** ex_data_send = new PS::S32*[n_send];
-        //PS::S32 ** ex_data_recv = new PS::S32*[n_send];
+        //ex_data_send.resize(n_send);
+        //ex_data_recv.resize(n_send);
         
-        //for ( PS::S32 ii=0; ii<n_send; ii++ ) {
-        //    PS::S32 i = connected_list.at(ii);
-        //    PS::S32 n_size = ex_data[i].size() * ExPair::getSize();
+        /*for ( PS::S32 ii=0; ii<n_send; ii++ ) {
+            PS::S32 i = connected_list.at(ii);
+            PS::S32 n_size = ex_data[i].size() * ExPair::getSize();
             
-        //    ex_data_send[ii] = new PS::S32[n_size];
-        //    ex_data_recv[ii] = new PS::S32[n_size];
-        //}
+            ex_data_send[ii].resize(n_size);
+            ex_data_recv[ii].resize(n_size);
+            }*/
 #pragma omp parallel for
         for ( PS::S32 ii=0; ii<n_send; ii++ ) {
             PS::S32 i = connected_list.at(ii);
@@ -527,7 +800,7 @@ public:
 
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         MPI_Request req0[n_send],  req1[n_send];
-        MPI_Status  stat0[n_send], stat1[n_send];
+        MPI_Status  stat1[n_send];
         for ( PS::S32 ii=0; ii<n_send; ii++ ) {
             PS::S32 i = connected_list.at(ii);
             PS::S32 n_size = ex_data[i].size() * ExPair::getSize();
@@ -535,7 +808,7 @@ public:
             MPI_Isend(&ex_data_send[ii][0], n_size, PS::GetDataType(ex_data_send[ii][0]), i, TAG, MPI_COMM_WORLD, &req0[ii]);
             MPI_Irecv(&ex_data_recv[ii][0], n_size, PS::GetDataType(ex_data_recv[ii][0]), i, TAG, MPI_COMM_WORLD, &req1[ii]);
         }
-        MPI_Waitall(n_send, req0, stat0);
+        //MPI_Waitall(n_send, req0, stat0);
         MPI_Waitall(n_send, req1, stat1);
 #else
         assert ( n_send == 0 );
@@ -554,16 +827,25 @@ public:
                 ExPair recv_pair;
                 jj += recv_pair.input(&ex_data_recv[ii][jj]);
 
-                std::pair<PS::S32,PS::S32> adr = ex_data_map.at(recv_pair.getPair());
-                assert ( adr.first == i );
-                assert ( recv_pair.getPair() == getExData(adr).getPair() );
-                bool check_1 = getExData(adr).exchange(recv_pair);
+                PS::S32 i_id_loc = recv_pair.getIdLocal();
+                PS::S32 j_rank   = recv_pair.getJRank();
+                PS::S32 j_id_loc = recv_pair.getIdJLocal();
+                ExPair & send_pair = getExData(i_id_loc, j_rank, j_id_loc);
+                assert( send_pair.getRank() == recv_pair.getRank() );
+                assert( send_pair.getIdLocal() == recv_pair.getIdLocal() );
+                bool check_1 = send_pair.exchange(recv_pair);
+
+                //std::pair<PS::S32,PS::S32> adr = ex_data_map.at(recv_pair.getPair());
+                //assert ( adr.first == i );
+                //assert ( recv_pair.getPair() == getExData(adr).getPair() );
+                //bool check_1 = getExData(adr).exchange(recv_pair);
                 check = check || check_1;
                 //getExData(adr).show();
 #pragma omp critical
                 {
-                    PS::S32 i_loc = id_map.at(getExData(adr).getId());
-                    pp[i_loc].id_cluster = std::min(pp[i_loc].id_cluster, getExData(adr).getIdCluster());
+                    //PS::S32 i_loc = id_map.at(getExData(adr).getId());
+                    PS::S32 i_loc = send_pair.getIdLocal();
+                    pp[i_loc].id_cluster = std::min(pp[i_loc].id_cluster, send_pair.getIdCluster());
                 }
             }
             
@@ -646,13 +928,13 @@ class ExParticleSystem {
     PS::S32 n_ex_ptcl_recv_tot;
     PS::S32 n_ex_nei_recv_tot;
 
-    std::vector<Tp>      ex_ptcl_send;
-    std::vector<PS::S64> ex_nei_send;
-    std::vector<Tp>      ex_ptcl_recv;
-    std::vector<PS::S64> ex_nei_recv;
+    std::vector<Tp>         ex_ptcl_send;
+    std::vector<NeighborId> ex_nei_send;
+    std::vector<Tp>         ex_ptcl_recv;
+    std::vector<NeighborId> ex_nei_recv;
 
     std::vector<std::vector<PS::S32> > ex_ptcl_send_list;
-    std::vector<PS::S64*> n_list;
+    std::vector<NeighborId*> n_list;
 
     std::vector<PS::S32> n_ex_ptcl_send;
     std::vector<PS::S32> n_ex_nei_send;
@@ -736,8 +1018,8 @@ class ExParticleSystem {
 #pragma omp critical       
                                 {
                                     n_ex_ptcl_send[jj] ++;
-                                    n_ex_nei_send[jj] += pp[i].neighbor;
-                                    assert ( pp[i].neighbor == (PS::S32)(NList.n_list[i].size()) );
+                                    n_ex_nei_send[jj] += pp[i].neighbor.number;
+                                    //assert ( pp[i].neighbor.number == (PS::S32)(NList.n_list[i].size()) );
                                     ex_ptcl_send_list[jj].push_back(i);
                                 }
                             }
@@ -818,8 +1100,8 @@ class ExParticleSystem {
                 ex_ptcl_send.at(adr_ptcl + jj) = pp[j];
                 assert( !pp[j].inDomain );
                 
-                for ( PS::S32 k=0; k<pp[j].neighbor; k++ ) {
-                    ex_nei_send.at(adr_nei + n_nei) = NList.n_list[j].at(k);
+                for ( PS::S32 k=0; k<pp[j].neighbor.number; k++ ) {
+                    ex_nei_send.at(adr_nei + n_nei) = NList.n_list[j][k];
                     n_nei ++;
                 }
             }
@@ -848,8 +1130,8 @@ class ExParticleSystem {
             MPI_Irecv(&ex_nei_recv[adr_ex_nei_recv[ii]],   n_ex_nei_recv[ii],  PS::GetDataType(ex_nei_recv[0]),
                       i, TAG+3, MPI_COMM_WORLD, &req3[ii]);
         }
-        MPI_Waitall(n_send, req0, stat0);
-        MPI_Waitall(n_send, req1, stat1);
+        //MPI_Waitall(n_send, req0, stat0);
+        //MPI_Waitall(n_send, req1, stat1);
         MPI_Waitall(n_recv, req2, stat2);
         MPI_Waitall(n_recv, req3, stat3);
 #endif
@@ -863,7 +1145,7 @@ class ExParticleSystem {
             PS::S32 n_nei    = adr_ex_nei_recv.at(ii);
             for ( PS::S32 jj=0; jj<n_data; jj++ ) {
                 n_list.at(adr_ptcl + jj) = &(ex_nei_recv.at(n_nei));
-                n_nei += ex_ptcl_recv.at(adr_ptcl + jj).neighbor;
+                n_nei += ex_ptcl_recv.at(adr_ptcl + jj).neighbor.number;
                 assert ( ex_ptcl_recv.at(adr_ptcl + jj).isSent );
             }
             if ( ii+1<n_recv ) assert ( adr_ex_nei_recv.at(ii+1) == n_nei );
@@ -893,8 +1175,8 @@ class ExParticleSystem {
         }
         MPI_Waitall(n_send, req0, stat0);
         MPI_Waitall(n_send, req1, stat1);
-        MPI_Waitall(n_recv, req2, stat2);
-        MPI_Waitall(n_recv, req3, stat3);
+        //MPI_Waitall(n_recv, req2, stat2);
+        //MPI_Waitall(n_recv, req3, stat3);
 #endif
     }
 

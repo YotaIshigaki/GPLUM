@@ -17,17 +17,23 @@ class Collision : public Collision0 {
 
     static void readParameter(std::string name,
                               std::string value){
-        if ( name == "a_frag" ){
-            a_frag = std::atof(value.c_str());
-        } else if ( name == "N_frag" ){
-            N_frag = std::atoi(value.c_str());
-        }
+        Collision0::readParameter(name, value);
+        
+        if ( name == "a_frag" ) a_frag = std::atof(value.c_str());
+        if ( name == "N_frag" ) N_frag = std::atoi(value.c_str());
+    }
+    static void broadcastParameter(){
+        Collision0::broadcastParameter();
+        
+        PS::Comm::broadcast(&a_frag, 1);
+        PS::Comm::broadcast(&N_frag, 1);
     }
     static void showParameter(std::ostream & fout = std::cout) {
+        Collision0::showParameter(fout);
+        
         fout << std::fixed<<std::setprecision(5)
              << "a_frag        = " << a_frag << std::endl
              << "N_frag        = " << N_frag << std::endl;
-             
     }
 };
 
@@ -107,32 +113,35 @@ class Collision : public Collision0 {
 
     static void readParameter(std::string name,
                               std::string value){
-        const PS::F64 L_MKS = 149597870700;
-        const PS::F64 L_CGS = 14959787070000;
-        const PS::F64 M_MKS = 1.9884e30;
-        const PS::F64 M_CGS = 1.9884e33;
-        if ( name == "N_frag" ){
-            N_frag = std::atoi(value.c_str());
-        } else if ( name == "dens_imp" ){
-            dens = getvalue(value, M_MKS/(L_MKS*L_MKS*L_MKS), M_CGS/(L_CGS*L_CGS*L_CGS));
-        } else if ( name == "c_s" ){
-            c_s = getvalue(value, 1., 1.);
-        } else if ( name == "mu_" ){
-            mu_ = getvalue(value, 1., 1.);
-        } else if ( name == "eta_" ){
-            eta_ = getvalue(value, 1., 1.);
-        } else if ( name == "eps_n" ){
-            eps_n = getvalue(value, 1., 1.);
-        } else if ( name == "eps_t" ){
-            eps_t = getvalue(value, 1., 1.);
-        } 
+        Collision0::readParameter(name, value);
+        
+        if ( name == "N_frag" ) N_frag = std::atoi(value.c_str());
+        if ( name == "dens_imp" ) dens = getvalue(value, M_MKS/(L_MKS*L_MKS*L_MKS), M_CGS/(L_CGS*L_CGS*L_CGS));
+        if ( name == "c_s" ) c_s = getvalue(value, 1., 1.);
+        if ( name == "mu_" ) mu_ = getvalue(value, 1., 1.);
+        if ( name == "eta_" ) eta_ = getvalue(value, 1., 1.);
+        if ( name == "eps_n" ) eps_n = getvalue(value, 1., 1.);
+        if ( name == "eps_t" ) eps_t = getvalue(value, 1., 1.);
+    }
+    static void broadcastParameter(){
+        Collision0::broadcastParameter();
+        
+        PS::F64 param[6] = {dens, c_s, mu_, eta_, eps_n, eps_t);
+        PS::Comm::broadcast(&N_frag, 1);
+        PS::Comm::broadcast(param, 6);
+        dens  = param[0];
+        c_s   = param[1];
+        mu_   = param[2];
+        eta_  = param[3];
+        eps_n = param[4];
+        eps_t = param[5];
     }
     static void showParameter(std::ostream & fout = std::cout) {
-        const PS::F64 L = 14959787070000;
-        const PS::F64 M = 1.9884e33;
+        Collision0::showParameter(fout);
+        
         fout << std::scientific << std::setprecision(15)
              << "N_frag        = " << N_frag << std::endl
-             << "dens_imp      = " << dens << "\t(" << dens*M/(L*L*L) << " g/cm^3)"<< std::endl
+             << "dens_imp      = " << dens << "\t(" << dens*M_CGS/(L_CGS*L_CGS*L_CGS) << " g/cm^3)"<< std::endl
              << "c_s           = " << c_s << std::endl
              << "mu_           = " << mu_ << std::endl
              << "eta_          = " << eta_ << std::endl
@@ -367,19 +376,22 @@ class Collision : public Collision0 {
 
     static void readParameter(std::string name,
                               std::string value){
-        //const PS::F64 L_MKS = 149597870700;
-        //const PS::F64 L_CGS = 14959787070000;
-        //const PS::F64 M_MKS = 1.9884e30;
-        //const PS::F64 M_CGS = 1.9884e33;
-        if ( name == "eps_n" ){
-            eps_n = getvalue(value, 1., 1.);
-        } else if ( name == "eps_t" ){
-            eps_t = getvalue(value, 1., 1.);
-        } 
+        Collision0::readParameter(name, value);
+        
+        if ( name == "eps_n" ) eps_n = getvalue(value, 1., 1.);
+        if ( name == "eps_t" ) eps_t = getvalue(value, 1., 1.); 
+    }
+    static void broadcastParameter(){
+        Collision0::broadcastParameter();
+        
+        PS::F64 param[2] = {eps_n, eps_t};
+        PS::Comm::broadcast(param, 2);
+        eps_n = param[0];
+        eps_t = param[1];
     }
     static void showParameter(std::ostream & fout = std::cout) {
-        //const PS::F64 L = 14959787070000;
-        //const PS::F64 M = 1.9884e33;
+        Collision0::showParameter(fout);
+        
         fout << std::scientific << std::setprecision(15)
              << "eps_n         = " << eps_n << std::endl
              << "eps_t         = " << eps_t << std::endl;

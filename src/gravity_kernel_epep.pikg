@@ -1,12 +1,8 @@
+EPI S32    idi:id_local
+EPI S32    ranki:myrank
 EPI F64vec xi:pos
 #ifdef USE_POLAR_COORDINATE
 EPI F64vec xi_pol:pos_pol
-#endif
-#ifdef FOR_PIKG01
-EPI S32    idi:id
-EPI S32    idi_dmmy:id_dmmy
-#else
-EPI S64    idi:id
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPI F64    routi:r_out
@@ -18,36 +14,38 @@ F32 rout
 F32 rsearch
 #endif
 
+EPJ S32    idj:id_local 
+EPJ S32    rankj:myrank
 EPJ F64vec xj:pos
 #ifdef USE_POLAR_COORDINATE
 EPJ F64vec xj_pol:pos_pol
-#endif
-#ifdef FOR_PIKG01
-EPJ S32    idj:id
-EPJ S32    idj_dmmy:id_dmmy
-#else
-EPJ S64    idj:id
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPJ F64    routj:r_out
 EPJ F64    rsearchj:r_search
 #endif
 EPJ F64    mj:mass
-EPJ F64vec vj:vel
-EPJ F64vec aj_d:acc_d
-EPJ S32    id_locj:id_local
-EPJ S32    myrankj:myrank
 
 FORCE F32vec af:acc
 FORCE F32    pf:phi
-FORCE S32    nngb:neighbor
-FORCE S32    DUMMY_:DUMMY_
-#ifdef FOR_PIKG01
-FORCE S32    idngb:id_neighbor
-FORCE S32    idngb_dmmy:id_neighbor_dmmy
-#else
-FORCE S64    idngb:id_neighbor
-#endif
+FORCE S32    nngb:neighbor__DOT__number
+FORCE S32    DUMMY_:neighbor__DOT__DUMMY_
+FORCE S32    idngb:neighbor__DOT__id_local
+FORCE S32    rankngb:neighbor__DOT__rank
+FORCE S32    idngb1:neighbor__DOT__id_local1
+FORCE S32    idngb2:neighbor__DOT__id_local2
+FORCE S32    idngb3:neighbor__DOT__id_local3
+FORCE S32    idngb4:neighbor__DOT__id_local4
+FORCE S32    idngb5:neighbor__DOT__id_local5
+FORCE S32    idngb6:neighbor__DOT__id_local6
+FORCE S32    idngb7:neighbor__DOT__id_local7
+FORCE S32    rankngb1:neighbor__DOT__rank1
+FORCE S32    rankngb2:neighbor__DOT__rank2
+FORCE S32    rankngb3:neighbor__DOT__rank3
+FORCE S32    rankngb4:neighbor__DOT__rank4
+FORCE S32    rankngb5:neighbor__DOT__rank5
+FORCE S32    rankngb6:neighbor__DOT__rank6
+FORCE S32    rankngb7:neighbor__DOT__rank7
 
 
 EPI local F32vec xiloc
@@ -85,14 +83,14 @@ rsearch2 = rsearch * rsearch * 1.1025f
 
 rij     = xjloc - xiloc
 r2_real = rij*rij + eps2
-r2      = r2_real
+//r2      = r2_real
 r2      = max(r2_real, rout2)
 
 if r2_real < rsearch2
    nngb  = nngb + 1
-   if idi != idj
-      idngb = max(idngb, idj)
-      //idngb = idj
+   if idi != idj || ranki != rankj
+      idngb   = idj + 1   
+      rankngb = rankj + 1 
    endif
 endif
 

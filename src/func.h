@@ -43,7 +43,7 @@ void calcMeanMass(Tpsys & pp,
     for (PS::S32 i=0; i<n_loc; i++ ){
         m_sum_loc += pp[i].mass;
         if ( pp[i].mass > m_max_loc ) m_max_loc = pp[i].mass;
-        nei_sum_loc += pp[i].neighbor;
+        nei_sum_loc += pp[i].neighbor.number;
     }
     m_mean = PS::Comm::getSum(m_sum_loc) / n_glb;
     m_max = PS::Comm::getMaxValue(m_max_loc);
@@ -145,7 +145,7 @@ void setIDLocalAndMyrank(Tpsys & pp,
         pp[i].isSent = false;
     }
 
-    NList.makeIdMap(pp);
+    //NList.makeIdMap(pp);
 }
 
 #ifdef USE_POLAR_COORDINATE

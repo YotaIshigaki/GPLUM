@@ -17,6 +17,47 @@ public:
     static PS::F64 ecc_hill;
     static PS::F64 inc_hill;
 
+    static void readParameter(std::string name,
+                              std::string value){
+        if ( name == "n_init" ) n_init = std::atoi(value.c_str());
+        if ( name == "m_init" ) m_init = getvalue(value, M_MKS, M_CGS);
+        if ( name == "p" ) p = getvalue(value, 1., 1.);
+        if ( name == "f_dust" ) f_dust = getvalue(value, 1., 1.);
+        if ( name == "eta_ice" ) eta_ice = getvalue(value, 1., 1.);
+        if ( name == "a_in" ) a_in = getvalue(value, L_MKS, L_CGS);
+        if ( name == "a_out" ) a_out = getvalue(value, L_MKS, L_CGS);
+        if ( name == "a_ice" ) a_ice = getvalue(value, L_MKS, L_CGS);
+        if ( name == "ecc_hill" ) ecc_hill = getvalue(value, 1., 1.);
+        if ( name == "inc_hill" ) inc_hill = getvalue(value, 1., 1.);
+    }
+    static void broadcastParameter(){
+        PS::F64 param[9] = {m_init, p, f_dust, eta_ice, a_in, a_out, a_ice, ecc_hill, inc_hill};
+        PS::Comm::broadcast(&n_init, 1);
+        PS::Comm::broadcast(param, 9);
+        m_init   = param[0];
+        p        = param[1];
+        f_dust   = param[2];
+        eta_ice  = param[3];
+        a_in     = param[4];
+        a_out    = param[5];
+        a_ice    = param[6];
+        ecc_hill = param[7];
+        inc_hill = param[8];
+    }
+    static void showParameter(std::ostream & fout = std::cout) {
+        fout << std::scientific << std::setprecision(15)
+             << "n_init        = " << n_init << std::endl
+             << "m_init        = " << m_init << "\t(" << m_init*M_CGS << " g)" << std::endl
+             << "p             = " << p << std::endl
+             << "f_dust        = " << f_dust << std::endl
+             << "eta_ice       = " << eta_ice << std::endl
+             << "a_in          = " << a_in << std::endl
+             << "a_out         = " << a_out << std::endl
+             << "a_ice         = " << a_ice << std::endl
+             << "ecc_hill      = " << ecc_hill << std::endl
+             << "inc_hill      = " << inc_hill << std::endl;
+    }
+
     static PS::F64 calcDustMass(const PS::F64 a0,
                                 const PS::F64 a1,
                                 const bool inIce) {
@@ -177,6 +218,35 @@ public:
         }
     }
 
+    static void readParameter(std::string name,
+                              std::string value){
+        if ( name == "alpha_gas" ) alpha_gas = getvalue(value, 1., 1.);
+        if ( name == "beta_gas" ) beta_gas = getvalue(value, 1., 1.);
+        if ( name == "f_gas" ) f_gas = getvalue(value, 1., 1.);
+        if ( name == "tau_gas" ) tau_gas = getvalue(value, T_MKS, T_CGS);
+        if ( name == "C_d" ) C_d = getvalue(value, 1., 1.);
+        if ( name == "mu" ) mu = getvalue(value, 1., 1.);
+    }
+    static void broadcastParameter(){
+        PS::F64 param[6] = {alpha_gas, beta_gas, f_gas, tau_gas, C_d, mu};
+        PS::Comm::broadcast(param, 6);
+        alpha_gas = param[0];
+        beta_gas  = param[1];
+        f_gas     = param[2];
+        tau_gas   = param[3];
+        C_d       = param[4];
+        mu        = param[5];
+    }
+    static void showParameter(std::ostream & fout = std::cout) {
+        fout << std::scientific << std::setprecision(15)
+             << "alpha_gas     = " << alpha_gas << std::endl
+             << "beta_gas      = " << beta_gas << std::endl
+             << "f_gas         = " << f_gas << std::endl
+             << "tau_gas       = " << tau_gas << "\t(" << tau_gas/(2.*MY_PI) << " year)" << std::endl
+             << "C_d           = " << C_d << std::endl
+             << "mu            = " << mu << std::endl;
+    }
+    
     template <class Tpsys>
     void calcGasDrag(Tpsys & pp,
                      PS::F64 time,

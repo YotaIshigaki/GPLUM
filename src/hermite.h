@@ -798,7 +798,6 @@ void timeIntegrateKepler_isolated(Tp & pi,
     u = solveKeplerEq(l, ecc);
     orbitalElement2PosVel(pi.pos, pi.vel, m_sun, ax, ecc, n, u, P, Q);
     pi.time += (time_end - time_start);
-    
     pi.phi_d  = 0.;
     pi.acc_d  = 0.;
     pi.jerk_d = 0.;

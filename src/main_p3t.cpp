@@ -23,6 +23,12 @@
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
 
 constexpr PS::F64 MY_PI = 3.14159265358979323846L;
+constexpr PS::F64 L_MKS = 149597870700;
+constexpr PS::F64 L_CGS = 14959787070000;
+constexpr PS::F64 M_MKS = 1.9884e30;
+constexpr PS::F64 M_CGS = 1.9884e33;
+constexpr PS::F64 T_MKS = 365.25*24.*60.*60./(2.*MY_PI);
+constexpr PS::F64 T_CGS = 365.25*24.*60.*60./(2.*MY_PI);
 
 #include "mathfunc.h"
 #include "kepler.h"
@@ -53,8 +59,7 @@ using FPH_t = FPHard;
 #include "read.h"
 #include "time.h"
 #include "func.h"
-#include "gravity_kernel_epep.hpp"
-#include "gravity_kernel_epsp.hpp"
+#include "gravity_kernel.hpp"
 
 #ifdef USE_INDIVIDUAL_CUTOFF
 using MY_SEARCH_MODE = PS::SEARCH_MODE_LONG_SYMMETRY;
@@ -65,6 +70,12 @@ using MY_SEARCH_MODE = PS::SEARCH_MODE_LONG_SCATTER;
 using Tree_t = PS::TreeForForce<MY_SEARCH_MODE, Force_t, EPI_t, EPJ_t, Moment_t, Moment_t, SPJ_t, PS::CALC_DISTANCE_TYPE_NEAREST_X>;
 #else
 using Tree_t = PS::TreeForForce<MY_SEARCH_MODE, Force_t, EPI_t, EPJ_t, Moment_t, Moment_t, SPJ_t, PS::CALC_DISTANCE_TYPE_NORMAL>;
+#endif
+#define MY_INTERACTION_LIST_MODE PS::MAKE_LIST
+#ifdef USE_P2P_FAST
+#define MY_EXCHANGE_LET_MODE PS::EXCHANGE_LET_P2P_FAST
+#else
+#define MY_EXCHANGE_LET_MODE PS::EXCHANGE_LET_A2A
 #endif
 
 
@@ -283,7 +294,7 @@ int main(int argc, char *argv[])
         if ( system_grav[i].id > id_next ) id_next = system_grav[i].id;
         //}
         system_grav[i].time = time_sys;
-        system_grav[i].neighbor = system_grav[i].n_cluster = 0;
+        system_grav[i].neighbor.number = system_grav[i].n_cluster = 0;
         system_grav[i].isMerged = false;
         system_grav[i].isDead = false;
         if ( system_grav[i].r_planet <= 0. ) system_grav[i].setRPlanet();
@@ -331,23 +342,16 @@ int main(int argc, char *argv[])
     /////////////////////
     Tree_t tree_grav;
     tree_grav.initialize(n_tot, param.theta, param.n_leaf_limit, param.n_group_limit);
-#ifdef USE_P2P_FAST
-    tree_grav.setExchangeLETMode(PS::EXCHANGE_LET_P2P_FAST);
-#endif
+    tree_grav.setExchangeLETMode(MY_EXCHANGE_LET_MODE);
     
 #ifdef USE_RE_SEARCH_NEIGHBOR
     for (PS::S32 i=0; i<2; i++) {
 #endif
-        tree_grav.calcForceAllAndWriteBack(
-#ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(FP_t::eps2),
-#else
-                                           CalcForceLongEPEP(FP_t::eps2, FP_t::r_out, FP_t::r_search),
-#endif
-                                           CalcForceLongEPSP(FP_t::eps2),
+        tree_grav.calcForceAllAndWriteBack(calcForceEPEPWithSearch(),
+                                           calcForceEPSP(),
                                            system_grav,
                                            dinfo,
-                                           true, PS::MAKE_LIST_FOR_REUSE, false);
+                                           true, MY_INTERACTION_LIST_MODE, false);
         //NList.initializeList(system_grav);
         if ( param.bRestart ) {
             correctForceLong(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
@@ -390,7 +394,7 @@ int main(int argc, char *argv[])
         fout_rem.open(sout_rem, std::ios::out);
     }
     //PS::Comm::barrier();
-    
+ 
     showParameter(param, time_sys);
 
     ////////////////////////////////
@@ -550,11 +554,11 @@ int main(int argc, char *argv[])
         /*   Scatter Hard   */
         //////////////////////
         system_ex.returnExParticle(NList);
-        system_ex.outputExParticleSend(system_grav, NList);       
+        system_ex.outputExParticleSend(system_grav, NList);
 #endif
         ///   Hard Part
         ////////////////////              
-   
+ 
         PS::Comm::barrier();
         wtime.end_hard = wtime.start_soft = PS::GetWtime();
         wtime.hard += wtime.hard_step = wtime.end_hard - wtime.start_hard;
@@ -575,16 +579,11 @@ int main(int argc, char *argv[])
 #endif
         system_grav.exchangeParticle(dinfo);
         setIDLocalAndMyrank(system_grav, NList);
-        tree_grav.calcForceAllAndWriteBack(
-#ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(FP_t::eps2),
-#else
-                                           CalcForceLongEPEP(FP_t::eps2, FP_t::r_out, FP_t::r_search),
-#endif
-                                           CalcForceLongEPSP(FP_t::eps2),
+        tree_grav.calcForceAllAndWriteBack(calcForceEPEPWithSearch(),
+                                           calcForceEPSP(),
                                            system_grav,
                                            dinfo,
-                                           true, PS::MAKE_LIST_FOR_REUSE, false);
+                                           true, MY_INTERACTION_LIST_MODE, false);
 #ifdef CALC_WTIME
         PS::Comm::barrier();
         wtime.calc_soft_force += wtime.calc_soft_force_step = wtime.lap(PS::GetWtime());
@@ -669,16 +668,11 @@ int main(int argc, char *argv[])
 #endif
             setIDLocalAndMyrank(system_grav, NList);
             setCutoffRadii(system_grav);
-            tree_grav.calcForceAllAndWriteBack(
-#ifdef USE_INDIVIDUAL_CUTOFF
-                                               CalcForceLongEPEP(FP_t::eps2),
-#else
-                                               CalcForceLongEPEP(FP_t::eps2, FP_t::r_out, FP_t::r_search),
-#endif
-                                               CalcForceLongEPSP(FP_t::eps2),
+            tree_grav.calcForceAllAndWriteBack(calcForceEPEPWithSearch(),
+                                               calcForceEPSP(),
                                                system_grav,
                                                dinfo,
-                                               true, PS::MAKE_LIST_FOR_REUSE, false);
+                                               true, MY_INTERACTION_LIST_MODE, false);
 #ifdef CALC_WTIME
             PS::Comm::barrier();
             PS::F64 time_tmp = wtime.lap(PS::GetWtime());
@@ -705,8 +699,7 @@ int main(int argc, char *argv[])
    
         ///   Soft Part
         ////////////////////
-
-        //for(PS::S32 i=0; i<n_loc; i++) system_grav[i].dump();
+        
 
         PS::Comm::barrier();
         wtime.now = wtime.end_soft = PS::GetWtime();
