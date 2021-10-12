@@ -330,10 +330,6 @@ PS::S32 checkParameter(Parameter & param)
 void showParameter(Parameter & param,
                    PS::F64 time_sys)
 {
-    const PS::F64 L = 14959787070000;
-    const PS::F64 M = 1.9884e33;
-    const PS::F64 T = 365.25*24.*60.*60./(2.*MY_PI);
-    
     //if ( PS::Comm::getRank() == 0 ){
     if ( PS::Comm::getRank() == PS::Comm::getNumberOfProc()-1 ){
         std::cout << "Number Of Processes:\t" << PS::Comm::getNumberOfProc() << std::endl;

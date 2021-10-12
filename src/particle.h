@@ -257,6 +257,23 @@ public:
         r_search  = 0.;
 #endif
     }
+    /*
+    EPNgb(const EPNgb & ep){
+        id_local = ep.id_local;
+        myrank   = ep.myrank;
+        id       = ep.id;
+        mass     = ep.mass;
+        pos      = ep.pos;
+        vel      = ep.vel;
+        acc_d    = ep.acc_d;
+        
+#ifdef USE_INDIVIDUAL_CUTOFF
+        r_out     = ep.r_out;
+        r_out_inv = ep.r_out_inv;
+        r_search  = ep.r_search;
+#endif
+    }
+    */
 
     /*
     EPNgb(const PS::S32 id_loc) {

@@ -331,13 +331,13 @@ public:
     PS::S32 getNumberOfPairConnected(const PS::S32 ii) const { return ex_data[connected_list.at(ii)].size(); }
 
     PS::U32 getNumberOfNeighbor(const PS::S32 i) const {return n_list[i].size(); }
-    PS::U32 getNumberOfTemporaryNeighbor(const PS::S32 i) const {return n_list_tmp[i].size(); }
+    //PS::U32 getNumberOfTemporaryNeighbor(const PS::S32 i) const {return n_list_tmp[i].size(); }
 
     EPNgb & getNeighborInfo(PS::S32 rank,
                         PS::S32 id_loc) {
+        assert( rank > -1 );
         PS::S32 n = ngb_recv[rank].size();
         PS::S32 i = 0;
-        bool flag = true;
         while ( ngb_recv[rank][i].id_local != id_loc ) i++;
         assert( i < n );
         //assert( ngb_recv[rank][i].id_local == id_loc );
@@ -352,12 +352,13 @@ public:
 #pragma omp parallel for
         for (PS::S32 i=0; i<n_loc; i++){
             PS::S32  neighbor = pp[i].neighbor.number - 1;
-            n_list_tmp[i].resize(neighbor);
+            //n_list_tmp[i].resize(neighbor);
             assert( neighbor >= 0 );
-            
-            if ( neighbor <= 8 ) {
+
+            if ( neighbor > 0 && neighbor <= 8 ) {
                 for (PS::S32 j=0; j<neighbor; j++) {
                     assert(  pp[i].neighbor.getId(j) > -1 );
+                    assert(  pp[i].neighbor.getRank(j) > -1 );
                     PS::S32 rank   = pp[i].neighbor.getRank(j);
                     PS::S32 id_loc = pp[i].neighbor.getId(j);
 
@@ -372,17 +373,18 @@ public:
                 PS::S32 n_ngb = 0;
                 EPJ_t* next = NULL;
                 n_ngb = tree_grav.getNeighborListOneParticle(pp[i], next);
+                assert( pp[i].neighbor.number == n_ngb-1 );
                 
                 for ( PS::S32 j=0; j<n_ngb; j++ ){
-                    PS::S32 rank   = next[j].myrank;
-                    PS::S32 id_loc = next[j].id_local;
+                    PS::S32 rank   = (next+j)->myrank;
+                    PS::S32 id_loc = (next+j)->id_local;
                     if ( pp[i].myrank == rank && pp[i].id_local == id_loc ) continue;
                     
-                    //#pragma omp critical
-                    //{
-                    //n_list_tmp[i].push_back(NeighborId(rank, id_loc));
-                     n_list_tmp[i][j] = NeighborId(rank, id_loc);
-                    //}
+#pragma omp critical
+                    {
+                        n_list_tmp[i].push_back(NeighborId(rank, id_loc));
+                        //n_list_tmp[i][j] = NeighborId(rank, id_loc);
+                    }
                 }
             }
         }
@@ -433,16 +435,21 @@ public:
         
 #pragma omp parallel for
         for(PS::S32 i=0; i<n_loc; i++){
-            PS::U32 n_size = getNumberOfTemporaryNeighbor(i);
+            PS::U32 n_size = pp[i].neighbor.number - 1;
             for ( PS::S32 j=0; j<n_size; j++ ){
                 PS::S32 rank   = n_list_tmp[i][j].rank;
                 PS::S32 id_loc = n_list_tmp[i][j].id_local;
+                assert( rank > -1 );
+                assert( id_loc > -1 );
                 if ( pp[i].myrank != rank ){
                     rank_c[rank] = 1;
 #pragma omp critical
                     {
                         //ngb_send[rank].push_back(EPNgb(id_loc));
                         ngb_send[rank].push_back(EPNgb(pp[i]));
+                        //EPNgb epn;
+                        //epn.copyFromFP(pp[i]);
+                        //ngb_send[rank].push_back(epn);
                     }
                 } 
             }

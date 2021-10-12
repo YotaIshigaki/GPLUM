@@ -240,10 +240,12 @@ void correctForceLong(Tpsys & pp,
             phii += pp[i].mass * r_out_inv;
             
 
-            PS::U32 n_size = NList.getNumberOfTemporaryNeighbor(i);
+            PS::U32 n_size = neighbor;
             for ( PS::S32 j=0; j<n_size; j++ ) {
                 PS::S32 rank   = NList.n_list_tmp[i][j].rank;
                 PS::S32 id_loc = NList.n_list_tmp[i][j].id_local;
+                assert( rank > -1 );
+                assert( id_loc > -1 );
                 
                 if ( pp[i].myrank == rank ){
                     epj.copyFromFP(pp[id_loc]);
@@ -356,10 +358,12 @@ void correctForceLongInitial(Tpsys & pp,
             phii += pp[i].mass * r_out_inv;
 
 
-            PS::U32 n_size = NList.getNumberOfTemporaryNeighbor(i);
+            PS::U32 n_size = neighbor;
             for ( PS::S32 j=0; j<n_size; j++ ) {
                 PS::S32 rank   = NList.n_list_tmp[i][j].rank;
                 PS::S32 id_loc = NList.n_list_tmp[i][j].id_local;
+                assert( rank > -1 );
+                assert( id_loc > -1 );
                 
                 if ( pp[i].myrank == rank ){
                     epj.copyFromFP(pp[id_loc]);

@@ -214,8 +214,9 @@ void calcGravity(Tp & pi,
     
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    
-    for(PS::S32 j=0; j<pp.size(); j++) {
+
+    const PS::S32 np = pp.size();
+    for(PS::S32 j=0; j<np; j++) {
             if ( pi.id == pp[j].id ) continue;
         
             PS::F64vec xj = pp[j].pos;
@@ -269,7 +270,8 @@ void calcGravity_p(Tp & pi,
     PS::F64vec xpi = pi.xp;
     PS::F64vec vpi = pi.vp;
 
-    for(PS::S32 j=0; j<pp.size(); j++) {
+    const PS::S32 np = pp.size();
+    for(PS::S32 j=0; j<np; j++) {
             if ( pi.id == pp[j].id ) continue;
 
             PS::F64vec xpj = pp[j].xp;
@@ -324,7 +326,8 @@ void calcGravity_c(Tp & pi,
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
 
-    for(PS::S32 j=0; j<pp.size(); j++) {
+    const PS::S32 np = pp.size();
+    for(PS::S32 j=0; j<np; j++) {
         if ( pi.id == pp[j].id ) continue;
         
         PS::F64vec xpj = pp[j].xp;
@@ -376,7 +379,8 @@ void calcJerk(Tp & pi,
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
 
-    for(PS::S32 j=0; j<pp.size(); j++){
+    const PS::S32 np = pp.size();
+    for(PS::S32 j=0; j<np; j++){
         if ( pi.id == pp[j].id ) continue;
         
         PS::F64vec xj = pp[j].pos;
@@ -429,8 +433,9 @@ void calcAccJerk(Tp & pi,
     
     PS::F64vec xi = pi.pos;
     PS::F64vec vi = pi.vel;
-    
-    for(PS::S32 j=0; j<pp.size(); j++) {
+
+    const PS::S32 np = pp.size();
+    for(PS::S32 j=0; j<np; j++) {
         if ( pi.id == pp[j].id ) continue;
             
         PS::F64vec xj = pp[j].pos;

@@ -24,15 +24,19 @@ struct calcForceEPEPWithSearch{
                 for (PS::S32 j=0; j<nj; j++) {
                     if ( epi[i].id_local == epj[j].id_local
                          && epi[i].myrank == epj[j].myrank ) continue;
+
+                    PS::F32vec xi       = epi[i].pos - epi[0].pos;
+                    PS::F32    rsearchi = epi[i].r_search;
                     
-                    PS::F64vec dr  = epj[j].pos - epi[i].pos;
-                    PS::F64    dr2 = dr * dr + FP_t::eps2;
-#ifdef USE_INDIVIDUAL_CUTOFF
-                    PS::F64 r_search = std::max(epj[j].r_search,  epi[i].r_search);
-#else
-                    PS::F64 r_search = FP_t::r_search;
-#endif
-                    PS::F64 rsearch2 = r_search * r_search * 1.1025;
+                    PS::F32vec xj       = epj[j].pos - epi[0].pos;
+                    PS::F32    mj       = epj[j].mass;
+                    PS::F32    rsearchj = epj[j].r_search;
+
+                    PS::F32    rsearch  = std::max(rsearchi, rsearchj);
+                    PS::F32    rsearch2 = rsearch * rsearch * 1.1025f;
+                    
+                    PS::F32vec rij = xj - xi;
+                    PS::F32    dr2 = rij * rij + (PS::F32)FP_t::eps2;
                     
                     if ( dr2 < rsearch2 ) {
                         if (ii==0) {
@@ -64,7 +68,7 @@ struct calcForceEPEPWithSearch{
                     }
                 }
                 
-                force[i].neighbor.number = ii + 1;
+                assert ( force[i].neighbor.number == ii + 1 );
             }
     }
 };
