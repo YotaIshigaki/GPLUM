@@ -28,22 +28,22 @@ FORCE F32vec af:acc
 FORCE F32    pf:phi
 FORCE S32    ngb:neighbor__DOT__n
 FORCE S32    DUMMY_:neighbor__DOT__DUMMY_
-FORCE S32    idngb:neighbor__DOT__id_local
-FORCE S32    rankngb:neighbor__DOT__rank
-FORCE S32    idngb1:neighbor__DOT__id_local1
-FORCE S32    idngb2:neighbor__DOT__id_local2
-FORCE S32    idngb3:neighbor__DOT__id_local3
-FORCE S32    idngb4:neighbor__DOT__id_local4
-FORCE S32    idngb5:neighbor__DOT__id_local5
-FORCE S32    idngb6:neighbor__DOT__id_local6
-FORCE S32    idngb7:neighbor__DOT__id_local7
-FORCE S32    rankngb1:neighbor__DOT__rank1
-FORCE S32    rankngb2:neighbor__DOT__rank2
-FORCE S32    rankngb3:neighbor__DOT__rank3
-FORCE S32    rankngb4:neighbor__DOT__rank4
-FORCE S32    rankngb5:neighbor__DOT__rank5
-FORCE S32    rankngb6:neighbor__DOT__rank6
-FORCE S32    rankngb7:neighbor__DOT__rank7
+FORCE S32    idngb:neighbor__DOT__id_local__LEFT__0__RIGHT__
+FORCE S32    idngb1:neighbor__DOT__id_local__LEFT__1__RIGHT__
+FORCE S32    idngb2:neighbor__DOT__id_local__LEFT__2__RIGHT__
+FORCE S32    idngb3:neighbor__DOT__id_local__LEFT__3__RIGHT__
+FORCE S32    idngb4:neighbor__DOT__id_local__LEFT__4__RIGHT__
+FORCE S32    idngb5:neighbor__DOT__id_local__LEFT__5__RIGHT__
+FORCE S32    idngb6:neighbor__DOT__id_local__LEFT__6__RIGHT__
+FORCE S32    idngb7:neighbor__DOT__id_local__LEFT__7__RIGHT__
+FORCE S32    rankngb:neighbor__DOT__rank__LEFT__0__RIGHT__
+FORCE S32    rankngb1:neighbor__DOT__rank__LEFT__1__RIGHT__
+FORCE S32    rankngb2:neighbor__DOT__rank__LEFT__2__RIGHT__
+FORCE S32    rankngb3:neighbor__DOT__rank__LEFT__3__RIGHT__
+FORCE S32    rankngb4:neighbor__DOT__rank__LEFT__4__RIGHT__
+FORCE S32    rankngb5:neighbor__DOT__rank__LEFT__5__RIGHT__
+FORCE S32    rankngb6:neighbor__DOT__rank__LEFT__6__RIGHT__
+FORCE S32    rankngb7:neighbor__DOT__rank__LEFT__7__RIGHT__
 
 
 EPI local F32vec xiloc

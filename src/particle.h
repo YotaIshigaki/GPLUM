@@ -12,119 +12,54 @@ public:
     PS::S32 number;
     PS::S32 DUMMY_;
     
-    PS::S32 id_local; 
-    PS::S32 rank;
-
-    PS::S32 id_local1;
-    PS::S32 id_local2;
-    PS::S32 id_local3;
-    PS::S32 id_local4;
-    PS::S32 id_local5;
-    PS::S32 id_local6;
-    PS::S32 id_local7;
-    PS::S32 rank1;
-    PS::S32 rank2;
-    PS::S32 rank3;
-    PS::S32 rank4;
-    PS::S32 rank5;
-    PS::S32 rank6;
-    PS::S32 rank7;
+    PS::S32 id_local[8]; 
+    PS::S32 rank[8];
 
     NeighborInfo(){
-        number   = 0;
-        id_local = -1;
-        rank     = -1;
+        number   = 0;        
+        for (PS::S32 i=0; i<8; i++){
+            id_local[i] = -1;
+            rank[i]     = -1;
+        }
     }
     NeighborInfo(const NeighborInfo & ni){
         number   = ni.number;
-        id_local = ni.id_local;
-        rank     = ni.rank;
-        id_local1 = ni.id_local1;
-        id_local2 = ni.id_local2;
-        id_local3 = ni.id_local3;
-        id_local4 = ni.id_local4;
-        id_local5 = ni.id_local5;
-        id_local6 = ni.id_local6;
-        id_local7 = ni.id_local7;
-        rank1     = ni.rank1;
-        rank2     = ni.rank2;
-        rank3     = ni.rank3;
-        rank4     = ni.rank4;
-        rank5     = ni.rank5;
-        rank6     = ni.rank6;
-        rank7     = ni.rank7;
+        for (PS::S32 i=0; i<8; i++){
+            id_local[i] = ni.id_local[i];
+            rank[i]     = ni.rank[i];
+        }
     }
     NeighborInfo &operator=(const NeighborInfo & ni){
         if ( this != &ni ){
             number   = ni.number;
-            id_local = ni.id_local;
-            rank     = ni.rank;
-            id_local1 = ni.id_local1;
-            id_local2 = ni.id_local2;
-            id_local3 = ni.id_local3;
-            id_local4 = ni.id_local4;
-            id_local5 = ni.id_local5;
-            id_local6 = ni.id_local6;
-            id_local7 = ni.id_local7;
-            rank1     = ni.rank1;
-            rank2     = ni.rank2;
-            rank3     = ni.rank3;
-            rank4     = ni.rank4;
-            rank5     = ni.rank5;
-            rank6     = ni.rank6;
-            rank7     = ni.rank7;
+            for (PS::S32 i=0; i<8; i++){
+                id_local[i] = ni.id_local[i];
+                rank[i]     = ni.rank[i];
+            }
         }
         return *this;
     }
     
     void clear(){
         number = 0;
-        id_local = -1;
-        rank = -1;
-
-        id_local1 = id_local2 = id_local3 = id_local4 = id_local5 = id_local6 = id_local7 = -1;
-        rank1 = rank2 = rank3 = rank4 = rank5 = rank6 = rank7 = -1;
+        for (PS::S32 i=0; i<8; i++){
+            id_local[i] = -1;
+            rank[i]     = -1;
+        }
     }
     void copy(const NeighborInfo & ni){
         number = ni.number;
-        id_local = ni.id_local;
-        rank = ni.rank;
-        
-        id_local1 = ni.id_local1;
-        id_local2 = ni.id_local2;
-        id_local3 = ni.id_local3;
-        id_local4 = ni.id_local4;
-        id_local5 = ni.id_local5;
-        id_local6 = ni.id_local6;
-        id_local7 = ni.id_local7;
-        rank1     = ni.rank1;
-        rank2     = ni.rank2;
-        rank3     = ni.rank3;
-        rank4     = ni.rank4;
-        rank5     = ni.rank5;
-        rank6     = ni.rank6;
-        rank7     = ni.rank7;
+        for (PS::S32 i=0; i<8; i++){
+            id_local[i] = ni.id_local[i];
+            rank[i]     = ni.rank[i];
+        }
     }
     PS::S32 getId(const PS::S32 i) const {
-        if (i==0) return id_local;
-        if (i==1) return id_local1;
-        if (i==2) return id_local2;
-        if (i==3) return id_local3;
-        if (i==4) return id_local4;
-        if (i==5) return id_local5;
-        if (i==6) return id_local6;
-        if (i==7) return id_local7;
+        if (i<8) return id_local[i];
         return -1;
     }
     PS::S32 getRank(const PS::S32 i) const {
-        if (i==0) return rank;
-        if (i==1) return rank1;
-        if (i==2) return rank2;
-        if (i==3) return rank3;
-        if (i==4) return rank4;
-        if (i==5) return rank5;
-        if (i==6) return rank6;
-        if (i==7) return rank7;
+        if (i<8) return rank[i];
         return -1;
     }
 };

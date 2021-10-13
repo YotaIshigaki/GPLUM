@@ -170,6 +170,8 @@ gravity_kernel_epep.hpp: gravity_kernel_epep.pikg
 	./removeif.sh gravity_kernel_epep.pikg gravity_kernel_epep_noif.pikg $(CFLAGS)
 	$(PS_PATH_PIKG)bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
 	sed -i -e 's/__DOT__/./g' gravity_kernel_epep.hpp
+	sed -i -e 's/__LEFT__/[/g' gravity_kernel_epep.hpp
+	sed -i -e 's/__RIGHT__/]/g' gravity_kernel_epep.hpp
 #	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
 #	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
 
@@ -177,6 +179,8 @@ gravity_kernel_epsp.hpp: gravity_kernel_epsp.pikg
 	./removeif.sh gravity_kernel_epsp.pikg gravity_kernel_epsp_noif.pikg $(CFLAGS)
 	$(PS_PATH_PIKG)bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
 	sed -i -e 's/__DOT__/./g' gravity_kernel_epsp.hpp
+	sed -i -e 's/__LEFT__/[/g' gravity_kernel_epsp.hpp
+	sed -i -e 's/__RIGHT__/]/g' gravity_kernel_epsp.hpp
 #	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
 #	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
 

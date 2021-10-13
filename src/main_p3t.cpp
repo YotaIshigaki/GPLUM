@@ -473,7 +473,7 @@ int main(int argc, char *argv[])
 
         bool check = true;
         bool check_loc = true;
-        PS::S32 TAG = 10;
+        PS::S32 TAG = 32;
         while ( check ) {
             NList.createNeighborCluster(system_grav);
             NList.inputExData(system_grav);
