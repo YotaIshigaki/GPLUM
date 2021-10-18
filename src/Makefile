@@ -1,6 +1,6 @@
 #PS_PATH_FDPS = ../FDPS/src/
 PS_PATH_FDPS = ../fdps-devel/src/
-PS_PATH_PIKG = ../PIKG-0.1d/
+PS_PATH_PIKG = ../PIKG/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)inc
 
@@ -57,7 +57,6 @@ CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
-CFLAGS += -DFOR_PIKG01
 CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
 
 ifeq ($(use_OpenMP),yes)

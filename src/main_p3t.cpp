@@ -505,7 +505,7 @@ int main(int argc, char *argv[])
         system_ex.inputAdress();
         system_ex.inputExParticleSend(system_grav, NList);
         system_ex.sendRecvExParticle(NList);        
-        system_ex.inputNeighborListOfExParticleRecv();
+        //system_ex.inputNeighborListOfExParticleRecv();
 #endif
         
 #ifdef CALC_WTIME
@@ -522,7 +522,7 @@ int main(int argc, char *argv[])
         system_hard.reserve_hard(2 * (n_with_ngb + system_ex.getNumberOfParticleRecv()));
         n_in = system_hard.makeList(system_grav, system_ex);
         n_out = system_hard.timeIntegrate(system_grav, system_ex,
-                                          NList.n_list, system_ex.n_list, istep);
+                                          NList.n_list, istep);
         //system_hard.showParticleID();
         assert( n_in == n_out ); 
         assert( n_loc == system_hard.getNumberOfParticleLocal()-system_hard.getNumberOfFragmentLocal()

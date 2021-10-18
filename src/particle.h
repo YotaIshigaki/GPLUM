@@ -1,6 +1,11 @@
 #pragma once
 
+#ifdef USE_POLAR_COORDINATE
+#define SAFTY_FACTOR 1.2
+#else
 #define SAFTY_FACTOR 1.05
+#endif
+#define SAFTY_FACTOR2 1.0201f
 
 
 /////////////
@@ -10,20 +15,21 @@
 class NeighborInfo{
 public:
     PS::S32 number;
-    PS::S32 DUMMY_;
+    PS::S32 number_tmp;
     
     PS::S32 id_local[8]; 
     PS::S32 rank[8];
 
     NeighborInfo(){
-        number   = 0;        
+        number = number_tmp = 0;        
         for (PS::S32 i=0; i<8; i++){
             id_local[i] = -1;
             rank[i]     = -1;
         }
     }
     NeighborInfo(const NeighborInfo & ni){
-        number   = ni.number;
+        number     = ni.number;
+        number_tmp = ni.number_tmp;
         for (PS::S32 i=0; i<8; i++){
             id_local[i] = ni.id_local[i];
             rank[i]     = ni.rank[i];
@@ -31,7 +37,8 @@ public:
     }
     NeighborInfo &operator=(const NeighborInfo & ni){
         if ( this != &ni ){
-            number   = ni.number;
+            number     = ni.number;
+            number_tmp = ni.number_tmp;
             for (PS::S32 i=0; i<8; i++){
                 id_local[i] = ni.id_local[i];
                 rank[i]     = ni.rank[i];
@@ -41,25 +48,31 @@ public:
     }
     
     void clear(){
-        number = 0;
+        number = number_tmp = 0;
         for (PS::S32 i=0; i<8; i++){
             id_local[i] = -1;
             rank[i]     = -1;
         }
     }
     void copy(const NeighborInfo & ni){
-        number = ni.number;
+        number     = ni.number;
+        number_tmp = ni.number_tmp;
         for (PS::S32 i=0; i<8; i++){
             id_local[i] = ni.id_local[i];
             rank[i]     = ni.rank[i];
         }
     }
+    void setNumber() {
+        number_tmp = number;
+        id_local[0] = rank[0] = -1;
+    }
+    PS::S32 getNumber() const { return number-number_tmp; }
     PS::S32 getId(const PS::S32 i) const {
-        if (i<8) return id_local[i];
+        if (i<7) return id_local[i+1];
         return -1;
     }
     PS::S32 getRank(const PS::S32 i) const {
-        if (i<8) return rank[i];
+        if (i<7) return rank[i+1];
         return -1;
     }
 };
@@ -76,8 +89,8 @@ public:
     NeighborInfo neighbor;
     
     void clear(){
-        acc         = 0.;
-        phi         = 0.;
+        acc = 0.;
+        phi = 0.;
         neighbor.clear();
     }
 };
@@ -162,7 +175,7 @@ class EPNgb{
 public:
     PS::S32 myrank;
     PS::S32 id_local;
-    PS::F64 id;
+    PS::S64 id;
     
     PS::F64 mass;
 
@@ -210,36 +223,32 @@ public:
     }
     */
 
-    /*
+    
     EPNgb(const PS::S32 id_loc) {
         id_local = id_loc;
         myrank = -1;
         id = -1;
-
+        
         mass  = 0.;
         pos   = 0.;
         vel   = 0.;
         acc_d = 0.;
-
+        
 #ifdef USE_INDIVIDUAL_CUTOFF
         r_out     = 0.;
         r_out_inv = 0.;
         r_search  = 0.;
 #endif
     }
-
-    void setNeighbor(const PS::S32 id_loc){
-        id_local = id_loc;
-    }
     template <class Tpsys>
     void copyNeighbor(const Tpsys & pp){
         myrank  = pp[id_local].myrank;
-        id    = pp[id_local].id;
-        mass  = pp[id_local].mass;
-        pos   = pp[id_local].pos;
-        vel   = pp[id_local].vel;
-        acc_d = pp[id_local].acc_d;
-
+        id      = pp[id_local].id;
+        mass    = pp[id_local].mass;
+        pos     = pp[id_local].pos;
+        vel     = pp[id_local].vel;
+        acc_d   = pp[id_local].acc_d;
+        
 #ifdef USE_INDIVIDUAL_CUTOFF
         r_out     = pp[id_local].r_out;
         r_out_inv = pp[id_local].r_out_inv;
@@ -248,7 +257,6 @@ public:
         
         //assert(pp[id_local].neighbor.number > 1);
     }
-    */
     template <class Tp>
     EPNgb(const Tp & fp){
         id_local = fp.id_local;
@@ -264,6 +272,25 @@ public:
         r_out_inv = fp.r_out_inv;
         r_search  = fp.r_search;
 #endif
+    }
+    template <class Tp>
+    EPNgb &operator=(const Tp & fp){
+        if ( this != &fp ){
+            id_local = fp.id_local;
+            myrank   = fp.myrank;
+            id       = fp.id;
+            mass     = fp.mass;
+            pos      = fp.pos;
+            vel      = fp.vel;
+            acc_d    = fp.acc_d;
+            
+#ifdef USE_INDIVIDUAL_CUTOFF
+            r_out     = fp.r_out;
+            r_out_inv = fp.r_out_inv;
+            r_search  = fp.r_search;
+#endif
+        }
+        return *this;
     }
     template <class Tp>
     void copyFromFP(const Tp & fp){
@@ -282,6 +309,20 @@ public:
 #endif
         
         //assert(fp.neighbor.number > 1);
+    }
+    void dump(std::ostream & fout = std::cout) const {
+        fout<<"id= "<<id<<std::endl;
+        fout<<"myrank= "<<myrank<<std::endl;
+        fout<<"id_local= "<<id_local<<std::endl;
+        fout<<"mass= "<<mass<<std::endl;
+        fout<<"pos= "<<pos<<std::endl;
+        fout<<"vel= "<<vel<<std::endl;
+        fout<<"acc_d="<<acc_d<<std::endl;
+#ifdef USE_INDIVIDUAL_CUTOFF
+        fout<<"r_out="<<r_out<<std::endl;
+        fout<<"r_search="<<r_search<<std::endl;
+        fout<<"time="<<time<<std::endl;
+#endif
     }
 };
 
@@ -722,7 +763,7 @@ public:
 
         neighbor.copy(force.neighbor);
     }
-
+    /*
     void copy(const FPGrav & fp){
         EPJGrav::copyFromFP(fp);
         id        = fp.id;
@@ -766,7 +807,7 @@ public:
 #ifdef MERGE_BINARY
         isBinary    = fp.isBinary;
 #endif
-    }
+}*/
 
     void dump(std::ostream & fout = std::cout) const {
         fout<<"id= "<<id<<std::endl;
@@ -815,17 +856,19 @@ public:
         }   
     }
     void readBinary(FILE* fp) {
-        FPGrav buf;
-        if ( !fread(&buf, sizeof(buf), 1, fp) ) {
+        //FPGrav buf;
+        //if ( !fread(&buf, sizeof(buf), 1, fp) ) {
+        if ( !fread(this, sizeof(*this), 1, fp) ) {
             errorMessage("The particle data have NOT been correctly read.");
             PS::Abort();
         }
-        copy(buf);
+        //copy(buf);
     }
     void writeBinary(FILE* fp) const {
-        FPGrav buf;
-        buf.copy(*this);
-        if ( !fwrite(&buf, sizeof(buf), 1, fp) ) {
+        //FPGrav buf;
+        //buf.copy(*this);
+        //if ( !fwrite(&buf, sizeof(buf), 1, fp) ) {
+        if ( !fwrite(this, sizeof(*this), 1, fp) ) {
             errorMessage("The particle data have NOT been correctly written.");
             PS::Abort();
         }

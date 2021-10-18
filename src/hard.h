@@ -1,8 +1,8 @@
 #pragma once
 
-#ifdef PARTICLE_SIMULATOR_THREAD_PARALLEL
+//#ifdef PARTICLE_SIMULATOR_THREAD_PARALLEL
 #include "samplesortlib.hpp"
-#endif
+//#endif
 
 typedef struct boolint{
     bool isin;
@@ -244,11 +244,11 @@ public:
     PS::S32 makeList(Tpsys & pp,
                      Tpsys2 & ex_pp);
 
-    template <class Tpsys, class Tpsys2, class NL, class NL2>
+    template <class Tpsys, class Tpsys2, class NL>
     PS::S32 timeIntegrate(Tpsys & pp,
                           Tpsys2 & ex_pp,
                           NL & NList,
-                          NL2 & ex_NList,
+                          //NL2 & ex_NList,
                           const PS::S32 istep);
 
     static void rewriteFragmentID(std::vector<PS::S64> & id_frag_list,
@@ -439,11 +439,11 @@ inline PS::S32 HardSystem::makeList(Tpsys & pp,
 }
  
 #if 0
-template <class Tpsys, class Tpsys2, class NL, class NL2>
+template <class Tpsys, class Tpsys2, class NL>
 inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                                          Tpsys2 & ex_pp,
                                          NL & NList,
-                                         NL2 & ex_NList,
+                                         //NL2 & ex_NList,
                                          const PS::S32 istep)
 {
     PS::S32 n_all = list_multi.size() + list_iso_size;
@@ -552,11 +552,11 @@ inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
     return n_ptcl_loc;
 }
 #else
-template <class Tpsys, class Tpsys2, class NL, class NL2>
+template <class Tpsys, class Tpsys2, class NL>
 inline PS::S32 HardSystem::timeIntegrate(Tpsys & pp,
                                          Tpsys2 & ex_pp,
                                          NL & NList,
-                                         NL2 & ex_NList,
+                                         //NL2 & ex_NList,
                                          const PS::S32 istep)
 {
     PS::S32 n_ptcl_loc = 0;

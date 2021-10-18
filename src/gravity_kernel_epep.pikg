@@ -29,7 +29,7 @@ EPJ F64    mj:mass
 FORCE F32vec af:acc
 FORCE F32    pf:phi
 FORCE S32    nngb:neighbor__DOT__number
-FORCE S32    DUMMY_:neighbor__DOT__DUMMY_
+FORCE S32    nngb_tmp:neighbor__DOT__number_tmp
 FORCE S32    idngb:neighbor__DOT__id_local__LEFT__0__RIGHT__
 FORCE S32    idngb1:neighbor__DOT__id_local__LEFT__1__RIGHT__
 FORCE S32    idngb2:neighbor__DOT__id_local__LEFT__2__RIGHT__
@@ -79,7 +79,7 @@ rout     = max(routjloc, routiloc)
 rsearch  = max(rsearchjloc, rsearchiloc)
 #endif
 rout2    = rout * rout
-rsearch2 = rsearch * rsearch * 1.1025f
+rsearch2 = rsearch * rsearch * 1.0201f
 
 rij     = xjloc - xiloc
 r2_real = rij*rij + eps2
@@ -87,8 +87,8 @@ r2_real = rij*rij + eps2
 r2      = max(r2_real, rout2)
 
 if r2_real < rsearch2
-   nngb  = nngb + 1
    if idi != idj || ranki != rankj
+      nngb    = nngb + 1
       idngb   = idngb + idj + 1   
       rankngb = rankngb + rankj + 1 
    endif

@@ -215,7 +215,7 @@ void correctForceLong(Tpsys & pp,
         PS::F64vec acci = 0.;
         PS::F64    phii = 0.;
         PS::F64    acc0i = 0.;
-        PS::S32    neighbor = pp[i].neighbor.number - 1;
+        PS::S32    neighbor = pp[i].neighbor.number;
         pp[i].neighbor.number = 0.;
         pp[i].id_cluster = pp[i].id;
 
@@ -251,7 +251,10 @@ void correctForceLong(Tpsys & pp,
                     epj.copyFromFP(pp[id_loc]);
                 } else {
                     epj = NList.getNeighborInfo(rank, id_loc);
+                    //epj.dump();
                 }
+                assert(epj.myrank == rank);
+                assert(epj.id_local == id_loc);
                 
             
                 //PS::S32 j = 0;
@@ -332,7 +335,7 @@ void correctForceLongInitial(Tpsys & pp,
         PS::F64    acc0i  = 0.;
         PS::F64    phii   = 0.;
         PS::F64    phi_di = 0.;
-        PS::S32    neighbor = pp[i].neighbor.number - 1;
+        PS::S32    neighbor = pp[i].neighbor.number;
         pp[i].neighbor.number = 0.;
         pp[i].id_cluster = pp[i].id;
         
@@ -370,6 +373,8 @@ void correctForceLongInitial(Tpsys & pp,
                 } else {
                     epj = NList.getNeighborInfo(rank, id_loc);
                 }
+                assert(epj.myrank == rank);
+                assert(epj.id_local == id_loc);
                 
                 //PS::S32 j = 0;
                 //if ( pp[i].neighbor.getRank(j) == pp[i].myrank ){

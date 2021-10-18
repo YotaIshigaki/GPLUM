@@ -260,8 +260,8 @@ PS::S32 Parameter::checkParameter()
                          "(nx = "+ std::to_string(nx)
                          + ", ny = " + std::to_string(ny) + ").");
             return 1;
-        } else if ( N_PROC_64 * 64 < PS::Comm::getNumberOfProc() ) {
-            errorMessage("N_PROC_64 have NOT been set to satisfy N_PROC_64 * 64 < number of process. Please chack neighbor.h .",
+        } else if ( RANK_LIST_SIZE * 8 * sizeof(PS::S32) < PS::Comm::getNumberOfProc() ) {
+            errorMessage("RANK_LIST_SIZE have NOT been set to satisfy RANK_LIST_SIZE * 32 < number of process. Please chack neighbor.h .",
                          "(nx = "+ std::to_string(nx)
                          + ", ny = " + std::to_string(ny) + ").");
             return 1;
@@ -337,8 +337,7 @@ void showParameter(Parameter & param,
         std::cout << std::endl;
 
         std::cout << "#################### Parameters ####################" << std::endl;
-        param.showParameter(time_sys);
-        Collision::showParameter();    
+        param.showParameter(time_sys);  
         std::cout << std::resetiosflags(std::ios_base::floatfield)<<std::setprecision(8)
                   << "####################################################" << std::endl;
 
