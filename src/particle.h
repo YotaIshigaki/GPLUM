@@ -1,7 +1,7 @@
 #pragma once
 
 #ifdef USE_POLAR_COORDINATE
-#define SAFTY_FACTOR 1.2
+#define SAFTY_FACTOR 1.1
 #else
 #define SAFTY_FACTOR 1.05
 #endif
@@ -62,17 +62,17 @@ public:
             rank[i]     = ni.rank[i];
         }
     }
-    void setNumber() {
-        number_tmp = number;
-        id_local[0] = rank[0] = -1;
-    }
-    PS::S32 getNumber() const { return number-number_tmp; }
+    //void setNumber() {
+    //    number_tmp = number;
+    //    id_local[0] = rank[0] = -1;
+    //}
+    //PS::S32 getNumber() const { return number-number_tmp; }
     PS::S32 getId(const PS::S32 i) const {
-        if (i<7) return id_local[i+1];
+        if (i<8) return id_local[i];
         return -1;
     }
     PS::S32 getRank(const PS::S32 i) const {
-        if (i<7) return rank[i+1];
+        if (i<8) return rank[i];
         return -1;
     }
 };

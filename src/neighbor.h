@@ -308,8 +308,8 @@ public:
             ex_data[i].clear();
             recv_list[i].clear();
             send_list[i].clear();
-            ngb_send[i].clear();
-            ngb_recv[i].clear();
+            //ngb_send[i].clear();
+            //ngb_recv[i].clear();
         }
       
         ExPair::initialize();
@@ -321,7 +321,7 @@ public:
         const PS::S32 n_loc  = pp.getNumberOfParticleLocal();
 
         n_list.clear();
-        n_list_tmp.clear();
+        //n_list_tmp.clear();
         //id_map.clear();
         with_neighbor_list.clear();
         pair_list.clear();
@@ -346,7 +346,7 @@ public:
 #pragma omp parallel for
         for(PS::S32 i=0; i<n_loc; i++) {
             n_list[i].clear();
-            n_list_tmp[i].clear();
+            //n_list_tmp[i].clear();
             n_list_tmp[i].resize(8);
         }
     }
@@ -412,7 +412,7 @@ public:
             //n_list_tmp[i].resize(neighbor);
             assert( neighbor >= 0 );
 
-            if ( neighbor > 0 && neighbor < 8 ) {
+            if ( neighbor > 0 && neighbor <= 8 ) {
                 for (PS::S32 j=0; j<neighbor; j++) {
                     PS::S32 rank   = pp[i].neighbor.getRank(j);
                     PS::S32 id_loc = pp[i].neighbor.getId(j);
@@ -426,7 +426,7 @@ public:
                     //}
                 } 
                 
-            } else if ( neighbor >= 8 ) {
+            } else if ( neighbor > 8 ) {
                 PS::S32 n_ngb = 0;
                 EPJ_t* next = NULL;
                 n_ngb = tree_grav.getNeighborListOneParticle(pp[i], next);
@@ -468,30 +468,39 @@ public:
     template <class Tpsys>
     void exchangeNeighborInfo(Tpsys & pp) {
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
+        const PS::S32 myrank = PS::Comm::getRank();
         const PS::S32 n_loc = pp.getNumberOfParticleLocal();
         PS::S32 n_send[n_proc];
         PS::S32 n_recv[n_proc];     
         for (PS::S32 i=0; i<n_proc; i++) n_send[i] = 0;
         
-#pragma omp parallel for reduction (+:n_send[:n_proc])
-        for(PS::S32 i=0; i<n_loc; i++){
-            PS::U32 n_size = pp[i].neighbor.number;
-            for ( PS::S32 j=0; j<n_size; j++ ){
-                PS::S32 rank   = n_list_tmp[i][j].rank;
-                PS::S32 id_loc = n_list_tmp[i][j].id_local;
-                assert( rank > -1 && rank < PS::Comm::getNumberOfProc() );
-                assert( id_loc > -1 );
-                if ( pp[i].myrank != rank ){
-                    n_send[rank] ++;
+#pragma omp parallel for
+        for(PS::S32 ii=0; ii<n_proc; ii++){
+            if ( ii == myrank ) continue;
+            for(PS::S32 i=0; i<n_loc; i++){
+                const PS::S32 n_size = pp[i].neighbor.number;
+                for ( PS::S32 j=0; j<n_size; j++ ){
+                    const PS::S32 rank   = n_list_tmp[i][j].rank;
+                    assert( rank > -1 && rank < n_proc );
+                    if ( rank == ii ){
+                        PS::S32 id_loc = n_list_tmp[i][j].id_local;
+                        assert( id_loc > -1 );
+                        
+                        if ( ngb_send[ii].size() > n_send[ii] ) {
+                            ngb_send[ii][n_send[ii]] = EPNgb(id_loc);
+                        } else {
 #pragma omp critical
-                    {
-                        ngb_send[rank].push_back(EPNgb(id_loc));
-                        //ngb_send[rank].push_back(EPNgb(pp[i]));
-                        //EPNgb epn;
-                        //epn.copyFromFP(pp[i]);
-                        //ngb_send[rank].push_back(epn);
-                    }
-                } 
+                            {
+                                ngb_send[rank].push_back(EPNgb(id_loc));
+                                //ngb_send[rank].push_back(EPNgb(pp[i]));
+                                //EPNgb epn;
+                                //epn.copyFromFP(pp[i]);
+                                //ngb_send[rank].push_back(epn);
+                            }
+                        }
+                        n_send[ii] ++;
+                    } 
+                }
             }
         }
         

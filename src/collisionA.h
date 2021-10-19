@@ -136,8 +136,11 @@ class Collision0{
            << this->n_frag << "\t" << this->id_frag << "\t"
            << std::scientific<<std::setprecision(15)
            << this->mass_imp  << "\t" << this->mass_tar  << "\t" << this->mass_frag << "\t"
-           << sqrt(ximp*ximp) << "\t" << sqrt(vimp*vimp) << "\t"
-           << this->col_angle << "\t" << Flag << "\t"
+           << this->pos_imp.x  << "\t" << this->pos_imp.y  << "\t" << this->pos_imp.z << "\t"
+           << this->pos_tar.x  << "\t" << this->pos_tar.y  << "\t" << this->pos_tar.z << "\t"
+            //<< sqrt(ximp*ximp) << "\t" << sqrt(vimp*vimp) << "\t"
+            //<< this->col_angle << "\t"
+           << Flag << "\t"
            << sqrt((dpos_g*dpos_g)/(pos_g*pos_g)) << "\t" << sqrt((dvel_g*dvel_g)/(vel_g*vel_g)) 
            << std::endl;
     }
