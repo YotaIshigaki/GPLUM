@@ -22,6 +22,13 @@ void velKick2nd(Tpsys & pp){
 }
 #endif
 
+
+template<class Tp0, class Tp1> inline PS::F64 getROutInvMin(Tp0 & p0, Tp1 & p1) { return std::min(p0.r_out_inv, p1.r_out_inv); }
+template<> inline PS::F64 getROutInvMin<FP_t, EPJ_t>(FP_t & p0, EPJ_t & p1) { return std::min(p0.r_out_inv, 1./p1.r_out); }
+template<> inline PS::F64 getROutInvMin<EPJ_t, FP_t>(EPJ_t & p0, FP_t & p1) { return std::min(1./p0.r_out, p1.r_out_inv); }
+template<> inline PS::F64 getROutInvMin<EPJ_t, EPJ_t>(EPJ_t & p0, EPJ_t & p1) { return std::min(1./p0.r_out, 1./p1.r_out); }
+template<class Tp0, class Tp1> inline PS::F64 getROutInverseMin(Tp0 & p0, Tp1 & p1){ return getROutInvMin<Tp0, Tp1>(p0, p1); }
+
 template <class Tpsys, class Tp>
 void correctForceBetween2Particles(Tpsys &   pp,
                                    PS::S32 & i,
@@ -43,7 +50,7 @@ void correctForceBetween2Particles(Tpsys &   pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
     PS::F64 r_out     = std::max(pp[i].r_out,     epj.r_out);
     //PS::F64 r_out_inv = std::min(pp[i].r_out_inv, epj.r_out_inv);
-    PS::F64 r_out_inv = 1. / r_out;
+    PS::F64 r_out_inv = getROutInverseMin(pp[i], epj);
     PS::F64 r_search  = std::max(pp[i].r_search,  epj.r_search);
 #else
     PS::F64 r_out     = FP_t::r_out;
@@ -125,7 +132,7 @@ void correctForceBetween2ParticlesInitial(Tpsys &   pp,
 #ifdef USE_INDIVIDUAL_CUTOFF
     PS::F64 r_out     = std::max(pp[i].r_out,     epj.r_out);
     //PS::F64 r_out_inv = std::min(pp[i].r_out_inv, epj.r_out_inv);
-    PS::F64 r_out_inv = 1. / r_out;
+    PS::F64 r_out_inv = getROutInverseMin(pp[i], epj);
     PS::F64 r_search  = std::max(pp[i].r_search,  epj.r_search);  
 #else
     PS::F64 r_out     = FP_t::r_out;
