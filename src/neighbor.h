@@ -121,7 +121,7 @@ public:
         id_local_in  = inp[ofs+3];
         rank_out     = inp[ofs+0];
         id_local_out = inp[ofs+1];
-        id_cluster   = (PS::S64)inp[ofs+4] + (PS::S64)inp[ofs+5] * (1LL<<31);
+        id_cluster   = (PS::S64)inp[ofs+4] + (PS::S64)inp[ofs+5] * S32_MAX;
         assert( inp[ofs+4] > -1 && inp[ofs+5] > -1);
         for ( PS::S32 i=0; i<size; i++ ) rank_list[i] = inp[ofs+i+6];
         return size+6;
@@ -136,8 +136,8 @@ public:
         outp[ofs+1] = id_local_in;
         outp[ofs+2] = rank_out;
         outp[ofs+3] = id_local_out;
-        outp[ofs+4] = (PS::S32)(id_cluster % (1LL<<31));
-        outp[ofs+5] = (PS::S32)(id_cluster / (1LL<<31));
+        outp[ofs+4] = (PS::S32)(id_cluster % S32_MAX);
+        outp[ofs+5] = (PS::S32)(id_cluster / S32_MAX);
         assert( id_cluster > -1 );
         for ( PS::S32 i=0; i<size; i++ ) outp[ofs+i+6] = rank_list[i];
         return size+6;
@@ -248,15 +248,15 @@ class NeighborList{
 public:
     //std::vector<std::vector<PS::S64> > n_list
     std::vector<std::vector<NeighborId> > n_list;
-    std::vector<std::vector<NeighborId> > n_list_tmp;
+    //std::vector<std::vector<NeighborId> > n_list_tmp;
     //#ifndef USE_SIMPLEMAP    
     //std::map<PS::S64, PS::S32> id_map;
     //#else
     //SimpleMapLib::Map<PS::S64, PS::S32> id_map;
     //#endif
 
-    std::vector<std::vector<EPNgb> > ngb_send;
-    std::vector<std::vector<EPNgb> > ngb_recv;
+    //std::vector<std::vector<EPNgb> > ngb_send;
+    //std::vector<std::vector<EPNgb> > ngb_recv;
 
     std::vector<PS::S32> with_neighbor_list;
     std::vector<std::pair<PS::S32, PS::S32> > pair_list;                    // ptcl_id_loc, ngb_id_loc
@@ -282,7 +282,7 @@ public:
         const PS::S32 n_proc = PS::Comm::getNumberOfProc();
         
         n_list.clear();
-        n_list_tmp.clear();
+        //n_list_tmp.clear();
         //id_map.clear();
         with_neighbor_list.clear();
         pair_list.clear();
@@ -298,8 +298,8 @@ public:
         ex_data.resize(n_proc);
         recv_list.resize(n_proc);
         send_list.resize(n_proc);
-        ngb_send.resize(n_proc);
-        ngb_recv.resize(n_proc);
+        //ngb_send.resize(n_proc);
+        //ngb_recv.resize(n_proc);
         ex_data_send.resize(n_proc);
         ex_data_recv.resize(n_proc);
         
@@ -337,17 +337,17 @@ public:
             ex_data[i].clear();
             recv_list[i].clear();
             send_list[i].clear();
-            ngb_send[i].clear();
-            ngb_recv[i].clear();
+            //ngb_send[i].clear();
+            //ngb_recv[i].clear();
         }
         
         n_list.resize(n_loc);
-        n_list_tmp.resize(n_loc);
+        //n_list_tmp.resize(n_loc);
 #pragma omp parallel for
         for(PS::S32 i=0; i<n_loc; i++) {
             n_list[i].clear();
             //n_list_tmp[i].clear();
-            n_list_tmp[i].resize(8);
+            //n_list_tmp[i].resize(8);
         }
     }
 
@@ -386,6 +386,7 @@ public:
     PS::U32 getNumberOfNeighbor(const PS::S32 i) const {return n_list[i].size(); }
     //PS::U32 getNumberOfTemporaryNeighbor(const PS::S32 i) const {return n_list_tmp[i].size(); }
 
+    /*
     EPNgb & getNeighborInfo(PS::S32 rank,
                             PS::S32 id_loc) {
         assert( rank > -1 && rank < PS::Comm::getNumberOfProc() );
@@ -400,7 +401,9 @@ public:
         //while ( ngb_recv[rank][i].id_local != id_loc ) i++;
         //assert( i < n );
     }
+    */
 
+    /*
     template <class Tpsys, class Tptree>
     void makeTemporaryNeighborList(Tpsys & pp,
                                    Tptree & tree_grav) {
@@ -534,16 +537,16 @@ public:
         }
             
         
-        /*//#pragma omp parallel for
-        for(PS::S32 i=0; i<n_proc; i++){
-            if ( rank_c[i] > -1 ) {
-                rank_c[i] = n_send;
-                n_send ++;
-                assert( i != PS::Comm::getRank() );
-                
-                ngb_recv[i].resize(ngb_send[i].size());
-            }
-            }*/
+        //#pragma omp parallel for
+        //for(PS::S32 i=0; i<n_proc; i++){
+        //    if ( rank_c[i] > -1 ) {
+        //        rank_c[i] = n_send;
+        //        n_send ++;
+        //        assert( i != PS::Comm::getRank() );
+        //        
+        //        ngb_recv[i].resize(ngb_send[i].size());
+        //    }
+        //    }
 
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
         PS::S32 n_send_rank = send_rank_list.size();
@@ -605,30 +608,30 @@ public:
         //MPI_Waitall(n_recv_rank, req5, stat5);
 #endif
 
-        /*
-#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-        if ( n_send ) {
-            MPI_Request req0[n_send],  req1[n_send];
-            MPI_Status  stat0[n_send], stat1[n_send];
-            for ( PS::S32 i=0; i<n_proc; i++ ) if ( rank_c[i] > -1 ){
-                    PS::S32 ii = rank_c[i];
-                    PS::S32 rank = i;
-                    PS::S32 n_size = ngb_send[i].size();
-                    PS::S32 TAG = 1025;
-                    assert( n_size > 0 );
+        
+//#ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
+//        if ( n_send ) {
+//            MPI_Request req0[n_send],  req1[n_send];
+//            MPI_Status  stat0[n_send], stat1[n_send];
+//            for ( PS::S32 i=0; i<n_proc; i++ ) if ( rank_c[i] > -1 ){
+//                    PS::S32 ii = rank_c[i];
+//                    PS::S32 rank = i;
+//                    PS::S32 n_size = ngb_send[i].size();
+//                    PS::S32 TAG = 1025;
+//                    assert( n_size > 0 );
                     
-                    MPI_Isend(&ngb_recv[i][0], n_size, PS::GetDataType(ngb_recv[i][0]), rank, TAG, MPI_COMM_WORLD, &req0[ii]);
-                    MPI_Irecv(&ngb_send[i][0], n_size, PS::GetDataType(ngb_send[i][0]), rank, TAG, MPI_COMM_WORLD, &req1[ii]);
-                }
-            //MPI_Waitall(n_send, req0, stat0);
-            MPI_Waitall(n_send, req1, stat1);
-        }
-#else
-        for ( PS::S32 i=0; i<n_proc; i++ ) assert ( ngb_send[i].size() == 0 );
-#endif 
-        */ 
-    }
-
+//                    MPI_Isend(&ngb_recv[i][0], n_size, PS::GetDataType(ngb_recv[i][0]), rank, TAG, MPI_COMM_WORLD, &req0[ii]);
+//                    MPI_Irecv(&ngb_send[i][0], n_size, PS::GetDataType(ngb_send[i][0]), rank, TAG, MPI_COMM_WORLD, &req1[ii]);
+//                }
+//            //MPI_Waitall(n_send, req0, stat0);
+//            MPI_Waitall(n_send, req1, stat1);
+//        }
+//#else
+//        for ( PS::S32 i=0; i<n_proc; i++ ) assert ( ngb_send[i].size() == 0 );
+//#endif 
+//       
+    //    }
+*/
     template <class Tpsys>
     void addNeighbor(Tpsys & pp,
                      PS::S32 i,

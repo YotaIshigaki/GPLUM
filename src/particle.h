@@ -7,6 +7,7 @@
 #endif
 #define SAFTY_FACTOR2 1.0201f
 
+//#define NGB_LIST_SIZE 2
 
 /////////////
 /// Force ///
@@ -15,66 +16,55 @@
 class NeighborInfo{
 public:
     PS::S32 number;
-    PS::S32 number_tmp;
+    PS::S32 rank;
     
-    PS::S32 id_local[8]; 
-    PS::S32 rank[8];
+    PS::S32 id_max;
+    PS::S32 id_min;
 
     NeighborInfo(){
-        number = number_tmp = 0;        
-        for (PS::S32 i=0; i<8; i++){
-            id_local[i] = -1;
-            rank[i]     = -1;
-        }
+        number = rank = 0;
+        id_max = -1;
+        id_min = S32_MAX-1;
+        //for (PS::S32 i=0; i<NGB_LIST_SIZE; i++) id[i] = 0;
     }
     NeighborInfo(const NeighborInfo & ni){
-        number     = ni.number;
-        number_tmp = ni.number_tmp;
-        for (PS::S32 i=0; i<8; i++){
-            id_local[i] = ni.id_local[i];
-            rank[i]     = ni.rank[i];
-        }
+        number = ni.number;
+        rank   = ni.rank;
+        id_max = ni.id_max;
+        id_min = ni.id_min;
+        //for (PS::S32 i=0; i<NGB_LIST_SIZE; i++) id[i] = ni.id[i];
     }
     NeighborInfo &operator=(const NeighborInfo & ni){
         if ( this != &ni ){
-            number     = ni.number;
-            number_tmp = ni.number_tmp;
-            for (PS::S32 i=0; i<8; i++){
-                id_local[i] = ni.id_local[i];
-                rank[i]     = ni.rank[i];
-            }
+            number = ni.number;
+            rank   = ni.rank;
+            id_max = ni.id_max;
+            id_min = ni.id_min;
+            //for (PS::S32 i=0; i<NGB_LIST_SIZE; i++) id[i] = ni.id[i];
         }
         return *this;
     }
     
     void clear(){
-        number = number_tmp = 0;
-        for (PS::S32 i=0; i<8; i++){
-            id_local[i] = -1;
-            rank[i]     = -1;
-        }
+        number = rank = 0;
+        id_max = -1;
+        id_min = S32_MAX-1;
+        //for (PS::S32 i=0; i<NGB_LIST_SIZE; i++) id[i] = 0;
     }
     void copy(const NeighborInfo & ni){
-        number     = ni.number;
-        number_tmp = ni.number_tmp;
-        for (PS::S32 i=0; i<8; i++){
-            id_local[i] = ni.id_local[i];
-            rank[i]     = ni.rank[i];
-        }
+        number = ni.number;
+        rank   = ni.rank;
+        id_max = ni.id_max;
+        id_min = ni.id_min;
+        //for (PS::S32 i=0; i<NGB_LIST_SIZE; i++) id[i] = ni.id[i];
     }
-    //void setNumber() {
-    //    number_tmp = number;
-    //    id_local[0] = rank[0] = -1;
-    //}
-    //PS::S32 getNumber() const { return number-number_tmp; }
     PS::S32 getId(const PS::S32 i) const {
-        if (i<8) return id_local[i];
+        //if (i<NGB_LIST_SIZE) return id[i];
+        if (i==0) return id_min;
+        if (i==1) return id_max;
         return -1;
     }
-    PS::S32 getRank(const PS::S32 i) const {
-        if (i<8) return rank[i];
-        return -1;
-    }
+    bool inDomain() const { return (rank == 0); }
 };
 
 class ForceGrav{
@@ -102,12 +92,12 @@ public:
 
 class EPIGrav{
 public:
-    PS::S32 id_local;     // local id number
-    PS::S32 myrank;       // rank number
+    PS::S32 id_local;     // local id
+    PS::S32 myrank;       // rank
     
-    PS::F64vec pos;     // position in cartesian
+    PS::F64vec pos;       // position in cartesian
 #ifdef USE_POLAR_COORDINATE
-    PS::F64vec pos_pol; // position in polar
+    PS::F64vec pos_pol;   // position in polar
 #endif
 
 #ifdef USE_INDIVIDUAL_CUTOFF
@@ -158,19 +148,28 @@ PS::F64 EPIGrav::r_search;
 
 class EPJGrav : public EPIGrav {
 public:
-    //PS::S64 id;
+    PS::S64 id;           // id
     
     PS::F64 mass;         // mass
+    
+    PS::F64vec vel;       // valocity
+    PS::F64vec acc_d;     // acceleration(hard)
 
     PS::F64 getCharge() const { return mass; }
 
     template <class Tp>
     void copyFromFP(const Tp & fp){
         EPIGrav::copyFromFP(fp);
-        mass     = fp.mass;
+        id    = fp.id;
+        
+        mass  = fp.mass;
+
+        vel   = fp.vel;
+        acc_d = fp.acc_d;
     }
 };
 
+/*
 class EPNgb{
 public:
     PS::S32 myrank;
@@ -205,7 +204,7 @@ public:
         r_search  = 0.;
 #endif
     }
-    /*
+    
     EPNgb(const EPNgb & ep){
         id_local = ep.id_local;
         myrank   = ep.myrank;
@@ -221,7 +220,7 @@ public:
         r_search  = ep.r_search;
 #endif
     }
-    */
+    
 
     
     EPNgb(const PS::S32 id_loc) {
@@ -324,7 +323,7 @@ public:
         fout<<"time="<<time<<std::endl;
 #endif
     }
-};
+    };*/
 
 
 /////////////////////
@@ -404,13 +403,11 @@ inline PS::F64 calcDt6th(PS::F64 eta,
 
 class FPGrav : public EPJGrav {
 public:
-    PS::S64 id;
-
-    PS::F64vec vel;       // valocity
-    PS::F64vec acc_d;     // acceleration for hard part
-    PS::F64vec acc;    // acceleration for soft part
+    //PS::S64 id;
+   
+    PS::F64vec acc;    // acceleration(soft)
     PS::F64vec acc_s;  // acceleration by sun
-    PS::F64vec jerk_d; // jerk by planet
+    PS::F64vec jerk_d; // jerk
     PS::F64vec jerk_s; // jerk by sun
 #ifdef INTEGRATE_6TH_SUN
     PS::F64vec acc_;
@@ -418,8 +415,8 @@ public:
 #endif
     PS::F64vec acc_gd; // acceleration by gas drag
 
-    PS::F64 phi;       // potential for soft part
-    PS::F64 phi_d;     // potential by planets
+    PS::F64 phi;       // potential(soft)
+    PS::F64 phi_d;     // potential(hard)
     PS::F64 phi_s;     // potential by sun
     static PS::F64 m_sun;
     static PS::F64 dens;

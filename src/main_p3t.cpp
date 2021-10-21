@@ -29,6 +29,7 @@ constexpr PS::F64 M_MKS = 1.9884e30;
 constexpr PS::F64 M_CGS = 1.9884e33;
 constexpr PS::F64 T_MKS = 365.25*24.*60.*60./(2.*MY_PI);
 constexpr PS::F64 T_CGS = 365.25*24.*60.*60./(2.*MY_PI);
+constexpr PS::S64 S32_MAX = (1LL<<31);
 
 #include "mathfunc.h"
 #include "kepler.h"

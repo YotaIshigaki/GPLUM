@@ -42,7 +42,8 @@ void correctForceBetween2Particles(Tpsys &   pp,
     PS::F64 massj  = epj.mass;
 #ifdef USE_INDIVIDUAL_CUTOFF
     PS::F64 r_out     = std::max(pp[i].r_out,     epj.r_out);
-    PS::F64 r_out_inv = std::min(pp[i].r_out_inv, epj.r_out_inv);
+    //PS::F64 r_out_inv = std::min(pp[i].r_out_inv, epj.r_out_inv);
+    PS::F64 r_out_inv = 1. / r_out;
     PS::F64 r_search  = std::max(pp[i].r_search,  epj.r_search);
 #else
     PS::F64 r_out     = FP_t::r_out;
@@ -50,7 +51,7 @@ void correctForceBetween2Particles(Tpsys &   pp,
     PS::F64 r_search  = FP_t::r_search;
 #endif
 
-    if ( j_id == pp[i].id) {
+    if ( j_id == pp[i].id ) {
         phii += massj * r_out_inv;
         return;
     }
@@ -62,7 +63,7 @@ void correctForceBetween2Particles(Tpsys &   pp,
     assert( j_id > -1 );
     dr2 += eps2;
     PS::F64 rij = sqrt(dr2);
-    assert( rij < r_search * 1.1 );
+    assert( rij < r_search * 1.2 );
     
 #ifdef USE_RE_SEARCH_NEIGHBOR
     PS::F64vec dv      = epj.vel   - pp[i].vel;
@@ -123,7 +124,8 @@ void correctForceBetween2ParticlesInitial(Tpsys &   pp,
     PS::F64 massj  = epj.mass;
 #ifdef USE_INDIVIDUAL_CUTOFF
     PS::F64 r_out     = std::max(pp[i].r_out,     epj.r_out);
-    PS::F64 r_out_inv = std::min(pp[i].r_out_inv, epj.r_out_inv);
+    //PS::F64 r_out_inv = std::min(pp[i].r_out_inv, epj.r_out_inv);
+    PS::F64 r_out_inv = 1. / r_out;
     PS::F64 r_search  = std::max(pp[i].r_search,  epj.r_search);  
 #else
     PS::F64 r_out     = FP_t::r_out;
@@ -142,7 +144,7 @@ void correctForceBetween2ParticlesInitial(Tpsys &   pp,
     assert( j_id > -1 );
     dr2 += eps2;
     PS::F64 rij   = sqrt(dr2);
-    assert( rij < r_search * 1.1 );
+    assert( rij < r_search * 1.2 );
                     
     PS::F64vec dv      = epj.vel - pp[i].vel;
     PS::F64    drdv    = dr * dv;
@@ -197,15 +199,15 @@ void correctForceLong(Tpsys & pp,
                       PS::S32 & n_ngb_tot,
                       PS::S32 & n_with_ngb)
 {
-    const PS::S32 n_loc = pp.getNumberOfParticleLocal();
+    const PS::S32 n_loc  = pp.getNumberOfParticleLocal();
     const PS::F64 eps2 = FP_t::eps2;
 	//auto time0 = PS::GetWtime();    
     NList.initializeList(pp);
     //auto time1 = PS::GetWtime();
     
-    NList.makeTemporaryNeighborList(pp, tree_grav);
+    //NList.makeTemporaryNeighborList(pp, tree_grav);
     //auto time2 = PS::GetWtime();    
-    NList.exchangeNeighborInfo(pp);
+    //NList.exchangeNeighborInfo(pp);
     //auto time3 = PS::GetWtime();
 
     n_ngb_tot    = 0;
@@ -230,7 +232,7 @@ void correctForceLong(Tpsys & pp,
             //} else if ( neighbor == 1 ) {
         } else {
             assert ( neighbor > 0 );
-            EPNgb epj;
+            //EPNgb epj;
             
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = pp[i].r_out_inv;
@@ -239,9 +241,25 @@ void correctForceLong(Tpsys & pp,
 #endif
             phii += pp[i].mass * r_out_inv;
             
+            
+            if ( neighbor > 2 || ! pp[i].neighbor.inDomain() ) {
+                EPJ_t* next = NULL;
+                neighbor = tree_grav.getNeighborListOneParticle(pp[i], next);
+                
+                for ( PS::S32 j=0; j<neighbor; j++ ) {
+                    if ( next[j].id ==  pp[i].id ) continue;
+                    correctForceBetween2Particles(pp, i, next[j], phii, acci, acc0i, NList);
+                }
+            } else {
+                for ( PS::S32 j=0; j<neighbor; j++ ) {
+                    PS::S32 id_loc = pp[i].neighbor.getId(j);
+                    assert( id_loc != i );
+                    correctForceBetween2Particles(pp, i, pp[id_loc], phii, acci, acc0i, NList);
+                }
+            }
 
-            PS::U32 n_size = neighbor;
-            for ( PS::S32 j=0; j<n_size; j++ ) {
+            /*
+            for ( PS::S32 j=0; j<neighbor; j++ ) {
                 PS::S32 rank   = NList.n_list_tmp[i][j].rank;
                 PS::S32 id_loc = NList.n_list_tmp[i][j].id_local;
                 assert( rank > -1 );
@@ -275,7 +293,9 @@ void correctForceLong(Tpsys & pp,
             //for(PS::S32 j=0; j<n_ngb; j++){
             //    correctForceBetween2Particles(pp, i, next[j], phii, acci, acc0i, NList);
             //}
+            
             }
+            */
         }
 
         if ( pp[i].neighbor.number ){
@@ -309,8 +329,8 @@ void correctForceLongInitial(Tpsys & pp,
     const PS::F64 eps2 = FP_t::eps2;
     NList.initializeList(pp);
 
-    NList.makeTemporaryNeighborList(pp, tree_grav);
-    NList.exchangeNeighborInfo(pp);
+    //NList.makeTemporaryNeighborList(pp, tree_grav);
+    //NList.exchangeNeighborInfo(pp);
 
     PS::F64vec acc_d[n_loc];
 #pragma omp parallel for
@@ -351,16 +371,32 @@ void correctForceLongInitial(Tpsys & pp,
             //} else if ( neighbor == 1 ) {
         } else {
             assert ( neighbor > 0 );
-            EPNgb epj;
-
+            //EPNgb epj;
+            
 #ifdef USE_INDIVIDUAL_CUTOFF
             PS::F64 r_out_inv = pp[i].r_out_inv;
 #else
             PS::F64 r_out_inv = FP_t::r_out_inv;
 #endif
             phii += pp[i].mass * r_out_inv;
-
-
+            
+            
+            if ( neighbor > 2 || ! pp[i].neighbor.inDomain() ) {
+                EPJ_t* next = NULL;
+                neighbor = tree_grav.getNeighborListOneParticle(pp[i], next);
+                
+                for ( PS::S32 j=0; j<neighbor; j++ ) {
+                    if ( next[j].id ==  pp[i].id ) continue;
+                    correctForceBetween2ParticlesInitial(pp, i, next[j], phii, phi_di, acci, acc_di, jerki, acc0i, NList);
+                }
+            } else {
+                for ( PS::S32 j=0; j<neighbor; j++ ) {
+                    PS::S32 id_loc = pp[i].neighbor.getId(j);
+                    assert( id_loc != i );
+                    correctForceBetween2ParticlesInitial(pp, i, pp[id_loc], phii, phi_di, acci, acc_di, jerki, acc0i, NList);
+                }
+            }
+            /*
             PS::U32 n_size = neighbor;
             for ( PS::S32 j=0; j<n_size; j++ ) {
                 PS::S32 rank   = NList.n_list_tmp[i][j].rank;
@@ -394,6 +430,7 @@ void correctForceLongInitial(Tpsys & pp,
             //    correctForceBetween2ParticlesInitial(pp, i, next[j], phii, phi_di, acci, acc_di, jerki, acc0i, NList);
             //}
             }
+            */
         }
 
         if ( pp[i].neighbor.number ){

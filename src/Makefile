@@ -21,7 +21,7 @@ use_MPI = yes
 ################
 ###   SIMD   ###
 ################
-#use_AVX2 = yes
+use_AVX2 = yes
 #use_AVX512 = yes
 #use_SVE = yes
 

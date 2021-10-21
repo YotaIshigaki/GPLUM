@@ -1,0 +1,74 @@
+EPI S32    idi:id_local
+EPI S32    ranki:myrank
+EPI F64vec xi:pos
+EPI F64    routi:r_out
+EPI F64    rsearchi:r_search
+F32 eps2
+
+EPJ S32    idj:id_local
+EPJ S32    rankj:myrank
+EPJ F64vec xj:pos
+EPJ F64    routj:r_out
+EPJ F64    rsearchj:r_search
+EPJ S64    idj_:id
+EPJ F64    mj:mass
+EPJ F64vec vj:vel
+EPJ F64vec aj:acc_d
+
+FORCE F32vec af:acc
+FORCE F32    pf:phi
+FORCE S32    ngbf:neighbor__DOT__number
+FORCE S32    rankf:neighbor__DOT__rank
+FORCE S32    id_maxf:neighbor__DOT__id_max
+FORCE S32    id_minf:neighbor__DOT__id_min
+
+
+EPI local F32vec xiloc
+EPI local F32    rsearchiloc
+EPI local F32    routiloc
+
+EPJ local F32vec xjloc
+EPJ local F32    mjloc
+EPJ local F32    rsearchjloc
+EPJ local F32    routjloc
+
+xiloc       = xi - xi[0]
+rsearchiloc = rsearchi
+routiloc    = routi
+
+xjloc       = xj - xi[0]
+mjloc       = mj
+rsearchjloc = rsearchj
+routjloc    = routj
+
+rout     = max(routjloc, routiloc)
+rsearch  = max(rsearchjloc, rsearchiloc)
+rout2    = rout * rout
+//rsearch2 = rsearch * rsearch * 1.0201f
+rsearch2 = rsearch * rsearch * 1.201f
+
+rij     = xjloc - xiloc
+r2_real = rij*rij + eps2
+r2      = max(r2_real, rout2)
+
+rank_sub  = ranki - rankj
+rank_sub2 = rank_sub * rank_sub
+
+if r2_real < rsearch2
+if idi != idj || ranki != rankj
+ngbf    = ngbf + 1
+rankf   = rankf + rank_sub2
+id_maxf = max(id_maxf, idj)
+id_minf = min(id_minf, idj)
+endif
+endif
+
+r_inv   = rsqrt(r2)
+tmp     = 3.0f - r2*(r_inv*r_inv)
+r_inv  *= (tmp * 0.5f)
+r2_inv  = r_inv * r_inv
+mr_inv  = mjloc * r_inv
+mr3_inv = r2_inv * mr_inv
+
+af    += mr3_inv * rij
+pf    -= mr_inv
