@@ -120,8 +120,8 @@ class Collision0{
     }
 
     void write2File(std::ofstream & fp) const {
-        PS::F64vec ximp = pos_imp - pos_tar;
-        PS::F64vec vimp = vel_imp - vel_tar;
+        //PS::F64vec ximp = pos_imp - pos_tar;
+        //PS::F64vec vimp = vel_imp - vel_tar;
         PS::F64vec dpos_g = pos_g_new - pos_g;
         PS::F64vec dvel_g = vel_g_new - vel_g;
         PS::S32 Flag = 0;

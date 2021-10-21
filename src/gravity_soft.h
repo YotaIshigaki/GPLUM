@@ -207,7 +207,7 @@ void correctForceLong(Tpsys & pp,
                       PS::S32 & n_with_ngb)
 {
     const PS::S32 n_loc  = pp.getNumberOfParticleLocal();
-    const PS::F64 eps2 = FP_t::eps2;
+    //const PS::F64 eps2 = FP_t::eps2;
 	//auto time0 = PS::GetWtime();    
     NList.initializeList(pp);
     //auto time1 = PS::GetWtime();
@@ -333,7 +333,7 @@ void correctForceLongInitial(Tpsys & pp,
                              PS::S32 & n_with_ngb)
 {
     const PS::S32 n_loc = pp.getNumberOfParticleLocal();
-    const PS::F64 eps2 = FP_t::eps2;
+    //const PS::F64 eps2 = FP_t::eps2;
     NList.initializeList(pp);
 
     //NList.makeTemporaryNeighborList(pp, tree_grav);

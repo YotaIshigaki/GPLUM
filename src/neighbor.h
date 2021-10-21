@@ -113,7 +113,7 @@ public:
 
     PS::S32 input(std::vector<PS::S32> & inp,
                   const PS::S32 ofs){
-        assert( ofs+size+6 <= inp.size() );
+        assert( ofs+size+6 <= (PS::S32)inp.size() );
         //id_in_rank_local  = inp[1];
         //id_out_rank_local = inp[0];
         //id_cluster = inp[2];
@@ -128,7 +128,7 @@ public:
     }
     PS::S32 output(std::vector<PS::S32> & outp,
                    const PS::S32 ofs){
-        assert( ofs+size+6 <= outp.size() );
+        assert( ofs+size+6 <= (PS::S32)outp.size() );
         //outp[0] = id_in_rank_local;
         //outp[1] = id_out_rank_local;
         //outp[2] = id_cluster;
@@ -359,7 +359,7 @@ public:
                        const PS::S32 j_id_loc) {
         assert( j_rank > -1 && j_rank < PS::Comm::getNumberOfProc() );
         assert( j_id_loc > -1 && i_id_loc > -1);
-        const PS::U32 n_size = ex_data[j_rank].size();
+        const PS::S32 n_size = ex_data[j_rank].size();
         assert( n_size > 0 );
 
         for (PS::S32 i=0; i<n_size; i++)

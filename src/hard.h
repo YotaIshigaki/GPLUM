@@ -104,7 +104,7 @@ public:
     std::vector<PS::S32>   col_recv;
     std::vector<PS::S32>   frag_recv;
     PS::F64 timers[NHARDTIMERS];
-    PS::S32 n_hard_reserved;
+    PS::U32 n_hard_reserved;
     
 
     PS::S32 getNumberOfClusterLocal() const { return ptcl_multi.size(); }
@@ -197,10 +197,10 @@ public:
     void reserve_hard(const PS::U32 n) { ptcl_multi.reserve_hard(n); }
 #else
     void reserve_hard(const PS::U32 n) {
-	if (n > n_hard_reserved){
-	    n_hard_reserved= n* 2;
-	    ptcl_multi.reserve_hard(n_hard_reserved);
-	}
+        if (n > n_hard_reserved){
+            n_hard_reserved= n* 2;
+            ptcl_multi.reserve_hard(n_hard_reserved);
+        }
     }
 #endif    
     
@@ -223,8 +223,7 @@ public:
 
     void initialize()
     {
-	n_hard_reserved = 0;
-
+        n_hard_reserved = 0;
     }
     void clear(){
     //        list_iso.clear();

@@ -260,7 +260,7 @@ PS::S32 Parameter::checkParameter()
                          "(nx = "+ std::to_string(nx)
                          + ", ny = " + std::to_string(ny) + ").");
             return 1;
-        } else if ( RANK_LIST_SIZE * 8 * sizeof(PS::S32) < PS::Comm::getNumberOfProc() ) {
+        } else if ( RANK_LIST_SIZE * 8 * (PS::S32)sizeof(PS::S32) < PS::Comm::getNumberOfProc() ) {
             errorMessage("RANK_LIST_SIZE have NOT been set to satisfy RANK_LIST_SIZE * 32 < number of process. Please chack neighbor.h .",
                          "(nx = "+ std::to_string(nx)
                          + ", ny = " + std::to_string(ny) + ").");
