@@ -275,7 +275,7 @@ int main(int argc, char *argv[])
         system_grav.readParticleBinary(param.init_file, header);
         if ( PS::Comm::getRank() == 0 ){
             istep = (PS::S32)round(header.time/dt_tree);
-            isnap = (PS::S32)round(header.time/param.dt_snap);
+            isnap = (PS::S32)floor(header.time/param.dt_snap);
             e_init = header.e_init;
             e_now = header.e_now;
         }

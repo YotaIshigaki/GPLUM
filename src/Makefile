@@ -1,27 +1,28 @@
 #PS_PATH_FDPS = ../FDPS/src/
 PS_PATH_FDPS = ../fdps-devel/src/
-PS_PATH_PIKG = ../PIKG/
+#PS_PATH_FDPS = ../FDPS/src/
+PS_PATH_PIKG = ../PIKG-0.1d/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)inc
 
 ####################
 ###   Compiler   ###
 ####################
-#CC = clang++ -std=c++14
-CC = mpic++ -std=c++14
+CC = clang++ -std=c++14
+#CC = mpic++ -std=c++14
 #CC = time FCCpx -Nclang
 #CC = time mpiFCCpx -Nclang
 
 ########################
 ###   MPI & OpenMP   ###
 ########################
-use_OpenMP = yes
-use_MPI = yes
+#use_OpenMP = yes
+#use_MPI = yes
 
 ################
 ###   SIMD   ###
 ################
-#use_AVX2 = yes
+use_AVX2 = yes
 #use_AVX512 = yes
 #use_SVE = yes
 
@@ -51,14 +52,17 @@ output_detail = yes
 #calc_time = yes
 
 p2p_fast = yes
+#use_PIKG = yes
 
 
 CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
-//CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
+#CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
 CFLAGS += -DPARTICLE_SIMULATOR_USE_SAMPLE_SORT
+
+CFLAGS += -DCHECK_NEIGHBOR_FOR_DEBUG
 
 ifeq ($(use_OpenMP),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
@@ -154,16 +158,22 @@ endif
 ifeq ($(p2p_fast),yes)
 CFLAGS += -DUSE_P2P_FAST
 endif
+ifeq ($(use_PIKG),yes)
+CFLAGS += -DUSE_PIKG
+endif
 
 CFLAGS += -DMONAR
 #CFLAGS += -g
 
 SRC = main_p3t.cpp
+ifeq ($(use_PIKG),yes)
+SRC += gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
+endif
 PROGRAM = gplum.out
 HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
 
-$(PROGRAM): $(SRC) gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
+$(PROGRAM): $(SRC)
 	$(CC) -MMD $(INC) $(CFLAGS) -o $@ $(SRC)
 
 gravity_kernel_epep.hpp: gravity_kernel_epep.pikg

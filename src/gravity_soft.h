@@ -29,6 +29,49 @@ template<> inline PS::F64 getROutInvMin<EPJ_t, FP_t>(EPJ_t & p0, FP_t & p1) { re
 template<> inline PS::F64 getROutInvMin<EPJ_t, EPJ_t>(EPJ_t & p0, EPJ_t & p1) { return std::min(1./p0.r_out, 1./p1.r_out); }
 template<class Tp0, class Tp1> inline PS::F64 getROutInverseMin(Tp0 & p0, Tp1 & p1){ return getROutInvMin<Tp0, Tp1>(p0, p1); }
 
+template <class Tpsys, class Tptree>
+void chechNeighborForDebug(Tpsys &  pp,
+                           Tptree & tree_grav,
+                           PS::S32 i,
+                           PS::S32 neighbor){
+    const PS::F64 eps2 = FP_t::eps2;
+    
+    EPJ_t* next = NULL;
+    PS::S32 neighbor0 = tree_grav.getNeighborListOneParticle(pp[i], next);
+    
+    for ( PS::S32 j=0; j<neighbor0; j++ ) {
+        if ( next[j].id ==  pp[i].id ) continue;
+        EPJ_t & epj = next[j];
+
+#ifdef USE_INDIVIDUAL_CUTOFF
+        PS::F64 r_search  = std::max(pp[i].r_search,  epj.r_search);  
+#else
+        PS::F64 r_search  = FP_t::r_search;
+#endif
+        
+        PS::F64vec dr  = epj.pos - pp[i].pos;
+        PS::F64    dr2 = dr * dr;
+        assert( dr2 != 0.0 );
+        dr2 += eps2;
+        PS::F64 rij = sqrt(dr2);
+        assert( rij < r_search * 1.5 );
+        
+        if ( rij < r_search ) {
+            PS::S32 neighbor_check = 0;
+            for ( PS::S32 k=0; k<neighbor; k++ ) {
+                PS::S32 id_loc = pp[i].neighbor.getId(k);
+                if ( pp[id_loc].id == epj.id ) neighbor_check++;
+            }
+            if ( neighbor_check == 0 ) {
+                std::cerr << "Particle " << epj.id << " is NOT found as neighbor of particle " << pp[i].id << std::endl;
+            } else if ( neighbor_check > 1 ) {
+                std::cerr << "Particle " << epj.id << " is overlaps " << neighbor_check << " times in neighbor list of particle " << pp[i].id << std::endl;
+            }
+            assert( neighbor_check == 1 );
+        }
+    }
+}
+
 template <class Tpsys, class Tp>
 void correctForceBetween2Particles(Tpsys &   pp,
                                    PS::S32 & i,
@@ -70,7 +113,7 @@ void correctForceBetween2Particles(Tpsys &   pp,
     assert( j_id > -1 );
     dr2 += eps2;
     PS::F64 rij = sqrt(dr2);
-    assert( rij < r_search * 1.2 );
+    assert( rij < r_search * 2. );
     
 #ifdef USE_RE_SEARCH_NEIGHBOR
     PS::F64vec dv      = epj.vel   - pp[i].vel;
@@ -151,7 +194,7 @@ void correctForceBetween2ParticlesInitial(Tpsys &   pp,
     assert( j_id > -1 );
     dr2 += eps2;
     PS::F64 rij   = sqrt(dr2);
-    assert( rij < r_search * 1.2 );
+    assert( rij < r_search * 2. );
                     
     PS::F64vec dv      = epj.vel - pp[i].vel;
     PS::F64    drdv    = dr * dv;
@@ -258,6 +301,9 @@ void correctForceLong(Tpsys & pp,
                     correctForceBetween2Particles(pp, i, next[j], phii, acci, acc0i, NList);
                 }
             } else {
+#ifdef CHECK_NEIGHBOR_FOR_DEBUG
+                chechNeighborForDebug(pp, tree_grav, i, neighbor);
+#endif
                 for ( PS::S32 j=0; j<neighbor; j++ ) {
                     PS::S32 id_loc = pp[i].neighbor.getId(j);
                     assert( id_loc != i );
@@ -397,6 +443,9 @@ void correctForceLongInitial(Tpsys & pp,
                     correctForceBetween2ParticlesInitial(pp, i, next[j], phii, phi_di, acci, acc_di, jerki, acc0i, NList);
                 }
             } else {
+#ifdef CHECK_NEIGHBOR_FOR_DEBUG
+                chechNeighborForDebug(pp, tree_grav, i, neighbor);
+#endif
                 for ( PS::S32 j=0; j<neighbor; j++ ) {
                     PS::S32 id_loc = pp[i].neighbor.getId(j);
                     assert( id_loc != i );

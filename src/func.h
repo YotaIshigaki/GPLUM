@@ -169,7 +169,7 @@ void MergeParticle(Tpsys & pp,
 
 #pragma omp parallel for reduction (-:edisp_loc)
     for ( PS::S32 i=0; i<n_loc; i++ ){
-        if ( pp[i].isMerged ) {
+        if ( pp[i].isMerged && !pp[i].isDead ) {
             for ( PS::S32 j=0; j<n_loc; j++ ){              
                 if ( pp[j].id == pp[i].id && i != j ){
                     PS::F64 mi = pp[i].mass;

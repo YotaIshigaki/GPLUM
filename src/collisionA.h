@@ -138,6 +138,8 @@ class Collision0{
            << this->mass_imp  << "\t" << this->mass_tar  << "\t" << this->mass_frag << "\t"
            << this->pos_imp.x  << "\t" << this->pos_imp.y  << "\t" << this->pos_imp.z << "\t"
            << this->pos_tar.x  << "\t" << this->pos_tar.y  << "\t" << this->pos_tar.z << "\t"
+           << this->vel_imp.x  << "\t" << this->vel_imp.y  << "\t" << this->vel_imp.z << "\t"
+           << this->vel_tar.x  << "\t" << this->vel_tar.y  << "\t" << this->vel_tar.z << "\t"
             //<< sqrt(ximp*ximp) << "\t" << sqrt(vimp*vimp) << "\t"
             //<< this->col_angle << "\t"
            << Flag << "\t"

@@ -101,7 +101,7 @@ PS::S32 collisionDetermination(Tpsys & pp,
 {
     PS::F64 R_min = 1.;
 #ifdef MERGE_BINARY
-    PS::F64 E_min = 0.;
+    PS::F64 E_min = -1.;
 #endif
     PS::S32 flag_col = 0;
     
@@ -148,6 +148,7 @@ PS::S32 collisionDetermination(Tpsys & pp,
                 PS::F64vec r_c = (mi*ri + mj*rj) / (mi + mj);
                 PS::F64    ax  = sqrt(r_c * r_c);
                 PS::F64    r_H = pow((mi+mj)/(3.*FP_t::m_sun), 1./3.) * ax;
+                PS::F64 Omega  = sqrt(FP_t::m_sun / (ax*ax*ax));
  
                 PS::F64 R_merge = std::min(pp[i].R_merge, pp[j].R_merge);  
                 R = r1 / ( R_merge * r_H );
@@ -162,17 +163,18 @@ PS::S32 collisionDetermination(Tpsys & pp,
                     ez.y = v_c.z*ex.x - v_c.x*ex.z;
                     ez.z = v_c.x*ex.y - v_c.y*ex.x;
                     ez = ez / sqrt(ez*ez) ;
-                    
+               
                     PS::F64vec dr = ri - rj;
                     PS::F64vec dv = vi - vj;
                     PS::F64 dr_x = dr * ex;
                     PS::F64 dr_z = dr * ez;
                     
-                    PS::F64 Omega = sqrt(FP_t::m_sun / (ax*ax*ax));
-                    
                     PS::F64 E_J = 0.5*dv*dv
                         + Omega*Omega*(-1.5*dr_x*dr_x + 0.5*dr_z*dr_z +4.5*r_H*r_H)
                         - (mi + mj) / sqrt(dr*dr);
+
+                    PS::F64 E_merge = std::min(pp[i].E_merge, pp[j].E_merge);
+                    E_J = E_J / (E_merge * mi * mj / r_H);
                     
                     if ( E_J < E_min ){
                         E_min = E_J;

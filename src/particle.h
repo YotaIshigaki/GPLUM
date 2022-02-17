@@ -1,9 +1,9 @@
 #pragma once
 
 #ifdef USE_POLAR_COORDINATE
-#define SAFTY_FACTOR 1.1
+#define SAFTY_FACTOR 1.5
 #else
-#define SAFTY_FACTOR 1.05
+#define SAFTY_FACTOR 1.1
 #endif
 #define SAFTY_FACTOR2 1.0201f
 
@@ -494,6 +494,7 @@ public:
 #ifdef MERGE_BINARY
     bool isBinary;
     static PS::F64 R_merge;
+    static PS::F64 E_merge;
 #endif
 
     static void readParameter(std::string name,
@@ -528,6 +529,7 @@ public:
 #endif
 #ifdef MERGE_BINARY
         if ( name == "R_merge" ) R_merge = getvalue(value, 1., 1.);
+        if ( name == "E_merge" ) E_merge = getvalue(value, 1., 1.);
 #endif
 #ifdef CONSTANT_RANDOM_VELOCITY
         if ( name == "v_disp" ) v_disp = getvalue(value, L_MKS/T_MKS, L_CGS/T_CGS);
@@ -570,6 +572,7 @@ public:
 #endif
 #ifdef MERGE_BINARY
         PS::Comm::broadcast(&R_merge, 1);
+        PS::Comm::broadcast(&E_merge, 1);
 #endif
 #ifdef CONSTANT_RANDOM_VELOCITY
         PS::Comm::broadcast(&v_disp, 1);
@@ -599,6 +602,7 @@ public:
 #endif
 #ifdef MERGE_BINARY
              << "R_merge       = " << R_merge << std::endl
+             << "E_merge       = " << E_merge << std::endl
 #endif
 #ifdef CONSTANT_RANDOM_VELOCITY
              << "v_disp        = " << v_disp << "\t(" << v_disp*L_CGS/T_CGS << " cm/s)"<< std::endl
@@ -958,6 +962,7 @@ PS::F64 FPGrav::increase_factor = 1.;
 
 #ifdef MERGE_BINARY
 PS::F64 FPGrav::R_merge   = 0.2;
+PS::F64 FPGrav::E_merge   = 10.;
 #endif
 
 
