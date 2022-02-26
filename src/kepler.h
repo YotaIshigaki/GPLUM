@@ -68,7 +68,11 @@ void posVel2OrbitalElement(PS::F64vec pos,
         cosu = 1.;
         sinu = 0.;
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> develop
     PS::F64 aninv = sqrt(ax/mu);
     PS::F64 ecc_sq = sqrt(1.-ecc*ecc);
     P = rinv*cosu * pos - aninv*sinu * vel;

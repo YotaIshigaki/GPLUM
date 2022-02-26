@@ -99,53 +99,53 @@ PS::F64 getvalue(std::string value,
 }
 
 void errorMessage(std::string ermg){
-    if ( PS::Comm::getRank() == 0 ){
+    //if ( PS::Comm::getRank() == 0 ){
 #ifdef MONAR
-        std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
-                  << "  ( ;' A ')/ < ****** " << ermg << " ******" << std::endl
-                  << "              \\_______________________________________________________" << std::endl;
+    std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
+              << "  ( ;' A ')/ < ****** " << ermg << " ******" << std::endl
+              << "              \\_______________________________________________________" << std::endl;
 #else
-        std::cerr << " ****** " << ermg << " ******" << std::endl;
+    std::cerr << " ****** " << ermg << " ******" << std::endl;
 #endif
-    }
+    //}
 }
 
 void errorMessage(std::string ermg, std::string ermg1){
-    if ( PS::Comm::getRank() == 0 ){
+    //if ( PS::Comm::getRank() == 0 ){
 #ifdef MONAR
-        std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
-                  << "  ( ;' A ')/ < ****** " << ermg << std::endl
-                  << "             |        " << ermg1 << " ******" << std::endl
-                  << "              \\_______________________________________________________" << std::endl;
+    std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
+              << "  ( ;' A ')/ < ****** " << ermg << std::endl
+              << "             |        " << ermg1 << " ******" << std::endl
+              << "              \\_______________________________________________________" << std::endl;
 #else
-        std::cerr << " ****** " << ermg << std::endl
-                  << "        " << ermg1 << " ******" << std::endl;
+    std::cerr << " ****** " << ermg << std::endl
+              << "        " << ermg1 << " ******" << std::endl;
 #endif
-    }
+    //}
 }
 
 void successMessage(std::string scmg){
-    if ( PS::Comm::getRank() == 0 ){
+    //if ( PS::Comm::getRank() == 0 ){
 #ifdef MONAR
-        std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
-                  << "  (  ' v ')/ < ****** " << scmg << " ******" << std::endl
-                  << "              \\_______________________________________________________" << std::endl;
+    std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
+              << "  (  ' v ')/ < ****** " << scmg << " ******" << std::endl
+              << "              \\_______________________________________________________" << std::endl;
 #else
-        std::cerr << " ****** " << scmg << " ******" << std::endl;
+    std::cerr << " ****** " << scmg << " ******" << std::endl;
 #endif
-    }
+    //}
 }
 
 void successMessage(std::string scmg, std::string scmg1){
-    if ( PS::Comm::getRank() == 0 ){
+    //if ( PS::Comm::getRank() == 0 ){
 #ifdef MONAR
-        std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
-                  << "  (  ' v ')/ < ****** " << scmg << std::endl
-                  << "             |        " << scmg1 << " ******" << std::endl
-                  << "              \\_______________________________________________________" << std::endl;
+    std::cerr << "    ^---^     /-------------------------------------------------------" << std::endl
+              << "  (  ' v ')/ < ****** " << scmg << std::endl
+              << "             |        " << scmg1 << " ******" << std::endl
+              << "              \\_______________________________________________________" << std::endl;
 #else
-        std::cerr << " ****** " << scmg << std::endl
-                  << "        " << scmg1 << " ******" << std::endl;
+    std::cerr << " ****** " << scmg << std::endl
+              << "        " << scmg1 << " ******" << std::endl;
 #endif
-    }
+    //}
 }

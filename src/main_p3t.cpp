@@ -17,12 +17,19 @@
 
 #include <particle_simulator.hpp>
 
-#define GPLUMVERSION "2.4 (2021/09)"
+#define GPLUMVERSION "2.5 (2021/10)"
 
 #define PRC(x) std::cerr << #x << " = " << x << ", "
 #define PRL(x) std::cerr << #x << " = " << x << "\n"
 
 constexpr PS::F64 MY_PI = 3.14159265358979323846L;
+constexpr PS::F64 L_MKS = 149597870700;
+constexpr PS::F64 L_CGS = 14959787070000;
+constexpr PS::F64 M_MKS = 1.9884e30;
+constexpr PS::F64 M_CGS = 1.9884e33;
+constexpr PS::F64 T_MKS = 365.25*24.*60.*60./(2.*MY_PI);
+constexpr PS::F64 T_CGS = 365.25*24.*60.*60./(2.*MY_PI);
+constexpr PS::S64 S32_MAX = (1LL<<31);
 
 #include "mathfunc.h"
 #include "kepler.h"
@@ -53,8 +60,7 @@ using FPH_t = FPHard;
 #include "read.h"
 #include "time.h"
 #include "func.h"
-#include "gravity_kernel_epep.hpp"
-#include "gravity_kernel_epsp.hpp"
+#include "gravity_kernel.hpp"
 
 #ifdef USE_INDIVIDUAL_CUTOFF
 using MY_SEARCH_MODE = PS::SEARCH_MODE_LONG_SYMMETRY;
@@ -65,6 +71,12 @@ using MY_SEARCH_MODE = PS::SEARCH_MODE_LONG_SCATTER;
 using Tree_t = PS::TreeForForce<MY_SEARCH_MODE, Force_t, EPI_t, EPJ_t, Moment_t, Moment_t, SPJ_t, PS::CALC_DISTANCE_TYPE_NEAREST_X>;
 #else
 using Tree_t = PS::TreeForForce<MY_SEARCH_MODE, Force_t, EPI_t, EPJ_t, Moment_t, Moment_t, SPJ_t, PS::CALC_DISTANCE_TYPE_NORMAL>;
+#endif
+#define MY_INTERACTION_LIST_MODE PS::MAKE_LIST
+#ifdef USE_P2P_FAST
+#define MY_EXCHANGE_LET_MODE PS::EXCHANGE_LET_P2P_FAST
+#else
+#define MY_EXCHANGE_LET_MODE PS::EXCHANGE_LET_A2A
 #endif
 
 
@@ -79,36 +91,8 @@ int main(int argc, char *argv[])
     /*   Set Parameters   */
     ////////////////////////
     // Set Default Parameters
-    char param_file[256] = "parameter.dat";
-    
-    char init_file[256] = "INIT_3000.dat";
-    char output_dir[256] = "OUTPUT";
-    bool bHeader  = false;
-    bool bRestart = false;
-
-    bool makeInit = false;
-
-    PS::F64 coef_ema = 0.3;
-    PS::S32 nx = 0, ny = 0;
-    
-    PS::F64 theta         = 0.5;
-    PS::S32 n_leaf_limit  = 8;
-    PS::S32 n_group_limit = 256;
-    PS::S32 n_smp_ave     = 100;
-    
-    PS::F64 t_end       = 1.;
-    PS::F64 dt_snap     = pow2(-5);
-    PS::F64 dt_snap_tmp = pow2(-5);
-
-    PS::F64 r_max = 40.;
-    PS::F64 r_min = 0.1;
-
-    PS::S32 seed = 1;
-    PS::F64 wtime_max = 0.;
-
-    PS::S32 reset_step = 1024;
-
-    //FP_t::setGamma(FP_t::gamma);
+    Parameter param;
+    sprintf(param.param_file, "parameter.dat");
     
     // Read Parameter File
     opterr = 0;
@@ -124,7 +108,7 @@ int main(int argc, char *argv[])
     while ((opt = getopt(argc, argv, "p:ri:s:e:o:D:R:S:x:y:")) != -1) {
         switch (opt) {
         case 'p':
-            sprintf(param_file,"%s",optarg);
+            sprintf(param.param_file,"%s",optarg);
             break;
         case 'r':
             opt_r = true;
@@ -138,7 +122,7 @@ int main(int argc, char *argv[])
             opt_s = true;
             break;
         case 'e':
-            wtime_max = std::atof(optarg)*60.*60.;
+            param.wtime_max = std::atof(optarg)*60.*60.;
             break;
         case 'o':
             sprintf(output_dir_opt,"%s",optarg);
@@ -173,42 +157,35 @@ int main(int argc, char *argv[])
         }
     }
 
-    if ( readParameter(param_file, init_file, bHeader, output_dir, bRestart,  makeInit,
-                       coef_ema, nx, ny,
-                       theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                       t_end, dt_snap, dt_snap_tmp, r_max, r_min, seed, reset_step) ){
+    if ( readParameter(param) ){
         PS::Comm::barrier();
         PS::Abort();
         PS::Comm::barrier();
         PS::Finalize();
-        return 0;
-        
+        return 0;   
     }
     
-    if (opt_r) bRestart = true;
-    if (opt_i) sprintf(init_file,"%s",init_file_opt);
-    if (opt_s) seed = seed_opt;
-    if (opt_o) sprintf(output_dir,"%s",output_dir_opt);
+    if (opt_r) param.bRestart = true;
+    if (opt_i) sprintf(param.init_file,"%s",init_file_opt);
+    if (opt_s) param.seed = seed_opt;
+    if (opt_o) sprintf(param.output_dir,"%s",output_dir_opt);
     if (opt_D) FP_t::dt_tree = dt_opt;
     if (opt_R) FP_t::R_cut0 = Rcut0_opt;
     if (opt_S) FP_t::R_cut1 = Rcut1_opt;
-    if (opt_x) nx = nx_opt;
-    if (opt_y) ny = ny_opt;
+    if (opt_x) param.nx = nx_opt;
+    if (opt_y) param.ny = ny_opt;
 
-    if ( nx == 0 && ny == 0 ) {
-        nx = (int)sqrt(PS::Comm::getNumberOfProc());
-        while ( PS::Comm::getNumberOfProc()%nx != 0 ) nx++;
-        ny = PS::Comm::getNumberOfProc()/nx;
-    } else if ( nx == 0 ) {
-        nx = PS::Comm::getNumberOfProc()/ny;
-    } else if ( ny == 0 ) {
-        ny = PS::Comm::getNumberOfProc()/nx;
+    if ( param.nx == 0 && param.ny == 0 ) {
+        param.nx = (int)sqrt(PS::Comm::getNumberOfProc());
+        while ( PS::Comm::getNumberOfProc()%param.nx != 0 ) param.nx++;
+        param.ny = PS::Comm::getNumberOfProc()/param.nx;
+    } else if ( param.nx == 0 ) {
+        param.nx = PS::Comm::getNumberOfProc()/param.ny;
+    } else if ( param.ny == 0 ) {
+        param.ny = PS::Comm::getNumberOfProc()/param.nx;
     }
 
-    if ( checkParameter(init_file, bHeader, output_dir, bRestart,  makeInit,
-                        coef_ema, nx, ny,
-                        theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                        t_end, dt_snap, dt_snap_tmp, r_max, r_min, seed, reset_step) ){
+    if ( checkParameter(param) ){
         PS::Comm::barrier();
         PS::Abort();
         PS::Comm::barrier();
@@ -219,8 +196,8 @@ int main(int argc, char *argv[])
     FP_t::setGamma(FP_t::gamma);
     
     char dir_name[256];
-    //sprintf(dir_name,"./%s",output_dir);
-    sprintf(dir_name,"%s",output_dir);
+    //sprintf(dir_name,"./%s",param.output_dir);
+    sprintf(dir_name,"%s",param.output_dir);
     if ( makeOutputDirectory(dir_name) ){
         PS::Comm::barrier();
         PS::Abort();
@@ -228,9 +205,9 @@ int main(int argc, char *argv[])
         PS::Finalize();
         return 0;
     }
-    if ( bRestart ) sprintf(init_file, "%s/snap_tmp.dat", output_dir);
+    if ( param.bRestart ) sprintf(param.init_file, "%s/snap_tmp.dat", param.output_dir);
     
-    srand48( seed + PS::Comm::getRank() );
+    srand48( param.seed + PS::Comm::getRank() );
 
     PS::F64 time_sys = 0.;
     PS::S32 n_tot  = 0;
@@ -247,7 +224,7 @@ int main(int argc, char *argv[])
     // Soft System
     PS::ParticleSystem<FP_t> system_grav;
     system_grav.initialize();
-    system_grav.setAverageTargetNumberOfSampleParticlePerProcess(n_smp_ave);
+    system_grav.setAverageTargetNumberOfSampleParticlePerProcess(param.n_smp_ave);
     PS::S32 n_loc = 0;
     Energy e_init, e_now;
 #ifdef OUTPUT_DETAIL
@@ -258,24 +235,24 @@ int main(int argc, char *argv[])
     NeighborList NList;
     //ExPair::initialize();
 
-    if ( !bRestart ) {
-        if ( makeInit ){
+    if ( !param.bRestart ) {
+        if ( param.makeInit ){
             //Make Initial Condition
             SolidDisk::createInitialCondition(system_grav);
             istep = 0;
             isnap = 0;
             time_sys = 0.;
-            sprintf(init_file, "NONE");
-            bHeader = false;
+            sprintf(param.init_file, "NONE");
+            param.bHeader = false;
         } else {
             // Read Initial File
-            if ( bHeader ) {
+            if ( param.bHeader ) {
                 FileHeader header;
                 PS::F64 dt_tree = FP_t::dt_tree;
-                system_grav.readParticleAscii(init_file, header);
+                system_grav.readParticleAscii(param.init_file, header);
                 if ( PS::Comm::getRank() == 0 ){
                     istep = (PS::S32)round(header.time/dt_tree);
-                    isnap = (PS::S32)round(header.time/dt_snap);
+                    isnap = (PS::S32)round(header.time/param.dt_snap);
                     e_init = header.e_init;
                     e_now = header.e_now;
                 }
@@ -286,7 +263,7 @@ int main(int argc, char *argv[])
                 time_sys = istep*dt_tree;
                 id_next = header.id_next-1;
             } else {
-                system_grav.readParticleAscii(init_file);
+                system_grav.readParticleAscii(param.init_file);
                 istep = 0;
                 isnap = 0;
                 time_sys = 0.;
@@ -295,10 +272,10 @@ int main(int argc, char *argv[])
     } else {
         FileHeader header;
         PS::F64 dt_tree = FP_t::dt_tree;
-        system_grav.readParticleBinary(init_file, header);
+        system_grav.readParticleBinary(param.init_file, header);
         if ( PS::Comm::getRank() == 0 ){
             istep = (PS::S32)round(header.time/dt_tree);
-            isnap = (PS::S32)round(header.time/dt_snap);
+            isnap = (PS::S32)floor(header.time/param.dt_snap);
             e_init = header.e_init;
             e_now = header.e_now;
         }
@@ -318,7 +295,7 @@ int main(int argc, char *argv[])
         if ( system_grav[i].id > id_next ) id_next = system_grav[i].id;
         //}
         system_grav[i].time = time_sys;
-        system_grav[i].neighbor = system_grav[i].n_cluster = 0;
+        system_grav[i].neighbor.number = system_grav[i].n_cluster = 0;
         system_grav[i].isMerged = false;
         system_grav[i].isDead = false;
         if ( system_grav[i].r_planet <= 0. ) system_grav[i].setRPlanet();
@@ -347,8 +324,8 @@ int main(int argc, char *argv[])
     /*   Set Domain   */
     ////////////////////
     PS::DomainInfo dinfo;
-    dinfo.initialize(coef_ema);
-    dinfo.setNumberOfDomainMultiDimension(nx,ny,1);
+    dinfo.initialize(param.coef_ema);
+    dinfo.setNumberOfDomainMultiDimension(param.nx,param.ny,1);
     dinfo.setBoundaryCondition(PS::BOUNDARY_CONDITION_OPEN);
 #ifdef USE_POLAR_COORDINATE
     dinfo.setPosRootDomainX(-MY_PI, MY_PI);
@@ -365,26 +342,19 @@ int main(int argc, char *argv[])
     /*   Create Tree   */
     /////////////////////
     Tree_t tree_grav;
-    tree_grav.initialize(n_tot, theta, n_leaf_limit, n_group_limit);
-#ifdef USE_P2P_FAST
-    tree_grav.setExchangeLETMode(PS::EXCHANGE_LET_P2P_FAST);
-#endif
+    tree_grav.initialize(n_tot, param.theta, param.n_leaf_limit, param.n_group_limit);
+    tree_grav.setExchangeLETMode(MY_EXCHANGE_LET_MODE);
     
 #ifdef USE_RE_SEARCH_NEIGHBOR
     for (PS::S32 i=0; i<2; i++) {
 #endif
-        tree_grav.calcForceAllAndWriteBack(
-#ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(FP_t::eps2),
-#else
-                                           CalcForceLongEPEP(FP_t::eps2, FP_t::r_out, FP_t::r_search),
-#endif
-                                           CalcForceLongEPSP(FP_t::eps2),
+        tree_grav.calcForceAllAndWriteBack(calcForceEPEPWithSearch(),
+                                           calcForceEPSP(),
                                            system_grav,
                                            dinfo,
-                                           true, PS::MAKE_LIST_FOR_REUSE, false);
+                                           true, MY_INTERACTION_LIST_MODE, false);
         //NList.initializeList(system_grav);
-        if ( bRestart ) {
+        if ( param.bRestart ) {
             correctForceLong(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
         } else {
             correctForceLongInitial(system_grav, tree_grav, NList, n_ngb_tot, n_with_ngb);
@@ -414,35 +384,25 @@ int main(int argc, char *argv[])
 
     if ( PS::Comm::getRank() == 0 ) {
         sprintf(sout_eng, "%s/energy.dat",    dir_name);
-        //sprintf(sout_col, "%s/collision.dat", dir_name);
-        //sprintf(sout_rem, "%s/remove.dat",    dir_name);
         sprintf(sout_col, "%s/collision%06d.dat", dir_name, isnap+1);
         sprintf(sout_rem, "%s/remove%06d.dat",    dir_name, isnap+1);
         if ( time_sys == 0. ) {
             fout_eng.open(sout_eng, std::ios::out);
-            //fout_col.open(sout_col, std::ios::out);
-            //fout_rem.open(sout_rem, std::ios::out);
         } else {
             fout_eng.open(sout_eng, std::ios::app);
-            //fout_col.open(sout_col, std::ios::app);
-            //fout_rem.open(sout_rem, std::ios::app);
         }
         fout_col.open(sout_col, std::ios::out);
         fout_rem.open(sout_rem, std::ios::out);
     }
     //PS::Comm::barrier();
-    
-    showParameter(init_file, dir_name, makeInit,
-                  time_sys,
-                  coef_ema, nx, ny,
-                  theta, n_leaf_limit, n_group_limit, n_smp_ave,
-                  t_end, dt_snap, dt_snap_tmp, r_max, r_min, seed, reset_step);
+ 
+    showParameter(param, time_sys);
 
     ////////////////////////////////
     /*  Preparation Before Loop   */
     ////////////////////////////////
     e_now.calcEnergy(system_grav);
-    if ( !bHeader ) e_init = e_now;
+    if ( !param.bHeader ) e_init = e_now;
     PS::F64 de =  e_now.calcEnergyError(e_init);
     
     Wtime wtime;
@@ -510,20 +470,11 @@ int main(int argc, char *argv[])
         /*   Create Hard System   */
         ////////////////////////////
         NList.createConnectedRankList();
-        //NList.makeIdMap(system_grav);
-        
-        //PS::S32 ** ex_data_send = new PS::S32*[n_send];
-        //PS::S32 ** ex_data_recv = new PS::S32*[n_send];
-        //for ( PS::S32 ii=0; ii<n_send; ii++ ) {
-        //    PS::S32 n_size = NList.getNumberOfPairConnected(ii) * ExPair::getSize();            
-        //    ex_data_send[ii] = new PS::S32[n_size];
-        //    ex_data_recv[ii] = new PS::S32[n_size];
-        //}
         NList.resizeExDataBuffer();
 
         bool check = true;
         bool check_loc = true;
-        PS::S32 TAG = 10;
+        PS::S32 TAG = 32;
         while ( check ) {
             NList.createNeighborCluster(system_grav);
             NList.inputExData(system_grav);
@@ -532,13 +483,6 @@ int main(int argc, char *argv[])
             //PS::Comm::barrier();
             TAG ++ ;
         }
-        
-        // for ( PS::S32 ii=0; ii<n_send; ii++ ) {          
-        //     delete [] ex_data_send[ii];
-        //     delete [] ex_data_recv[ii];
-        // }
-        // delete [] ex_data_send;
-        // delete [] ex_data_recv;
 
         NList.selectSendRecvParticle(system_grav);
         
@@ -562,7 +506,7 @@ int main(int argc, char *argv[])
         system_ex.inputAdress();
         system_ex.inputExParticleSend(system_grav, NList);
         system_ex.sendRecvExParticle(NList);        
-        system_ex.inputNeighborListOfExParticleRecv();
+        //system_ex.inputNeighborListOfExParticleRecv();
 #endif
         
 #ifdef CALC_WTIME
@@ -579,7 +523,7 @@ int main(int argc, char *argv[])
         system_hard.reserve_hard(2 * (n_with_ngb + system_ex.getNumberOfParticleRecv()));
         n_in = system_hard.makeList(system_grav, system_ex);
         n_out = system_hard.timeIntegrate(system_grav, system_ex,
-                                          NList.n_list, system_ex.n_list, istep);
+                                          NList.n_list, istep);
         //system_hard.showParticleID();
         assert( n_in == n_out ); 
         assert( n_loc == system_hard.getNumberOfParticleLocal()-system_hard.getNumberOfFragmentLocal()
@@ -596,7 +540,7 @@ int main(int argc, char *argv[])
 #ifdef OUTPUT_DETAIL
         edisp_d      = system_hard.getHardEnergyDissipationGlobal();
 #endif
-        if( time_sys+FP_t::dt_tree  == dt_snap*isnap ){
+        if( time_sys+FP_t::dt_tree  == param.dt_snap*isnap ){
             n_largestcluster = system_hard.getNumberOfParticleInLargestClusterGlobal();
             n_cluster        = system_hard.getNumberOfClusterGlobal();
             n_isoparticle    = system_hard.getNumberOfIsolatedParticleGlobal();
@@ -611,11 +555,11 @@ int main(int argc, char *argv[])
         /*   Scatter Hard   */
         //////////////////////
         system_ex.returnExParticle(NList);
-        system_ex.outputExParticleSend(system_grav, NList);       
+        system_ex.outputExParticleSend(system_grav, NList);
 #endif
         ///   Hard Part
         ////////////////////              
-   
+ 
         PS::Comm::barrier();
         wtime.end_hard = wtime.start_soft = PS::GetWtime();
         wtime.hard += wtime.hard_step = wtime.end_hard - wtime.start_hard;
@@ -636,16 +580,11 @@ int main(int argc, char *argv[])
 #endif
         system_grav.exchangeParticle(dinfo);
         setIDLocalAndMyrank(system_grav, NList);
-        tree_grav.calcForceAllAndWriteBack(
-#ifdef USE_INDIVIDUAL_CUTOFF
-                                           CalcForceLongEPEP(FP_t::eps2),
-#else
-                                           CalcForceLongEPEP(FP_t::eps2, FP_t::r_out, FP_t::r_search),
-#endif
-                                           CalcForceLongEPSP(FP_t::eps2),
+        tree_grav.calcForceAllAndWriteBack(calcForceEPEPWithSearch(),
+                                           calcForceEPSP(),
                                            system_grav,
                                            dinfo,
-                                           true, PS::MAKE_LIST_FOR_REUSE, false);
+                                           true, MY_INTERACTION_LIST_MODE, false);
 #ifdef CALC_WTIME
         PS::Comm::barrier();
         wtime.calc_soft_force += wtime.calc_soft_force_step = wtime.lap(PS::GetWtime());
@@ -703,13 +642,13 @@ int main(int argc, char *argv[])
         }
 
         // Remove Particle Out Of Boundary
-        n_remove = removeParticlesOutOfBoundary(system_grav, e_now.edisp, r_max, r_min, fout_rem);
+        n_remove = removeParticlesOutOfBoundary(system_grav, e_now.edisp, param.r_max, param.r_min, fout_rem);
 
         ///////////////////////////
         /*   Re-Calculate Soft   */
         ///////////////////////////
-        if ( n_col || n_remove || istep % reset_step == reset_step-1 ) {
-            if( istep % reset_step == reset_step-1 ) {
+        if ( n_col || n_remove || istep % param.reset_step == param.reset_step-1 ) {
+            if( istep % param.reset_step == param.reset_step-1 ) {
 #ifdef USE_POLAR_COORDINATE
                 setPosPolar(system_grav);
 #endif
@@ -717,7 +656,7 @@ int main(int argc, char *argv[])
                 system_grav.exchangeParticle(dinfo);
  
                 // Remove Particle Out Of Boundary
-                //removeParticlesOutOfBoundary(system_grav, e_now.edisp, r_max, r_min, fout_rem);
+                //removeParticlesOutOfBoundary(system_grav, e_now.edisp, param.r_max, param.r_min, fout_rem);
             }
                 
             // Reset Number Of Particles
@@ -730,16 +669,11 @@ int main(int argc, char *argv[])
 #endif
             setIDLocalAndMyrank(system_grav, NList);
             setCutoffRadii(system_grav);
-            tree_grav.calcForceAllAndWriteBack(
-#ifdef USE_INDIVIDUAL_CUTOFF
-                                               CalcForceLongEPEP(FP_t::eps2),
-#else
-                                               CalcForceLongEPEP(FP_t::eps2, FP_t::r_out, FP_t::r_search),
-#endif
-                                               CalcForceLongEPSP(FP_t::eps2),
+            tree_grav.calcForceAllAndWriteBack(calcForceEPEPWithSearch(),
+                                               calcForceEPSP(),
                                                system_grav,
                                                dinfo,
-                                               true, PS::MAKE_LIST_FOR_REUSE, false);
+                                               true, MY_INTERACTION_LIST_MODE, false);
 #ifdef CALC_WTIME
             PS::Comm::barrier();
             PS::F64 time_tmp = wtime.lap(PS::GetWtime());
@@ -766,8 +700,7 @@ int main(int argc, char *argv[])
    
         ///   Soft Part
         ////////////////////
-
-        //for(PS::S32 i=0; i<n_loc; i++) system_grav[i].dump();
+        
 
         PS::Comm::barrier();
         wtime.now = wtime.end_soft = PS::GetWtime();
@@ -806,15 +739,15 @@ int main(int argc, char *argv[])
             //PRC(ephi); PRC(ephi_s); PRL(ephi_d);
         }
                 
-        if( time_sys  == dt_snap*isnap ){
+        if( time_sys  == param.dt_snap*isnap ){
             outputStep(system_grav, time_sys, e_init, e_now, de,
                        n_col_tot, n_frag_tot, dir_name, isnap, id_next, fout_eng,
                        wtime, n_largestcluster, n_cluster, n_isoparticle);
             makeSnapTmp(system_grav, time_sys, e_init, e_now, dir_name, id_next);
             isnap ++;
 
-            if ( time_sys >= t_end || 
-                 (wtime_max > 0. && wtime_max < difftime(time(NULL), wtime_start_program)) ) break;
+            if ( time_sys >= param.t_end || 
+                 (param.wtime_max > 0. && param.wtime_max < difftime(time(NULL), wtime_start_program)) ) break;
 
             if ( PS::Comm::getRank() == 0 ) {
                 fout_col.close();
@@ -826,10 +759,10 @@ int main(int argc, char *argv[])
             }
         }
 
-        if( fmod(time_sys, dt_snap_tmp) == 0. ){
+        if( fmod(time_sys, param.dt_snap_tmp) == 0. ){
             makeSnapTmp(system_grav, time_sys, e_init, e_now, dir_name, id_next);
             
-            if ( wtime_max > 0. && wtime_max < difftime(time(NULL), wtime_start_program) ) break;
+            if ( param.wtime_max > 0. && param.wtime_max < difftime(time(NULL), wtime_start_program) ) break;
         }
 #ifdef CALC_WTIME
         PS::Comm::barrier();

@@ -5,8 +5,8 @@ INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)inc
 ####################
 ###   Compiler   ###
 ####################
-CC = clang++ -std=c++11
-#CC = mpic++ -std=c++11
+CC = clang++ -std=c++14
+#CC = mpic++ -std=c++14
 #CC = time FCCpx -Nclang
 #CC = time mpiFCCpx -Nclang
 
@@ -48,15 +48,18 @@ collision = yes
 output_detail = yes
 #calc_time = yes
 
-p2p_fast = yes
+#p2p_fast = yes
+#use_PIKG = yes
 
 
 CFLAGS = -O2
 CFLAGS += -Wall
 CFLAGS += -funroll-loops
 
-CFLAGS += -DFOR_PIKG01
-CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
+#CFLAGS += -DPARTICLE_SIMULATOR_USE_STD_SORT
+CFLAGS += -DPARTICLE_SIMULATOR_USE_SAMPLE_SORT
+
+CFLAGS += -DCHECK_NEIGHBOR_FOR_DEBUG
 
 ifeq ($(use_OpenMP),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
@@ -151,34 +154,37 @@ endif
 ifeq ($(p2p_fast),yes)
 CFLAGS += -DUSE_P2P_FAST
 endif
+ifeq ($(use_PIKG),yes)
+CFLAGS += -DUSE_PIKG
+endif
 
 CFLAGS += -DMONAR
-#CFLAGS += -pg
+#CFLAGS += -g
 
 SRC = main_p3t.cpp
+ifeq ($(use_PIKG),yes)
+SRC += gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
+endif
 PROGRAM = gplum.out
 HEADER = mathfunc.h kepler.h energy.h particle.h disk.h gravity.h gravity_kernel.hpp collisionA.h collisionB.h hermite.h hard.h read.h time.h func.h
 
 
-$(PROGRAM): $(SRC) gravity_kernel_epep.hpp gravity_kernel_epsp.hpp
+$(PROGRAM): $(SRC)
 	$(CC) -MMD $(INC) $(CFLAGS) -o $@ $(SRC)
 
 gravity_kernel_epep.hpp: gravity_kernel_epep.pikg
 	./removeif.sh gravity_kernel_epep.pikg gravity_kernel_epep_noif.pikg $(CFLAGS)
 	$(PS_PATH_PIKG)bin/pikg -i gravity_kernel_epep_noif.pikg -o gravity_kernel_epep.hpp $(CFLAGS_KERNEL_EPEP)
-#	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epep.hpp
-#	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epep.hpp	
+	sed -i -e 's/__DOT__/./g' gravity_kernel_epep.hpp
 
 gravity_kernel_epsp.hpp: gravity_kernel_epsp.pikg
 	./removeif.sh gravity_kernel_epsp.pikg gravity_kernel_epsp_noif.pikg $(CFLAGS)
 	$(PS_PATH_PIKG)bin/pikg -i gravity_kernel_epsp_noif.pikg -o gravity_kernel_epsp.hpp $(CFLAGS_KERNEL_EPSP)
-	sed -i -e 's/quad__DOT__/quad./g' gravity_kernel_epsp.hpp
-#	sed -i -e 's/std::cout/\/\/std::cout/g' gravity_kernel_epsp.hpp
-#	sed -i -e 's/std::cerr/\/\/std::cerr/g' gravity_kernel_epsp.hpp	
+	sed -i -e 's/__DOT__/./g' gravity_kernel_epsp.hpp
+
 
 all: clean $(PROGRAM)
 
 clean:
 	rm -f *.out *.o *.d *~
-	rm -f gravity_kernel*.hpp* gravity_kernel*_noif.pikg*
-
+	rm -f gravity_kernel_*.hpp* gravity_kernel_*_noif.pikg*

@@ -1,12 +1,8 @@
+EPI S32    idi:id_local
+EPI S32    ranki:myrank
 EPI F64vec xi:pos
 #ifdef USE_POLAR_COORDINATE
 EPI F64vec xi_pol:pos_pol
-#endif
-#ifdef FOR_PIKG01
-EPI S32    idi:id
-EPI S32    idi_dmmy:id_dmmy
-#else
-EPI S64    idi:id
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPI F64    routi:r_out
@@ -30,14 +26,10 @@ EPJ F64vec xj_car:pos_car
 
 FORCE F32vec af:acc
 FORCE F32    pf:phi
-FORCE S32    ngb:neighbor
-FORCE S32    DUMMY_:DUMMY_
-#ifdef FOR_PIKG01
-FORCE S32    idngb:id_neighbor
-FORCE S32    idngb_dmmy:id_neighbor_dmmy
-#else
-FORCE S64    idngb:id_neighbor
-#endif
+FORCE S32    ngbf:neighbor__DOT__number
+FORCE S32    rankf:neighbor__DOT__rank
+FORCE S32    id_maxf:neighbor__DOT__id_max
+FORCE S32    id_minf:neighbor__DOT__id_min
 
 
 EPI local F32vec xiloc

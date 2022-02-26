@@ -1,12 +1,8 @@
+EPI S32    idi:id_local
+EPI S32    ranki:myrank
 EPI F64vec xi:pos
 #ifdef USE_POLAR_COORDINATE
 EPI F64vec xi_pol:pos_pol
-#endif
-#ifdef FOR_PIKG01
-EPI S32    idi:id
-EPI S32    idi_dmmy:id_dmmy
-#else
-EPI S64    idi:id
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPI F64    routi:r_out
@@ -18,36 +14,27 @@ F32 rout
 F32 rsearch
 #endif
 
+EPJ S32    idj:id_local 
+EPJ S32    rankj:myrank
 EPJ F64vec xj:pos
 #ifdef USE_POLAR_COORDINATE
 EPJ F64vec xj_pol:pos_pol
-#endif
-#ifdef FOR_PIKG01
-EPJ S32    idj:id
-EPJ S32    idj_dmmy:id_dmmy
-#else
-EPJ S64    idj:id
 #endif
 #ifdef USE_INDIVIDUAL_CUTOFF
 EPJ F64    routj:r_out
 EPJ F64    rsearchj:r_search
 #endif
+EPJ S64    idj_:id 
 EPJ F64    mj:mass
 EPJ F64vec vj:vel
-EPJ F64vec aj_d:acc_d
-EPJ S32    id_locj:id_local
-EPJ S32    myrankj:myrank
+EPJ F64vec aj:acc_d
 
 FORCE F32vec af:acc
 FORCE F32    pf:phi
-FORCE S32    nngb:neighbor
-FORCE S32    DUMMY_:DUMMY_
-#ifdef FOR_PIKG01
-FORCE S32    idngb:id_neighbor
-FORCE S32    idngb_dmmy:id_neighbor_dmmy
-#else
-FORCE S64    idngb:id_neighbor
-#endif
+FORCE S32    ngbf:neighbor__DOT__number
+FORCE S32    rankf:neighbor__DOT__rank
+FORCE S32    id_maxf:neighbor__DOT__id_max
+FORCE S32    id_minf:neighbor__DOT__id_min
 
 
 EPI local F32vec xiloc
@@ -63,17 +50,17 @@ EPJ local F32    rsearchjloc
 EPJ local F32    routjloc
 #endif
 
-xiloc = xi - xi[0]
+xiloc       = xi - xi[0]
 #ifdef USE_INDIVIDUAL_CUTOFF
 rsearchiloc = rsearchi
-routiloc = routi
+routiloc    = routi
 #endif
 
-xjloc = xj - xi[0]
-mjloc = mj
+xjloc       = xj - xi[0]
+mjloc       = mj
 #ifdef USE_INDIVIDUAL_CUTOFF
 rsearchjloc = rsearchj
-routjloc = routj
+routjloc    = routj
 #endif
 
 #ifdef USE_INDIVIDUAL_CUTOFF
@@ -81,18 +68,21 @@ rout     = max(routjloc, routiloc)
 rsearch  = max(rsearchjloc, rsearchiloc)
 #endif
 rout2    = rout * rout
-rsearch2 = rsearch * rsearch * 1.1025f
+rsearch2 = rsearch * rsearch * 1.0201f
 
 rij     = xjloc - xiloc
 r2_real = rij*rij + eps2
-r2      = r2_real
 r2      = max(r2_real, rout2)
 
+rank_sub  = ranki - rankj
+rank_sub2 = rank_sub * rank_sub
+
 if r2_real < rsearch2
-   nngb  = nngb + 1
-   if idi != idj
-      idngb = max(idngb, idj)
-      //idngb = idj
+   if idi != idj || ranki != rankj
+      ngbf    = ngbf + 1
+      rankf   = rankf + rank_sub2
+      id_maxf = max(id_maxf, idj)
+      id_minf = min(id_minf, idj)
    endif
 endif
 

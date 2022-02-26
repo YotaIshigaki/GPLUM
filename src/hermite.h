@@ -101,7 +101,7 @@ PS::S32 collisionDetermination(Tpsys & pp,
 {
     PS::F64 R_min = 1.;
 #ifdef MERGE_BINARY
-    PS::F64 E_min = 0.;
+    PS::F64 E_min = -1.;
 #endif
     PS::S32 flag_col = 0;
     
@@ -116,23 +116,23 @@ PS::S32 collisionDetermination(Tpsys & pp,
     PS::S32 psize = pp.size();
     for(PS::S32 i=0; i<psize; i++){
         if ( pp[i].isDead ) continue;
-        for(PS::S32 j=0; j<pp[i].neighbor; j++){
-            PS::S32 pj_id = pp[i].n_hard_list.at(j);
-            if ( pp[pj_id].isDead ) continue;
-            PS::F64vec dr = pp[i].xp - pp[pj_id].xp;
-            //PS::F64vec dv = pp[i].vp - pp[pj_id].vp;
+        for(PS::S32 j=0; j<psize; j++){
+            //PS::S32 pj_id = pp[i].n_hard_list.at(j);
+            if ( i == j || pp[j].isDead ) continue;
+            PS::F64vec dr = pp[i].xp - pp[j].xp;
+            //PS::F64vec dv = pp[i].vp - pp[j].vp;
             PS::F64 r1 = sqrt(dr*dr);
-            PS::F64 r2 = pp[i].f*pp[i].r_planet + pp[pj_id].f*pp[pj_id].r_planet;
+            PS::F64 r2 = pp[i].f*pp[i].r_planet + pp[j].f*pp[j].r_planet;
             PS::F64 R = r1 / r2;
             if ( R < R_min ){
-                //if ( ( col_pair == std::make_pair(i, pj_id) || col_pair == std::make_pair(pj_id, i) )
+                //if ( ( col_pair == std::make_pair(i, j) || col_pair == std::make_pair(j, i) )
                 //     || dr*dv > 0. ) continue;
                 R_min = R;
-                if ( pp[i].mass < pp[pj_id].mass ){
+                if ( pp[i].mass < pp[j].mass ){
                     col_pair.first = i;
-                    col_pair.second = pj_id;
+                    col_pair.second = j;
                 } else {
-                    col_pair.first = pj_id;
+                    col_pair.first = j;
                     col_pair.second = i;
                 }
                 flag_col = 1;
@@ -142,18 +142,19 @@ PS::S32 collisionDetermination(Tpsys & pp,
             //Determination of Binary Partcles
             if ( !flag_col ){
                 PS::F64    mi  = pp[i].mass;
-                PS::F64    mj  = pp[pj_id].mass;
+                PS::F64    mj  = pp[j].mass;
                 PS::F64vec ri  = pp[i].pos;
-                PS::F64vec rj  = pp[pj_id].pos;
+                PS::F64vec rj  = pp[j].pos;
                 PS::F64vec r_c = (mi*ri + mj*rj) / (mi + mj);
                 PS::F64    ax  = sqrt(r_c * r_c);
                 PS::F64    r_H = pow((mi+mj)/(3.*FP_t::m_sun), 1./3.) * ax;
+                PS::F64 Omega  = sqrt(FP_t::m_sun / (ax*ax*ax));
  
-                PS::F64 R_merge = std::min(pp[i].R_merge, pp[pj_id].R_merge);  
+                PS::F64 R_merge = std::min(pp[i].R_merge, pp[j].R_merge);  
                 R = r1 / ( R_merge * r_H );
                 if ( R < 1. ){
                     PS::F64vec vi  = pp[i].vel;
-                    PS::F64vec vj  = pp[pj_id].vel;
+                    PS::F64vec vj  = pp[j].vel;
                     PS::F64vec v_c = (mi*vi + mj*vj) / (mi + mj);
                     
                     PS::F64vec ex  = r_c / ax;
@@ -162,25 +163,26 @@ PS::S32 collisionDetermination(Tpsys & pp,
                     ez.y = v_c.z*ex.x - v_c.x*ex.z;
                     ez.z = v_c.x*ex.y - v_c.y*ex.x;
                     ez = ez / sqrt(ez*ez) ;
-                    
+               
                     PS::F64vec dr = ri - rj;
                     PS::F64vec dv = vi - vj;
                     PS::F64 dr_x = dr * ex;
                     PS::F64 dr_z = dr * ez;
                     
-                    PS::F64 Omega = sqrt(FP_t::m_sun / (ax*ax*ax));
-                    
                     PS::F64 E_J = 0.5*dv*dv
                         + Omega*Omega*(-1.5*dr_x*dr_x + 0.5*dr_z*dr_z +4.5*r_H*r_H)
                         - (mi + mj) / sqrt(dr*dr);
+
+                    PS::F64 E_merge = std::min(pp[i].E_merge, pp[j].E_merge);
+                    E_J = E_J / (E_merge * mi * mj / r_H);
                     
                     if ( E_J < E_min ){
                         E_min = E_J;
-                        if ( pp[i].mass < pp[pj_id].mass ){
+                        if ( pp[i].mass < pp[j].mass ){
                             col_pair.first = i;
-                            col_pair.second = pj_id;
+                            col_pair.second = j;
                         } else {
-                            col_pair.first = pj_id;
+                            col_pair.first = j;
                             col_pair.second = i;
                         }
                         flag_col = 2;
@@ -798,7 +800,6 @@ void timeIntegrateKepler_isolated(Tp & pi,
     u = solveKeplerEq(l, ecc);
     orbitalElement2PosVel(pi.pos, pi.vel, m_sun, ax, ecc, n, u, P, Q);
     pi.time += (time_end - time_start);
-    
     pi.phi_d  = 0.;
     pi.acc_d  = 0.;
     pi.jerk_d = 0.;

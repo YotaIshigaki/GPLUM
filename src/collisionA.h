@@ -56,6 +56,18 @@ class Collision0{
     //static PS::F64 f;
     static PS::F64 m_min;
 
+    static void readParameter(std::string name,
+                              std::string value){
+        if ( name == "m_min" ) m_min = getvalue(value, M_MKS, M_CGS);
+    }
+    static void broadcastParameter(){
+        PS::Comm::broadcast(&m_min, 1);
+    }
+    static void showParameter(std::ostream & fout = std::cout) {
+        fout << std::scientific << std::setprecision(15)
+             << "m_min         = " << m_min << "\t(" << m_min*M_CGS << " g)" << std::endl;
+    }
+
     PS::S32 getNumberOfFragment() const { return n_frag; }
     PS::S64 getFragmentID() const { return id_frag; }
     PS::S32 getFragmentIDCluster() const { return id_c_frag; }
@@ -108,8 +120,8 @@ class Collision0{
     }
 
     void write2File(std::ofstream & fp) const {
-        PS::F64vec ximp = pos_imp - pos_tar;
-        PS::F64vec vimp = vel_imp - vel_tar;
+        //PS::F64vec ximp = pos_imp - pos_tar;
+        //PS::F64vec vimp = vel_imp - vel_tar;
         PS::F64vec dpos_g = pos_g_new - pos_g;
         PS::F64vec dvel_g = vel_g_new - vel_g;
         PS::S32 Flag = 0;
@@ -124,15 +136,17 @@ class Collision0{
            << this->n_frag << "\t" << this->id_frag << "\t"
            << std::scientific<<std::setprecision(15)
            << this->mass_imp  << "\t" << this->mass_tar  << "\t" << this->mass_frag << "\t"
-           << sqrt(ximp*ximp) << "\t" << sqrt(vimp*vimp) << "\t"
-           << this->col_angle << "\t" << Flag << "\t"
+           << this->pos_imp.x  << "\t" << this->pos_imp.y  << "\t" << this->pos_imp.z << "\t"
+           << this->pos_tar.x  << "\t" << this->pos_tar.y  << "\t" << this->pos_tar.z << "\t"
+           << this->vel_imp.x  << "\t" << this->vel_imp.y  << "\t" << this->vel_imp.z << "\t"
+           << this->vel_tar.x  << "\t" << this->vel_tar.y  << "\t" << this->vel_tar.z << "\t"
+            //<< sqrt(ximp*ximp) << "\t" << sqrt(vimp*vimp) << "\t"
+            //<< this->col_angle << "\t"
+           << Flag << "\t"
            << sqrt((dpos_g*dpos_g)/(pos_g*pos_g)) << "\t" << sqrt((dvel_g*dvel_g)/(vel_g*vel_g)) 
            << std::endl;
     }
 
-    static void readParameter(std::string name,
-                              std::string value){}
-    static void showParameter(std::ostream & fout = std::cout) {}
 };
 
 PS::F64 Collision0::m_min = 9.426627927538057e-12;
@@ -543,22 +557,23 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
     }
     
 #if 1
-    for ( PS::S32 i=0; i<pp[id_c_imp].neighbor; i++ ){
-        PS::S32 id_nei = pp[id_c_imp].n_hard_list.at(i);
-        if ( pp[id_nei].id == pp[id_c_imp].id || pp[id_nei].id == pp[id_c_tar].id ) continue;
-        PS::F64 m_nei = pp[id_nei].mass;
+    //for ( PS::S32 i=0; i<pp[id_c_imp].neighbor; i++ ){
+    //PS::S32 id_nei = pp[id_c_imp].n_hard_list.at(i);
+    for ( PS::S32 i=0; i<id_c_frag; i++ ){  
+        if ( pp[i].id == pp[id_c_imp].id || pp[i].id == pp[id_c_tar].id ) continue;
+        PS::F64 m_nei = pp[i].mass;
         
-        dr = pos_imp - pp[id_nei].pos;
+        dr = pos_imp - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv = sqrt(1./dr2);
-        dr = pp[id_c_imp].pos - pp[id_nei].pos;
+        dr = pp[id_c_imp].pos - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv_new = sqrt(1./dr2);
         dphi = m_nei * ( rinv - rinv_new );
         e_int   += m_nei * ( mass_i * rinv - pp[id_c_imp].mass * rinv_new );
         e_int_d += m_nei * ( mass_i * rinv - pp[id_c_imp].mass * rinv_new )
 #ifdef USE_INDIVIDUAL_CUTOFF
-            * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[id_nei].r_out_inv));
+            * (1.-cutoff_W2(dr2, pp[id_c_imp].r_out_inv, pp[i].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
@@ -567,42 +582,42 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             e_int   += pp[id_i].mass * dphi;
             e_int_d += pp[id_i].mass * dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-                * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[id_nei].r_out_inv));
+                * (1.-cutoff_W2(dr2, pp[id_i].r_out_inv, pp[i].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
         for ( PS::S32 j=0; j<n_frag; j++ ){
             PS::S32 id_f = id_c_frag + j;
-            dr = pp[id_f].pos - pp[id_nei].pos;
+            dr = pp[id_f].pos - pp[i].pos;
             dr2 = dr*dr + eps2;
             rinv_new = sqrt(1./dr2);
             dphi = -m_nei * pp[id_f].mass * rinv_new;
             e_int   += dphi;
             e_int_d += dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-                * (1.-cutoff_W2(dr2, pp[id_f].r_out_inv, pp[id_nei].r_out_inv));
+                * (1.-cutoff_W2(dr2, pp[id_f].r_out_inv, pp[i].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
         }
-    }
-    for ( PS::S32 i=0; i<pp[id_c_tar].neighbor; i++ ){
-        PS::S32 id_nei = pp[id_c_tar].n_hard_list.at(i);
-        if ( pp[id_nei].id == pp[id_c_imp].id || pp[id_nei].id == pp[id_c_tar].id ) continue;
-        PS::F64 m_nei = pp[id_nei].mass;
+        //}
+    //for ( PS::S32 i=0; i<pp[id_c_tar].neighbor; i++ ){
+    //PS::S32 i = pp[id_c_tar].n_hard_list.at(i);
+    //if ( pp[i].id == pp[id_c_imp].id || pp[i].id == pp[id_c_tar].id ) continue;
+    //PS::F64 m_nei = pp[i].mass;
         
-        dr = pos_tar - pp[id_nei].pos;
+        dr = pos_tar - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv = sqrt(1./dr2);
-        dr = pp[id_c_tar].pos - pp[id_nei].pos;
+        dr = pp[id_c_tar].pos - pp[i].pos;
         dr2 = dr*dr + eps2;
         rinv_new = sqrt(1./dr2);
         dphi = m_nei * ( rinv - rinv_new );
         e_int   += pp[id_c_tar].mass * dphi;
         e_int_d += pp[id_c_tar].mass * dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-            * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[id_nei].r_out_inv));
+            * (1.-cutoff_W2(dr2, pp[id_c_tar].r_out_inv, pp[i].r_out_inv));
 #else
             * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
@@ -611,7 +626,7 @@ inline PS::F64 Collision0::calcEnergyDissipation(Tpsys & pp,
             e_int   += pp[id_j].mass * dphi;
             e_int_d += pp[id_j].mass * dphi
 #ifdef USE_INDIVIDUAL_CUTOFF
-                * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[id_nei].r_out_inv));
+                * (1.-cutoff_W2(dr2, pp[id_j].r_out_inv, pp[i].r_out_inv));
 #else
                 * (1.-cutoff_W2(dr2, FP_t::r_out_inv));
 #endif
@@ -659,6 +674,8 @@ inline void Collision0::setNeighbors(Tpsys & pp)
     ///////////////////////
     /*   Set Neighbors   */
     ///////////////////////
+    for ( PS::S32 i=0; i<n_frag; i++ ) pp[id_c_frag + i].neighbor.number = pp[id_c_imp].neighbor.number;
+    /*
     for ( PS::S32 i=0; i<n_frag; i++ ){
         PS::S32 id_f = id_c_frag + i;
         pp[id_f].neighbor = pp[id_c_imp].neighbor + n_frag;
@@ -685,6 +702,7 @@ inline void Collision0::setNeighbors(Tpsys & pp)
         PS::S32 id_nei = pp[id_c_imp].n_hard_list.at(i);
         assert ( pp[id_nei].neighbor == (PS::S32)(pp[id_nei].n_hard_list.size()) );
     }
+    */
 }
 
 template <class Tp>
