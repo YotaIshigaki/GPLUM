@@ -1,6 +1,5 @@
 #PS_PATH_FDPS = ../FDPS/src/
 PS_PATH_FDPS = ../fdps-devel/src/
-#PS_PATH_FDPS = ../FDPS/src/
 PS_PATH_PIKG = ../PIKG-0.1d/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)inc
@@ -22,7 +21,7 @@ CC = clang++ -std=c++14
 ################
 ###   SIMD   ###
 ################
-use_AVX2 = yes
+#use_AVX2 = yes
 #use_AVX512 = yes
 #use_SVE = yes
 
@@ -51,7 +50,7 @@ collision = yes
 output_detail = yes
 #calc_time = yes
 
-p2p_fast = yes
+#p2p_fast = yes
 #use_PIKG = yes
 
 
@@ -65,8 +64,8 @@ CFLAGS += -DPARTICLE_SIMULATOR_USE_SAMPLE_SORT
 CFLAGS += -DCHECK_NEIGHBOR_FOR_DEBUG
 
 ifeq ($(use_OpenMP),yes)
-CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
-#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
+#CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -Xpreprocessor -fopenmp -lomp
+CFLAGS += -DPARTICLE_SIMULATOR_THREAD_PARALLEL -fopenmp
 endif
 ifeq ($(use_MPI),yes)
 CFLAGS += -DPARTICLE_SIMULATOR_MPI_PARALLEL
