@@ -645,13 +645,25 @@ flagは粒子の状態を表すフラグで，粒子が連微惑星をまとめ�
 \subsection{\texttt{collision}$N$\texttt{.dat}}
 
 \texttt{collision}$N$\texttt{.dat}には，
-\texttt{snap}$(N-1)$\texttt{.dat}の時刻から\texttt{snap}$N$\texttt{.dat}の時刻までの間の時間に起こった衝突について，情報が以下の順に出力されます．
-\[
-t\quad {\rm ID}_{\rm imp}\quad {\rm ID}_{\rm tar}\quad n_{\rm frag}\quad {\rm ID}_{\rm frag}\quad m_{\rm imp}\quad m_{\rm tar}\quad m_{\rm frag} \quad r_{\rm imp} \quad v_{\rm imp} \quad \theta_{\rm imp} \quad {\rm flag}\quad |\Delta \bm{r}_{\rm g}|/|\bm{r}_{\rm g}| \quad |\Delta \bm{v}_{\rm g}|/|\bm{v}_{\rm g}|
-\]
+\texttt{snap}$(N-1)$\texttt{.dat}の時刻から\texttt{snap}$N$\texttt{.dat}の時刻までの間の時間に起こった衝突について，情報が以下の順に一行で出力されます．
+\begin{eqnarray*}
+&&t\quad {\rm ID}_{\rm imp}\quad {\rm ID}_{\rm tar}\quad n_{\rm frag}\quad {\rm ID}_{\rm frag}\quad m_{\rm imp}\quad m_{\rm tar}\quad m_{\rm frag} \\
+&&r_{{\rm imp},x}\quad r_{{\rm imp},y}\quad r_{{\rm imp},z}\quad 
+r_{{\rm tar},x}\quad r_{{\rm tar},y}\quad r_{{\rm tar},z}\quad 
+v_{{\rm imp},x}\quad v_{{\rm imp},y}\quad v_{{\rm imp},z}\quad 
+v_{{\rm tar},x}\quad v_{{\rm tar},y}\quad v_{{\rm tar},z}\\
+%r_{\rm imp} \quad v_{\rm imp} \quad \theta_{\rm imp} \quad 
+&&{\rm flag}\quad |\Delta \bm{r}_{\rm g}|/|\bm{r}_{\rm g}| \quad |\Delta \bm{v}_{\rm g}|/|\bm{v}_{\rm g}|
+\end{eqnarray*}
 $t$は衝突が起こった時刻，${\rm ID},\ m$はそれぞれ粒子のIDと質量で，imp, tarはそれぞれインパクター粒子，ターゲット粒子を表します．衝突する2粒子のうち，質量が小さい方をインパクター粒子，大きい方をターゲット粒子としています．
 $n_{\rm frag},\ {\rm ID}_{\rm frag},\ m_{\rm frag}$はそれぞれ衝突で生じる破片粒子数，1つ目の破片粒子のID，破片粒子の総質量で，この衝突により生じる破片粒子のIDは${\rm ID}_{\rm frag}$から${\rm ID}_{\rm frag}+n_{\rm frag}-1$までとなります．
-$r_{\rm imp},\ v_{\rm imp},\ \theta_{\rm imp}$はターゲット粒子に対するインパクター粒子の相対距離，相対速度，衝突角です．
+%$r_{\rm imp},\ v_{\rm imp},\ \theta_{\rm imp}$はターゲット粒子に対するインパクター粒子の相対距離，相対速度，衝突角です．
+$\bm{r}_{\rm imp}=\left(r_{{\rm imp},x}, r_{{\rm imp},y}, r_{{\rm imp},z}\right),\
+\bm{r}_{\rm tar}=\left(r_{{\rm tar},x}, r_{{\rm tar},y}, r_{{\rm tar},z}\right)$
+はそれぞれ衝突前のインパクター粒子，ターゲット粒子の位置，
+$\bm{v}_{\rm imp}=\left(v_{{\rm imp},x}, v_{{\rm imp},y}, v_{{\rm imp},z}\right),\
+\bm{v}_{\rm tar}=\left(v_{{\rm tar},x}, v_{{\rm tar},y}, v_{{\rm tar},z}\right)$
+はそれぞれ衝突前のインパクター粒子，ターゲット粒子の速度です．
 flagは衝突の状態を表すフラグで，衝突後にインパクター粒子とターゲット粒子が合体するかどうかの真偽を1の位で，インパクター粒子が連微惑星をまとめた超粒子かどうかの真偽を2の位で，ターゲット粒子が連微惑星をまとめた超粒子かどうかの真偽を4の位で表す2進数の値を10進数で表したものです．
 $ \bm{r}_{\rm g},\ \bm{v}_{\rm g}$はそれぞれインパクター粒子，ターゲット粒子，破片粒子の系の重心位置，重心速度で，$\Delta \bm{r}_{\rm g},\ \Delta \bm{v}_{\rm g}$はそれらの衝突前と衝突後の差です．
 
@@ -855,17 +867,9 @@ static void showParameter(std::ostream & fout = std::cout)
 
 MITライセンスに準じます．
 \ourcode を使用した結果を発表する場合は，以下の文献の引用をお願いします．
-%\footnote{発表する直前に最新の情報を確認してください}．
-%\begin{itemize}
-%\item[1)] Iwasawa et al. (2016, PASJ, 68, 59)
-%\item[2)] Ishigaki (2019, M. Thesis, University of Tokyo) 
-%\ または\ 
-%\Paper
-%\end{itemize}
 
 \begin{itemize}
 \item[1)]
-%Ishigaki, Y., 2019. Development of N-body simulation code for planetary system formation with particle-particle particle-tree scheme. M. thesis, University of Tokyo.
 Ishigaki, Y., Kominami, J., Makino, J., Fujimoto, M., Iwasawa, M., 2021. 
 Particle--particle Particle--tree Code for Planetary System Formation with Individual Cut-off Method: GPLUM. Publications of the Astronomical Society of Japan, 73 (3), 660--676.
 
@@ -913,7 +917,7 @@ PIKG-0.1dであればコンパイルできることが確認できているの�
 
 \section*{}
 
-不明な点やバグ等あれば，石城(y.ishigaki@stp.isas.jaxa.jp)までご連絡ください．
+不明な点やバグ等あれば，石城(ishigaki@alumni.u-tokyo.ac.jp)までご連絡ください．
 
 
 \end{document}

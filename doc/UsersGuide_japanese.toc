@@ -31,11 +31,11 @@
 \contentsline {subsection}{\numberline {6.2}\texttt {collision}$N$\texttt {.dat}}{11}{}%
 \contentsline {subsection}{\numberline {6.3}\texttt {remove}$N$\texttt {.dat}}{11}{}%
 \contentsline {subsection}{\numberline {6.4}\texttt {energy.dat}}{11}{}%
-\contentsline {subsection}{\numberline {6.5}\texttt {snap\_tmp.dat}}{11}{}%
+\contentsline {subsection}{\numberline {6.5}\texttt {snap\_tmp.dat}}{12}{}%
 \contentsline {subsection}{\numberline {6.6}\texttt {param.dat}}{12}{}%
 \contentsline {section}{\numberline {7}衝突合体/破壊モデルの変更}{12}{}%
 \contentsline {subsection}{\numberline {7.1}Collision::collisionOutcome}{12}{}%
-\contentsline {subsection}{\numberline {7.2}Collision::readParameter}{13}{}%
+\contentsline {subsection}{\numberline {7.2}Collision::readParameter}{14}{}%
 \contentsline {subsection}{\numberline {7.3}Collision::showParameter}{14}{}%
 \contentsline {section}{\numberline {8}ライセンス}{14}{}%
-\contentsline {section}{\numberline {9}現在分かっている不具合}{14}{}%
+\contentsline {section}{\numberline {9}現在分かっている不具合}{15}{}%
