@@ -1,5 +1,5 @@
-#PS_PATH_FDPS = ../FDPS/src/
-PS_PATH_FDPS = ../fdps-devel/src/
+PS_PATH_FDPS = ../FDPS/src/
+#PS_PATH_FDPS = ../fdps-devel/src/
 PS_PATH_PIKG = ../PIKG-0.1d/
 #PS_PATH_PIKG = ../FDPS-devel/pikg/
 INC = -I$(PS_PATH_FDPS) -I$(PS_PATH_PIKG)inc
