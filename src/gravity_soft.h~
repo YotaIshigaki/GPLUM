@@ -54,7 +54,7 @@ void chechNeighborForDebug(Tpsys &  pp,
         assert( dr2 != 0.0 );
         dr2 += eps2;
         PS::F64 rij = sqrt(dr2);
-        assert( rij < r_search * 2.0 );
+        assert( rij < r_search * 1.5 );
         
         if ( rij < r_search ) {
             PS::S32 neighbor_check = 0;
