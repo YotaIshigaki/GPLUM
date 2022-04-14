@@ -1369,7 +1369,8 @@ void calcRandomVel(Tpsys & pp,
     }
 
 #ifdef PARTICLE_SIMULATOR_MPI_PARALLEL
-    MPI_Allreduce(v_ave_loc,  v_ave_glb,  N, PS::GetDataType(*v_ave_loc),  MPI_SUM, MPI_COMM_WORLD);
+    #MPI_Allreduce(v_ave_loc,  v_ave_glb,  N, PS::GetDataType(*v_ave_loc),  MPI_SUM, MPI_COMM_WORLD);
+    for(PS::S32 i=0; i<N; i++) v_ave_glb[i]= PS::Comm::getSum(v_ave_loc[i]);
     MPI_Allreduce(v_sq_loc,   v_sq_glb,   N, PS::GetDataType(*v_sq_loc),   MPI_SUM, MPI_COMM_WORLD);
     MPI_Allreduce(n_ptcl_loc, n_ptcl_glb, N, PS::GetDataType(*n_ptcl_loc), MPI_SUM, MPI_COMM_WORLD);
 #else
